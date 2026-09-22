@@ -1,0 +1,143 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/news/manual/[id]",
+      "regex": "^/api/news/manual/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/news/manual/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api",
+      "regex": "^/api(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api(?:/)?$"
+    },
+    {
+      "page": "/api/contact",
+      "regex": "^/api/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/contact(?:/)?$"
+    },
+    {
+      "page": "/api/contact/delete",
+      "regex": "^/api/contact/delete(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/contact/delete(?:/)?$"
+    },
+    {
+      "page": "/api/markets",
+      "regex": "^/api/markets(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/markets(?:/)?$"
+    },
+    {
+      "page": "/api/news",
+      "regex": "^/api/news(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/news(?:/)?$"
+    },
+    {
+      "page": "/api/news/fetch-url",
+      "regex": "^/api/news/fetch\\-url(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/news/fetch\\-url(?:/)?$"
+    },
+    {
+      "page": "/api/news/manual",
+      "regex": "^/api/news/manual(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/news/manual(?:/)?$"
+    },
+    {
+      "page": "/api/news/sources",
+      "regex": "^/api/news/sources(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/news/sources(?:/)?$"
+    },
+    {
+      "page": "/api/news/summarize",
+      "regex": "^/api/news/summarize(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/news/summarize(?:/)?$"
+    },
+    {
+      "page": "/api/social-stats",
+      "regex": "^/api/social\\-stats(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/social\\-stats(?:/)?$"
+    },
+    {
+      "page": "/api/standings",
+      "regex": "^/api/standings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/standings(?:/)?$"
+    },
+    {
+      "page": "/api/weather",
+      "regex": "^/api/weather(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/weather(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

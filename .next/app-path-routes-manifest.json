@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/contact/delete/route": "/api/contact/delete",
+  "/api/contact/route": "/api/contact",
+  "/api/markets/route": "/api/markets",
+  "/api/news/fetch-url/route": "/api/news/fetch-url",
+  "/api/news/manual/[id]/route": "/api/news/manual/[id]",
+  "/api/news/manual/route": "/api/news/manual",
+  "/api/news/route": "/api/news",
+  "/api/news/sources/route": "/api/news/sources",
+  "/api/news/summarize/route": "/api/news/summarize",
+  "/api/route": "/api",
+  "/api/social-stats/route": "/api/social-stats",
+  "/api/standings/route": "/api/standings",
+  "/api/weather/route": "/api/weather",
+  "/page": "/"
+}

@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/contact/delete/route": "app/api/contact/delete/route.js",
+  "/api/contact/route": "app/api/contact/route.js",
+  "/api/markets/route": "app/api/markets/route.js",
+  "/api/news/fetch-url/route": "app/api/news/fetch-url/route.js",
+  "/api/news/manual/[id]/route": "app/api/news/manual/[id]/route.js",
+  "/api/news/manual/route": "app/api/news/manual/route.js",
+  "/api/news/route": "app/api/news/route.js",
+  "/api/news/sources/route": "app/api/news/sources/route.js",
+  "/api/news/summarize/route": "app/api/news/summarize/route.js",
+  "/api/route": "app/api/route.js",
+  "/api/social-stats/route": "app/api/social-stats/route.js",
+  "/api/standings/route": "app/api/standings/route.js",
+  "/api/weather/route": "app/api/weather/route.js",
+  "/page": "app/page.js"
+}
