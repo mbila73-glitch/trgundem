@@ -1,0 +1,45 @@
+{
+  "name": "TrGündem",
+  "short_name": "TrGündem",
+  "description": "Türkiye'nin resmi ve bağımsız kaynaklarından flaş haberler tek akışta.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "orientation": "portrait-primary",
+  "lang": "tr",
+  "dir": "ltr",
+  "categories": ["news", "magazines"],
+  "icons": [
+    {
+      "src": "/trgundem-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Haber Ekle",
+      "url": "/?action=add-news",
+      "description": "Kendi haberinizi ekleyin"
+    },
+    {
+      "name": "Kaydedilenler",
+      "url": "/?view=bookmarks",
+      "description": "Kaydettiğiniz haberler"
+    }
+  ]
+}
