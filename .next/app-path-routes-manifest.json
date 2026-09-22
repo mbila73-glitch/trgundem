@@ -3,6 +3,7 @@
   "/_not-found/page": "/_not-found",
   "/api/contact/delete/route": "/api/contact/delete",
   "/api/contact/route": "/api/contact",
+  "/api/download/route": "/api/download",
   "/api/markets/route": "/api/markets",
   "/api/news/fetch-url/route": "/api/news/fetch-url",
   "/api/news/manual/[id]/route": "/api/news/manual/[id]",

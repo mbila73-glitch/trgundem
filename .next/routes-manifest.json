@@ -68,6 +68,12 @@
       "namedRegex": "^/api/contact/delete(?:/)?$"
     },
     {
+      "page": "/api/download",
+      "regex": "^/api/download(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/download(?:/)?$"
+    },
+    {
       "page": "/api/markets",
       "regex": "^/api/markets(?:/)?$",
       "routeKeys": {},

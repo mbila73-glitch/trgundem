@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "postinstall": "prisma generate && prisma db push --accept-data-loss"
+    "postinstall": "node scripts/setup-prisma.js"
   },
   "dependencies": {
     "next": "16.1.3",
@@ -33,8 +33,5 @@
     "@radix-ui/react-switch": "1.1.2",
     "@radix-ui/react-checkbox": "1.1.3",
     "@radix-ui/react-select": "2.1.4"
-  },
-  "devDependencies": {
-    "prisma": "6.5.0"
   }
 }

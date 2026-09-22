@@ -3,6 +3,7 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/api/contact/delete/route": "app/api/contact/delete/route.js",
   "/api/contact/route": "app/api/contact/route.js",
+  "/api/download/route": "app/api/download/route.js",
   "/api/markets/route": "app/api/markets/route.js",
   "/api/news/fetch-url/route": "app/api/news/fetch-url/route.js",
   "/api/news/manual/[id]/route": "app/api/news/manual/[id]/route.js",

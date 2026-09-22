@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Site yöneticisi tarafından manuel girilen haberler
+model ManualNews {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String
+  content     String?
+  image       String?
+  sourceUrl   String?
+  sourceName  String   @default("TrGündem")
+  category    String?
+  isPublished Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, createdAt])
+}
+
+// Ziyaretçilerden gelen mesajlar (iletişim formu)
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([isRead, createdAt])
+}
