@@ -120,15 +120,8 @@ async function main() {
         lines.push(`#### [${title}](${link})`);
         lines.push('');
         lines.push(`- **Yayın:** ${fmtDate(a.publishedAt)}`);
-        if (a.author) {
-          lines.push(`- **Yazar:** ${escapeMd(a.author)}`);
-        }
-        if (a.category) {
-          lines.push(`- **Kategori:** ${escapeMd(a.category)}`);
-        }
-        lines.push(
-          `- **Kaynak:** [${escapeMd(a.source?.name ?? 'Bilinmiyor')}](${a.source?.url ?? ''})`,
-        );
+        lines.push(`- **Kategori:** ${escapeMd(category)}`);
+        lines.push(`- **Kaynak linki:** ${link}`);
         lines.push('');
         // RSS'ten gelen hazır kısa açıklama (AI özet kullanılmaz)
         if (a.description) {

@@ -5,13 +5,13 @@ import {
   FileText,
   Download,
   RefreshCw,
-  Sparkles,
   Loader2,
   ExternalLink,
   FileDown,
   Hash,
   Newspaper,
   CheckCircle2,
+  AlignLeft,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
@@ -28,7 +28,7 @@ type FileInfo = {
   lineCount: number;
   totalArticles: number;
   totalSources: number;
-  summarizedCount: number;
+  withDescription: number;
   preview: string;
   error?: string;
 };
@@ -41,7 +41,6 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
   const [info, setInfo] = useState<FileInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [building, setBuilding] = useState(false);
-  const [summarizing, setSummarizing] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,12 +61,12 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
     load();
   }, [load, refreshSignal]);
 
-  // Poll every 5s while a background job is running
+  // Poll every 5s while a rebuild is running
   useEffect(() => {
-    if (!building && !summarizing) return;
+    if (!building) return;
     const t = setInterval(load, 5000);
     return () => clearInterval(t);
-  }, [building, summarizing, load]);
+  }, [building, load]);
 
   const handleRebuild = async () => {
     setBuilding(true);
@@ -75,7 +74,6 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
       const r = await fetch('/api/icerik', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summarize: false }),
       });
       const json = (await r.json()) as { ok?: boolean; error?: string };
       if (!r.ok) throw new Error(json.error || 'Yeniden oluşturma başlatılamadı');
@@ -84,26 +82,7 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
       toast.error(e instanceof Error ? e.message : 'İstek hatası');
       setBuilding(false);
     }
-    // Note: building flag will be reset by the polling effect once file size stabilizes
     setTimeout(() => setBuilding(false), 15000);
-  };
-
-  const handleSummarize = async () => {
-    setSummarizing(true);
-    try {
-      const r = await await fetch('/api/icerik', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summarize: true, limit: 100 }),
-      });
-      const json = (await r.json()) as { ok?: boolean; error?: string };
-      if (!r.ok) throw new Error(json.error || 'Özetleme başlatılamadı');
-      toast.success('Arka planda AI özetleme + dosya yeniden oluşturma başlatıldı');
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'İstek hatası');
-      setSummarizing(false);
-    }
-    setTimeout(() => setSummarizing(false), 60000);
   };
 
   const handleDownload = () => {
@@ -116,7 +95,7 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
         <div>
           <h2 className="text-xl font-semibold tracking-tight">İçerik Dosyası</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Tüm RSS haberleri AI özetleri ve kaynak linkleri ile{' '}
+            Tüm RSS haberleri kaynak linki, yayın zamanı ve RSS açıklaması ile{' '}
             <code className="rounded bg-muted px-1 py-0.5 text-xs">rss_icerik.md</code>{' '}
             dosyasında saklanır. Sitede yayınlanmaz, dosya olarak tutulur.
           </p>
@@ -126,7 +105,7 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
             variant="outline"
             size="sm"
             onClick={handleRebuild}
-            disabled={building || summarizing}
+            disabled={building}
             className="gap-1.5"
           >
             {building ? (
@@ -135,19 +114,6 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
               <RefreshCw className="h-3.5 w-3.5" />
             )}
             Dosyayı Yeniden Oluştur
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSummarize}
-            disabled={building || summarizing}
-            className="gap-1.5 bg-news text-news-foreground hover:bg-news/90"
-          >
-            {summarizing ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="h-3.5 w-3.5" />
-            )}
-            AI Özet Üret (100)
           </Button>
         </div>
       </header>
@@ -176,31 +142,26 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
               icon={FileText}
               label="Dosya boyutu"
               value={`${info.sizeKb.toLocaleString('tr-TR')} KB`}
-              tone="default"
             />
             <StatCard
               icon={Hash}
               label="Satır sayısı"
               value={info.lineCount.toLocaleString('tr-TR')}
-              tone="default"
             />
             <StatCard
               icon={Newspaper}
               label="Toplam makale"
               value={info.totalArticles.toLocaleString('tr-TR')}
-              tone="default"
             />
             <StatCard
               icon={FileDown}
               label="Kaynak sayısı"
               value={String(info.totalSources)}
-              tone="default"
             />
             <StatCard
-              icon={Sparkles}
-              label="AI özetlenen"
-              value={info.summarizedCount.toLocaleString('tr-TR')}
-              tone={info.summarizedCount > 0 ? 'news' : 'default'}
+              icon={AlignLeft}
+              label="Açıklamalı makale"
+              value={info.withDescription.toLocaleString('tr-TR')}
             />
             <StatCard
               icon={CheckCircle2}
@@ -209,7 +170,6 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
-              tone="default"
             />
           </div>
 
@@ -227,11 +187,7 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={handleDownload}
-              size="sm"
-              className="gap-1.5"
-            >
+            <Button onClick={handleDownload} size="sm" className="gap-1.5">
               <Download className="h-4 w-4" />
               İndir (.md)
             </Button>
@@ -254,13 +210,11 @@ export function IcerikDosyasi({ refreshSignal = 0 }: Props) {
           </Card>
 
           {/* Background job indicator */}
-          {(building || summarizing) && (
+          {building && (
             <div className="sticky bottom-4 z-30 mx-auto w-fit rounded-full border border-news/40 bg-background/95 px-4 py-1.5 text-xs shadow-md backdrop-blur">
               <span className="inline-flex items-center gap-2 text-news">
                 <Loader2 className="h-3 w-3 animate-spin" />
-                {summarizing
-                  ? 'AI özetleniyor ve dosya yeniden oluşturuluyor…'
-                  : 'Dosya yeniden oluşturuluyor…'}
+                Dosya yeniden oluşturuluyor…
               </span>
             </div>
           )}
@@ -274,24 +228,14 @@ function StatCard({
   icon: Icon,
   label,
   value,
-  tone,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
-  tone: 'default' | 'news';
 }) {
   return (
-    <Card
-      className={`flex items-center gap-3 p-3 ${tone === 'news' ? 'border-news/40 bg-news/[0.06]' : ''}`}
-    >
-      <div
-        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md ${
-          tone === 'news'
-            ? 'bg-news/10 text-news'
-            : 'bg-muted text-muted-foreground'
-        }`}
-      >
+    <Card className="flex items-center gap-3 p-3">
+      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0">

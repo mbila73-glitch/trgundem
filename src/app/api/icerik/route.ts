@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
 
 const FILE_PATH = path.join(process.cwd(), 'download', 'rss_icerik.md');
 
-// GET /api/icerik              -> serve the markdown file as plain text
+// GET /api/icerik              -> serve the markdown file as plain text (download)
 // GET /api/icerik?format=json  -> return stats + first 8 KB preview
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
     const content = readFileSync(FILE_PATH, 'utf-8');
     const totalArticles = await db.article.count();
     const totalSources = await db.source.count();
-    const summarizedCount = await db.article.count({
-      where: { summary: { not: null } },
+    const withDescription = await db.article.count({
+      where: { description: { not: null } },
     });
     const preview = content.slice(0, 8 * 1024);
     return NextResponse.json({
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       lineCount: content.split('\n').length,
       totalArticles,
       totalSources,
-      summarizedCount,
+      withDescription,
       preview,
     });
   }
@@ -54,44 +54,27 @@ export async function GET(req: NextRequest) {
   });
 }
 
-// POST /api/icerik
-//   body: { summarize?: boolean, limit?: number }
-//   - summarize=true  -> run summarize-batch script then rebuild file
-//   - summarize=false (default) -> rebuild file only
-export async function POST(req: NextRequest) {
-  let body: unknown = {};
-  try {
-    body = await req.json();
-  } catch {
-    /* empty body is fine */
-  }
-  const data = body as { summarize?: boolean; limit?: number };
+// POST /api/icerik  -> rebuild the markdown file from current DB state
+// (no AI summarization; just the RSS descriptions)
+export async function POST() {
+  const scriptPath = path.join(process.cwd(), 'scripts', 'build-rss-icerik.ts');
 
-  const scriptName = data.summarize
-    ? 'summarize-batch.ts'
-    : 'build-rss-icerik.ts';
-  const scriptPath = path.join(process.cwd(), 'scripts', scriptName);
-
-  let args: string[] = [];
-  if (data.summarize && typeof data.limit === 'number') {
-    args = [String(data.limit)];
-  }
-
-  // Spawn detached child so dev server stays responsive
-  const cmd = args.length > 0 ? ['run', scriptPath, ...args] : ['run', scriptPath];
-  const child = spawn('setsid', ['bash', '-c', `exec bun ${cmd.join(' ')}`], {
-    detached: true,
-    stdio: 'ignore',
-    cwd: process.cwd(),
-  });
+  // Spawn a fully detached bun script via setsid so dev server stays responsive
+  const child = spawn(
+    'setsid',
+    ['bash', '-c', `exec bun run ${scriptPath}`],
+    {
+      detached: true,
+      stdio: 'ignore',
+      cwd: process.cwd(),
+    },
+  );
   child.unref();
 
   return NextResponse.json(
     {
       ok: true,
-      message: data.summarize
-        ? `Arka planda AI özetleme + dosya yeniden oluşturma başlatıldı (limit: ${data.limit ?? 150})`
-        : 'Arka planda dosya yeniden oluşturma başlatıldı',
+      message: 'Arka planda dosya yeniden oluşturuluyor',
       childPid: child.pid,
     },
     { status: 202 },
