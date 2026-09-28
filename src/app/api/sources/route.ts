@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { seedDefaultSourcesIfEmpty, refreshAllActiveSources } from '@/lib/rss';
+import {
+  seedDefaultSourcesIfEmpty,
+  replaceAllSourcesFromDefaults,
+  refreshAllActiveSources,
+  getRefreshStatus,
+} from '@/lib/rss';
 
 export async function GET() {
   const sources = await db.source.findMany({
@@ -23,14 +28,39 @@ export async function POST(req: NextRequest) {
   const action = req.nextUrl.searchParams.get('action');
 
   if (action === 'refresh-all') {
-    const results = await refreshAllActiveSources();
-    return NextResponse.json({ results });
+    const status = getRefreshStatus();
+    if (status.running) {
+      return NextResponse.json(
+        { ok: false, message: 'Zaten sürüyor', status },
+        { status: 409 },
+      );
+    }
+    void refreshAllActiveSources().catch((e) => {
+      console.error('Background refresh failed:', e);
+    });
+    return NextResponse.json(
+      { ok: true, message: 'Arka plan yenilemesi başlatıldı' },
+      { status: 202 },
+    );
   }
 
   if (action === 'seed') {
     const added = await seedDefaultSourcesIfEmpty();
-    const refreshResults = added > 0 ? await refreshAllActiveSources() : [];
-    return NextResponse.json({ added, refreshResults });
+    if (added > 0) {
+      void refreshAllActiveSources().catch((e) => {
+        console.error('Background refresh failed:', e);
+      });
+    }
+    return NextResponse.json({ added });
+  }
+
+  if (action === 'replace-defaults') {
+    const result = await replaceAllSourcesFromDefaults();
+    // Kick off a background refresh after seeding the catalog
+    void refreshAllActiveSources().catch((e) => {
+      console.error('Background refresh failed:', e);
+    });
+    return NextResponse.json(result);
   }
 
   let body: unknown;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Loader2,
   RefreshCw,
@@ -9,6 +9,7 @@ import {
   Newspaper,
   Power,
   Clock,
+  FolderTree,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,13 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,11 +44,14 @@ type Props = {
   onSourcesChange?: () => void;
 };
 
+const ALL = '__all__';
+
 export function SourcesPanel({ onSourcesChange }: Props) {
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>(ALL);
 
   const load = async () => {
     setLoading(true);
@@ -58,6 +69,33 @@ export function SourcesPanel({ onSourcesChange }: Props) {
   useEffect(() => {
     load();
   }, []);
+
+  const categories = useMemo(() => {
+    const map = new Map<string, { count: number; articles: number }>();
+    for (const s of sources) {
+      const cat = s.category ?? '(Diğer)';
+      const prev = map.get(cat) ?? { count: 0, articles: 0 };
+      map.set(cat, {
+        count: prev.count + 1,
+        articles: prev.articles + (s._count?.articles ?? 0),
+      });
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+  }, [sources]);
+
+  const filtered = useMemo(() => {
+    if (categoryFilter === ALL) return sources;
+    return sources.filter((s) => (s.category ?? '(Diğer)') === categoryFilter);
+  }, [sources, categoryFilter]);
+
+  const totalArticles = useMemo(
+    () =>
+      sources.reduce(
+        (acc, s) => acc + (s._count?.articles ?? 0),
+        0,
+      ),
+    [sources],
+  );
 
   const handleToggle = async (s: Source, active: boolean) => {
     setBusyId(s.id);
@@ -122,40 +160,91 @@ export function SourcesPanel({ onSourcesChange }: Props) {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-      <header className="mb-5 flex items-end justify-between gap-3">
+      <header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold tracking-tight">Kaynaklar</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            RSS beslemelerini ekleyin, kapatın veya tek tek yenileyin.
-            Tüm haberler bu kaynaklardan çekilir.
+            {sources.length} kaynak · {totalArticles.toLocaleString('tr-TR')}{' '}
+            makale · {categories.length} kategori
           </p>
         </div>
-        <AddSourceDialog onAdded={() => { load(); onSourcesChange?.(); }} />
+        <div className="flex items-center gap-2">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[200px]" aria-label="Kategori filtrele">
+              <FolderTree className="mr-1.5 h-3.5 w-3.5" />
+              <SelectValue placeholder="Kategori seç" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Tüm kategoriler</SelectItem>
+              {categories.map(([cat, info]) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat} ({info.count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <AddSourceDialog
+            onAdded={() => {
+              load();
+              onSourcesChange?.();
+            }}
+          />
+        </div>
       </header>
 
+      {/* Category chips for quick filter */}
+      {!loading && categories.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => setCategoryFilter(ALL)}
+            className={`rounded-md border px-2.5 py-1 text-[11px] font-medium transition ${
+              categoryFilter === ALL
+                ? 'border-foreground/30 bg-secondary text-secondary-foreground'
+                : 'border-border bg-background text-muted-foreground hover:border-foreground/20'
+            }`}
+          >
+            Tümü ({sources.length})
+          </button>
+          {categories.map(([cat, info]) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategoryFilter(cat)}
+              className={`rounded-md border px-2.5 py-1 text-[11px] font-medium transition ${
+                categoryFilter === cat
+                  ? 'border-news/40 bg-news/10 text-news'
+                  : 'border-border bg-background text-muted-foreground hover:border-foreground/20'
+              }`}
+            >
+              {cat} ({info.count} · {info.articles.toLocaleString('tr-TR')})
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 12 }).map((_, i) => (
             <Skeleton key={i} className="h-36 w-full rounded-xl" />
           ))}
         </div>
-      ) : sources.length === 0 ? (
-        <Card className="flex flex-col items-center gap-3 p-10 text-center">
-          <Newspaper className="h-10 w-10 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Henüz kaynak yok. İlk RSS kaynağınızı ekleyin.
-          </p>
-          <AddSourceDialog onAdded={() => { load(); onSourcesChange?.(); }} />
-        </Card>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {sources.map((s) => (
+      ) : filtered.length === 0 ? (
+          <Card className="flex flex-col items-center gap-3 p-10 text-center">
+            <Newspaper className="h-10 w-10 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Bu kategoride kaynak yok.
+            </p>
+          </Card>
+        ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filtered.map((s) => (
             <Card
               key={s.id}
               className={`flex flex-col gap-3 p-4 ${s.active ? '' : 'opacity-60'}`}
             >
               <div className="flex items-start gap-3">
-                <Avatar className="h-9 w-9">
+                <Avatar className="h-9 w-9 flex-shrink-0">
                   <AvatarFallback
                     className={`text-xs font-semibold ${colorForName(s.name)}`}
                   >
@@ -164,17 +253,9 @@ export function SourcesPanel({ onSourcesChange }: Props) {
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="truncate text-sm font-semibold">
+                    <h3 className="truncate text-sm font-semibold" title={s.name}>
                       {s.name}
                     </h3>
-                    {s.category && (
-                      <Badge
-                        variant="secondary"
-                        className="text-[9px] uppercase tracking-wide"
-                      >
-                        {s.category}
-                      </Badge>
-                    )}
                   </div>
                   <a
                     href={s.url}
@@ -185,13 +266,21 @@ export function SourcesPanel({ onSourcesChange }: Props) {
                     <ExternalLink className="h-3 w-3" />
                     <span className="truncate">{hostFromUrl(s.url)}</span>
                   </a>
+                  {s.category && (
+                    <Badge
+                      variant="secondary"
+                      className="mt-1 text-[9px] uppercase tracking-wide"
+                    >
+                      {s.category}
+                    </Badge>
+                  )}
                 </div>
               </div>
 
               <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Newspaper className="h-3 w-3" />
-                  {s._count.articles} haber
+                  {(s._count?.articles ?? 0).toLocaleString('tr-TR')} haber
                 </span>
                 {s.lastFetched && (
                   <span className="inline-flex items-center gap-1">
@@ -243,9 +332,7 @@ export function SourcesPanel({ onSourcesChange }: Props) {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Kaynağı sil?
-                        </AlertDialogTitle>
+                        <AlertDialogTitle>Kaynağı sil?</AlertDialogTitle>
                         <AlertDialogDescription>
                           <strong>{s.name}</strong> kaynağı ve bu kaynağa ait
                           tüm haberler kalıcı olarak silinecek.

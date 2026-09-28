@@ -103,16 +103,89 @@ export async function refreshSource(sourceId: string): Promise<RefreshResult> {
   return refreshInternal(source);
 }
 
+// --- Refresh progress tracker (module-level, single shared instance) ---
+export type RefreshStatus = {
+  running: boolean;
+  startedAt: string | null;
+  finishedAt: string | null;
+  totalSources: number;
+  processedSources: number;
+  totalAdded: number;
+  totalFetched: number;
+  failedSources: number;
+  errors: Array<{ sourceName: string; error: string }>;
+};
+
+let refreshStatus: RefreshStatus = {
+  running: false,
+  startedAt: null,
+  finishedAt: null,
+  totalSources: 0,
+  processedSources: 0,
+  totalAdded: 0,
+  totalFetched: 0,
+  failedSources: 0,
+  errors: [],
+};
+
+export function getRefreshStatus(): RefreshStatus {
+  return { ...refreshStatus, errors: refreshStatus.errors.slice(-50) };
+}
+
+// Concurrency-bounded parallel refresh to avoid overwhelming the network
+const REFRESH_CONCURRENCY = 8;
+
 export async function refreshAllActiveSources(): Promise<RefreshResult[]> {
   const sources = await db.source.findMany({ where: { active: true } });
   if (sources.length === 0) return [];
-  return Promise.all(sources.map((s) => refreshInternal(s).catch((e) => ({
-    sourceId: s.id,
-    sourceName: s.name,
-    fetched: 0,
-    added: 0,
-    error: e instanceof Error ? e.message : String(e),
-  }))));
+
+  refreshStatus = {
+    running: true,
+    startedAt: new Date().toISOString(),
+    finishedAt: null,
+    totalSources: sources.length,
+    processedSources: 0,
+    totalAdded: 0,
+    totalFetched: 0,
+    failedSources: 0,
+    errors: [],
+  };
+
+  const results: RefreshResult[] = [];
+  const queue = sources.slice();
+  const workers: Promise<void>[] = [];
+
+  const worker = async () => {
+    while (queue.length > 0) {
+      const src = queue.shift();
+      if (!src) return;
+      const r = await refreshInternal(src).catch((e: unknown) => ({
+        sourceId: src.id,
+        sourceName: src.name,
+        fetched: 0,
+        added: 0,
+        error: e instanceof Error ? e.message : String(e),
+      }));
+      results.push(r);
+      refreshStatus.processedSources += 1;
+      refreshStatus.totalFetched += r.fetched;
+      refreshStatus.totalAdded += r.added;
+      if (r.error) {
+        refreshStatus.failedSources += 1;
+        refreshStatus.errors.push({ sourceName: r.sourceName, error: r.error });
+      }
+    }
+  };
+
+  for (let i = 0; i < Math.min(REFRESH_CONCURRENCY, sources.length); i += 1) {
+    workers.push(worker());
+  }
+  await Promise.all(workers);
+
+  refreshStatus.running = false;
+  refreshStatus.finishedAt = new Date().toISOString();
+
+  return results;
 }
 
 async function refreshInternal(source: {
@@ -161,7 +234,9 @@ async function refreshInternal(source: {
           : (rawDescription ?? rawContent ?? null);
       const imageUrl = pickImage(item as CustomItem & Record<string, unknown>);
       const author = item.creator || item.author || null;
-      const category = pickCategory(item as CustomItem & Record<string, unknown>);
+      const category =
+        pickCategory(item as CustomItem & Record<string, unknown>) ??
+        source.category;
 
       await db.article.create({
         data: {
@@ -172,7 +247,7 @@ async function refreshInternal(source: {
           description: rawDescription?.slice(0, 600) || null,
           content: content ? content.slice(0, 8000) : null,
           author: author ? String(author).slice(0, 120) : null,
-          category: category ?? source.category,
+          category,
           imageUrl,
           publishedAt,
         },
@@ -202,47 +277,285 @@ async function refreshInternal(source: {
   }
 }
 
-export const DEFAULT_SOURCES = [
-  {
-    name: 'BBC Türkçe',
-    url: 'https://feeds.bbci.co.uk/turkce/rss.xml',
-    category: 'Genel',
-  },
-  {
-    name: 'NTV',
-    url: 'https://www.ntv.com.tr/rss/anasayfa.rss',
-    category: 'Genel',
-  },
-  {
-    name: 'TRT Haber',
-    url: 'https://www.trthaber.com/rss.xml',
-    category: 'Genel',
-  },
-  {
-    name: 'Hürriyet',
-    url: 'https://www.hurriyet.com.tr/rss/anasayfa',
-    category: 'Genel',
-  },
-  {
-    name: 'Cumhuriyet',
-    url: 'https://www.cumhuriyet.com.tr/rss/last.xml',
-    category: 'Genel',
-  },
-  {
-    name: 'The Guardian - World',
-    url: 'https://www.theguardian.com/world/rss',
-    category: 'Dünya',
-  },
-] as const;
+// --- Categorized source catalog (155 sources across 6 categories) ---
+// Name is auto-derived from URL when not provided.
+const SKIP_PARTS = new Set([
+  'com',
+  'co',
+  'org',
+  'net',
+  'gov',
+  'edu',
+  'tr',
+  'tv',
+  'info',
+  'biz',
+  'kibris',
+  'cy',
+]);
+
+export function deriveNameFromUrl(url: string): string {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return url;
+  }
+  const host = u.hostname.replace(/^www\./, '').toLowerCase();
+  const parts = host.split('.');
+  let base = host;
+  for (let i = parts.length - 1; i >= 0; i -= 1) {
+    if (!SKIP_PARTS.has(parts[i])) {
+      base = parts[i];
+      break;
+    }
+  }
+  const baseName = base.charAt(0).toUpperCase() + base.slice(1);
+
+  // Try meaningful path segment or ?cat= query param
+  const segs = u.pathname.split('/').filter(Boolean);
+  let suffix = '';
+  for (let i = segs.length - 1; i >= 0; i -= 1) {
+    let seg = segs[i].replace(/\.(rss|xml|php|aspx?|html?)$/i, '');
+    seg = seg
+      .replace(/^feeds-rss-category-/, '')
+      .replace(/^feeds-rss-/, '')
+      .replace(/^rss-/, '')
+      .replace(/^rss_/, '')
+      .replace(/^category-/, '')
+      .replace(/^publisher-daily/, 'daily')
+      .replace(/^_articles$/, '')
+      .replace(/_articles$/, '')
+      .replace(/[-_]/g, ' ')
+      .trim();
+    if (seg && seg.length > 0 && seg.length < 40) {
+      suffix = seg;
+      break;
+    }
+  }
+
+  const cat = u.searchParams.get('cat');
+  if (cat && (!suffix || suffix.toLowerCase() === 'default' || suffix.toLowerCase() === 'all')) {
+    suffix = cat;
+  }
+  if (suffix && suffix.toLowerCase() !== 'rss' && suffix.toLowerCase() !== 'feed' && suffix.toLowerCase() !== 'default' && suffix.toLowerCase() !== 'all') {
+    const cap = suffix.charAt(0).toUpperCase() + suffix.slice(1);
+    return `${baseName} · ${cap}`;
+  }
+  return baseName;
+}
+
+// Each entry: { url, category, name? } — name is optional, auto-derived when missing
+export const DEFAULT_SOURCES: Array<{ url: string; category: string; name?: string }> = [
+  // --- 1. Güncel ---
+  { url: 'https://www.aa.com.tr/tr/rss/default?cat=guncel', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/sondakika.rss', category: 'Güncel' },
+  { url: 'https://www.sozcu.com.tr/rss/all.xml', category: 'Güncel' },
+  { url: 'https://www.cumhuriyet.com.tr/rss/son_dakika.xml', category: 'Güncel' },
+  { url: 'https://www.birgun.net/rss/home', category: 'Güncel' },
+  { url: 'https://www.evrensel.net/rss/haber.xml', category: 'Güncel' },
+  { url: 'https://www.gazeteduvar.com.tr/export/rss', category: 'Güncel' },
+  { url: 'https://www.diken.com.tr/feed/', category: 'Güncel' },
+  { url: 'https://medyascope.tv/feed/', category: 'Güncel' },
+  { url: 'https://www.odatv.com/rss.xml', category: 'Güncel' },
+  { url: 'https://halktv.com.tr/service/rss.php', category: 'Güncel' },
+  { url: 'https://kisadalga.net/service/rss.php', category: 'Güncel' },
+  { url: 'https://10haber.net/feed/', category: 'Güncel' },
+  { url: 'https://artigercek.com/service/rss.php', category: 'Güncel' },
+  { url: 'https://www.krttv.com.tr/rss', category: 'Güncel' },
+  { url: 'https://ilketv.com.tr/feed/', category: 'Güncel' },
+  { url: 'https://www.yenicaggazetesi.com.tr/service/rss.php', category: 'Güncel' },
+  { url: 'https://www.karar.com/service/rss.php', category: 'Güncel' },
+  { url: 'https://www.aydinlik.com.tr/feed', category: 'Güncel' },
+  { url: 'https://www.ulusal.com.tr/rss', category: 'Güncel' },
+  { url: 'https://www.ntv.com.tr/gundem.rss', category: 'Güncel' },
+  { url: 'https://www.ntv.com.tr/son-dakika.rss', category: 'Güncel' },
+  { url: 'https://www.cnnturk.com/feed/rss/all/news', category: 'Güncel' },
+  { url: 'https://www.haberturk.com/rss', category: 'Güncel' },
+  { url: 'https://www.hurriyet.com.tr/rss/anasayfa', category: 'Güncel' },
+  { url: 'https://www.milliyet.com.tr/rss/rssnew/sondakikarss.xml', category: 'Güncel' },
+  { url: 'https://haberglobal.com.tr/rss', category: 'Güncel' },
+  { url: 'https://www.ensonhaber.com/rss/ensonhaber.xml', category: 'Güncel' },
+  { url: 'https://www.mynet.com/haber/rss/sondakika', category: 'Güncel' },
+  { url: 'https://www.internethaber.com/rss', category: 'Güncel' },
+  { url: 'https://www.gzt.com/rss', category: 'Güncel' },
+  { url: 'https://www.dirilispostasi.com/rss', category: 'Güncel' },
+  { url: 'https://www.aykiri.com.tr/rss.xml', category: 'Güncel' },
+  { url: 'https://dogruhaber.com.tr/rss', category: 'Güncel' },
+  { url: 'https://www.enpolitik.com/rss.xml', category: 'Güncel' },
+  { url: 'https://www.gundemkibris.com/rss', category: 'Güncel' },
+  { url: 'https://kibrisgazetesi.com.tr/rss.xml', category: 'Güncel' },
+  { url: 'https://www.nehaberkibris.com/rss/genel-0', category: 'Güncel' },
+  { url: 'https://yeniceida.com/rss', category: 'Güncel' },
+  { url: 'https://www.gercekgundem.com/rss', category: 'Güncel' },
+  { url: 'https://www.tele1.com.tr/rss', category: 'Güncel' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-sozcu', category: 'Güncel' },
+  { url: 'https://www.gazetepencere.com/service/rss.php', category: 'Güncel' },
+  { url: 'https://yetkinreport.com/feed/', category: 'Güncel' },
+  { url: 'https://www.demokrathaber.org/rss', category: 'Güncel' },
+  { url: 'https://daktilo1984.com/feed/', category: 'Güncel' },
+  { url: 'https://www.ayandon.com.tr/rss.xml', category: 'Güncel' },
+  { url: 'https://www.dijitalgaste.com/rss', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/sondakika_articles.rss', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/manset_articles.rss', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/turkiye_articles.rss', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/gundem_articles.rss', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/dunya_articles.rss', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/yasam_articles.rss', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/egitim_articles.rss', category: 'Güncel' },
+  { url: 'https://www.trthaber.com/guncel_articles.rss', category: 'Güncel' },
+
+  // --- 2. Kamu / Resmi ---
+  { url: 'https://www.kamudanhaber.net/rss', category: 'Kamu / Resmi' },
+  { url: 'https://www.ajanskamu.net/service/rss.php', category: 'Kamu / Resmi' },
+  { url: 'https://www.hukukihaber.net/rss', category: 'Kamu / Resmi' },
+  { url: 'https://www.iscihaber.net/rss/news', category: 'Kamu / Resmi' },
+  { url: 'https://www.isindetayi.com/rss/gundem', category: 'Kamu / Resmi' },
+  { url: 'http://www.kultur.gov.tr/rss?Anah=1&Tip=2', category: 'Kamu / Resmi' },
+  { url: 'http://www.kultur.gov.tr/rss?Anah=89&Tip=2', category: 'Kamu / Resmi' },
+
+  // --- 3. Ekonomi / Finans ---
+  { url: 'https://www.dunya.com/rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.ekonomim.com/export/rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.ekonomist.com.tr/rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.forbes.com.tr/rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.fortuneturkey.com/feed', category: 'Ekonomi / Finans' },
+  { url: 'https://www.ekonomigazetesi.com/rss.xml', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.investing.com/rss/market_overview.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-ekonomi', category: 'Ekonomi / Finans' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-borsa', category: 'Ekonomi / Finans' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-finans', category: 'Ekonomi / Finans' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-emlak', category: 'Ekonomi / Finans' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-emtia', category: 'Ekonomi / Finans' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-kripto', category: 'Ekonomi / Finans' },
+  { url: 'https://www.trthaber.com/ekonomi_articles.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.paradergi.com.tr/rss/finans.xml', category: 'Ekonomi / Finans' },
+  { url: 'https://www.patronlardunyasi.com/rss/finans', category: 'Ekonomi / Finans' },
+  { url: 'https://www.patronlardunyasi.com/rss/ekonomi', category: 'Ekonomi / Finans' },
+  { url: 'https://www.bloomberght.com/rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.cnbce.com/rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.cnnturk.com/feed/rss/ekonomi/news', category: 'Ekonomi / Finans' },
+  { url: 'https://www.haberturk.com/rss/ekonomi.xml', category: 'Ekonomi / Finans' },
+  { url: 'https://www.ntv.com.tr/ekonomi.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.ntv.com.tr/ntvpara.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.euronews.com/rss?level=theme&name=economy', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.euronews.com/rss?level=theme&name=markets', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.investing.com/rss/news.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.investing.com/rss/forex.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.investing.com/rss/bonds.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.investing.com/rss/commodities.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.investing.com/rss/stock.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://tr.investing.com/rss/302.rss', category: 'Ekonomi / Finans' },
+  { url: 'https://www.foreks.com/rss/', category: 'Ekonomi / Finans' },
+
+  // --- 4. Bilim / Teknoloji ---
+  { url: 'https://www.teknoblog.com/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.teknolojioku.com/export/rss', category: 'Bilim / Teknoloji' },
+  { url: 'https://mobidictum.com/tr/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://tr.ign.com/feed.xml', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.merlininkazani.com/rss', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.turunculevye.com/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.donanimhaber.com/rss/tum/', category: 'Bilim / Teknoloji' },
+  { url: 'https://techolay.net/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.chip.com.tr/rss', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.teknoburada.net/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://shiftdelete.net/feed', category: 'Bilim / Teknoloji' },
+  { url: 'https://donanimgunlugu.com/feed', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.webtekno.com/rss.xml', category: 'Bilim / Teknoloji' },
+  { url: 'https://webrazzi.com/feed', category: 'Bilim / Teknoloji' },
+  { url: 'https://webrazzi.com/kategori/dijital/feed', category: 'Bilim / Teknoloji' },
+  { url: 'https://webrazzi.com/kategori/yapay-zeka/feed', category: 'Bilim / Teknoloji' },
+  { url: 'https://webrazzi.com/kategori/teknoloji/feed', category: 'Bilim / Teknoloji' },
+  { url: 'https://evrimagaci.org/rss.xml', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.megabayt.com/rss/news', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.sihirlielma.com/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.ahaber.com.tr/rss/teknoloji.xml', category: 'Bilim / Teknoloji' },
+  { url: 'https://digitalreport.com.tr/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.technopat.net/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://news.samsung.com/tr/feed', category: 'Bilim / Teknoloji' },
+  { url: 'https://teknodiot.com/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://hwp.com.tr/feed', category: 'Bilim / Teknoloji' },
+  { url: 'https://www.log.com.tr/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://turk-internet.com/feed/', category: 'Bilim / Teknoloji' },
+  { url: 'https://swipeline.co/feed/', category: 'Bilim / Teknoloji' },
+
+  // --- 5. Kültür / Sanat ---
+  { url: 'https://bianet.org/biamag.rss', category: 'Kültür / Sanat' },
+  { url: 'https://www.agos.com.tr/rss', category: 'Kültür / Sanat' },
+  { url: 'https://www.trthaber.com/kultur_sanat_articles.rss', category: 'Kültür / Sanat' },
+  { url: 'https://listelist.com/feed/', category: 'Kültür / Sanat' },
+  { url: 'https://kayiprihtim.com/feed/', category: 'Kültür / Sanat' },
+
+  // --- 6. Spor / Magazin ---
+  { url: 'https://www.fotomac.com.tr/rss/anasayfa.xml', category: 'Spor / Magazin' },
+  { url: 'https://www.trthaber.com/spor_articles.rss', category: 'Spor / Magazin' },
+  { url: 'https://www.cnnturk.com/feed/rss/spor/news', category: 'Spor / Magazin' },
+  { url: 'https://onedio.com/Publisher/publisher-daily.rss', category: 'Spor / Magazin' },
+  { url: 'https://www.trthaber.com/saglik_articles.rss', category: 'Spor / Magazin' },
+  { url: 'https://www.sozcu.com.tr/rss/saglik.xml', category: 'Spor / Magazin' },
+  { url: 'https://www.ntv.com.tr/saglik.rss', category: 'Spor / Magazin' },
+  { url: 'https://www.sabah.com.tr/rss/magazin.xml', category: 'Spor / Magazin' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-spor', category: 'Spor / Magazin' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-futbol', category: 'Spor / Magazin' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-basketbol', category: 'Spor / Magazin' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-voleybol', category: 'Spor / Magazin' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-diger-sporlar', category: 'Spor / Magazin' },
+  { url: 'https://www.aa.com.tr/tr/rss/default?cat=spor', category: 'Spor / Magazin' },
+  { url: 'https://www.fotomac.com.tr/rss/son24saat.xml', category: 'Spor / Magazin' },
+  { url: 'https://www.fotomac.com.tr/rss/SuperLig.xml', category: 'Spor / Magazin' },
+  { url: 'https://basketdergisi.com/feed', category: 'Spor / Magazin' },
+  { url: 'https://www.ntvspor.net/rss/kategori/futbol', category: 'Spor / Magazin' },
+  { url: 'https://www.fotospor.com/feed/rss_sondakika.xml', category: 'Spor / Magazin' },
+  { url: 'https://www.sozcu.com.tr/feeds-rss-category-magazin', category: 'Spor / Magazin' },
+  { url: 'https://www.haberturk.com/rss/magazin.xml', category: 'Spor / Magazin' },
+  { url: 'https://www.harpersbazaar.com.tr/feed/', category: 'Spor / Magazin' },
+  { url: 'https://www.plumemag.com/feed/', category: 'Spor / Magazin' },
+  { url: 'https://www.elele.com.tr/export/rss', category: 'Spor / Magazin' },
+  { url: 'https://www.trendus.com/feed', category: 'Spor / Magazin' },
+  { url: 'https://www.elle.com.tr/rss', category: 'Spor / Magazin' },
+  { url: 'https://guzellikyayinda.com/feed/', category: 'Spor / Magazin' },
+  { url: 'https://istanbullife.com.tr/feed/', category: 'Spor / Magazin' },
+  { url: 'https://livetobloom.com/feed/', category: 'Spor / Magazin' },
+  { url: 'https://www.marieclaire.com.tr/feed/', category: 'Spor / Magazin' },
+  { url: 'https://www.gardiropmagazin.com/feed/', category: 'Spor / Magazin' },
+];
+
+// Used by the one-time seed script (deletes everything, then inserts defaults)
+export async function replaceAllSourcesFromDefaults(): Promise<{
+  deletedSources: number;
+  insertedSources: number;
+  skippedDuplicates: number;
+}> {
+  const deleted = await db.source.deleteMany({});
+  let inserted = 0;
+  let skipped = 0;
+  for (const s of DEFAULT_SOURCES) {
+    const name = s.name ?? deriveNameFromUrl(s.url);
+    try {
+      await db.source.create({
+        data: { name, url: s.url, category: s.category, active: true },
+      });
+      inserted += 1;
+    } catch {
+      skipped += 1;
+    }
+  }
+  return {
+    deletedSources: deleted.count,
+    insertedSources: inserted,
+    skippedDuplicates: skipped,
+  };
+}
 
 export async function seedDefaultSourcesIfEmpty(): Promise<number> {
   const count = await db.source.count();
   if (count > 0) return 0;
   let added = 0;
   for (const s of DEFAULT_SOURCES) {
+    const name = s.name ?? deriveNameFromUrl(s.url);
     try {
       await db.source.create({
-        data: { name: s.name, url: s.url, category: s.category },
+        data: { name, url: s.url, category: s.category },
       });
       added += 1;
     } catch {

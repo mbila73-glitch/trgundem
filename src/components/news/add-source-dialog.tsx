@@ -24,29 +24,39 @@ type Props = {
 
 const POPULAR_SUGGESTIONS: Array<{ name: string; url: string; category: string }> = [
   {
-    name: 'BBC Türkçe',
-    url: 'https://feeds.bbci.co.uk/turkce/rss.xml',
-    category: 'Genel',
+    name: 'Anadolu Ajansı — Gündem',
+    url: 'https://www.aa.com.tr/tr/rss/default?cat=guncel',
+    category: 'Güncel',
   },
   {
-    name: 'TRT Haber',
-    url: 'https://www.trthaber.com/rss.xml',
-    category: 'Genel',
+    name: 'TRT Haber — Sondakika',
+    url: 'https://www.trthaber.com/sondakika.rss',
+    category: 'Güncel',
   },
   {
-    name: 'NTV',
-    url: 'https://www.ntv.com.tr/rss/anasayfa.rss',
-    category: 'Genel',
+    name: 'Sözcü — Tümü',
+    url: 'https://www.sozcu.com.tr/rss/all.xml',
+    category: 'Güncel',
   },
   {
-    name: 'Hürriyet',
-    url: 'https://www.hurriyet.com.tr/rss/anasayfa',
-    category: 'Genel',
+    name: 'Bloomberg HT',
+    url: 'https://www.bloomberght.com/rss',
+    category: 'Ekonomi / Finans',
   },
   {
-    name: 'The Guardian - World',
-    url: 'https://www.theguardian.com/world/rss',
-    category: 'Dünya',
+    name: 'Webrazzi — Teknoloji',
+    url: 'https://webrazzi.com/kategori/teknoloji/feed',
+    category: 'Bilim / Teknoloji',
+  },
+  {
+    name: 'Evrim Ağacı',
+    url: 'https://evrimagaci.org/rss.xml',
+    category: 'Bilim / Teknoloji',
+  },
+  {
+    name: 'NTV Spor — Futbol',
+    url: 'https://www.ntvspor.net/rss/kategori/futbol',
+    category: 'Spor / Magazin',
   },
 ];
 

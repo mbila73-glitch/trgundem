@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { SiteHeader, type Tab } from '@/components/news/site-header';
@@ -10,11 +10,18 @@ import { Button } from '@/components/ui/button';
 
 type Stats = { totalSources: number; totalArticles: number };
 
+const POLL_INTERVAL_MS = 4000;
+const POLL_MAX_DURATION_MS = 90_000; // stop polling after this long
+
 export default function Home() {
   const [tab, setTab] = useState<Tab>('feed');
   const [refreshing, setRefreshing] = useState(false);
   const [refreshSignal, setRefreshSignal] = useState(0);
   const [stats, setStats] = useState<Stats | null>(null);
+  const pollAbort = useRef<AbortController | null>(null);
+  const pollStartTs = useRef<number>(0);
+  const lastArticleCount = useRef<number>(0);
+  const stableSince = useRef<number>(0);
 
   const loadStats = useCallback(async () => {
     try {
@@ -29,14 +36,68 @@ export default function Home() {
           0,
         ) ?? 0;
       setStats({ totalSources, totalArticles });
+      return { totalSources, totalArticles };
     } catch {
-      /* ignore stats errors */
+      return null;
     }
   }, []);
 
   useEffect(() => {
     loadStats();
   }, [loadStats]);
+
+  // Polling loop: continues until either (a) max duration is reached,
+  // (b) article count stops growing for 2 consecutive polls.
+  const poll = useCallback(async () => {
+    const controller = new AbortController();
+    pollAbort.current = controller;
+    pollStartTs.current = Date.now();
+    lastArticleCount.current = stats?.totalArticles ?? 0;
+    stableSince.current = 0;
+
+    const tick = async () => {
+      if (controller.signal.aborted) return;
+      const elapsed = Date.now() - pollStartTs.current;
+      if (elapsed > POLL_MAX_DURATION_MS) {
+        stopPolling('Zaman aşımı');
+        return;
+      }
+      const r = await loadStats();
+      if (!r) return;
+      if (r.totalArticles === lastArticleCount.current) {
+        stableSince.current += 1;
+        if (stableSince.current >= 2) {
+          stopPolling('Tamamlandı');
+          return;
+        }
+      } else {
+        stableSince.current = 0;
+        lastArticleCount.current = r.totalArticles;
+      }
+      setTimeout(tick, POLL_INTERVAL_MS);
+    };
+    setTimeout(tick, POLL_INTERVAL_MS);
+  }, [loadStats, stats?.totalArticles]);
+
+  const stopPolling = useCallback(
+    async (reason: 'Tamamlandı' | 'Zaman aşımı') => {
+      if (pollAbort.current) {
+        pollAbort.current.abort();
+        pollAbort.current = null;
+      }
+      setRefreshing(false);
+      const r = await loadStats();
+      if (r) {
+        toast.success(
+          `${reason} · ${r.totalArticles.toLocaleString('tr-TR')} makale mevcut`,
+        );
+      } else {
+        toast.success(reason);
+      }
+      setRefreshSignal((s) => s + 1);
+    },
+    [loadStats],
+  );
 
   const handleRefreshAll = useCallback(async () => {
     setRefreshing(true);
@@ -46,63 +107,37 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
       });
       const json = (await r.json()) as {
-        results?: {
-          sourceName: string;
-          added: number;
-          fetched: number;
-          error?: string;
-        }[];
+        ok?: boolean;
+        message?: string;
         error?: string;
       };
-      if (!r.ok) throw new Error(json.error || 'Yenileme başarısız');
-      const results = json.results ?? [];
-      const totalAdded = results.reduce((acc, x) => acc + x.added, 0);
-      const failed = results.filter((x) => x.error);
-      toast.success(
-        `${results.length} kaynak yenilendi · ${totalAdded} yeni haber çekildi`,
-      );
-      if (failed.length > 0) {
-        toast.warning(
-          `${failed.length} kaynak başarısız: ${failed
-            .slice(0, 3)
-            .map((x) => x.sourceName)
-            .join(', ')}`,
-        );
-      }
-      setRefreshSignal((s) => s + 1);
-      await loadStats();
+      if (!r.ok) throw new Error(json.error || 'Yenileme başlatılamadı');
+      toast.success('Arka plan yenilemesi başlatıldı');
+      // Start polling for progress
+      void poll();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Yenileme hatası');
-    } finally {
       setRefreshing(false);
     }
-  }, [loadStats]);
+  }, [poll]);
 
   const handleInitialSeed = useCallback(async () => {
     setRefreshing(true);
     try {
-      const r = await fetch('/api/sources?action=seed', { method: 'POST' });
-      const json = (await r.json()) as {
-        added?: number;
-        refreshResults?: { added: number; sourceName: string; error?: string }[];
-      };
-      const added = json.added ?? 0;
-      if (added > 0) {
-        toast.success(`${added} varsayılan kaynak eklendi ve yenilendi`);
-      }
-      const results = json.refreshResults ?? [];
-      const totalNew = results.reduce((acc, x) => acc + x.added, 0);
-      if (totalNew > 0) {
-        toast.message(`${totalNew} yeni haber çekildi`);
-      }
-      setRefreshSignal((s) => s + 1);
-      await loadStats();
+      // Trigger the same refresh-all flow — defaults are already seeded
+      const r = await fetch('/api/feeds/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const json = (await r.json()) as { ok?: boolean; error?: string };
+      if (!r.ok) throw new Error(json.error || 'Yenileme başlatılamadı');
+      toast.success('Arka plan yenilemesi başlatıldı');
+      void poll();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Seed hatası');
-    } finally {
+      toast.error(e instanceof Error ? e.message : 'Başlatma hatası');
       setRefreshing(false);
     }
-  }, [loadStats]);
+  }, [poll]);
 
   const hasSources = (stats?.totalSources ?? 0) > 0;
   const hasArticles = (stats?.totalArticles ?? 0) > 0;
@@ -132,11 +167,11 @@ export default function Home() {
                   RSS kaynaklarınızı bağlayın, AI özetlerinizi hazırlayalım
                 </h1>
                 <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-                  Haber Özet, BBC Türkçe, NTV, TRT Haber, Hürriyet ve The
-                  Guardian gibi popüler RSS kaynaklarından haberleri çeker ve
-                  her birini yapay zeka ile 3 cümlede özetler. Aşağıdaki
-                  butona basarak varsayılan kaynakları ekleyip ilk yenilemeyi
-                  başlatabilirsiniz.
+                  Haber Özet; Güncel, Kamu, Ekonomi, Bilim, Kültür ve Spor
+                  kategorilerinde 160+ RSS kaynağından haberleri çeker ve her
+                  birini yapay zeka ile 3 cümlede özetler. Sağ üstteki
+                  &ldquo;Beslemeleri Yenile&rdquo; butonuna basarak haberleri
+                  çekmeye başlayın.
                 </p>
                 <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Button
@@ -150,14 +185,14 @@ export default function Home() {
                     ) : (
                       <Sparkles className="h-4 w-4" />
                     )}
-                    Varsayılan kaynakları ekle
+                    Haberleri Çek
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setTab('sources')}
                     size="lg"
                   >
-                    Kendi kaynaklarımı ekleyeceğim
+                    Kaynakları Yönet
                   </Button>
                 </div>
               </div>
@@ -172,6 +207,12 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">
                 RSS beslemeleri çekiliyor, lütfen bekleyin…
               </p>
+              {stats && (
+                <p className="text-xs text-muted-foreground tabular-nums">
+                  {stats.totalArticles.toLocaleString('tr-TR')} makale ·{' '}
+                  {stats.totalSources} kaynak
+                </p>
+              )}
             </div>
           </section>
         )}
@@ -188,6 +229,20 @@ export default function Home() {
             )}
           </>
         )}
+
+        {/* When refreshing AND has articles, show live counter banner */}
+        {refreshing && hasArticles && (
+          <div className="sticky bottom-4 z-30 mx-auto w-fit rounded-full border border-news/40 bg-background/95 px-4 py-1.5 text-xs shadow-md backdrop-blur">
+            <span className="inline-flex items-center gap-2 text-news">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Yenileniyor…{' '}
+              <span className="tabular-nums">
+                {(stats?.totalArticles ?? 0).toLocaleString('tr-TR')} makale ·{' '}
+                {stats?.totalSources ?? 0} kaynak
+              </span>
+            </span>
+          </div>
+        )}
       </main>
 
       <footer className="mt-auto border-t border-border bg-muted/30 py-6">
@@ -198,7 +253,7 @@ export default function Home() {
             RSS + AI özetlenen Türkçe haber sitesi
           </p>
           <p>
-            Yapay zeka desteği ile{' '}
+            6 kategori · 160 kaynak · Yapay zeka{' '}
             <span className="text-news">GLM</span> · Next.js 16
           </p>
         </div>
