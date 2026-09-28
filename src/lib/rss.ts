@@ -10,6 +10,7 @@ type CustomItem = {
   content?: string;
   contentSnippet?: string;
   contentEncoded?: string;
+  description?: string;
   creator?: string;
   author?: string;
   categories?: string[] | string;
