@@ -2,9 +2,10 @@
 //
 // For every category, group articles by source, then list each article with:
 //   - title (linked to the original article URL)
-//   - published time, author, source link
-//   - AI summary (if generated) or a "(henüz oluşturulmadı)" placeholder
-//   - short description snippet
+//   - published time, author, category, source link
+//   - short description snippet (taken verbatim from the RSS feed)
+//
+// AI summaries are intentionally NOT included at this stage.
 //
 // Run: bun /home/z/my-project/scripts/build-rss-icerik.ts
 
@@ -50,23 +51,25 @@ async function main() {
 
   const totalArticles = await db.article.count();
   const totalSources = await db.source.count();
-  const summarizedCount = await db.article.count({
-    where: { summary: { not: null } },
+  const withDescription = await db.article.count({
+    where: { description: { not: null } },
   });
 
   console.log(
-    `Makale: ${totalArticles}, Kaynak: ${totalSources}, Özetlenen: ${summarizedCount}`,
+    `Makale: ${totalArticles}, Kaynak: ${totalSources}, Açıklamalı: ${withDescription}`,
   );
 
   const lines: string[] = [];
   lines.push('# RSS İçerik Derlemesi');
   lines.push('');
-  lines.push('Haber Özet — RSS + AI özetlenen Türkçe haber derlemesi.');
+  lines.push(
+    'RSS kaynaklarından alınan haber derlemesi. Her haberin orijinal kısa açıklaması ve kaynak linki yer alır.',
+  );
   lines.push('');
   lines.push(`- **Oluşturulma:** ${format(new Date(), 'd MMM yyyy HH:mm', { locale: tr })}`);
   lines.push(`- **Toplam makale:** ${totalArticles}`);
   lines.push(`- **Toplam kaynak:** ${totalSources} (6 kategori)`);
-  lines.push(`- **AI özetlenen makale:** ${summarizedCount}`);
+  lines.push(`- **Açıklamalı makale:** ${withDescription}`);
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -127,22 +130,14 @@ async function main() {
           `- **Kaynak:** [${escapeMd(a.source?.name ?? 'Bilinmiyor')}](${a.source?.url ?? ''})`,
         );
         lines.push('');
-        if (a.summary) {
-          lines.push('**AI Özet:**');
-          lines.push('');
-          lines.push('> ' + a.summary.replace(/\r?\n/g, '\n> '));
-        } else if (a.summaryError) {
-          lines.push('**AI Özet:** _özet oluşturulamadı_');
-          lines.push('');
-          lines.push(`> Hata: ${escapeMd(a.summaryError)}`);
-        } else {
-          lines.push('**AI Özet:** _(henüz oluşturulmadı)_');
-        }
-        lines.push('');
+        // RSS'ten gelen hazır kısa açıklama (AI özet kullanılmaz)
         if (a.description) {
-          const desc = a.description.slice(0, 280);
-          const suffix = a.description.length > 280 ? '…' : '';
+          const desc = a.description.slice(0, 600);
+          const suffix = a.description.length > 600 ? '…' : '';
           lines.push(`_${desc}${suffix}_`);
+          lines.push('');
+        } else {
+          lines.push('_(RSS açıklaması yok)_');
           lines.push('');
         }
         lines.push('---');
