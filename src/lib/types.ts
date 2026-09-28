@@ -55,3 +55,33 @@ export type BatchSummarizeResult = {
   failed: number;
   results: { id: string; ok: boolean; error?: string }[];
 };
+
+export type PublishedArticle = {
+  id: string;
+  aiTitle: string;
+  aiSummary: string;
+  imageUrl: string | null;
+  category: string;
+  wordCount: number;
+  sourceArticleIds: string; // JSON array of Article.id
+  sourceCount: number;
+  earliestPublishedAt: string;
+  latestPublishedAt: string;
+  status: string;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Decoded source article links (used by detail dialog). Populated client-side
+// from a separate fetch when the user opens a published article.
+export type PublishedSourceLink = {
+  id: string;
+  title: string;
+  link: string;
+  description: string | null;
+  imageUrl: string | null;
+  publishedAt: string;
+  sourceName: string;
+  sourceUrl: string;
+};

@@ -22,6 +22,13 @@ export function shortDate(date: string | Date | null | undefined): string {
   return format(d, 'd MMM yyyy', { locale: tr });
 }
 
+export function fmtDate(date: string | Date | null | undefined): string {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  return format(d, 'd MMM yyyy HH:mm', { locale: tr });
+}
+
 export function truncate(text: string | null | undefined, max = 220): string {
   if (!text) return '';
   const trimmed = text.trim();

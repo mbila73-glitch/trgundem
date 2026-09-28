@@ -50,3 +50,26 @@ model Article {
   @@index([category])
   @@index([isFeatured])
 }
+
+// AI-generated published article (paraphrased from multiple source articles).
+// Each row corresponds to a "story" that appeared in 2+ different RSS sources.
+model PublishedArticle {
+  id              String   @id @default(cuid())
+  aiTitle         String
+  aiSummary       String
+  imageUrl        String?
+  category        String
+  wordCount       Int      @default(0)
+  sourceArticleIds String  // JSON array of Article.id (the raw sources used)
+  sourceCount     Int      // number of distinct sources the story appeared in
+  earliestPublishedAt DateTime
+  latestPublishedAt   DateTime
+  status          String   @default("draft")  // "draft" | "published" | "archived"
+  publishedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@index([publishedAt])
+}
