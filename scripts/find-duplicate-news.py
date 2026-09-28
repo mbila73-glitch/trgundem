@@ -139,7 +139,7 @@ def main() -> None:
 
     rows = c.execute(
         """
-        SELECT a.id, a.title, a.link, a.description, a.publishedAt,
+        SELECT a.id, a.sourceId, a.title, a.link, a.description, a.publishedAt,
                a.category, s.name AS sourceName, s.url AS sourceUrl, s.category AS sourceCategory
         FROM Article a
         JOIN Source s ON s.id = a.sourceId
@@ -167,7 +167,7 @@ def main() -> None:
                 link=r["link"] or "",
                 description=desc,
                 published_at=r["publishedAt"],
-                source_id=r["id"],
+                source_id=r["sourceId"],
                 source_name=r["sourceName"] or "",
                 source_url=r["sourceUrl"] or "",
                 category=category,
@@ -183,7 +183,10 @@ def main() -> None:
             inverted[sh].append(i)
     print(f"Benzersiz shingle: {len(inverted)}")
 
-    # Build candidate pairs
+    # Build candidate pairs ONLY across different sources (not within same source).
+    # This avoids treating multiple variations of the same story published by the
+    # same outlet (e.g. Onedio's 12 different horoscope variants with similar
+    # boilerplate description) as a duplicate group.
     candidates: set[tuple[int, int]] = set()
     for sh, idxs in inverted.items():
         if len(idxs) < 2:
@@ -193,10 +196,13 @@ def main() -> None:
                 a_idx, b_idx = idxs[i], idxs[j]
                 if a_idx == b_idx:
                     continue
+                # Skip pairs from the same source
+                if articles[a_idx].source_id == articles[b_idx].source_id:
+                    continue
                 if a_idx > b_idx:
                     a_idx, b_idx = b_idx, a_idx
                 candidates.add((a_idx, b_idx))
-    print(f"Aday çift: {len(candidates):,}")
+    print(f"Aday çift (farklı kaynaklar arası): {len(candidates):,}")
 
     # Compute Jaccard for each candidate pair, union the ones above threshold
     uf = UnionFind(len(articles))
@@ -207,7 +213,9 @@ def main() -> None:
             uf.union(a_idx, b_idx)
             same_count += 1
 
-    print(f"Benzer çift (>=%0%0 jaccard): {same_count:,}".replace("%0%", str(int(SIMILARITY_THRESHOLD * 100))))
+    print(
+        f"Benzer çift (≥ %{int(SIMILARITY_THRESHOLD * 100)} jaccard): {same_count:,}"
+    )
 
     # Group articles by union-find root
     groups: dict[int, list[int]] = defaultdict(list)
@@ -215,13 +223,26 @@ def main() -> None:
         root = uf.find(i)
         groups[root].append(i)
 
-    # Keep only groups with >= 2 articles
-    duplicate_groups = [g for g in groups.values() if len(g) >= MIN_GROUP_SIZE]
-    # Sort by group size desc
-    duplicate_groups.sort(key=len, reverse=True)
+    # Keep only groups with >= 2 DIFFERENT sources
+    duplicate_groups: list[list[int]] = []
+    for group in groups.values():
+        unique_sources = {articles[i].source_id for i in group}
+        if len(unique_sources) >= MIN_GROUP_SIZE:
+            duplicate_groups.append(group)
+    # Sort by number of unique sources desc, then by group size desc
+    duplicate_groups.sort(
+        key=lambda g: (
+            -len({articles[i].source_id for i in g}),
+            -len(g),
+        )
+    )
     print(f"Tekrar eden haber grubu: {len(duplicate_groups)}")
     total_duplicated_articles = sum(len(g) for g in duplicate_groups)
+    total_duplicated_unique_sources = sum(
+        len({articles[i].source_id for i in g}) for g in duplicate_groups
+    )
     print(f"Tekrar eden toplam makale: {total_duplicated_articles}")
+    print(f"Tekrar eden toplam farklı kaynak: {total_duplicated_unique_sources}")
 
     # Build output file
     total_articles = c.execute("SELECT COUNT(*) FROM Article").fetchone()[0]
@@ -247,24 +268,28 @@ def main() -> None:
         f"- **Tekrar eden toplam makale:** {total_duplicated_articles} "
         f"(toplam makalenin %{round(total_duplicated_articles / max(total_articles, 1) * 100, 1)}'i)"
     )
+    lines.append(
+        f"- **Tekrar eden toplam farklı kaynak:** {total_duplicated_unique_sources} "
+        f"(grup başına ortalama {round(total_duplicated_unique_sources / max(len(duplicate_groups), 1), 1)} farklı kaynak)"
+    )
     lines.append("")
     lines.append("---")
     lines.append("")
 
-    # Top 20 most-repeated stories first
-    lines.append("## En Çok Tekrar Eden 20 Haber (Özet)")
+    # Top 20 most-repeated stories first (by unique source count)
+    lines.append("## En Çok Tekrar Eden 20 Haber (Farklı Kaynak Sayısına Göre)")
     lines.append("")
-    lines.append("| # | Tekrar | Kategori | Başlık |")
-    lines.append("|---|---|---|---|")
+    lines.append("| # | Farklı Kaynak | Toplam Makale | Kategori | Başlık |")
+    lines.append("|---|---|---|---|---|")
     for rank, group in enumerate(duplicate_groups[:20], start=1):
-        # Pick the article with the longest description as the representative
         rep_idx = max(group, key=lambda i: len(articles[i].description))
         rep = articles[rep_idx]
+        unique_src = len({articles[i].source_id for i in group})
         title = rep.title.replace("|", "\\|").strip()
-        if len(title) > 80:
-            title = title[:77] + "…"
-        cat = (rep.category or "").replace("|", "\\|")
-        lines.append(f"| {rank} | {len(group)} | {cat} | {title} |")
+        if len(title) > 70:
+            title = title[:67] + "…"
+        cat = (rep.category or "(belirsiz)").replace("|", "\\|")
+        lines.append(f"| {rank} | {unique_src} | {len(group)} | {cat} | {title} |")
     lines.append("")
     lines.append("---")
     lines.append("")
@@ -277,7 +302,10 @@ def main() -> None:
         # Representative: longest description
         rep_idx = max(group, key=lambda i: len(articles[i].description))
         rep = articles[rep_idx]
-        lines.append(f"### [{rank}] {rep.title}  ({len(group)} kaynakta)")
+        unique_src_count = len({articles[i].source_id for i in group})
+        lines.append(
+            f"### [{rank}] {rep.title}  ({unique_src_count} farklı kaynakta, {len(group)} makale)"
+        )
         lines.append("")
         lines.append(f"**Kategori:** {rep.category or '(belirsiz)'}")
         lines.append("")
@@ -285,27 +313,35 @@ def main() -> None:
         lines.append("")
         lines.append(f"> {rep.description.strip()}")
         lines.append("")
-        lines.append(f"**Tekrar sayısı:** {len(group)}")
+        lines.append(f"**Farklı kaynak sayısı:** {unique_src_count}")
+        lines.append(f"**Toplam makale sayısı:** {len(group)}")
         lines.append("")
-        lines.append("**Geçtiği kaynaklar:**")
+        lines.append("**Geçtiği farklı kaynaklar:**")
         lines.append("")
-        # Sort sources by publishedAt asc to follow the story timeline
-        group_articles = sorted(
-            [articles[i] for i in group],
-            key=lambda a: a.published_at or "",
+        # Group by source, show all articles per source together
+        source_groups: dict[str, list[Article]] = defaultdict(list)
+        for i in group:
+            source_groups[articles[i].source_id].append(articles[i])
+        # Sort source groups by earliest publishedAt in each group (chronological)
+        source_groups_list = sorted(
+            source_groups.values(),
+            key=lambda arts: min(a.published_at for a in arts) or "",
         )
-        for i, art in enumerate(group_articles, start=1):
-            host = art.source_url
-            # extract hostname
-            m = re.match(r"https?://(?:www\.)?([^/]+)", art.source_url)
-            if m:
-                host = m.group(1)
-            title_short = art.title if len(art.title) <= 90 else art.title[:87] + "…"
+        src_rank = 0
+        for arts in source_groups_list:
+            src_rank += 1
+            first = arts[0]
+            m = re.match(r"https?://(?:www\.)?([^/]+)", first.source_url)
+            host = m.group(1) if m else first.source_url
             lines.append(
-                f"{i}. [{title_short}]({art.link})  \n"
-                f"   - Kaynak: [{art.source_name}]({art.source_url}) (`{host}`)\n"
-                f"   - Yayın: {fmt_date(art.published_at)}"
+                f"{src_rank}. **{first.source_name}** (`{host}`) — {len(arts)} makale"
             )
+            lines.append("")
+            for j, art in enumerate(sorted(arts, key=lambda a: a.published_at or ""), start=1):
+                title_short = art.title if len(art.title) <= 90 else art.title[:87] + "…"
+                lines.append(
+                    f"   - {j}. [{title_short}]({art.link}) — {fmt_date(art.published_at)}"
+                )
             lines.append("")
         lines.append("---")
         lines.append("")
