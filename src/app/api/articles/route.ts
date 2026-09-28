@@ -9,11 +9,13 @@ export async function GET(req: NextRequest) {
   const category = sp.get('category');
   const q = sp.get('q')?.trim();
   const onlySummarized = sp.get('onlySummarized') === '1';
+  const featured = sp.get('featured');
 
   const where: {
     sourceId?: string;
     category?: string;
     summary?: null | { not: null };
+    isFeatured?: boolean;
     OR?: Array<{
       title?: { contains: string };
       description?: { contains: string };
@@ -23,6 +25,8 @@ export async function GET(req: NextRequest) {
   if (sourceId) where.sourceId = sourceId;
   if (category) where.category = category;
   if (onlySummarized) where.summary = { not: null };
+  if (featured === 'true') where.isFeatured = true;
+  else if (featured === 'false') where.isFeatured = false;
   if (q) {
     where.OR = [
       { title: { contains: q } },

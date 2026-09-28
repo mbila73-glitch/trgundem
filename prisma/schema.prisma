@@ -42,9 +42,11 @@ model Article {
   summary       String?
   summarizedAt  DateTime?
   summaryError  String?
+  isFeatured    Boolean   @default(false)
 
   @@unique([sourceId, guid])
   @@index([publishedAt])
   @@index([sourceId])
   @@index([category])
+  @@index([isFeatured])
 }

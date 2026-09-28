@@ -26,6 +26,7 @@ export type ArticleListItem = {
   summary: string | null;
   summarizedAt: string | null;
   summaryError: string | null;
+  isFeatured?: boolean;
   source: { id: string; name: string; category: string | null };
 };
 
