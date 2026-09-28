@@ -253,7 +253,7 @@ export default function Home() {
             RSS + AI özetlenen Türkçe haber sitesi
           </p>
           <p>
-            6 kategori · 160 kaynak · Yapay zeka{' '}
+            6 kategori · 59 kaynak · Yapay zeka{' '}
             <span className="text-news">GLM</span> · Next.js 16
           </p>
         </div>
