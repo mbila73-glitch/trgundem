@@ -23,11 +23,24 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
 const OUTPUT_PATH = path.join(process.cwd(), 'download', 'rss_ozet.md');
-const SHINGLE_SIZE = 4;
-const SIMILARITY_THRESHOLD = 0.4;
+const SHINGLE1_THRESHOLD = 0.22;
+const SHINGLE2_THRESHOLD = 0.20;
 const MAX_SOURCES_PER_GROUP = 5; // read at most 5 most-recent source articles
 const MIN_SUMMARY_WORDS = 150;
 const MAX_SUMMARY_WORDS = 200;
+
+const TURKISH_STOPWORDS = new Set<string>([
+  've', 'veya', 'ile', 'için', 'gibi', 'kadar', 'sadece', 'daha', 'çok',
+  'az', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz',
+  'on', 'bu', 'şu', 'o', 'ben', 'sen', 'biz', 'siz', 'onlar', 'bizler',
+  'da', 'de', 'ta', 'te', 'ki', 'mi', 'mı', 'mu', 'mü', 'ne', 'nasıl',
+  'niçin', 'niye', 'olan', 'olarak', 'göre', 'sonra', 'önce',
+  'en', 'her', 'hiç', 'ama', 'fakat', 'lakin', 'ancak', 'şey', 'yani',
+  'ise', 'ya', 'veyahut', 'hem', 'değil', 'üzere', 'rağmen', 'kez',
+  'doğru', 'tam', 'üzerine', 'yerine', 'diye', 'beri',
+  'böyle', 'şöyle', 'neden', 'hangi', 'olduğu', 'oldu', 'olacak', 'olmuş',
+  'oluyor', 'bunlar', 'şunlar',
+]);
 
 const CATEGORY_LIMITS: Record<string, number> = {
   'Güncel': 10,
@@ -64,16 +77,19 @@ type RawArticle = {
 
 function normalize(text: string): string {
   if (!text) return '';
-  return text
+  let t = text
     .toLowerCase()
     .replace(/İ/g, 'i')
     .replace(/I/g, 'ı')
     .replace(/[^\w\sçğıöşüâîû]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+  // Remove Turkish stop words to make shingles reflect meaningful terms
+  const words = t.split(' ').filter((w) => w && !TURKISH_STOPWORDS.has(w) && w.length > 2);
+  return words.join(' ');
 }
 
-function shingles(text: string, n = SHINGLE_SIZE): Set<string> {
+function shingles(text: string, n: number): Set<string> {
   const words = text.split(' ').filter(Boolean);
   if (words.length < n) return new Set([words.join(' ')]);
   const out = new Set<string>();
@@ -89,6 +105,13 @@ function jaccard(a: Set<string>, b: Set<string>): number {
   for (const x of a) if (b.has(x)) inter += 1;
   const union = a.size + b.size - inter;
   return union === 0 ? 0 : inter / union;
+}
+
+// Hybrid similarity: sh2 >= SHINGLE2_THRESHOLD OR sh1 >= SHINGLE1_THRESHOLD
+function isSimilar(sh1A: Set<string>, sh2A: Set<string>, sh1B: Set<string>, sh2B: Set<string>): boolean {
+  if (jaccard(sh2A, sh2B) >= SHINGLE2_THRESHOLD) return true;
+  if (jaccard(sh1A, sh1B) >= SHINGLE1_THRESHOLD) return true;
+  return false;
 }
 
 class UnionFind {
@@ -210,33 +233,44 @@ async function summarizeGroup(
   if (chosen.length === 0) return null;
 
   const prompt = buildUserPrompt(chosen);
-  try {
-    const zai = await getZAI();
-    const completion = await zai.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Sen profesyonel bir Türkçe haber editörüsün. Verilen kaynakları okuyarak telif cezası almayacak şekilde özgün bir haber başlığı ve özet üretirsin.',
-        },
-        { role: 'user', content: prompt },
-      ],
-      thinking: { type: 'disabled' },
-      temperature: 0.4,
-    });
-    const text: string = completion?.choices?.[0]?.message?.content ?? '';
-    const parsed = parseAIResponse(text);
-    if (!parsed) {
-      return { title: '', summary: '', error: 'AI yanıtı parse edilemedi' };
+  const MAX_RETRIES = 3;
+  const BASE_DELAY_MS = 5000; // 5s pause between calls to avoid 429
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
+    try {
+      const zai = await getZAI();
+      const completion = await zai.chat.completions.create({
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Sen profesyonel bir Türkçe haber editörüsün. Verilen kaynakları okuyarak telif cezası almayacak şekilde özgün bir haber başlığı ve özet üretirsin.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        thinking: { type: 'disabled' },
+        temperature: 0.4,
+      });
+      const text: string = completion?.choices?.[0]?.message?.content ?? '';
+      const parsed = parseAIResponse(text);
+      if (!parsed) {
+        return { title: '', summary: '', error: 'AI yanıtı parse edilemedi' };
+      }
+      // Pause before next call to avoid rate limit
+      await new Promise((r) => setTimeout(r, BASE_DELAY_MS));
+      return parsed;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes('429') && attempt < MAX_RETRIES - 1) {
+        // Long backoff: 30s, 60s
+        const waitMs = 30000 * (attempt + 1);
+        console.log(`  429 rate limit — ${waitMs / 1000}s bekleniyor (deneme ${attempt + 2}/${MAX_RETRIES})`);
+        await new Promise((r) => setTimeout(r, waitMs));
+        continue;
+      }
+      return { title: '', summary: '', error: msg };
     }
-    return parsed;
-  } catch (e) {
-    return {
-      title: '',
-      summary: '',
-      error: e instanceof Error ? e.message : String(e),
-    };
   }
+  return { title: '', summary: '', error: 'Maksimum deneme aşıldı' };
 }
 
 async function main() {
@@ -257,16 +291,17 @@ async function main() {
   const withShingles = articles
     .map((a) => {
       const norm = normalize(`${a.description ?? ''} ${a.content ?? ''}`);
-      const sh = shingles(norm);
-      return { article: a, sh };
+      const sh1 = shingles(norm, 1);
+      const sh2 = shingles(norm, 2);
+      return { article: a, sh1, sh2 };
     })
-    .filter((x) => x.sh.size > 0);
-  console.log(`İşlenecek (shingle > 0): ${withShingles.length}`);
+    .filter((x) => x.sh2.size > 0);
+  console.log(`İşlenecek (sh2 > 0): ${withShingles.length}`);
 
-  // 2. Inverted index for shingles
+  // 2. Inverted index for 2-gram shingles (smaller set, fewer candidate pairs)
   const inverted = new Map<string, number[]>();
   for (let i = 0; i < withShingles.length; i += 1) {
-    for (const sh of withShingles[i].sh) {
+    for (const sh of withShingles[i].sh2) {
       const arr = inverted.get(sh) ?? [];
       arr.push(i);
       inverted.set(sh, arr);
@@ -289,17 +324,17 @@ async function main() {
   }
   console.log(`Aday çift (farklı kaynaklar arası): ${candidates.size}`);
 
-  // 4. Union-find duplicate groups
+  // 4. Hybrid similarity check: sh2 OR sh1
   const uf = new UnionFind(withShingles.length);
   let pairCount = 0;
   for (const key of candidates) {
     const [a, b] = key.split(',').map(Number);
-    if (jaccard(withShingles[a].sh, withShingles[b].sh) >= SIMILARITY_THRESHOLD) {
+    if (isSimilar(withShingles[a].sh1, withShingles[a].sh2, withShingles[b].sh1, withShingles[b].sh2)) {
       uf.union(a, b);
       pairCount += 1;
     }
   }
-  console.log(`Benzer çift (>= %${Math.round(SIMILARITY_THRESHOLD * 100)} jaccard): ${pairCount}`);
+  console.log(`Benzer çift (sh2≥%${Math.round(SHINGLE2_THRESHOLD * 100)} VEYA sh1≥%${Math.round(SHINGLE1_THRESHOLD * 100)}): ${pairCount}`);
 
   // 5. Group articles by root, keep groups with >= 2 DIFFERENT sources
   const groupsMap = new Map<number, number[]>();
@@ -324,7 +359,69 @@ async function main() {
   });
   console.log(`Tekrar eden haber grubu (>= 2 farklı kaynak): ${duplicateGroups.length}\n`);
 
-  // 6. For each group, generate AI summary
+  // 6. Apply per-category limits BEFORE AI summarization (so we only call AI
+  //    for the ~35 groups that will actually be published, not all 166).
+  //    This is critical for staying under the AI rate limit.
+  type GroupMeta = {
+    group: number[];
+    sourcesInGroup: RawArticle[];
+    bySource: Map<string, RawArticle[]>;
+    allSources: RawArticle[];
+    category: string;
+    latestPublishedAt: Date;
+    earliestPublishedAt: Date;
+    sourceCount: number;
+  };
+  const groupMetas: GroupMeta[] = duplicateGroups.map((group) => {
+    const sourcesInGroup: RawArticle[] = group.map((i) => withShingles[i].article);
+    const bySource = new Map<string, RawArticle[]>();
+    for (const art of sourcesInGroup) {
+      const arr = bySource.get(art.sourceId) ?? [];
+      arr.push(art);
+      bySource.set(art.sourceId, arr);
+    }
+    const allSources = Array.from(bySource.values()).flat();
+    const repSource = allSources[0]?.source;
+    const category = repSource?.category ?? 'Güncel';
+    const latestPublishedAt = new Date(
+      Math.max(...allSources.map((a) => a.publishedAt.getTime())),
+    );
+    const earliestPublishedAt = new Date(
+      Math.min(...allSources.map((a) => a.publishedAt.getTime())),
+    );
+    return {
+      group,
+      sourcesInGroup,
+      bySource,
+      allSources,
+      category,
+      latestPublishedAt,
+      earliestPublishedAt,
+      sourceCount: bySource.size,
+    };
+  });
+
+  // Sort each category by latestPublishedAt desc, take top N per the per-category limit
+  const byCategoryMap = new Map<string, GroupMeta[]>();
+  for (const gm of groupMetas) {
+    const arr = byCategoryMap.get(gm.category) ?? [];
+    arr.push(gm);
+    byCategoryMap.set(gm.category, arr);
+  }
+  for (const arr of byCategoryMap.values()) {
+    arr.sort((a, b) => b.latestPublishedAt.getTime() - a.latestPublishedAt.getTime());
+  }
+  const selectedGroups: GroupMeta[] = [];
+  for (const cat of CATEGORY_ORDER) {
+    const arr = byCategoryMap.get(cat) ?? [];
+    const limit = CATEGORY_LIMITS[cat];
+    const selected = arr.slice(0, limit);
+    selectedGroups.push(...selected);
+    console.log(`  ${cat}: ${selected.length}/${arr.length} seçildi (limit ${limit})`);
+  }
+  console.log(`Toplam AI özetlenecek: ${selectedGroups.length}\n`);
+
+  // 7. For each SELECTED group, generate AI summary
   const published: Array<{
     aiTitle: string;
     aiSummary: string;
@@ -341,28 +438,13 @@ async function main() {
   let successCount = 0;
   let errorCount = 0;
 
-  for (let gi = 0; gi < duplicateGroups.length; gi += 1) {
-    const group = duplicateGroups[gi];
-    const sourcesInGroup: RawArticle[] = group.map((i) => withShingles[i].article);
-
-    // Group sources by sourceId (take the most recent article per source)
-    const bySource = new Map<string, RawArticle[]>();
-    for (const art of sourcesInGroup) {
-      const arr = bySource.get(art.sourceId) ?? [];
-      arr.push(art);
-      bySource.set(art.sourceId, arr);
-    }
-    const allSources = Array.from(bySource.values()).flat();
-
-    // Determine the category (use source.category of the representative)
-    const repSource = allSources[0]?.source;
-    const category = repSource?.category ?? 'Güncel';
-
-    const result = await summarizeGroup(allSources);
+  for (let gi = 0; gi < selectedGroups.length; gi += 1) {
+    const gm = selectedGroups[gi];
+    const result = await summarizeGroup(gm.allSources);
     if (!result || result.error || !result.title || !result.summary) {
       errorCount += 1;
       console.log(
-        `[${gi + 1}/${duplicateGroups.length}] ⚠️ Atlandı: ${result?.error ?? 'boş yanıt'}`,
+        `[${gi + 1}/${selectedGroups.length}] ⚠️ Atlandı: ${result?.error ?? 'boş yanıt'}`,
       );
       continue;
     }
@@ -370,66 +452,41 @@ async function main() {
     const wordCount = countWords(result.summary);
     if (wordCount < MIN_SUMMARY_WORDS - 30) {
       console.log(
-        `[${gi + 1}/${duplicateGroups.length}] ⚠️ Kısa özet (${wordCount} kelime) — yine de kaydedildi`,
+        `[${gi + 1}/${selectedGroups.length}] ⚠️ Kısa özet (${wordCount} kelime) — yine de kaydedildi`,
       );
     }
 
-    const imageUrl = pickImage(allSources);
-    const earliestPublishedAt = new Date(
-      Math.min(...allSources.map((a) => a.publishedAt.getTime())),
-    );
-    const latestPublishedAt = new Date(
-      Math.max(...allSources.map((a) => a.publishedAt.getTime())),
-    );
+    const imageUrl = pickImage(gm.allSources);
+    const sourceArticleLinks = gm.allSources.map((a) => ({
+      title: a.title,
+      link: a.link,
+      source: a.source.name,
+      publishedAt: a.publishedAt,
+    }));
 
     published.push({
       aiTitle: result.title,
       aiSummary: result.summary,
       imageUrl,
-      category,
+      category: gm.category,
       wordCount,
-      sourceArticleIds: allSources.map((a) => a.id),
-      sourceArticleLinks: allSources.map((a) => ({
-        title: a.title,
-        link: a.link,
-        source: a.source.name,
-        publishedAt: a.publishedAt,
-      })),
-      earliestPublishedAt,
-      latestPublishedAt,
-      sourceCount: bySource.size,
+      sourceArticleIds: gm.allSources.map((a) => a.id),
+      sourceArticleLinks,
+      earliestPublishedAt: gm.earliestPublishedAt,
+      latestPublishedAt: gm.latestPublishedAt,
+      sourceCount: gm.sourceCount,
     });
     successCount += 1;
     console.log(
-      `[${gi + 1}/${duplicateGroups.length}] ✓ "${result.title.slice(0, 60)}" — ${wordCount} kelime, ${bySource.size} kaynak, ${category}`,
+      `[${gi + 1}/${selectedGroups.length}] ✓ "${result.title.slice(0, 60)}" — ${wordCount} kelime, ${gm.sourceCount} kaynak, ${gm.category}`,
     );
   }
 
   console.log(
-    `\nÖzetleme tamam: ${successCount} başarılı, ${errorCount} hata, ${(Date.now() - started) / 1000}s`,
+    `\nÖzetleme tamam: ${successCount} başarılı, ${errorCount} hata, ${((Date.now() - started) / 1000).toFixed(1)}s`,
   );
 
-  // 7. Apply per-category limits and write PublishedArticle rows + rss_ozet.md
-  // Group by category
-  const byCategory = new Map<string, typeof published>();
-  for (const p of published) {
-    const arr = byCategory.get(p.category) ?? [];
-    arr.push(p);
-    byCategory.set(p.category, arr);
-  }
-  // Sort each category by latestPublishedAt desc, take top N
-  const finalSelection: typeof published = [];
-  for (const cat of CATEGORY_ORDER) {
-    const arr = byCategory.get(cat) ?? [];
-    arr.sort(
-      (a, b) => b.latestPublishedAt.getTime() - a.latestPublishedAt.getTime(),
-    );
-    const limit = CATEGORY_LIMITS[cat];
-    const selected = arr.slice(0, limit);
-    finalSelection.push(...selected);
-    console.log(`  ${cat}: ${selected.length}/${arr.length} (limit ${limit})`);
-  }
-  console.log(`Toplam yayın: ${finalSelection.length}\n`);
+  const finalSelection = published;
 
   // Clear previous drafts, insert new
   await db.publishedArticle.deleteMany({ where: { status: 'draft' } });
@@ -502,7 +559,7 @@ async function main() {
   lines.push('');
   lines.push(`- **Oluşturan:** build-rss-ozet.ts`);
   lines.push(`- **Tarih:** ${new Date().toISOString()}`);
-  lines.push(`- **Algoritma:** shingle+Jaccard (≥ %${Math.round(SIMILARITY_THRESHOLD * 100)}) + Union-Find + z-ai-web-dev-sdk paraphrase`);
+  lines.push(`- **Algoritma:** HİBRİT — 2-gram shingle Jaccard ≥ %${Math.round(SHINGLE2_THRESHOLD * 100)} VEYA 1-gram (kelime kümesi) Jaccard ≥ %${Math.round(SHINGLE1_THRESHOLD * 100)} + Union-Find + z-ai-web-dev-sdk paraphrase`);
   lines.push(`- **Çalışma süresi:** ${((Date.now() - started) / 1000).toFixed(1)} saniye`);
   lines.push('');
 

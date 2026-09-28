@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
 """
 Find news articles that appear in multiple RSS sources by comparing
-their RSS description text (NOT exact match — uses shingle/Jaccard similarity).
+their RSS description text using a HYBRID similarity approach:
 
-For each duplicate group, write the shared description + every source URL that
-carried the same story to /home/z/my-project/download/rss_kaynak_sayi.md.
+  Two articles are considered the same story if EITHER:
+    - 2-gram shingle Jaccard >= SHINGLE2_THRESHOLD (catches phrasally-similar stories
+      like "ameliyat oldu" / "ameliyat edildi" variations)
+    - 1-gram (word-set) Jaccard >= SHINGLE1_THRESHOLD (catches keyword-overlap stories
+      where the same proper noun keeps reappearing across sources)
+
+  Same source (same RSS feed URL) duplicates are NOT counted as separate
+  stories — each story is grouped by UNIQUE source count.
 
 Run: python3 /home/z/my-project/scripts/find-duplicate-news.py
 """
 
 import sqlite3
 import re
-import sys
 import time
 from datetime import datetime, timezone
 from collections import defaultdict
@@ -19,11 +24,24 @@ from dataclasses import dataclass, field
 
 DB_PATH = "/home/z/my-project/db/custom.db"
 OUTPUT_PATH = "/home/z/my-project/download/rss_kaynak_sayi.md"
-SHINGLE_SIZE = 4
-SIMILARITY_THRESHOLD = 0.40  # Jaccard >= 40% → considered same story
-MIN_GROUP_SIZE = 2  # only groups with >= 2 sources are interesting
 
-# Turkish month names for date formatting
+SHINGLE1_THRESHOLD = 0.22  # word-set Jaccard threshold
+SHINGLE2_THRESHOLD = 0.20  # 2-gram shingle Jaccard threshold
+MIN_GROUP_SIZE = 2  # only groups with >= 2 DIFFERENT sources
+
+TURKISH_STOPWORDS = frozenset([
+    "ve", "veya", "ile", "için", "gibi", "kadar", "sadece", "daha", "çok",
+    "az", "bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz", "dokuz",
+    "on", "bu", "şu", "o", "ben", "sen", "biz", "siz", "onlar", "bizler",
+    "da", "de", "ta", "te", "ki", "mi", "mı", "mu", "mü", "ne", "nasıl",
+    "niçin", "niye", "olan", "olarak", "göre", "sonra", "önce",
+    "en", "her", "hiç", "ama", "fakat", "lakin", "ancak", "şey", "yani",
+    "ise", "ya", "veyahut", "hem", "değil", "üzere", "rağmen", "kez",
+    "doğru", "tam", "üzerine", "yerine", "diye", "beri",
+    "böyle", "şöyle", "neden", "hangi", "olduğu", "oldu", "olacak", "olmuş",
+    "oluyor", "bunlar", "şunlar",
+])
+
 TR_MONTHS = [
     "Oca", "Şub", "Mar", "Nis", "May", "Haz",
     "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara",
@@ -33,36 +51,35 @@ TR_MONTHS = [
 @dataclass
 class Article:
     id: str
+    source_id: str
     title: str
     link: str
     description: str
-    published_at: str  # raw value from DB
-    source_id: str
+    published_at: object  # epoch ms or ISO string
     source_name: str
     source_url: str
     category: str
-    shingles: frozenset = field(default_factory=frozenset)
+    sh1: frozenset = field(default_factory=frozenset)  # word set
+    sh2: frozenset = field(default_factory=frozenset)  # 2-gram shingles
 
 
 def normalize(text: str) -> str:
-    """Lowercase, strip punctuation, collapse whitespace."""
+    """Lowercase, strip punctuation, remove stop words, collapse whitespace."""
     if not text:
         return ""
     text = text.lower()
-    # Turkish lower fixes for İ and I
     text = text.replace("İ", "i").replace("I", "ı")
-    # Remove all non-word chars except whitespace
     text = re.sub(r"[^\w\sçğıöşüâîû]", " ", text, flags=re.UNICODE)
-    # Collapse whitespace
     text = re.sub(r"\s+", " ", text).strip()
-    return text
+    words = text.split(" ")
+    kept = [w for w in words if w and w not in TURKISH_STOPWORDS and len(w) > 2]
+    return " ".join(kept)
 
 
-def shingles(text: str, n: int = SHINGLE_SIZE) -> frozenset:
-    """Split text into n-gram word shingles."""
-    if not text:
+def shingles(text: str, n: int) -> frozenset:
+    words = text.split(" ") if text else []
+    if not words:
         return frozenset()
-    words = text.split()
     if len(words) < n:
         return frozenset({" ".join(words)})
     return frozenset(
@@ -80,7 +97,6 @@ def jaccard(a: frozenset, b: frozenset) -> float:
     return inter / union if union else 0.0
 
 
-# ---- Union-Find for grouping duplicates ----
 class UnionFind:
     def __init__(self, n: int):
         self.parent = list(range(n))
@@ -104,10 +120,8 @@ class UnionFind:
 
 
 def fmt_date(raw) -> str:
-    """Parse SQLite-stored DateTime (epoch ms OR ISO string) and format in Turkish."""
     if not raw:
         return ""
-    # Epoch ms (Prisma SQLite stores DateTime as INTEGER milliseconds)
     if isinstance(raw, int):
         try:
             dt = datetime.fromtimestamp(raw / 1000, tz=timezone.utc)
@@ -115,12 +129,10 @@ def fmt_date(raw) -> str:
         except Exception:
             return str(raw)
     s = str(raw)
-    # Try ISO format
     try:
         dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
         return f"{dt.day} {TR_MONTHS[dt.month - 1]} {dt.year} {dt.hour:02d}:{dt.minute:02d}"
     except Exception:
-        # Try epoch ms as numeric string
         try:
             n = int(s)
             dt = datetime.fromtimestamp(n / 1000, tz=timezone.utc)
@@ -135,7 +147,7 @@ def main() -> None:
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    print("=== Aynı Haber Tespiti (shingle + Jaccard) ===")
+    print("=== Aynı Haber Tespiti (HİBRİT: sh2 OR sh1) ===")
 
     rows = c.execute(
         """
@@ -150,43 +162,38 @@ def main() -> None:
 
     print(f"Açıklamalı makale: {len(rows)}")
 
-    # Build Article objects with shingles
     articles: list[Article] = []
     for r in rows:
         desc = r["description"] or ""
         norm = normalize(desc)
-        sh = shingles(norm, SHINGLE_SIZE)
-        if len(sh) == 0:
+        sh1 = shingles(norm, 1)
+        sh2 = shingles(norm, 2)
+        if not sh2:
             continue
-        # Use source's category (more reliable than article.category which is RSS feed's own tag)
         category = r["sourceCategory"] or r["category"] or ""
         articles.append(
             Article(
                 id=r["id"],
+                source_id=r["sourceId"],
                 title=r["title"] or "",
                 link=r["link"] or "",
                 description=desc,
                 published_at=r["publishedAt"],
-                source_id=r["sourceId"],
                 source_name=r["sourceName"] or "",
                 source_url=r["sourceUrl"] or "",
                 category=category,
-                shingles=sh,
+                sh1=sh1,
+                sh2=sh2,
             )
         )
     print(f"İşlenecek makale: {len(articles)}")
 
-    # Inverted index: shingle -> article indexes (so we only compare pairs that share at least one shingle)
+    # Inverted index on sh2 (smaller) to find candidate pairs
     inverted: dict[str, list[int]] = defaultdict(list)
     for i, art in enumerate(articles):
-        for sh in art.shingles:
+        for sh in art.sh2:
             inverted[sh].append(i)
-    print(f"Benzersiz shingle: {len(inverted)}")
 
-    # Build candidate pairs ONLY across different sources (not within same source).
-    # This avoids treating multiple variations of the same story published by the
-    # same outlet (e.g. Onedio's 12 different horoscope variants with similar
-    # boilerplate description) as a duplicate group.
     candidates: set[tuple[int, int]] = set()
     for sh, idxs in inverted.items():
         if len(idxs) < 2:
@@ -194,9 +201,6 @@ def main() -> None:
         for i in range(len(idxs)):
             for j in range(i + 1, len(idxs)):
                 a_idx, b_idx = idxs[i], idxs[j]
-                if a_idx == b_idx:
-                    continue
-                # Skip pairs from the same source
                 if articles[a_idx].source_id == articles[b_idx].source_id:
                     continue
                 if a_idx > b_idx:
@@ -204,38 +208,42 @@ def main() -> None:
                 candidates.add((a_idx, b_idx))
     print(f"Aday çift (farklı kaynaklar arası): {len(candidates):,}")
 
-    # Compute Jaccard for each candidate pair, union the ones above threshold
+    # Hybrid similarity check: sh2 OR sh1
     uf = UnionFind(len(articles))
     same_count = 0
     for a_idx, b_idx in candidates:
-        sim = jaccard(articles[a_idx].shingles, articles[b_idx].shingles)
-        if sim >= SIMILARITY_THRESHOLD:
+        j2 = jaccard(articles[a_idx].sh2, articles[b_idx].sh2)
+        if j2 >= SHINGLE2_THRESHOLD:
+            uf.union(a_idx, b_idx)
+            same_count += 1
+            continue
+        j1 = jaccard(articles[a_idx].sh1, articles[b_idx].sh1)
+        if j1 >= SHINGLE1_THRESHOLD:
             uf.union(a_idx, b_idx)
             same_count += 1
 
     print(
-        f"Benzer çift (≥ %{int(SIMILARITY_THRESHOLD * 100)} jaccard): {same_count:,}"
+        f"Benzer çift (sh2≥%{int(SHINGLE2_THRESHOLD*100)} VEYA sh1≥%{int(SHINGLE1_THRESHOLD*100)}): {same_count:,}"
     )
 
-    # Group articles by union-find root
+    # Group by union-find root, keep groups with >= 2 DIFFERENT sources
     groups: dict[int, list[int]] = defaultdict(list)
     for i in range(len(articles)):
         root = uf.find(i)
         groups[root].append(i)
 
-    # Keep only groups with >= 2 DIFFERENT sources
     duplicate_groups: list[list[int]] = []
     for group in groups.values():
         unique_sources = {articles[i].source_id for i in group}
         if len(unique_sources) >= MIN_GROUP_SIZE:
             duplicate_groups.append(group)
-    # Sort by number of unique sources desc, then by group size desc
     duplicate_groups.sort(
         key=lambda g: (
             -len({articles[i].source_id for i in g}),
             -len(g),
         )
     )
+
     print(f"Tekrar eden haber grubu: {len(duplicate_groups)}")
     total_duplicated_articles = sum(len(g) for g in duplicate_groups)
     total_duplicated_unique_sources = sum(
@@ -253,15 +261,23 @@ def main() -> None:
     lines.append("")
     lines.append(
         "Aynı haberin kaç farklı RSS kaynağında geçtiğini gösterir. "
-        "Birebir eşleşme yerine açıklama metinlerinin shingle/Jaccard benzerliğine "
-        f"(≥ %{int(SIMILARITY_THRESHOLD * 100)}) bakılarak tespit edilmiştir."
+        "Birebir eşleşme yerine açıklama metinlerinin hibrit shingle/Jaccard "
+        "benzerliğine bakılarak tespit edilmiştir:"
+    )
+    lines.append(
+        f"  • 2-gram shingle Jaccard ≥ %{int(SHINGLE2_THRESHOLD*100)} (ifade düzeyinde benzerlik) VEYA"
+    )
+    lines.append(
+        f"  • 1-gram (kelime kümesi) Jaccard ≥ %{int(SHINGLE1_THRESHOLD*100)} (anahtar kelime örtüşmesi)"
+    )
+    lines.append(
+        "Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varyasyonu) sayılmaz."
     )
     lines.append("")
     lines.append(f"- **Oluşturulma:** {datetime.now().strftime('%d ' + TR_MONTHS[datetime.now().month - 1] + ' %Y %H:%M')}")
     lines.append(f"- **Toplam makale:** {total_articles}")
     lines.append(f"- **Toplam kaynak:** {total_sources}")
     lines.append(f"- **İşlenen makale (açıklamalı):** {len(articles)}")
-    lines.append(f"- **Benzersiz shingle:** {len(inverted):,}")
     lines.append(f"- **Aday çift:** {len(candidates):,}")
     lines.append(f"- **Tekrar eden haber grubu:** {len(duplicate_groups)}")
     lines.append(
@@ -276,12 +292,12 @@ def main() -> None:
     lines.append("---")
     lines.append("")
 
-    # Top 20 most-repeated stories first (by unique source count)
-    lines.append("## En Çok Tekrar Eden 20 Haber (Farklı Kaynak Sayısına Göre)")
+    # Top 30 most-repeated stories
+    lines.append("## En Çok Tekrar Eden 30 Haber (Farklı Kaynak Sayısına Göre)")
     lines.append("")
     lines.append("| # | Farklı Kaynak | Toplam Makale | Kategori | Başlık |")
     lines.append("|---|---|---|---|---|")
-    for rank, group in enumerate(duplicate_groups[:20], start=1):
+    for rank, group in enumerate(duplicate_groups[:30], start=1):
         rep_idx = max(group, key=lambda i: len(articles[i].description))
         rep = articles[rep_idx]
         unique_src = len({articles[i].source_id for i in group})
@@ -299,7 +315,6 @@ def main() -> None:
     lines.append("")
 
     for rank, group in enumerate(duplicate_groups, start=1):
-        # Representative: longest description
         rep_idx = max(group, key=lambda i: len(articles[i].description))
         rep = articles[rep_idx]
         unique_src_count = len({articles[i].source_id for i in group})
@@ -318,11 +333,9 @@ def main() -> None:
         lines.append("")
         lines.append("**Geçtiği farklı kaynaklar:**")
         lines.append("")
-        # Group by source, show all articles per source together
         source_groups: dict[str, list[Article]] = defaultdict(list)
         for i in group:
             source_groups[articles[i].source_id].append(articles[i])
-        # Sort source groups by earliest publishedAt in each group (chronological)
         source_groups_list = sorted(
             source_groups.values(),
             key=lambda arts: min(a.published_at for a in arts) or "",
@@ -353,7 +366,9 @@ def main() -> None:
     lines.append(f"- **Oluşturan:** find-duplicate-news.py")
     lines.append(f"- **Tarih:** {datetime.now().isoformat()}")
     lines.append(
-        f"- **Algoritma:** n-gram shingle (n={SHINGLE_SIZE}) + Jaccard ≥ %{int(SIMILARITY_THRESHOLD * 100)} + Union-Find"
+        f"- **Algoritma:** HİBRİT — 2-gram shingle Jaccard ≥ %{int(SHINGLE2_THRESHOLD*100)} "
+        f"VEYA 1-gram (kelime kümesi) Jaccard ≥ %{int(SHINGLE1_THRESHOLD*100)} + "
+        f"Union-Find (aynı kaynak dahil değil)"
     )
     lines.append(f"- **Çalışma süresi:** {duration:.1f} saniye")
     lines.append("")
