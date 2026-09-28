@@ -4,17 +4,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { SiteHeader, type Tab } from '@/components/news/site-header';
-import { NewsFeed } from '@/components/news/news-feed';
+import { IcerikDosyasi } from '@/components/news/icerik-dosyasi';
 import { SourcesPanel } from '@/components/news/sources-panel';
 import { Button } from '@/components/ui/button';
 
 type Stats = { totalSources: number; totalArticles: number };
 
 const POLL_INTERVAL_MS = 4000;
-const POLL_MAX_DURATION_MS = 90_000; // stop polling after this long
+const POLL_MAX_DURATION_MS = 90_000;
 
 export default function Home() {
-  const [tab, setTab] = useState<Tab>('feed');
+  const [tab, setTab] = useState<Tab>('icerik');
   const [refreshing, setRefreshing] = useState(false);
   const [refreshSignal, setRefreshSignal] = useState(0);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -46,8 +46,6 @@ export default function Home() {
     loadStats();
   }, [loadStats]);
 
-  // Polling loop: continues until either (a) max duration is reached,
-  // (b) article count stops growing for 2 consecutive polls.
   const poll = useCallback(async () => {
     const controller = new AbortController();
     pollAbort.current = controller;
@@ -113,7 +111,6 @@ export default function Home() {
       };
       if (!r.ok) throw new Error(json.error || 'Yenileme başlatılamadı');
       toast.success('Arka plan yenilemesi başlatıldı');
-      // Start polling for progress
       void poll();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Yenileme hatası');
@@ -124,7 +121,6 @@ export default function Home() {
   const handleInitialSeed = useCallback(async () => {
     setRefreshing(true);
     try {
-      // Trigger the same refresh-all flow — defaults are already seeded
       const r = await fetch('/api/feeds/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -168,10 +164,13 @@ export default function Home() {
                 </h1>
                 <p className="mt-3 text-sm text-muted-foreground sm:text-base">
                   Haber Özet; Güncel, Kamu, Ekonomi, Bilim, Kültür ve Spor
-                  kategorilerinde 160+ RSS kaynağından haberleri çeker ve her
-                  birini yapay zeka ile 3 cümlede özetler. Sağ üstteki
-                  &ldquo;Beslemeleri Yenile&rdquo; butonuna basarak haberleri
-                  çekmeye başlayın.
+                  kategorilerinde 59 RSS kaynağından haberleri çeker, yapay
+                  zeka ile her birini 3 cümlede özetler ve{' '}
+                  <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                    rss_icerik.md
+                  </code>{' '}
+                  dosyası olarak saklar. Sağ üstteki &ldquo;Beslemeleri
+                  Yenile&rdquo; butonuna basarak başlayın.
                 </p>
                 <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Button
@@ -219,18 +218,14 @@ export default function Home() {
 
         {!refreshing && (hasSources || hasArticles) && (
           <>
-            {tab === 'feed' ? (
-              <NewsFeed
-                refreshSignal={refreshSignal}
-                onRefreshComplete={() => loadStats()}
-              />
+            {tab === 'icerik' ? (
+              <IcerikDosyasi refreshSignal={refreshSignal} />
             ) : (
               <SourcesPanel onSourcesChange={() => loadStats()} />
             )}
           </>
         )}
 
-        {/* When refreshing AND has articles, show live counter banner */}
         {refreshing && hasArticles && (
           <div className="sticky bottom-4 z-30 mx-auto w-fit rounded-full border border-news/40 bg-background/95 px-4 py-1.5 text-xs shadow-md backdrop-blur">
             <span className="inline-flex items-center gap-2 text-news">
@@ -250,11 +245,11 @@ export default function Home() {
           <p>
             <span className="font-semibold text-foreground/80">Haber Özet</span>
             {' — '}
-            RSS + AI özetlenen Türkçe haber sitesi
+            RSS + AI özetlenen Türkçe haber derleyici
           </p>
           <p>
-            6 kategori · 59 kaynak · Yapay zeka{' '}
-            <span className="text-news">GLM</span> · Next.js 16
+            6 kategori · 59 kaynak · Çıktı{' '}
+            <code className="rounded bg-muted px-1 py-0.5">rss_icerik.md</code>
           </p>
         </div>
       </footer>

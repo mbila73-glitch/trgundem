@@ -1,12 +1,12 @@
 'use client';
 
-import { Newspaper, RefreshCw, Settings2 } from 'lucide-react';
+import { FileText, RefreshCw, Settings2 } from 'lucide-react';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export type Tab = 'feed' | 'sources';
+export type Tab = 'icerik' | 'sources';
 
 type Props = {
   active: Tab;
@@ -30,7 +30,7 @@ export function SiteHeader({
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="group flex items-center gap-2.5">
           <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
-            <Newspaper className="h-5 w-5" />
+            <FileText className="h-5 w-5" />
           </span>
           <span className="flex flex-col leading-none">
             <span className="text-base font-semibold tracking-tight">
@@ -45,14 +45,14 @@ export function SiteHeader({
         <nav className="ml-2 hidden items-center gap-1 sm:flex">
           <button
             type="button"
-            onClick={() => onChange('feed')}
+            onClick={() => onChange('icerik')}
             className={`relative inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition ${
-              active === 'feed'
+              active === 'icerik'
                 ? 'bg-secondary text-secondary-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            Haberler
+            İçerik Dosyası
             {typeof totalArticles === 'number' && totalArticles > 0 && (
               <Badge
                 variant="secondary"
@@ -110,14 +110,14 @@ export function SiteHeader({
       <div className="mx-auto flex max-w-6xl items-center gap-1 px-4 pb-2 sm:hidden">
         <button
           type="button"
-          onClick={() => onChange('feed')}
+          onClick={() => onChange('icerik')}
           className={`flex-1 rounded-md py-1.5 text-sm font-medium ${
-            active === 'feed'
+            active === 'icerik'
               ? 'bg-secondary text-secondary-foreground'
               : 'text-muted-foreground'
           }`}
         >
-          Haberler
+          İçerik
         </button>
         <button
           type="button"
