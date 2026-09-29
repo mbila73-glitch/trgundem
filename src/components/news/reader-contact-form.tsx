@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Send, Mail } from 'lucide-react';
-import { toast } from 'sonner';
+import { Loader2, Send, Mail, CheckCircle2, XCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,17 +15,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
+type Status = { type: 'success' | 'rejected'; text: string } | null;
+
 export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState<Status>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !message.trim()) return;
     setSubmitting(true);
+    setStatus(null);
     try {
       const r = await fetch('/api/reader-message', {
         method: 'POST',
@@ -35,26 +38,36 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
       });
       const json = (await r.json()) as { ok?: boolean; error?: string; rejected?: boolean };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Gönderilemedi');
+
       if (json.rejected) {
-        toast.error('Mesajınız iade edilmiştir');
+        setStatus({ type: 'rejected', text: 'Mesajınız iade edilmiştir' });
         setMessage('');
       } else {
-        toast.success('Mesaj gönderildi, teşekkürler');
+        setStatus({ type: 'success', text: 'Mesaj gönderildi, teşekkürler' });
         setName('');
         setEmail('');
         setSubject('');
         setMessage('');
-        onClose();
       }
+
+      // 2 saniye sonra status'u temizle ve dialog'u kapat
+      setTimeout(() => {
+        setStatus(null);
+        if (!json.rejected) onClose();
+      }, 2000);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Gönderme hatası');
+      setStatus({
+        type: 'rejected',
+        text: e instanceof Error ? e.message : 'Gönderme hatası',
+      });
+      setTimeout(() => setStatus(null), 2000);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !submitting) onClose(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -65,64 +78,83 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
             Görüş, öneri ve şikayetlerinizi bize iletebilirsiniz.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="r-name">Ad Soyad *</Label>
-            <Input
-              id="r-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Adınız"
-              required
-              autoFocus
-            />
+
+        {status ? (
+          // Status message — visible for 2 seconds
+          <div
+            className={`flex items-center justify-center gap-3 rounded-lg p-8 ${
+              status.type === 'success'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+            }`}
+          >
+            {status.type === 'success' ? (
+              <CheckCircle2 className="h-8 w-8" />
+            ) : (
+              <XCircle className="h-8 w-8" />
+            )}
+            <p className="text-lg font-semibold">{status.text}</p>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="r-email">E-posta (isteğe bağlı)</Label>
-            <Input
-              id="r-email"
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ornek@email.com"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="r-subject">Konu</Label>
-            <Input
-              id="r-subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Mesajınızın konusu"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="r-message">Mesaj *</Label>
-            <Textarea
-              id="r-message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Mesajınızı buraya yazın"
-              required
-              rows={5}
-              className="resize-none"
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              type="submit"
-              disabled={submitting || !name.trim() || !message.trim()}
-              className="w-full gap-2"
-            >
-              {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-              Gönder
-            </Button>
-          </DialogFooter>
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="r-name">Ad Soyad *</Label>
+              <Input
+                id="r-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Adınız"
+                required
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="r-email">E-posta (isteğe bağlı)</Label>
+              <Input
+                id="r-email"
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ornek@email.com"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="r-subject">Konu</Label>
+              <Input
+                id="r-subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Mesajınızın konusu"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="r-message">Mesaj *</Label>
+              <Textarea
+                id="r-message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Mesajınızı buraya yazın"
+                required
+                rows={5}
+                className="resize-none"
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="submit"
+                disabled={submitting || !name.trim() || !message.trim()}
+                className="w-full gap-2"
+              >
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                Gönder
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );
