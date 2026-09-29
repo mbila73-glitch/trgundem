@@ -1,8 +1,9 @@
 'use client';
 
-import { FileText, FolderTree, Newspaper } from 'lucide-react';
+import { FileText, FolderTree, Newspaper, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 export type Tab = 'news' | 'icerik' | 'sources';
@@ -12,9 +13,10 @@ type Props = {
   onChange: (tab: Tab) => void;
   totalSources?: number;
   totalArticles?: number;
+  onAdminClick?: () => void;
 };
 
-export function SiteHeader({ active, onChange, totalSources, totalArticles }: Props) {
+export function SiteHeader({ active, onChange, totalSources, totalArticles, onAdminClick }: Props) {
   const tabs: Array<{ id: Tab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number }> = [
     { id: 'news', label: 'Haberler', icon: Newspaper, badge: totalArticles },
     { id: 'icerik', label: 'İçerik Dosyası', icon: FileText },
@@ -69,6 +71,17 @@ export function SiteHeader({ active, onChange, totalSources, totalArticles }: Pr
         </nav>
 
         <div className="ml-auto flex items-center gap-1.5">
+          {onAdminClick && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onAdminClick}
+              aria-label="Yönetici"
+              className="h-9 w-9"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+          )}
           <ThemeToggle />
         </div>
       </div>

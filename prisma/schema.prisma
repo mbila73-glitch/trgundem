@@ -73,3 +73,16 @@ model PublishedArticle {
   @@index([status])
   @@index([publishedAt])
 }
+
+model ReaderMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("new")  // "new" | "read" | "deleted"
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
