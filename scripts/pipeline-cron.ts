@@ -1,10 +1,10 @@
 // Cron-like pipeline scheduler.
 //
 // Timeline (her 30 dakikalık cycle):
-//   :00 — cycle başlangıcı: archive-stale (eski published'ları stale yap) +
+//   :30 — cycle başlangıcı: archive-stale (eski published'ları stale yap) +
 //         refresh RSS + build rss_icerik + find-duplicates + AI summarize
 //         (incremental — sadece yeni grupları özetler, her 3 hazırda bir publish)
-//   :30 — yeni cycle başlar (aynı işlem)
+//   :60 (= sonraki :00) — yeni cycle başlar (aynı işlem)
 //
 // Cycle içinde:
 //   - AI özetleme en yüksek kaynak sayısından başlar (sourceCount DESC)
@@ -123,7 +123,7 @@ async function main() {
   log(`Pipeline cron başlatıldı. PID: ${process.pid}`);
   log(`Saat dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   log(`Tetikleme saatleri:`);
-  log(`  • :00 ve :30 — cycle başlat (RSS refresh + pipeline + her 3 draft'ta bir publish)`);
+  log(`  • :30 — cycle başlat (RSS refresh + pipeline + her 3 draft'ta bir publish)`);
   log(`  • :60 (yani sonraki :00) — yeni cycle`);
   log(`Kurallar:`);
   log(`  - En yüksek kaynak sayısından başla özetlemeye`);
