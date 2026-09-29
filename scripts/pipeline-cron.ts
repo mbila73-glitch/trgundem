@@ -15,7 +15,8 @@
 //   - Eski cycle'ın published haberlerinden bu cycle'da yenisi gelmeyenler:
 //     sayfada kalsın (silme)
 //
-// Run: setsid bash -c 'exec bun run /home/z/my-project/scripts/pipeline-cron.ts' &
+// Run (daemon):  setsid bash -c 'exec bun run /home/z/my-project/scripts/pipeline-cron.ts' &
+// Run (tek sefer): bun run /home/z/my-project/scripts/pipeline-cron.ts --once
 
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -191,6 +192,15 @@ async function tick(): Promise<void> {
 }
 
 async function main() {
+  const isOnce = process.argv.includes('--once');
+
+  if (isOnce) {
+    log(`Tek seferlik cycle başlatılıyor (manuel tetikleme)…`);
+    await runCycle();
+    await db.$disconnect();
+    process.exit(0);
+  }
+
   log(`Pipeline cron başlatıldı. PID: ${process.pid}`);
   log(`Saat dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   log(`Tetikleme saatleri:`);
