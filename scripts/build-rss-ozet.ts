@@ -26,8 +26,8 @@ const OUTPUT_PATH = path.join(process.cwd(), 'download', 'rss_ozet.md');
 const SHINGLE1_THRESHOLD = 0.22;
 const SHINGLE2_THRESHOLD = 0.20;
 const MAX_SOURCES_PER_GROUP = 5; // read at most 5 most-recent source articles
-const MIN_SUMMARY_WORDS = 100;   // minimum 100 words (lowered from 150 — AI struggles past 100)
-const MAX_SUMMARY_WORDS = 200;   // still soft upper bound
+const MIN_SUMMARY_WORDS = 150;   // minimum 150 kelime (100'den yükseltildi)
+const MAX_SUMMARY_WORDS = 300;   // en fazla 300 kelime (200'den yükseltildi)
 const REBUILD_ONLY = process.env.REBUILD_ONLY === '1'; // skip AI, just rebuild file from existing drafts
 
 const TURKISH_STOPWORDS = new Set<string>([
@@ -192,31 +192,68 @@ function buildUserPrompt(
   return `Aşağıda aynı haberi farklı kaynaklardan alınmış ${articleSources.length} ayrı RSS metni var. Bunları okuyarak:
 
 1. Haberin başlığını ~6-10 kelimelik Türkçe bir başlık olarak YENİ yaz (kaynak başlıklarını birebir kopyalama).
-2. Haberin özetini EN AZ 100, EN FAZLA 200 KELİME olarak kendi cümlelerinle yaz.
+2. Haberin özetini EN AZ 150, EN FAZLA 300 KELİME olarak kendi cümlelerinle yaz.
+3. Haberin kategorisini aşağıdaki 6 kategoriden biriyle belirle:
+   - "Güncel" (genel haberler, siyaset, toplum)
+   - "Kamu / Resmi" (devlet, kurum, resmi açıklamalar, memur, atama)
+   - "Ekonomi / Finans" (ekonomi, borsa, döviz, finans, şirket)
+   - "Spor / Magazin" (spor, magazin, ünlüler)
+   - "Bilim / Teknoloji" (bilim, teknoloji, yapay zeka, internet)
+   - "Kültür / Sanat" (kültür, sanat, müzik, sinema, edebiyat)
 
 ÖNEMLİ KURALLAR:
-- EN AZ 100 KELİME yaz. 100 kelimeden AZ yazma.
+- EN AZ 150 KELİME yaz. 150 kelimeden AZ yazma. EN FAZLA 300 kelime olmalı.
 - Türkçe imla ve yazım kurallarına HARİCİ DİKKAT ET:
   * "kaza" (oluşan olay) vs "kazı" (arkeolojik) — doğru ek kullan (kazada, kazıda)
   * "ile", "için", "gibi" gibi ekler ayrı yazılır
   * "ki" eki çoğu durumda bitişik yazılır (kişi, amaçki → ama bağlaç olan ki ayrı: "bilmem ki")
   * Yabancı dillerden gelen kelimelerde düzeltme işareti (â, î, û) kullan
-  * Sayıların yazımı: 100 kelime değil yüz kelime gibi
+  * Sayıların yazımı: 150 kelime değil yüz elli kelime gibi
 - Cümlelerin kaynaklardaki cümlelerle BİREBİR AYNI OLMAMALIDIR — telif cezası almamak için paraphrase yap.
 - Sadece haberde geçen bilgileri kullan, dış bilgi ekleme, yargılama yapma.
 - Haberin tüm önemli detaylarını ver: kim, ne, nerede, ne zaman, nasıl, neden sorularına cevap.
+- Haberin arka planı, etkileri ve ilgili kişilerin açıklamalarını da ekle.
 - Markdown formatı kullanma, başlık ve liste ekleme — düz metin ver.
 
-Çıktı formatı (BAŞLIK ve ÖZET satırlarını dahil et):
+Çıktı formatı (her satırı dahil et):
 BAŞLIK: <yeni başlığın>
-ÖZET: <en az 100 kelimelik özet>
+KATEGORİ: <6 kategoriden biri>
+ÖZET: <en az 150, en fazla 300 kelimelik özet>
 
 Kaynak metinler:
 ${blocks.join('\n\n---\n\n')}`;
 }
 
-function parseAIResponse(text: string): { title: string; summary: string } | null {
+const VALID_CATEGORIES = [
+  'Güncel', 'Kamu / Resmi', 'Ekonomi / Finans',
+  'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat',
+];
+
+function normalizeCategory(raw: string): string {
+  if (!raw) return 'Güncel';
+  const trimmed = raw.trim();
+  // Tam eşleşme
+  for (const c of VALID_CATEGORIES) {
+    if (trimmed.toLowerCase() === c.toLowerCase()) return c;
+  }
+  // Kısmi eşleşme — daha uzun olanlar önde
+  const sorted = [...VALID_CATEGORIES].sort((a, b) => b.length - a.length);
+  for (const c of sorted) {
+    if (trimmed.toLowerCase().includes(c.toLowerCase())) return c;
+  }
+  // Anahtar kelime eşleşmesi
+  const lower = trimmed.toLowerCase();
+  if (lower.includes('spor') || lower.includes('magazin') || lower.includes('ünlü')) return 'Spor / Magazin';
+  if (lower.includes('kamu') || lower.includes('resmi') || lower.includes('devlet') || lower.includes('memur') || lower.includes('atama')) return 'Kamu / Resmi';
+  if (lower.includes('ekonomi') || lower.includes('finans') || lower.includes('borsa') || lower.includes('döviz') || lower.includes('şirket')) return 'Ekonomi / Finans';
+  if (lower.includes('bilim') || lower.includes('teknoloji') || lower.includes('yapay zeka') || lower.includes('internet')) return 'Bilim / Teknoloji';
+  if (lower.includes('kültür') || lower.includes('sanat') || lower.includes('müzik') || lower.includes('sinema') || lower.includes('edebiyat')) return 'Kültür / Sanat';
+  return 'Güncel';
+}
+
+function parseAIResponse(text: string): { title: string; summary: string; category?: string } | null {
   const titleMatch = text.match(/BAŞLIK:\s*(.+?)(?:\n|$)/i);
+  const categoryMatch = text.match(/KATEGORİ:\s*(.+?)(?:\n|$)/i);
   const summaryMatch = text.match(/ÖZET:\s*([\s\S]+?)(?:\n$|$)/i);
   if (!titleMatch || !summaryMatch) {
     // Fallback: split on double newline
@@ -229,7 +266,8 @@ function parseAIResponse(text: string): { title: string; summary: string } | nul
   const title = titleMatch[1].trim();
   const summary = summaryMatch[1].trim();
   if (!title || !summary) return null;
-  return { title: title.slice(0, 200), summary };
+  const category = categoryMatch ? normalizeCategory(categoryMatch[1]) : 'Güncel';
+  return { title: title.slice(0, 200), summary, category };
 }
 
 function countWords(s: string): number {
@@ -238,8 +276,9 @@ function countWords(s: string): number {
 
 async function summarizeGroup(
   sources: RawArticle[],
-): Promise<{ title: string; summary: string; error?: string } | null> {
-  // Take at most MAX_SOURCES_PER_GROUP most recently published sources
+): Promise<{ title: string; summary: string; category?: string; error?: string } | null> {
+  // En son eklenen en fazla 5 kaynağın içeriğini oku (5'ten az ise hepsini).
+  // Kullanıcı kuralı: 1 kaynaklı haberler yayınlanmaz (zaten 2+ kaynakla çağrılıyor).
   const sorted = [...sources].sort(
     (a, b) => b.publishedAt.getTime() - a.publishedAt.getTime(),
   );
@@ -252,23 +291,24 @@ async function summarizeGroup(
   const prompt = buildUserPrompt(chosen);
   const MAX_RETRIES = 2; // reduce retries to avoid 429 cascades
   const BASE_DELAY_MS = 8000; // 8s pause between calls to avoid 429
-  const WORD_COUNT_MIN = 100; // tolerate slightly under MIN_SUMMARY_WORDS
-  let lastParsed: { title: string; summary: string } | null = null;
+  const WORD_COUNT_MIN = 150; // MIN_SUMMARY_WORDS ile aynı — AI bu kadar üretmeli
+  let lastParsed: { title: string; summary: string; category?: string } | null = null;
   let lastWordCount = 0;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
     try {
       const zai = await getZAI();
       const retryHint = attempt > 0
-        ? `\n\nÖNCEKİ YANITIN SADECE ${lastWordCount} KELİME İÇERİYORDU. Bu sefer MUTLAKA EN AZ 100 KELİME yaz.`
+        ? `\n\nÖNCEKİ YANITIN SADECE ${lastWordCount} KELİME İÇERİYORDU. Bu sefer MUTLAKA EN AZ 150 KELİME yaz.`
         : '';
       const completion = await zai.chat.completions.create({
         messages: [
           {
             role: 'system',
             content:
-              'Sen profesyonel bir Türkçe haber editörüsün. Verilen kaynakları okuyarak telif cezası almayacak şekilde özgün bir haber başlığı ve özet üretirsin. ' +
-              'ÖZET HER ZAMAN EN AZ 100 KELİME OLMALIDIR — bu kurala kesinlikle uy. ' +
+              'Sen profesyonel bir Türkçe haber editörüsün. Verilen kaynakları okuyarak telif cezası almayacak şekilde özgün bir haber başlığı, kategori ve özet üretirsin. ' +
+              'ÖZET HER ZAMAN EN AZ 150 KELİME, EN FAZLA 300 KELİME OLMALIDIR — bu kurala kesinlikle uy. ' +
+              'KATEGORİ satırına 6 kategoriden birini yaz: Güncel, Kamu / Resmi, Ekonomi / Finans, Spor / Magazin, Bilim / Teknoloji, Kültür / Sanat. ' +
               'TÜRKÇE İMLA KURALLARINA DİKKAT ET: "kaza" (oluşan olay) ile "kazı" (arkeolojik) karıştırmamak, ekleri doğru kullanmak (kazada, kazıda), "ki" bağlacını doğru yazmak. ' +
               'Kaynak cümlelerini birebir kopyalama; paraphrase yap. Haberin tüm önemli detaylarını (kim, ne, ne zaman, nerede, nasıl, neden) ver. ' +
               'Haberin arka planı, etkileri ve ilgili kişilerin açıklamalarını da ekle.',
@@ -281,14 +321,14 @@ async function summarizeGroup(
       const text: string = completion?.choices?.[0]?.message?.content ?? '';
       const parsed = parseAIResponse(text);
       if (!parsed) {
-        return { title: '', summary: '', error: 'AI yanıtı parse edilemedi' };
+        return { title: '', summary: '', category: 'Güncel', error: 'AI yanıtı parse edilemedi' };
       }
       lastParsed = parsed;
       lastWordCount = countWords(parsed.summary);
 
       // Word count control — if too short, retry with stronger hint
       if (lastWordCount < WORD_COUNT_MIN && attempt < MAX_RETRIES - 1) {
-        console.log(`  ⚠️ ${lastWordCount} kelime — kısa, retry ${attempt + 2}/${MAX_RETRIES}`);
+        console.log(`  ⚠️ ${lastWordCount} kelime — kısa (min ${WORD_COUNT_MIN}), retry ${attempt + 2}/${MAX_RETRIES}`);
         await new Promise((r) => setTimeout(r, 3000)); // brief pause before retry
         continue;
       }
@@ -304,14 +344,14 @@ async function summarizeGroup(
         await new Promise((r) => setTimeout(r, waitMs));
         continue;
       }
-      return { title: '', summary: '', error: msg };
+      return { title: '', summary: '', category: 'Güncel', error: msg };
     }
   }
   // Return last attempt even if too short — better than nothing
   if (lastParsed) {
     return lastParsed;
   }
-  return { title: '', summary: '', error: 'Maksimum deneme aşıldı' };
+  return { title: '', summary: '', category: 'Güncel', error: 'Maksimum deneme aşıldı' };
 }
 
 async function main() {
@@ -716,6 +756,10 @@ async function main() {
       publishedAt: a.publishedAt,
     }));
 
+    // AI özetten sonra kategori AI'dan gelmiş olabilir. AI kategorisi daha güvenilir.
+    // Eğer AI kategori dönmezse fallback olarak gm.category (source.category) kullanılır.
+    const aiCategory = result.category ?? gm.category;
+
     // IMMEDIATELY write to DB as draft (incremental save — crash-safe)
     try {
       await db.publishedArticle.create({
@@ -723,7 +767,7 @@ async function main() {
           aiTitle: result.title,
           aiSummary: result.summary,
           imageUrl,
-          category: gm.category,
+          category: aiCategory,
           wordCount,
           sourceArticleIds: hash,
           sourceCount: gm.sourceCount,
@@ -743,7 +787,7 @@ async function main() {
       aiTitle: result.title,
       aiSummary: result.summary,
       imageUrl,
-      category: gm.category,
+      category: aiCategory,
       wordCount,
       sourceArticleIds: sortedIds,
       sourceArticleLinks,
@@ -753,7 +797,7 @@ async function main() {
     });
     successCount += 1;
     console.log(
-      `[${gi + 1}/${selectedGroups.length}] ✓ "${result.title.slice(0, 60)}" — ${wordCount} kelime, ${gm.sourceCount} kaynak, ${gm.category}`,
+      `[${gi + 1}/${selectedGroups.length}] ✓ "${result.title.slice(0, 60)}" — ${wordCount} kelime, ${gm.sourceCount} kaynak, ${aiCategory}`,
     );
 
     // AUTO-PUBLISH: every 3 drafts, publish them all (draft → published)

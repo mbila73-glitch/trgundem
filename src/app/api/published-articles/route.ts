@@ -3,10 +3,10 @@ import { db } from '@/lib/db';
 
 // GET /api/published-articles
 //   ?category=Güncel           -> filter by category
-//   ?limit=20&offset=0          -> pagination
+//   ?limit=30&offset=0          -> pagination
 //   ?status=draft|published     -> default: published
 //   ?layout=all                 -> "Tüm Haberler" layout: per-category quotas
-//                                 (Güncel 10, Kamu 5, Ekonomi 5, Spor 4, Bilim 3, Kültür 3) = 30
+//                                 (Özel 5 + Güncel 8 + Kamu 5 + Ekonomi 5 + Spor 3 + Bilim 2 + Kültür 2) = 30
 //   ?layout=all&offset=30&limit=20 -> "Diğer Haberler" (ikinci batch, kategorisiz, en yeni)
 //                                    toplam max 50 haber
 export async function GET(req: NextRequest) {
@@ -19,20 +19,21 @@ export async function GET(req: NextRequest) {
 
     if (offset === 0) {
       // İlk batch: Özel haberler en üstte, sonra kategori kotalı haberler
-      // Önce Özel kategoriyi al (limit 5)
+      // Toplam 30 haber (Özel 5 + diğer kategorilerden 25)
       const ozelItems = await db.publishedArticle.findMany({
         where: { category: 'Özel', status },
         orderBy: { latestPublishedAt: 'desc' },
         take: 5,
       });
 
+      // Per-category quotas: toplam 25 (Özel hariç), Özel 5 ile birlikte 30
       const quotas: Record<string, number> = {
-        'Güncel': 10,
+        'Güncel': 8,
         'Kamu / Resmi': 5,
         'Ekonomi / Finans': 5,
-        'Spor / Magazin': 4,
-        'Bilim / Teknoloji': 3,
-        'Kültür / Sanat': 3,
+        'Spor / Magazin': 3,
+        'Bilim / Teknoloji': 2,
+        'Kültür / Sanat': 2,
       };
       const result = await Promise.all(
         Object.entries(quotas).map(async ([cat, limit]) => {
@@ -49,16 +50,18 @@ export async function GET(req: NextRequest) {
         (a, b) => b.latestPublishedAt.getTime() - a.latestPublishedAt.getTime(),
       );
       const all = [...ozelItems, ...otherArticles];
+      // Toplam 50 ile sınırlı — ilk batch 30, "Diğer Haberler" ile 30-50 arası 20 daha gelir
       const totalPublished = await db.publishedArticle.count({ where: { status } });
+      const maxTotal = Math.min(totalPublished, 50);
       return NextResponse.json({
         articles: all,
         total: all.length,
-        totalPublished,
-        hasMore: totalPublished > all.length,
+        totalPublished: maxTotal,
+        hasMore: maxTotal > all.length,
       });
     }
 
-    // İkinci batch ("Diğer Haberler"): kategorisiz, en yeni kalanlar
+    // İkinci batch ("Diğer Haberler"): kategorisiz, en yeni kalanlar (offset 30'dan itibaren)
     const limit = Math.min(Number(sp.get('limit') ?? 20), 20);
     const articles = await db.publishedArticle.findMany({
       where: { status },
@@ -67,11 +70,12 @@ export async function GET(req: NextRequest) {
       skip: offset,
     });
     const totalPublished = await db.publishedArticle.count({ where: { status } });
+    const maxTotal = Math.min(totalPublished, 50);
     return NextResponse.json({
       articles,
       total: articles.length,
-      totalPublished,
-      hasMore: offset + articles.length < totalPublished,
+      totalPublished: maxTotal,
+      hasMore: offset + articles.length < maxTotal,
     });
   }
 

@@ -173,3 +173,60 @@ Stage Summary:
 - 28 published eşsiz haber kaldı, 0 görsel tekrarı.
 - Yeni haber eklemelerinde artık benzer başlık kontrolü (hibrit shingle Jaccard) ve görsel dedup uygulanacak — aynı içeriğin farklı kaynak setleriyle tekrar yayınlanması ve alakasız görsellerin aynı haberde kullanılması önlendi.
 - TypeScript ve ESLint temiz.
+
+---
+Task ID: pipeline-rework-7
+Agent: main
+Task: Pipeline'ı yeniden düzenle: tek havuzda duplicate tespiti, AI kategori tespiti, 150-300 kelime, ana sayfa 30 haber, yönetim panelinde 30+gerisi, arşiv sekmesi.
+
+Work Log:
+- `scripts/build-rss-ozet.ts`:
+  - Duplicate tespiti zaten tek havuzda (kategori filtresi yok), yapı korundu.
+  - AI prompt'a kategori tespiti eklendi: BAŞLIK/KATEGORİ/ÖZET formatı, 6 kategori seçeneği (Güncel, Kamu / Resmi, Ekonomi / Finans, Spor / Magazin, Bilim / Teknoloji, Kültür / Sanat).
+  - `normalizeCategory()` fonksiyonu: AI'dan gelen kategoriyi normalize eder (tam eşleşme → kısmi eşleşme → anahtar kelime eşleşmesi → fallback "Güncel").
+  - `parseAIResponse()` artık `{ title, summary, category }` dönüyor.
+  - `summarizeGroup()` return type'a `category` eklendi.
+  - Kelime limiti: 100-200 → **150-300** (MIN_SUMMARY_WORDS=150, MAX_SUMMARY_WORDS=300, retry hint "MUTLAKA EN AZ 150 KELİME yaz").
+  - AI özetten sonra `category: gm.category` yerine `category: result.category ?? gm.category` kullanılıyor (AI kategorisi öncelikli).
+  - 1 kaynaklı haberler zaten özetlenmiyor (duplicate group'lar 2+ kaynak gerektiriyor).
+  - 5'ten fazla kaynakta son 5'inin içeriği okunuyor (MAX_SOURCES_PER_GROUP=5 zaten mevcut).
+- `src/app/api/published-articles/route.ts`:
+  - İlk batch 30 haber: Özel 5 + Güncel 8 + Kamu 5 + Ekonomi 5 + Spor 3 + Bilim 2 + Kültür 2 = 30.
+  - İkinci batch offset=30 limit=20 (50'ye kadar).
+  - `maxTotal = Math.min(totalPublished, 50)` ile toplam 50 limiti uygulanıyor.
+- `prisma/schema.prisma`:
+  - `archivedAt DateTime?` alanı eklendi + `@@index([archivedAt])`.
+  - `prisma db push --skip-generate` + `prisma generate` ile DB'ye uygulandı.
+- `src/app/api/admin/published/[id]/route.ts` (DELETE handler):
+  - Hard delete kaldırıldı. Yerine `status: 'archived', archivedAt: new Date()` yapılıyor.
+  - Artık "Sil" butonu haberi arşive alıyor — kaybolmuyor.
+- `src/app/api/admin/archived/route.ts` (yeni endpoint):
+  - `GET /api/admin/archived` → status='archived' olanları archivedAt DESC sıralı döner.
+- `src/components/news/admin-panel.tsx`:
+  - `AdminTab` type'a `'archived'` eklendi.
+  - `PubArticle` type'a `archivedAt: string | null` eklendi.
+  - Yeni `archivedArticles` state + `loadingArchived` state + `loadArchived` fonksiyonu.
+  - `loadPublished` artık tekrar başlık kontrolü yapıyor (ilk 60 karakter, en yeni tutuluyor).
+  - `deletePub` artık "arşive alındı" diyor, `loadArchived`'i çağırarak arşiv listesini yeniliyor.
+  - Sub-tabs'a 4. sekme "Arşiv" eklendi (Archive icon import edildi).
+  - **Yayınlanan Haberler sekmesi ikiye bölündü**:
+    - Üstte "Ana Sayfadaki Haberler" başlığı + ilk 30 haber (düzenle/arşive al butonları, kaynak detayları).
+    - Altta "Diğer Haberler" başlığı + kalan 20+ haber (düzenle/arşive al butonları).
+  - **Yeni Arşiv sekmesi**:
+    - "Arşivlenmiş Haberler" başlığı + toplam sayı badge.
+    - status='archived' olanlar listelenir.
+    - Görseller grayscale (siyah-beyaz) + opacity-80 (soluk görünüm).
+    - Her kartta: kelime sayısı + "Yayın:" (Clock icon, yayın tarihi) + "Arşiv:" (Archive icon, kırmızı ton, arşiv tarihi).
+    - Düzenle/Sil butonu YOK — sadece görüntüleme.
+    - Boş durumda: "Arşivde haber yok" mesajı + açıklama.
+
+Stage Summary:
+- AI artık haberi özetleyip 6 kategoriden birini seçiyor (kaynak kategorisi değil, AI kategorisi kullanılıyor).
+- Özet 150-300 kelime arasında.
+- 1 kaynaklı haberler yayınlanmıyor (sadece 2+ kaynaklı gruplar).
+- En son eklenen en fazla 5 kaynağın içeriği okunuyor.
+- Ana sayfada 30 haber, "Diğer Haberler" ile 50'ye kadar.
+- Yönetim panelinde Yayınlanan Haberler sekmesi: ana sayfadaki 30 üstte, gerisi altta, tekrar yok (ilk 60 karaktere göre dedup).
+- Yönetim panelinde yeni Arşiv sekmesi: silinen/yayından kalkan tüm haberler, sadece görüntüleme, yayın+arşiv tarihleri.
+- "Sil" butonu artık hard delete değil — haberi arşive alıyor (status='archived', archivedAt=now).
+- TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.

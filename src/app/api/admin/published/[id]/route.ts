@@ -32,7 +32,9 @@ export async function PATCH(
   } catch { return NextResponse.json({ error: 'Haber bulunamadı' }, { status: 404 }); }
 }
 
-// DELETE /api/admin/published/[id] — delete published article
+// DELETE /api/admin/published/[id] — haberi "arşive" al (hard delete değil).
+// Artık admin panelinden silinen tüm haberler Arşiv sekmesinde görünür.
+// status: 'published' → 'archived', archivedAt: now() olarak işaretlenir.
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -40,7 +42,10 @@ export async function DELETE(
   if (!checkAuth(req)) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
   const { id } = await params;
   try {
-    await db.publishedArticle.delete({ where: { id } });
-    return NextResponse.json({ ok: true });
+    const r = await db.publishedArticle.update({
+      where: { id },
+      data: { status: 'archived', archivedAt: new Date() },
+    });
+    return NextResponse.json({ ok: true, archived: r });
   } catch { return NextResponse.json({ error: 'Haber bulunamadı' }, { status: 404 }); }
 }

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
-  Newspaper, FileText, FolderTree, Edit3, X, Upload
+  Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -25,8 +25,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; status: string; createdAt: string };
-type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; };
-type AdminTab = 'messages' | 'custom' | 'published';
+type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; };
+type AdminTab = 'messages' | 'custom' | 'published' | 'archived';
 
 const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
 
@@ -61,6 +61,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
   // Published articles state
   const [pubArticles, setPubArticles] = useState<PubArticle[]>([]);
+  const [archivedArticles, setArchivedArticles] = useState<PubArticle[]>([]);
+  const [loadingArchived, setLoadingArchived] = useState(false);
   const [loadingPub, setLoadingPub] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -103,17 +105,41 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     try {
       const r = await fetch('/api/admin/published', { headers: { Authorization: `Bearer ${token}` } });
       const json = (await r.json()) as { articles?: PubArticle[] };
-      setPubArticles(json.articles ?? []);
+      // Tekrar başlık kontrolü — aynı başlıkla 2+ kayıt varsa, en yeni olanı tut.
+      // Bu admin panelinde aynı haberin tekrar tekrar görünmesini önler.
+      const seen = new Set<string>();
+      const dedup: PubArticle[] = [];
+      for (const a of (json.articles ?? []).sort(
+        (x, y) => new Date(y.latestPublishedAt).getTime() - new Date(x.latestPublishedAt).getTime(),
+      )) {
+        const key = a.aiTitle.trim().toLowerCase().slice(0, 60);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        dedup.push(a);
+      }
+      setPubArticles(dedup);
     } catch { toast.error('Haberler yüklenemedi'); }
     finally { setLoadingPub(false); }
+  }, [token]);
+
+  const loadArchived = useCallback(async () => {
+    if (!token) return;
+    setLoadingArchived(true);
+    try {
+      const r = await fetch('/api/admin/archived', { headers: { Authorization: `Bearer ${token}` } });
+      const json = (await r.json()) as { articles?: PubArticle[] };
+      setArchivedArticles(json.articles ?? []);
+    } catch { toast.error('Arşiv yüklenemedi'); }
+    finally { setLoadingArchived(false); }
   }, [token]);
 
   useEffect(() => {
     if (open && token) {
       if (adminTab === 'messages') void loadMessages();
       if (adminTab === 'published') void loadPublished();
+      if (adminTab === 'archived') void loadArchived();
     }
-  }, [open, token, adminTab, loadMessages, loadPublished]);
+  }, [open, token, adminTab, loadMessages, loadPublished, loadArchived]);
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -192,8 +218,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const deletePub = async (id: string) => {
     try {
       const r = await fetch(`/api/admin/published/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if (!r.ok) throw new Error('Silinemedi');
-      setPubArticles(a => a.filter(x => x.id !== id)); toast.success('Haber silindi');
+      if (!r.ok) throw new Error('Arşive alınamadı');
+      setPubArticles(a => a.filter(x => x.id !== id));
+      toast.success('Haber arşive alındı');
+      // Arşiv listesini yenile (eğer arşiv sekmesi açıksa)
+      void loadArchived();
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
   };
 
@@ -246,7 +275,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setLoadingSources(false); }
   };
 
-  const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); setAdminTab('messages'); };
+  const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); setArchivedArticles([]); setAdminTab('messages'); };
   const newCount = messages.filter(m => m.status === 'new').length;
   const allSelected = messages.length > 0 && selectedIds.size === messages.length;
   const resetConfirmed = resetConfirm.trim().toLowerCase() === 'evet';
@@ -307,7 +336,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <>
                 {/* Sub-tabs */}
                 <div className="mb-4 flex gap-1 rounded-lg border border-border bg-muted/30 p-1">
-                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper]] as const).map(([id, label, Icon]) => (
+                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper], ['archived', 'Arşiv', Archive]] as const).map(([id, label, Icon]) => (
                     <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Icon className="h-3.5 w-3.5" /> {label}
                     </button>
@@ -366,73 +395,177 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                   </div>
                 )}
 
-                {/* Published articles tab */}
+                {/* Published articles tab — 30 ana sayfalık üstte, gerisi altta */}
                 {adminTab === 'published' && (
                   <div>
                     {loadingPub ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}</div>
                     : pubArticles.length === 0 ? <Card className="flex flex-col items-center gap-3 p-10 text-center"><Newspaper className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Yayında haber yok</p></Card>
-                    : <div className="space-y-3">{pubArticles.map(a => (
-                      <Card key={a.id} className="p-4">
-                        {editingId === a.id ? (
-                          <div className="space-y-3">
-                            <div className="space-y-1"><Label className="text-xs">Başlık</Label><Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
-                            <div className="space-y-1"><Label className="text-xs">Özet</Label><Textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} rows={5} className="resize-none" /></div>
-                            <div className="space-y-1"><Label className="text-xs">Görsel URL</Label><Input value={editImage} onChange={(e) => setEditImage(e.target.value)} />
-                            <div className="flex items-center gap-2 mt-1">
-                              <Label htmlFor="edit-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
-                              <input id="edit-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setEditImage(url)); }} />
-                              {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
-                            </div>
-                            </div>
-                            <div className="flex gap-2"><Button size="sm" onClick={() => saveEdit(a.id)} disabled={savingEdit} className="gap-1.5">{savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}Kaydet</Button><Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5"><X className="h-3.5 w-3.5" />İptal</Button></div>
-                          </div>
-                        ) : (
-                          <div className="flex items-start gap-3">
-                            {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
-                              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
-                              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-                                <span>{a.wordCount} kelime</span>
-                                {a.latestPublishedAt && (
-                                  <span className="inline-flex items-center gap-1 tabular-nums">
-                                    <Clock className="h-3 w-3" />
-                                    {new Date(a.latestPublishedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                                    <span className="text-border">·</span>
-                                    {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                  </span>
-                                )}
-                                {a.sourceCount > 1 && (
-                                  <button type="button" onClick={() => toggleSources(a.id, a.sourceArticleIds)} className="inline-flex items-center gap-0.5 text-news hover:underline">
-                                    {a.sourceCount} kaynak {expandedSources === a.id ? '▲' : '▼'}
-                                  </button>
-                                )}
-                              </div>
-                              {expandedSources === a.id && (
-                                <div className="mt-2 rounded-md border border-border bg-muted/30 p-2">
-                                  {loadingSources ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
-                                   sourceLinks[a.id]?.length ? (
-                                    <div className="space-y-1">
-                                      {sourceLinks[a.id].map((s, i) => (
-                                        <a key={i} href={s.link} target="_blank" rel="noopener noreferrer" className="block text-[11px] text-muted-foreground hover:text-news">
-                                          {i + 1}. {s.title.slice(0, 60)} — <span className="font-medium">{s.source}</span>
-                                        </a>
-                                      ))}
+                    : (
+                      <>
+                        {/* Üstte: ana sayfadaki ilk 30 haber */}
+                        <div className="mb-3 flex items-center gap-2">
+                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Ana Sayfadaki Haberler</h3>
+                          <Badge variant="secondary" className="text-[10px]">{Math.min(30, pubArticles.length)}</Badge>
+                        </div>
+                        <div className="mb-6 space-y-3">
+                          {pubArticles.slice(0, 30).map(a => (
+                            <Card key={a.id} className="p-4">
+                              {editingId === a.id ? (
+                                <div className="space-y-3">
+                                  <div className="space-y-1"><Label className="text-xs">Başlık</Label><Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
+                                  <div className="space-y-1"><Label className="text-xs">Özet</Label><Textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} rows={5} className="resize-none" /></div>
+                                  <div className="space-y-1"><Label className="text-xs">Görsel URL</Label><Input value={editImage} onChange={(e) => setEditImage(e.target.value)} />
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Label htmlFor="edit-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
+                                    <input id="edit-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setEditImage(url)); }} />
+                                    {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
+                                  </div>
+                                  </div>
+                                  <div className="flex gap-2"><Button size="sm" onClick={() => saveEdit(a.id)} disabled={savingEdit} className="gap-1.5">{savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}Kaydet</Button><Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5"><X className="h-3.5 w-3.5" />İptal</Button></div>
+                                </div>
+                              ) : (
+                                <div className="flex items-start gap-3">
+                                  {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
+                                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
+                                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                                      <span>{a.wordCount} kelime</span>
+                                      {a.latestPublishedAt && (
+                                        <span className="inline-flex items-center gap-1 tabular-nums">
+                                          <Clock className="h-3 w-3" />
+                                          {new Date(a.latestPublishedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                          <span className="text-border">·</span>
+                                          {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                        </span>
+                                      )}
+                                      {a.sourceCount > 1 && (
+                                        <button type="button" onClick={() => toggleSources(a.id, a.sourceArticleIds)} className="inline-flex items-center gap-0.5 text-news hover:underline">
+                                          {a.sourceCount} kaynak {expandedSources === a.id ? '▲' : '▼'}
+                                        </button>
+                                      )}
                                     </div>
-                                  ) : <p className="text-[11px] text-muted-foreground">Kaynak bulunamadı</p>}
+                                    {expandedSources === a.id && (
+                                      <div className="mt-2 rounded-md border border-border bg-muted/30 p-2">
+                                        {loadingSources ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
+                                         sourceLinks[a.id]?.length ? (
+                                          <div className="space-y-1">
+                                            {sourceLinks[a.id].map((s, i) => (
+                                              <a key={i} href={s.link} target="_blank" rel="noopener noreferrer" className="block text-[11px] text-muted-foreground hover:text-news">
+                                                {i + 1}. {s.title.slice(0, 60)} — <span className="font-medium">{s.source}</span>
+                                              </a>
+                                            ))}
+                                          </div>
+                                        ) : <p className="text-[11px] text-muted-foreground">Kaynak bulunamadı</p>}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-shrink-0 items-center gap-1"><Button variant="ghost" size="icon" onClick={() => startEdit(a)} className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
+                                    <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                                      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Haberi arşive al?</AlertDialogTitle><AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi arşive alınacak (yayından kalkacak). Arşiv sekmesinden görüntülenebilir.</AlertDialogDescription></AlertDialogHeader>
+                                        <AlertDialogFooter><AlertDialogCancel>Vazgeç</AlertDialogCancel><AlertDialogAction onClick={() => deletePub(a.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Arşive Al</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                                    </AlertDialog>
+                                  </div>
                                 </div>
                               )}
+                            </Card>
+                          ))}
+                        </div>
+
+                        {/* Altta: 30'dan sonraki haberler + kategori haberleri */}
+                        {pubArticles.length > 30 && (
+                          <>
+                            <div className="mb-3 flex items-center gap-2">
+                              <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Diğer Haberler</h3>
+                              <Badge variant="secondary" className="text-[10px]">{pubArticles.length - 30}</Badge>
                             </div>
-                            <div className="flex flex-shrink-0 items-center gap-1"><Button variant="ghost" size="icon" onClick={() => startEdit(a)} className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
-                              <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Haberi sil?</AlertDialogTitle><AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi kalıcı olarak silinecek.</AlertDialogDescription></AlertDialogHeader>
-                                  <AlertDialogFooter><AlertDialogCancel>Vazgeç</AlertDialogCancel><AlertDialogAction onClick={() => deletePub(a.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Sil</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
-                              </AlertDialog>
+                            <div className="space-y-3">
+                              {pubArticles.slice(30).map(a => (
+                                <Card key={a.id} className="p-4">
+                                  <div className="flex items-start gap-3">
+                                    {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
+                                      <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
+                                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                                        <span>{a.wordCount} kelime</span>
+                                        {a.latestPublishedAt && (
+                                          <span className="inline-flex items-center gap-1 tabular-nums">
+                                            <Clock className="h-3 w-3" />
+                                            {new Date(a.latestPublishedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                            <span className="text-border">·</span>
+                                            {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-shrink-0 items-center gap-1">
+                                      <Button variant="ghost" size="icon" onClick={() => startEdit(a)} className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
+                                      <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Haberi arşive al?</AlertDialogTitle><AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi arşive alınacak.</AlertDialogDescription></AlertDialogHeader>
+                                          <AlertDialogFooter><AlertDialogCancel>Vazgeç</AlertDialogCancel><AlertDialogAction onClick={() => deletePub(a.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Arşive Al</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                                      </AlertDialog>
+                                    </div>
+                                  </div>
+                                </Card>
+                              ))}
                             </div>
-                          </div>
+                          </>
                         )}
-                      </Card>))}
-                    </div>}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Archived articles tab — sadece görüntüleme, düzenle/sil yok */}
+                {adminTab === 'archived' && (
+                  <div>
+                    {loadingArchived ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}</div>
+                    : archivedArticles.length === 0 ? <Card className="flex flex-col items-center gap-3 p-10 text-center"><Archive className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Arşivde haber yok</p><p className="text-xs text-muted-foreground/70">Yayından kaldırılan haberler burada listelenir.</p></Card>
+                    : (
+                      <>
+                        <div className="mb-3 flex items-center gap-2">
+                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenmiş Haberler</h3>
+                          <Badge variant="secondary" className="text-[10px]">{archivedArticles.length}</Badge>
+                        </div>
+                        <div className="space-y-3">
+                          {archivedArticles.map(a => (
+                            <Card key={a.id} className="p-4 opacity-80">
+                              <div className="flex items-start gap-3">
+                                {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded grayscale"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
+                                  <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
+                                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                                    <span>{a.wordCount} kelime</span>
+                                    {/* Yayınlandığı tarih */}
+                                    {a.publishedAt && (
+                                      <span className="inline-flex items-center gap-1 tabular-nums">
+                                        <Clock className="h-3 w-3" />
+                                        <span className="font-medium">Yayın:</span>
+                                        {new Date(a.publishedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                        <span className="text-border">·</span>
+                                        {new Date(a.publishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                      </span>
+                                    )}
+                                    {/* Arşive alındığı tarih */}
+                                    {a.archivedAt && (
+                                      <span className="inline-flex items-center gap-1 tabular-nums text-destructive/80">
+                                        <Archive className="h-3 w-3" />
+                                        <span className="font-medium">Arşiv:</span>
+                                        {new Date(a.archivedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                        <span className="text-border">·</span>
+                                        {new Date(a.archivedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </>
