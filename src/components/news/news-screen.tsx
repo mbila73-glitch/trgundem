@@ -128,7 +128,7 @@ function ArticleDetailInline({
         Ana Sayfa
       </Button>
 
-      {article.imageUrl && (
+      {article.imageUrl ? (
         <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl bg-muted mb-6">
           <img
             src={article.imageUrl}
@@ -138,6 +138,10 @@ function ArticleDetailInline({
               (e.currentTarget as HTMLImageElement).style.display = 'none';
             }}
           />
+        </div>
+      ) : (
+        <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl bg-muted mb-6 flex items-center justify-center">
+          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-32 w-auto object-contain opacity-60" />
         </div>
       )}
 
@@ -351,12 +355,16 @@ export function NewsScreen() {
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {articles.map((a, i) => (
-              <div key={a.id} className={i === 0 && active === 'all' && !openArticleId ? 'col-span-full' : ''}>
-                {i === 0 && active === 'all' && !openArticleId ? (
+              <div key={a.id} className={i === 0 && !openArticleId ? 'col-span-full' : ''}>
+                {i === 0 && !openArticleId ? (
                   <div className="flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md hover:border-foreground/20 sm:flex-row" onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
-                    {a.imageUrl && (
+                    {a.imageUrl ? (
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px]">
                         <img src={a.imageUrl} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                      </div>
+                    ) : (
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">
+                        <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-20 w-auto object-contain opacity-50" />
                       </div>
                     )}
                     <div className="flex flex-1 flex-col gap-2 p-6">
