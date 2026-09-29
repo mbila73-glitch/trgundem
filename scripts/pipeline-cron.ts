@@ -59,8 +59,9 @@ async function runStep(name: string, cmd: string): Promise<{ ok: boolean; stdout
 async function runCycle(): Promise<void> {
   log(`=== Cycle başlatıldı (saat ${new Date().toLocaleTimeString('tr-TR')}) ===`);
 
-  // 1. Stale: tüm published'ları "stale" yap — bu cycle'da "yeniden geldi" olarak
-  //    işaretlenmezlerse archived olacaklar (eski haberler)
+  // 1. Stale: tüm published'ları 'stale' yap — bu cycle'da yeniden gelirlerse
+  //    published'a restore edilecekler. Gelmezlerse son adımda tekrar published
+  //    yapılıp sayfada kalacaklar.
   currentStage = 'archive-stale';
   try {
     const r = await db.publishedArticle.updateMany({
@@ -72,32 +73,45 @@ async function runCycle(): Promise<void> {
     log(`  ✗ Stale hatası: ${(e as Error).message}`);
   }
 
-  // 2. RSS refresh
+  // 2. Cancel drafts: önceki cycle'dan kalan, yetişmeyen draft'ları sil
+  //    (yeni cycle başlıyor, eski yarı kalmış özetler iptal)
+  try {
+    const r = await db.publishedArticle.deleteMany({
+      where: { status: 'draft' },
+    });
+    if (r.count > 0) {
+      log(`  ✓ Cancel: ${r.count} yarı kalmış draft silindi (yeni cycle için temiz başlangıç)`);
+    }
+  } catch (e) {
+    log(`  ✗ Cancel hatası: ${(e as Error).message}`);
+  }
+
+  // 3. RSS refresh
   currentStage = 'refresh';
   await runStep('RSS refresh', 'bun run scripts/trigger-refresh.ts');
 
-  // 3. build rss_icerik.md
+  // 4. build rss_icerik.md
   currentStage = 'build-icerik';
   await runStep('rss_icerik.md', 'bun run scripts/build-rss-icerik.ts');
 
-  // 4. find-duplicate-news (rss_kaynak_sayi.md)
+  // 5. find-duplicate-news (rss_kaynak_sayi.md)
   currentStage = 'build-kaynak-sayi';
   await runStep('rss_kaynak_sayi.md', 'python3 scripts/find-duplicate-news.py');
 
-  // 5. build-rss-ozet (incremental auto-publish: her 3 draft'ta bir publish)
-  //    Ayrıca 'stale' olanlardan bu cycle'da yeniden gelenleri published yap
+  // 6. build-rss-ozet (incremental + auto-publish her 3 draft'ta bir)
   currentStage = 'build-ozet';
   await runStep('rss_ozet.md (AI paraphrase + auto-publish)', 'bun run scripts/build-rss-ozet.ts');
 
-  // 6. Cycle sonunda: hala 'stale' olanları archived yap (bu cycle'da gelmeyenler)
-  //    Ama kullanıcının kuralı: "güncellenmeyen haber sayfada kalsın"
-  //    Bu yüzden stale olanları geri published yap (sayfada kalsınlar)
+  // 7. Restore: hala 'stale' olanları (bu cycle'da yeniden gelmeyenler) → published
+  //    (kullanıcının kuralı: güncellenmeyen haberler sayfada kalsın)
   try {
     const restored = await db.publishedArticle.updateMany({
       where: { status: 'stale' },
       data: { status: 'published' },
     });
-    log(`  ✓ Restore: ${restored.count} 'stale' haber tekrar published yapıldı (sayfada kalsın)`);
+    if (restored.count > 0) {
+      log(`  ✓ Restore: ${restored.count} 'stale' haber tekrar published (sayfada kalsın)`);
+    }
   } catch (e) {
     log(`  ✗ Restore hatası: ${(e as Error).message}`);
   }
