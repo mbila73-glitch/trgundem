@@ -2,7 +2,7 @@
 
 RSS kaynaklarından alınan haber derlemesi. Her haberin orijinal kısa açıklaması ve kaynak linki yer alır.
 
-- **Oluşturulma:** 29 Eyl 2026 08:46
+- **Oluşturulma:** 29 Eyl 2026 10:24
 - **Toplam makale:** 3829
 - **Toplam kaynak:** 59 (6 kategori)
 - **Açıklamalı makale:** 3744
@@ -40032,5 +40032,5 @@ _Paris’e dönüş, yeni bir aşk ihtimali ve Yunanistan’a uzanan bir rota…
 ## Üretim Bilgisi
 
 - **Oluşturan:** Haber Özet build-rss-icerik.ts
-- **Tarih:** 2026-09-29T08:46:02.420Z
+- **Tarih:** 2026-09-29T10:24:42.017Z
 - **Toplam satır:** 39791

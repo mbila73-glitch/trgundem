@@ -25,22 +25,27 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !message.trim()) return;
+    if (!name.trim() || !message.trim()) return;
     setSubmitting(true);
     try {
       const r = await fetch('/api/reader-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, message }),
+        body: JSON.stringify({ name, email: email || '(belirtilmedi)', subject, message }),
       });
-      const json = (await r.json()) as { ok?: boolean; error?: string };
-      if (!r.ok) throw new Error(json.error || 'Gönderilemedi');
-      toast.success('Mesajınız iletildi. İlginiz için teşekkürler!');
-      setName('');
-      setEmail('');
-      setSubject('');
-      setMessage('');
-      onClose();
+      const json = (await r.json()) as { ok?: boolean; error?: string; rejected?: boolean };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Gönderilemedi');
+      if (json.rejected) {
+        toast.error('Mesajınız iade edilmiştir');
+        setMessage('');
+      } else {
+        toast.success('Mesaj gönderildi, teşekkürler');
+        setName('');
+        setEmail('');
+        setSubject('');
+        setMessage('');
+        onClose();
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Gönderme hatası');
     } finally {
@@ -57,8 +62,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
             Okuyucu Temsilcisine Ulaşın
           </DialogTitle>
           <DialogDescription>
-            Görüş, öneri ve şikayetlerinizi bize iletebilirsiniz. Mesajınız yönetici
-            paneline iletilecektir.
+            Görüş, öneri ve şikayetlerinizi bize iletebilirsiniz.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
@@ -74,14 +78,13 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="r-email">E-posta *</Label>
+            <Label htmlFor="r-email">E-posta (isteğe bağlı)</Label>
             <Input
               id="r-email"
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ornek@email.com"
-              required
             />
           </div>
           <div className="space-y-1.5">
@@ -108,7 +111,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
           <DialogFooter>
             <Button
               type="submit"
-              disabled={submitting || !name.trim() || !email.trim() || !message.trim()}
+              disabled={submitting || !name.trim() || !message.trim()}
               className="w-full gap-2"
             >
               {submitting ? (
