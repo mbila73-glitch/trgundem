@@ -291,7 +291,7 @@ async function summarizeGroup(
 
   const prompt = buildUserPrompt(chosen);
   const MAX_RETRIES = 2; // reduce retries to avoid 429 cascades
-  const BASE_DELAY_MS = 8000; // 8s pause between calls to avoid 429
+  const BASE_DELAY_MS = 15000; // 15s pause between calls — AI'ı boğmamak için uzun bekleme
   const WORD_COUNT_MIN = 150; // MIN_SUMMARY_WORDS ile aynı — AI bu kadar üretmeli
   let lastParsed: { title: string; summary: string; category?: string } | null = null;
   let lastWordCount = 0;

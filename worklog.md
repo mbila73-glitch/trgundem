@@ -289,3 +289,60 @@ Stage Summary:
 - 4 satır canlı ilerleme: RSS okunan kaynak sayısı, 2+ kaynaklı farklı haber sayısı, tamamlanan özet sayısı, yayınlanan haber sayısı. Her 2 saniyede polling ile güncellenir.
 - pipeline-cron.ts her aşamada status dosyasına yazar, Restart sekmesi bunu polling ile okur.
 - TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.
+
+---
+Task ID: stability-fix-9
+Agent: main
+Task: Haberi arşive alma çalışmıyor, sub-tabs kayboluyor, AI boğulmasın, RSS 10 dakikada bir, stabilite öncelik.
+
+Work Log:
+- DB teşhisi: Tüm published haberler önceki cycle'da stale yapılmış ama restore edilmemiş (subprocess öldüğü için). 0 published, 28 stale, 22 archived. Manuel restore: 28 stale → published.
+- DELETE handler düzeltme (`src/app/api/admin/published/[id]/route.ts`):
+  - Eski: catch bloğu hatayı yutuyordu, "Haber bulunamadı" 404 dönüyordu (gerçek hata gizli).
+  - Yeni: önce `findUnique` ile kayıt var mı kontrol et, sonra update. Hata olursa gerçek mesajı `console.error` ile logla, frontend'e `detail` ile döner (500 status).
+  - Idempotent: zaten archived ise tekrar archived yapmaz.
+- deletePub düzeltme (`src/components/news/admin-panel.tsx`):
+  - Hata durumunda JSON body'yi parse edip gerçek `detail` veya `error` mesajını göster.
+  - `console.error('[deletePub]', e)` ile browser console'a da log.
+  - State update + loadArchived + fetchPipelineStatus çağrılıyor (Restart sekmesindeki publishedCount da güncellensin).
+- Sub-tabs sticky (`src/components/news/admin-panel.tsx`):
+  - Eski: `mb-4 flex gap-1 rounded-lg border border-border bg-muted/30 p-1`
+  - Yeni: `sticky top-0 z-10 mb-4 -mx-6 px-6 py-2 flex gap-1 rounded-lg border border-border bg-background/95 backdrop-blur shadow-sm`
+  - Artık panel scroll edilse bile sub-tabs (Mesajlar/Özel/Yayındaki/Arşiv/Restart) üstte sabit kalıyor.
+- AI boğulmaması için bekleme süresi (`scripts/build-rss-ozet.ts`):
+  - BASE_DELAY_MS: 8000 (8s) → 15000 (15s) — her AI çağrısı arasına 15 saniye bekleme.
+  - Bu sayede rate limit (429) daha az tetiklenir, AI'ın özet kalitesi artar.
+- Pipeline cron 10 dakikada bir (`scripts/pipeline-cron.ts`):
+  - Eski: `minute === 0 || minute === 30` (30 dakikada bir)
+  - Yeni: `minute % 10 === 0` (10 dakikada bir: 00, 10, 20, 30, 40, 50)
+  - Her cycle'da sadece yeni RSS'leri işler — eski published'lar published olarak kalır.
+- Stale yapma KALDIRILDI (`scripts/pipeline-cron.ts`):
+  - Eski: cycle başında tüm published'ları stale yap, cycle sonunda restore et.
+    Bu, cycle yarım kalırsa tüm haberler stale'de takılı kalıyordu (DB şişmesi + 0 published).
+  - Yeni: stale yapılmıyor, published'lar korunsun. Sadece yeni haberler işlenir.
+  - Cancel draft (yarım kalan AI özetleri sil) KORUNDU — temiz başlangıç için.
+  - Restore adımı KALDIRILDI (zaten stale yok).
+- Sadece yeni haberler işlenir:
+  - build-rss-ozet.ts içinde existingHashes kontrolü zaten var (sadece yeni gruplar özetlenir).
+  - Bu sayede cycle kısa sürer, AI'ı boğmaz. Cycle başına 5-10 yeni haber özetlenir.
+- Max 50 published limit'i KORUNDU — toplam 50'yi aşarsa en eskiler silinir (şişme önlenir).
+- `/api/pipeline/run` route inline exec'e geri döndü:
+  - Fire-and-forget subprocess sandbox'ta ölüyordu.
+  - Inline exec Next.js dev server içinde yaşar.
+  - pipeline-cron.ts her aşamada status dosyasına yazar, frontend polling ile görür.
+  - Request cycle bitene kadar açık kalır (5-10 dk), 15 dk timeout.
+- Dev server watchdog (`scripts/dev-watchdog.sh`):
+  - Dev server sandbox'ta ölüyor. Watchdog script ile her öldüğünde 5 saniye sonra yeniden başlatılıyor.
+  - setsid + </dev/null ile tamamen ayrılmış, while-true döngüsü ile sürekli canlı.
+
+Stage Summary:
+- DB restore edildi: 28 stale → published, artık published haberler görünür.
+- DELETE endpoint artık gerçek hata mesajını döner, catch yutması yok.
+- Sub-tabs sticky — scroll ederken kaybolmuyor.
+- AI çağrıları arası 15 saniye bekleme — rate limit ve özet kalitesi için.
+- Pipeline her 10 dakikada bir çalışır (00, 10, 20, 30, 40, 50).
+- Stale yapma KALDIRILDI — published'lar korunur, cycle yarım kalırsa bile içerik kaybolmaz.
+- Sadece yeni RSS'ler işlenir, AI boğulmaz, cycle kısa sürer.
+- Max 50 published limit ile şişme önlenir.
+- Dev server watchdog ile sürekli canlı.
+- TypeScript ve ESLint temiz.

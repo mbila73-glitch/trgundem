@@ -111,20 +111,11 @@ async function runCycle(): Promise<void> {
     error: null,
   });
 
-  // 1. Stale: tüm published'ları 'stale' yap
+  // 1. Cancel drafts: önceki cycle'dan kalan, yetişmeyen draft'ları sil
+  //    (yeni cycle başlıyor, eski yarı kalmış özetler iptal)
+  //    Not: published'ları stale yapmıyoruz — eski haberler published olarak kalır,
+  //    sadece yeni RSS'leri işliyoruz. Bu, AI'ı boğmamak için — cycle kısa sürer.
   currentStage = 'archive-stale';
-  try {
-    const r = await db.publishedArticle.updateMany({
-      where: { status: 'published' },
-      data: { status: 'stale' },
-    });
-    log(`  ✓ Stale: ${r.count} published haber 'stale' olarak işaretlendi`);
-  } catch (e) {
-    log(`  ✗ Stale hatası: ${(e as Error).message}`);
-    await writeStatus({ error: `Stale: ${(e as Error).message}` });
-  }
-
-  // 2. Cancel drafts
   try {
     const r = await db.publishedArticle.deleteMany({
       where: { status: 'draft' },
@@ -136,7 +127,7 @@ async function runCycle(): Promise<void> {
     log(`  ✗ Cancel hatası: ${(e as Error).message}`);
   }
 
-  // 3. RSS refresh — kaç kaynak okundu sayısını stdout'tan parse et
+  // 2. RSS refresh — kaç kaynak okundu sayısını stdout'tan parse et
   currentStage = 'refresh';
   await writeStatus({ stage: 'refresh' });
   {
@@ -147,12 +138,12 @@ async function runCycle(): Promise<void> {
     await writeStatus({ rssRead });
   }
 
-  // 4. build rss_icerik.md
+  // 3. build rss_icerik.md
   currentStage = 'build-icerik';
   await writeStatus({ stage: 'build-icerik' });
   await runStep('rss_icerik.md', 'bun run scripts/build-rss-icerik.ts');
 
-  // 5. find-duplicate-news — kaç farklı haber grubu olduğunu stdout'tan parse et
+  // 4. find-duplicate-news — kaç farklı haber grubu olduğunu stdout'tan parse et
   currentStage = 'build-kaynak-sayi';
   await writeStatus({ stage: 'build-kaynak-sayi' });
   {
@@ -173,8 +164,10 @@ async function runCycle(): Promise<void> {
     await writeStatus({ duplicatesFound: dupCount });
   }
 
-  // 6. build-rss-ozet (incremental + auto-publish her 3 draft'ta bir)
+  // 5. build-rss-ozet (incremental + auto-publish her 3 draft'ta bir)
   //    — kaç özet tamamlandı + kaç yayınlandı sayısını stdout'tan parse et
+  //    Sadece yeni grupları özetler (existingHashes check). AI'ı boğmamak için
+  //    aralarda 15 sn bekleme var (build-rss-ozet.ts içinde).
   currentStage = 'build-ozet';
   await writeStatus({ stage: 'build-ozet' });
   {
@@ -186,20 +179,8 @@ async function runCycle(): Promise<void> {
     await writeStatus({ summariesDone });
   }
 
-  // 7. Restore: stale olanları tekrar published yap
-  try {
-    const restored = await db.publishedArticle.updateMany({
-      where: { status: 'stale' },
-      data: { status: 'published' },
-    });
-    if (restored.count > 0) {
-      log(`  ✓ Restore: ${restored.count} 'stale' haber tekrar published (sayfada kalsın)`);
-    }
-  } catch (e) {
-    log(`  ✗ Restore hatası: ${(e as Error).message}`);
-  }
-
-  // 8. Max 30 per category
+  // 6. Max 30 per category — kategori bazında 30'u aşanları en eskiden sil
+  //    Not: artık stale yapmadığımız için restore adımı yok — published kalır.
   const MAX_PER_CATEGORY = 30;
   const ALL_CATEGORIES = [
     'Güncel', 'Kamu / Resmi', 'Ekonomi / Finans',
@@ -230,7 +211,8 @@ async function runCycle(): Promise<void> {
     }
   }
 
-  // 9. Max 50 total published
+  // 7. Max 50 total published — toplam 50'yi aşarsa en eskileri sil
+  //    (şişme olmasın — kullanıcı "yarım saat birikiyor" dedi)
   try {
     const publishedCount = await db.publishedArticle.count({ where: { status: 'published' } });
     if (publishedCount > 50) {
@@ -267,8 +249,8 @@ async function tick(): Promise<void> {
   const now = new Date();
   const minute = now.getMinutes();
 
-  // Cycle saat başı (:00) ve yarım (:30) başlar
-  if (minute === 0 || minute === 30) {
+  // Cycle her 10 dakikada bir başlar (minute % 10 === 0): 00, 10, 20, 30, 40, 50
+  if (minute % 10 === 0) {
     if (currentStage !== 'idle') {
       log(`Tick skipped (stage: ${currentStage}) — önceki cycle hala çalışıyor`);
       return;

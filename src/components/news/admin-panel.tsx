@@ -288,13 +288,26 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   };
   const deletePub = async (id: string) => {
     try {
-      const r = await fetch(`/api/admin/published/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if (!r.ok) throw new Error('Arşive alınamadı');
+      const r = await fetch(`/api/admin/published/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!r.ok) {
+        const err = (await r.json().catch(() => ({})) as { error?: string; detail?: string });
+        throw new Error(err.detail || err.error || `HTTP ${r.status}`);
+      }
+      // Local state'i hemen güncelle — UI akıcı olsun
       setPubArticles(a => a.filter(x => x.id !== id));
       toast.success('Haber arşive alındı');
-      // Arşiv listesini yenile (eğer arşiv sekmesi açıksa)
+      // Arşiv listesini de yenile — eğer kullanıcı arşiv sekmesine geçerse güncel görür
       void loadArchived();
-    } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
+      // Restart sekmesindeki publishedCount'u da güncelle
+      void fetchPipelineStatus();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      toast.error(`Arşive alınamadı: ${msg}`);
+      console.error('[deletePub]', e);
+    }
   };
 
   // Reset handlers
@@ -405,8 +418,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               </form>
             ) : (
               <>
-                {/* Sub-tabs */}
-                <div className="mb-4 flex gap-1 rounded-lg border border-border bg-muted/30 p-1">
+                {/* Sub-tabs — sticky (scroll ederken kaybolmasın) */}
+                <div className="sticky top-0 z-10 mb-4 -mx-6 px-6 py-2 flex gap-1 rounded-lg border border-border bg-background/95 backdrop-blur shadow-sm">
                   {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper], ['archived', 'Arşiv', Archive], ['restart', 'Restart', RefreshCw]] as const).map(([id, label, Icon]) => (
                     <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Icon className="h-3.5 w-3.5" /> {label}

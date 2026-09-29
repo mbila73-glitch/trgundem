@@ -41,11 +41,28 @@ export async function DELETE(
 ) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
   const { id } = await params;
+  if (!id) return NextResponse.json({ error: 'Geçersiz ID' }, { status: 400 });
   try {
+    // Önce kayıt var mı kontrol et (daha iyi hata mesajı için)
+    const existing = await db.publishedArticle.findUnique({ where: { id }, select: { id: true, status: true, aiTitle: true } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Haber bulunamadı', id }, { status: 404 });
+    }
+    // Status zaten archived ise tekrar archived yapma (idempotent)
+    if (existing.status === 'archived') {
+      return NextResponse.json({ ok: true, archived: existing, message: 'Haber zaten arşivde' });
+    }
     const r = await db.publishedArticle.update({
       where: { id },
       data: { status: 'archived', archivedAt: new Date() },
     });
     return NextResponse.json({ ok: true, archived: r });
-  } catch { return NextResponse.json({ error: 'Haber bulunamadı' }, { status: 404 }); }
+  } catch (e) {
+    // Hatanın gerçek sebebini logla — eski kod hatayı yutuyordu
+    console.error('[DELETE /api/admin/published] Hata:', e);
+    return NextResponse.json(
+      { error: 'Sunucu hatası', detail: (e as Error).message, id },
+      { status: 500 },
+    );
+  }
 }
