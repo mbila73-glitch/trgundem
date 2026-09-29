@@ -507,14 +507,16 @@ async function main() {
   //    success, so a crash mid-run doesn't lose completed work. On rerun,
   //    skip groups whose sourceArticleIds hash already exists in DB.
   const existingHashes = new Set<string>();
-  const existingDrafts = await db.publishedArticle.findMany({
-    where: { status: 'draft' },
+  // Check BOTH draft and published — already-summarized groups should not be
+  // re-summarized (waste of AI calls and would create duplicate rows).
+  const existing = await db.publishedArticle.findMany({
+    where: { status: { in: ['draft', 'published'] } },
     select: { sourceArticleIds: true },
   });
-  for (const d of existingDrafts) {
+  for (const d of existing) {
     existingHashes.add(d.sourceArticleIds);
   }
-  console.log(`Mevcut draft özet: ${existingHashes.size} (atlanacak)`);
+  console.log(`Mevcut özet (draft+published): ${existingHashes.size} (atlanacak)`);
 
   const published: Array<{
     aiTitle: string;
@@ -547,7 +549,7 @@ async function main() {
       );
       // Still load it into "published" so it ends up in the final file
       const existing = await db.publishedArticle.findFirst({
-        where: { sourceArticleIds: hash, status: 'draft' },
+        where: { sourceArticleIds: hash, status: { in: ['draft', 'published'] } },
       });
       if (existing) {
         published.push({

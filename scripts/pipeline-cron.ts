@@ -1,23 +1,19 @@
 // Cron-like pipeline scheduler.
 //
-// Runs continuously. Every minute it checks the wall-clock minute and triggers:
-//   minute 20 (and 50): refresh RSS feeds → build rss_icerik → run duplicate
-//     detection (rss_kaynak_sayi) → build rss_ozet (with AI paraphrase).
-//     This whole pipeline takes ~10 minutes (mostly AI summarization with
-//     rate-limit pacing), so it should finish before minute 30/60.
-//   minute 30 (and 60=00): publish-drafts (drafts → published, previously
-//     published → archived). The UI will then poll /api/published-articles and
-//     show the new batch.
+// Timeline (her 30 dakikalık cycle):
+//   :20 ─ refresh RSS + build rss_icerik + find-duplicates + AI summarize (~10 dk)
+//   :30 ─ ilk büyük publish (tüm draft'ları yayınla)
+//   :32, :34, :36, :38, :40, :42, :44, :46, :48 ─ her 2 dk'da bir publish
+//     (yeni draft'lar geldiyse onları yayınla)
+//   :49 ─ cycle sonu (artık publish yapma, 50'de yeni refresh gelecek)
+//   :50 ─ yeni refresh + pipeline
+//   :00 (=60) ─ ilk büyük publish
+//   :02, :04, :06, :08, :10, :12, :14, :16, :18 ─ her 2 dk'da publish
+//   :19 ─ cycle sonu
 //
-// Timeline:
-//   :20 ─ refresh RSS ─ build rss_icerik ─ find-duplicates ─ AI summarize (10 dk)
-//   :30 ─ publish (UI yenilenir)
-//   :50 ─ refresh RSS ─ build rss_icerik ─ find-duplicates ─ AI summarize (10 dk)
-//   :60 (=00) ─ publish (UI yenilenir)
-//
-// The refresh + build steps run sequentially because each step depends on the
-// previous one. publish-drafts is fire-and-forget on the API endpoint, but we
-// call the DB update directly here since the script has direct DB access.
+// "Archive all published" işlemi her cycle'ın başında yapılır (20 ve 50'de
+// refresh başlamadan önce). Böylece yeni cycle'da UI'da sadece yeni haberler
+// görünür, eski cycle'ın haberleri "archived" olur.
 //
 // Run: setsid bash -c 'exec bun run /home/z/my-project/scripts/pipeline-cron.ts' &
 
@@ -29,7 +25,7 @@ const execAsync = promisify(exec);
 
 const ONE_MINUTE_MS = 60_000;
 
-type Stage = 'idle' | 'refresh' | 'build-icerik' | 'build-kaynak-sayi' | 'build-ozet' | 'publish';
+type Stage = 'idle' | 'refresh' | 'build-icerik' | 'build-kaynak-sayi' | 'build-ozet' | 'publish' | 'archive';
 let currentStage: Stage = 'idle';
 let lastPublishAt: Date | null = null;
 let lastRefreshStart: Date | null = null;
@@ -44,11 +40,10 @@ async function runStep(name: string, cmd: string): Promise<{ ok: boolean; stdout
   try {
     const { stdout, stderr } = await execAsync(cmd, {
       cwd: process.cwd(),
-      maxBuffer: 50 * 1024 * 1024, // 50 MB
+      maxBuffer: 50 * 1024 * 1024,
     });
     log(`✓ ${name} tamam`);
     if (stderr) {
-      // Filter out prisma query logs (too noisy)
       const filtered = stderr.split('\n').filter((l) => !l.startsWith('prisma:query')).join('\n').trim();
       if (filtered) console.log(`  stderr: ${filtered.slice(0, 500)}`);
     }
@@ -68,6 +63,18 @@ async function runRefreshPipeline(): Promise<void> {
   lastRefreshStart = new Date();
   log(`=== Refresh pipeline başlatıldı (saat ${lastRefreshStart.toLocaleTimeString('tr-TR')}) ===`);
 
+  currentStage = 'archive';
+  // Cycle başında eski published'ları arşivle (yeni cycle'da sadece yeni haberler görünsün)
+  try {
+    const r = await db.publishedArticle.updateMany({
+      where: { status: 'published' },
+      data: { status: 'archived' },
+    });
+    log(`  ✓ Archived (cycle başı): ${r.count} eski haber arşivlendi`);
+  } catch (e) {
+    log(`  ✗ Archive hatası: ${(e as Error).message}`);
+  }
+
   currentStage = 'refresh';
   await runStep('RSS refresh', 'bun run scripts/trigger-refresh.ts');
 
@@ -86,41 +93,52 @@ async function runRefreshPipeline(): Promise<void> {
 
 async function runPublishStep(): Promise<void> {
   currentStage = 'publish';
-  log(`=== Publish step (draft → published) başlatıldı ===`);
+  const before = new Date();
   try {
-    // Archive previously-published articles
-    const archived = await db.publishedArticle.updateMany({
-      where: { status: 'published' },
-      data: { status: 'archived' },
-    });
-    // Promote drafts to published
+    // Promote ALL drafts to published (eğer draft varsa)
     const promoted = await db.publishedArticle.updateMany({
       where: { status: 'draft' },
       data: { status: 'published', publishedAt: new Date() },
     });
     lastPublishAt = new Date();
-    log(`✓ Archived: ${archived.count}, Promoted (draft→published): ${promoted.count}`);
+    if (promoted.count > 0) {
+      log(`✓ Publish: ${promoted.count} yeni haber yayınlandı (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
+    } else {
+      log(`⏸️ Publish: hazır draft yok, atlandı (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
+    }
   } catch (e) {
     log(`✗ Publish hatası: ${(e as Error).message}`);
   }
   currentStage = 'idle';
 }
 
+// Check if current minute is a "publish minute" (every 2 minutes from 30-48 or 00-18)
+function isPublishMinute(minute: number): boolean {
+  // Cycle 1: 30, 32, 34, 36, 38, 40, 42, 44, 46, 48
+  // Cycle 2: 00, 02, 04, 06, 08, 10, 12, 14, 16, 18
+  if (minute >= 30 && minute <= 48 && minute % 2 === 0) return true;
+  if (minute >= 0 && minute <= 18 && minute % 2 === 0) return true;
+  return false;
+}
+
 async function tick(): Promise<void> {
   const now = new Date();
   const minute = now.getMinutes();
 
-  // Refresh pipeline starts at minute 20 and 50 (10 minutes before publish)
+  // Refresh pipeline starts at minute 20 or 50
   if (minute === 20 || minute === 50) {
     if (currentStage !== 'idle') {
       log(`Tick skipped (stage: ${currentStage})`);
       return;
     }
     await runRefreshPipeline();
-  } else if (minute === 30 || minute === 0) {
-    // Publish at minute 30 and 60(=00), 10 minutes after refresh started
+    return;
+  }
+
+  // Publish every 2 minutes between 30-48 and 00-18
+  if (isPublishMinute(minute)) {
     if (currentStage !== 'idle') {
-      log(`Tick skipped (stage: ${currentStage}) — refresh pipeline hala çalışıyor`);
+      log(`Tick skipped (stage: ${currentStage}) — pipeline hala çalışıyor`);
       return;
     }
     await runPublishStep();
@@ -131,8 +149,10 @@ async function main() {
   log(`Pipeline cron başlatıldı. PID: ${process.pid}`);
   log(`Saat dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   log(`Tetikleme saatleri:`);
-  log(`  • :20 ve :50 — refresh RSS + build rss_icerik + find-duplicates + AI summarize (~10 dk sürer)`);
-  log(`  • :30 ve :00 — publish (draft → published, UI yenilenir)`);
+  log(`  • :20 ve :50 — archive + refresh RSS + build pipeline (~10 dk sürer)`);
+  log(`  • :30, :32, :34, :36, :38, :40, :42, :44, :46, :48 — publish (her 2 dk'da bir)`);
+  log(`  • :00, :02, :04, :06, :08, :10, :12, :14, :16, :18 — publish (her 2 dk'da bir)`);
+  log(`  • :49 ve :19 — cycle sonu (artık publish yapılmaz, bir sonraki refresh'i bekle)`);
   log(`Bekleniyor…`);
 
   // Check every minute
@@ -140,12 +160,11 @@ async function main() {
     void tick().catch((e) => log(`Tick hatası: ${(e as Error).message}`));
   }, ONE_MINUTE_MS);
 
-  // Also run a single check immediately (in case we just started near a tick minute)
+  // Run a single check immediately (in case we just started near a tick minute)
   setTimeout(() => {
     void tick().catch((e) => log(`İlk tick hatası: ${(e as Error).message}`));
   }, 5000);
 
-  // Keep the process alive
   process.on('SIGTERM', () => {
     log('SIGTERM alındı, çıkılıyor…');
     process.exit(0);
