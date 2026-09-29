@@ -91,20 +91,49 @@ async function runRefreshPipeline(): Promise<void> {
   log(`=== Refresh pipeline tamam ===`);
 }
 
-async function runPublishStep(): Promise<void> {
+async function runPublishStep(isLast: boolean): Promise<void> {
   currentStage = 'publish';
-  const before = new Date();
   try {
-    // Promote ALL drafts to published (eğer draft varsa)
-    const promoted = await db.publishedArticle.updateMany({
-      where: { status: 'draft' },
-      data: { status: 'published', publishedAt: new Date() },
-    });
-    lastPublishAt = new Date();
-    if (promoted.count > 0) {
-      log(`✓ Publish: ${promoted.count} yeni haber yayınlandı (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
+    // Count current drafts
+    const draftCount = await db.publishedArticle.count({ where: { status: 'draft' } });
+
+    if (draftCount === 0) {
+      // No drafts to publish — skip
+      lastPublishAt = new Date();
+      if (!isLast) {
+        log(`⏸️ Publish: hazır draft yok, atlandı (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
+      }
+      currentStage = 'idle';
+      return;
+    }
+
+    if (isLast) {
+      // Last publish of the cycle (48 or 18): publish ALL remaining drafts
+      const r = await db.publishedArticle.updateMany({
+        where: { status: 'draft' },
+        data: { status: 'published', publishedAt: new Date() },
+      });
+      lastPublishAt = new Date();
+      log(`✓ Publish (SON): ${r.count} haber yayınlandı, tüm draft'lar tükendi (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
     } else {
-      log(`⏸️ Publish: hazır draft yok, atlandı (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
+      // Normal publish (30-46 or 00-16): publish up to 3 most recent drafts
+      const drafts = await db.publishedArticle.findMany({
+        where: { status: 'draft' },
+        orderBy: { latestPublishedAt: 'desc' },
+        take: 3,
+        select: { id: true },
+      });
+      if (drafts.length === 0) {
+        currentStage = 'idle';
+        return;
+      }
+      const r = await db.publishedArticle.updateMany({
+        where: { id: { in: drafts.map((d) => d.id) } },
+        data: { status: 'published', publishedAt: new Date() },
+      });
+      lastPublishAt = new Date();
+      const remaining = draftCount - r.count;
+      log(`✓ Publish: ${r.count} haber yayınlandı, kalan ${remaining} draft (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
     }
   } catch (e) {
     log(`✗ Publish hatası: ${(e as Error).message}`);
@@ -113,12 +142,17 @@ async function runPublishStep(): Promise<void> {
 }
 
 // Check if current minute is a "publish minute" (every 2 minutes from 30-48 or 00-18)
-function isPublishMinute(minute: number): boolean {
+function isPublishMinute(minute: number): { isPublish: boolean; isLast: boolean } {
   // Cycle 1: 30, 32, 34, 36, 38, 40, 42, 44, 46, 48
   // Cycle 2: 00, 02, 04, 06, 08, 10, 12, 14, 16, 18
-  if (minute >= 30 && minute <= 48 && minute % 2 === 0) return true;
-  if (minute >= 0 && minute <= 18 && minute % 2 === 0) return true;
-  return false;
+  // Last publish: 48 or 18
+  if (minute >= 30 && minute <= 48 && minute % 2 === 0) {
+    return { isPublish: true, isLast: minute === 48 };
+  }
+  if (minute >= 0 && minute <= 18 && minute % 2 === 0) {
+    return { isPublish: true, isLast: minute === 18 };
+  }
+  return { isPublish: false, isLast: false };
 }
 
 async function tick(): Promise<void> {
@@ -136,12 +170,13 @@ async function tick(): Promise<void> {
   }
 
   // Publish every 2 minutes between 30-48 and 00-18
-  if (isPublishMinute(minute)) {
+  const publishInfo = isPublishMinute(minute);
+  if (publishInfo.isPublish) {
     if (currentStage !== 'idle') {
       log(`Tick skipped (stage: ${currentStage}) — pipeline hala çalışıyor`);
       return;
     }
-    await runPublishStep();
+    await runPublishStep(publishInfo.isLast);
   }
 }
 
@@ -150,9 +185,10 @@ async function main() {
   log(`Saat dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   log(`Tetikleme saatleri:`);
   log(`  • :20 ve :50 — archive + refresh RSS + build pipeline (~10 dk sürer)`);
-  log(`  • :30, :32, :34, :36, :38, :40, :42, :44, :46, :48 — publish (her 2 dk'da bir)`);
-  log(`  • :00, :02, :04, :06, :08, :10, :12, :14, :16, :18 — publish (her 2 dk'da bir)`);
-  log(`  • :49 ve :19 — cycle sonu (artık publish yapılmaz, bir sonraki refresh'i bekle)`);
+  log(`  • :30, :32, :34, :36, :38, :40, :42, :44, :46, :48 — publish (her 2 dk'da en yeni 3 draft, sonuncu = tüm kalan draft)`);
+  log(`  • :00, :02, :04, :06, :08, :10, :12, :14, :16, :18 — publish (aynı mantık)`);
+  log(`  • :48 ve :18 — cycle'da SON publish, kalan tüm draft'lar yayınlanır`);
+  log(`  • :49-:19 ve :19-:20 — cycle boşluğu, sonraki refresh beklenir`);
   log(`Bekleniyor…`);
 
   // Check every minute
