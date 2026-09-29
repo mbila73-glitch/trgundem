@@ -72,7 +72,7 @@ export function InfoBands() {
             HAVA
           </span>
           <div className="relative flex-1 overflow-hidden">
-            <div className="flex items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_22s_linear_infinite]">
+            <div className="flex items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_11s_linear_infinite]">
               {HAVA_DATA.concat(HAVA_DATA).map((h, i) => (
                 <span key={i} className="inline-flex items-center gap-1.5 text-sm">
                   <WeatherIcon type={h.ikon} className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -93,12 +93,17 @@ export function InfoBands() {
               FİNANS
             </span>
             <div className="relative flex-1 overflow-hidden">
-              <div className="flex items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_20s_linear_infinite]">
+              <div className="flex items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_10s_linear_infinite]">
                 {finans.concat(finans).map((item, i) => (
                   <span key={i} className="inline-flex items-center gap-2 text-sm">
                     <span className="font-medium text-slate-300">{item.name}</span>
                     <span className="font-bold text-white">{item.value}</span>
-                    <span className="text-slate-500 text-xs">({finansSource})</span>
+                    {item.change !== '—' && (
+                      <span className={`inline-flex items-center gap-0.5 ${item.up ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {item.up ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                        {item.change}
+                      </span>
+                    )}
                     <span className="mx-2 text-slate-700">|</span>
                   </span>
                 ))}
@@ -114,7 +119,7 @@ export function InfoBands() {
               ⚡ SON DAKİKA
             </span>
             <div className="relative flex-1 overflow-hidden">
-              <div className="flex gap-10 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_18s_linear_infinite] text-destructive-foreground text-base tracking-wide">
+              <div className="flex gap-10 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_9s_linear_infinite] text-destructive-foreground text-base tracking-wide">
                 {sonDakika.concat(sonDakika).map((item, i) => (
                   <button
                     key={i}

@@ -102,7 +102,7 @@ function ArticleDetailInline({
   }
 
   return (
-    <div className="mx-auto max-w-3xl py-4">
+    <div className="mx-auto max-w-6xl py-4">
       <Button
         variant="ghost"
         size="sm"

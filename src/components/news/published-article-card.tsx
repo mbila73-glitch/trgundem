@@ -53,11 +53,7 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
         </div>
       ) : (
         <div className="relative flex aspect-[16/9] w-full items-center justify-center bg-muted text-muted-foreground">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback className="text-sm font-semibold bg-news/10 text-news">
-              <Newspaper className="h-5 w-5" />
-            </AvatarFallback>
-          </Avatar>
+          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-16 w-auto object-contain opacity-60" />
         </div>
       )}
 

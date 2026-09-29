@@ -21,8 +21,8 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex h-20 flex-col items-center justify-center gap-0 py-1">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
-                <span className="text-xl font-bold">T</span>
+              <span className="flex h-10 w-10 items-center justify-center rounded-md shadow-sm overflow-hidden">
+                <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-cover" />
               </span>
               <div className="flex flex-col leading-none">
                 <span className="text-lg font-bold tracking-tight">Türkiye'de Gündem</span>
