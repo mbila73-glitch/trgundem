@@ -4,40 +4,68 @@ import { db } from '@/lib/db';
 // GET /api/published-articles
 //   ?category=Güncel           -> filter by category
 //   ?limit=20&offset=0          -> pagination
-//   ?status=draft|published     -> default: published (only "ready" articles)
+//   ?status=draft|published     -> default: published
 //   ?layout=all                 -> "Tüm Haberler" layout: per-category quotas
-//                                 (Güncel 6, Kamu 4, Ekonomi 4, Spor 3, Bilim 2, Kültür 1) = 20
+//                                 (Güncel 10, Kamu 5, Ekonomi 5, Spor 4, Bilim 3, Kültür 3) = 30
+//   ?layout=all&offset=30&limit=20 -> "Diğer Haberler" (ikinci batch, kategorisiz, en yeni)
+//                                    toplam max 50 haber
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const layout = sp.get('layout');
   const status = sp.get('status') ?? 'published';
 
   if (layout === 'all') {
-    // Tüm Haberler: 6 + 4 + 4 + 3 + 2 + 1 = 20 haber
-    const quotas: Record<string, number> = {
-      'Güncel': 6,
-      'Kamu / Resmi': 4,
-      'Ekonomi / Finans': 4,
-      'Spor / Magazin': 3,
-      'Bilim / Teknoloji': 2,
-      'Kültür / Sanat': 1,
-    };
-    const result = await Promise.all(
-      Object.entries(quotas).map(async ([cat, limit]) => {
-        const items = await db.publishedArticle.findMany({
-          where: { category: cat, status },
-          orderBy: { latestPublishedAt: 'desc' },
-          take: limit,
-        });
-        return items;
-      }),
-    );
-    const all = result.flat();
-    all.sort(
-      (a, b) =>
-        b.latestPublishedAt.getTime() - a.latestPublishedAt.getTime(),
-    );
-    return NextResponse.json({ articles: all, total: all.length });
+    const offset = Number(sp.get('offset') ?? 0);
+
+    if (offset === 0) {
+      // İlk batch: kategori kotalı 30 haber
+      const quotas: Record<string, number> = {
+        'Güncel': 10,
+        'Kamu / Resmi': 5,
+        'Ekonomi / Finans': 5,
+        'Spor / Magazin': 4,
+        'Bilim / Teknoloji': 3,
+        'Kültür / Sanat': 3,
+      };
+      const result = await Promise.all(
+        Object.entries(quotas).map(async ([cat, limit]) => {
+          const items = await db.publishedArticle.findMany({
+            where: { category: cat, status },
+            orderBy: { latestPublishedAt: 'desc' },
+            take: limit,
+          });
+          return items;
+        }),
+      );
+      const all = result.flat();
+      all.sort(
+        (a, b) =>
+          b.latestPublishedAt.getTime() - a.latestPublishedAt.getTime(),
+      );
+      const totalPublished = await db.publishedArticle.count({ where: { status } });
+      return NextResponse.json({
+        articles: all,
+        total: all.length,
+        totalPublished,
+        hasMore: totalPublished > all.length,
+      });
+    }
+
+    // İkinci batch ("Diğer Haberler"): kategorisiz, en yeni kalanlar
+    const limit = Math.min(Number(sp.get('limit') ?? 20), 20);
+    const articles = await db.publishedArticle.findMany({
+      where: { status },
+      orderBy: { latestPublishedAt: 'desc' },
+      take: limit,
+      skip: offset,
+    });
+    const totalPublished = await db.publishedArticle.count({ where: { status } });
+    return NextResponse.json({
+      articles,
+      total: articles.length,
+      totalPublished,
+      hasMore: offset + articles.length < totalPublished,
+    });
   }
 
   const limit = Math.min(Number(sp.get('limit') ?? 30), 100);
@@ -61,19 +89,17 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/published-articles
-//   ?action=publish-drafts  -> promote all drafts to published (and archive the previously-published)
+//   ?action=publish-drafts  -> promote all drafts to published
 //   ?action=rebuild         -> trigger the build-rss-ozet.ts script in background
 export async function POST(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const action = sp.get('action');
 
   if (action === 'publish-drafts') {
-    // Archive previously published articles
     await db.publishedArticle.updateMany({
       where: { status: 'published' },
       data: { status: 'archived' },
     });
-    // Promote drafts to published (with publishedAt timestamp)
     const r = await db.publishedArticle.updateMany({
       where: { status: 'draft' },
       data: { status: 'published', publishedAt: new Date() },

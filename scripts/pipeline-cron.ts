@@ -116,6 +116,31 @@ async function runCycle(): Promise<void> {
     log(`  ✗ Restore hatası: ${(e as Error).message}`);
   }
 
+  // 8. Max 50 published: en eskilerden başlayarak sil
+  //    Kullanıcının kuralı: 50'den fazla published varsa, en eskisinden
+  //    başlayarak yeniye doğru sırayla silip 50'ye düşür
+  try {
+    const publishedCount = await db.publishedArticle.count({ where: { status: 'published' } });
+    if (publishedCount > 50) {
+      const toDelete = publishedCount - 50;
+      // En eski published'ları bul (publishedAt ASC)
+      const oldest = await db.publishedArticle.findMany({
+        where: { status: 'published' },
+        orderBy: { publishedAt: 'asc' },
+        take: toDelete,
+        select: { id: true, aiTitle: true },
+      });
+      if (oldest.length > 0) {
+        const r = await db.publishedArticle.deleteMany({
+          where: { id: { in: oldest.map((o) => o.id) } },
+        });
+        log(`  ✓ Max 50: ${r.count} en eski haber silindi (toplam ${publishedCount} → ${publishedCount - r.count})`);
+      }
+    }
+  } catch (e) {
+    log(`  ✗ Max 50 hatası: ${(e as Error).message}`);
+  }
+
   currentStage = 'idle';
   log(`=== Cycle tamam ===`);
 }

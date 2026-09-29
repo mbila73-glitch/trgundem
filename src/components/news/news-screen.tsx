@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Newspaper, Sparkles, FileText, FolderTree, Star, Loader2, AlertCircle } from 'lucide-react';
+import { Newspaper, Sparkles, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
 import { PublishedArticleDialog } from './published-article-dialog';
@@ -32,15 +33,6 @@ const CATEGORY_MAP: Record<string, string> = {
   kultur: 'Kültür / Sanat',
 };
 
-const ALL_LIMITS: Record<string, number> = {
-  'Güncel': 6,
-  'Kamu / Resmi': 4,
-  'Ekonomi / Finans': 4,
-  'Spor / Magazin': 3,
-  'Bilim / Teknoloji': 2,
-  'Kültür / Sanat': 1,
-};
-
 const CATEGORY_LIMITS: Record<string, number> = {
   'Güncel': 10,
   'Kamu / Resmi': 7,
@@ -56,12 +48,14 @@ export function NewsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openArticleId, setOpenArticleId] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    // Defer setState calls to microtasks so they happen in callbacks, not in the effect body
     Promise.resolve().then(() => setLoading(true));
     Promise.resolve().then(() => setError(null));
+    setHasMore(false);
 
     const url =
       active === 'all'
@@ -73,12 +67,16 @@ export function NewsScreen() {
     fetch(url, { cache: 'no-store' })
       .then(async (r) => {
         if (!r.ok) throw new Error('Haberler yüklenemedi');
-        const json = (await r.json()) as { articles: PublishedArticle[]; total: number };
-        return json.articles ?? [];
+        const json = (await r.json()) as {
+          articles: PublishedArticle[];
+          hasMore?: boolean;
+        };
+        return json;
       })
-      .then((items) => {
+      .then((data) => {
         if (cancelled) return;
-        setArticles(items);
+        setArticles(data.articles ?? []);
+        setHasMore(data.hasMore ?? false);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -93,6 +91,28 @@ export function NewsScreen() {
       cancelled = true;
     };
   }, [active]);
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const r = await fetch(
+        '/api/published-articles?layout=all&status=published&offset=30&limit=20',
+        { cache: 'no-store' },
+      );
+      if (!r.ok) throw new Error('Daha fazla haber yüklenemedi');
+      const json = (await r.json()) as {
+        articles: PublishedArticle[];
+        hasMore?: boolean;
+      };
+      setArticles((prev) => [...prev, ...(json.articles ?? [])]);
+      setHasMore(json.hasMore ?? false);
+    } catch (e) {
+      // silent fail for "load more"
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const current = SUB_TABS.find((t) => t.id === active) ?? SUB_TABS[0];
 
@@ -137,8 +157,9 @@ export function NewsScreen() {
         <p className="mb-4 text-xs text-muted-foreground">
           {active === 'all' ? (
             <>
-              <strong>20 haber</strong> · Kategori kotaları: Güncel 6, Kamu 4,
-              Ekonomi 4, Spor 3, Bilim 2, Kültür 1
+              <strong>{articles.length} haber</strong> · Kategori kotaları: Güncel 10,
+              Kamu 5, Ekonomi 5, Spor 4, Bilim 3, Kültür 3 (toplam 30)
+              {hasMore && ' · daha fazla var'}
             </>
           ) : (
             <>
@@ -186,6 +207,26 @@ export function NewsScreen() {
               />
             ))}
           </div>
+
+          {/* "Diğer Haberler" button — only on "all" tab when hasMore is true */}
+          {active === 'all' && hasMore && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="gap-2"
+              >
+                {loadingMore ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+                Diğer Haberler
+              </Button>
+            </div>
+          )}
 
           <div className="mt-4 text-center text-[11px] text-muted-foreground">
             <span className="inline-flex items-center gap-1">
