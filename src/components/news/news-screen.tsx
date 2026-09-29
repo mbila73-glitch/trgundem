@@ -141,7 +141,7 @@ function ArticleDetailInline({
         </div>
       ) : (
         <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl bg-muted mb-6 flex items-center justify-center">
-          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-32 w-auto object-contain opacity-60" />
+          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-20 w-auto object-contain opacity-60" />
         </div>
       )}
 
@@ -290,7 +290,7 @@ export function NewsScreen() {
         role="tablist"
         aria-label="Haber kategorileri"
         className="sticky z-20 mb-6 flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 shadow-sm"
-        style={{ top: '176px' }}
+        style={{ top: '216px' }}
       >
         {SUB_TABS.map((tab) => {
           const isActive = tab.id === active;
