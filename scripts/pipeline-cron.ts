@@ -116,14 +116,45 @@ async function runCycle(): Promise<void> {
     log(`  ✗ Restore hatası: ${(e as Error).message}`);
   }
 
-  // 8. Max 50 published: en eskilerden başlayarak sil
-  //    Kullanıcının kuralı: 50'den fazla published varsa, en eskisinden
-  //    başlayarak yeniye doğru sırayla silip 50'ye düşür
+  // 8. Max 20 per category: her kategoride 20'den fazla published varsa
+  //    en eskilerden başlayarak sil, 20'ye düşür.
+  //    (AI özetleme limitleri farklıdır — bu YAYINLANAN haber limiti)
+  const MAX_PER_CATEGORY = 20;
+  const ALL_CATEGORIES = [
+    'Güncel', 'Kamu / Resmi', 'Ekonomi / Finans',
+    'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat',
+  ];
+  for (const cat of ALL_CATEGORIES) {
+    try {
+      const catCount = await db.publishedArticle.count({
+        where: { status: 'published', category: cat },
+      });
+      if (catCount > MAX_PER_CATEGORY) {
+        const toDelete = catCount - MAX_PER_CATEGORY;
+        const oldest = await db.publishedArticle.findMany({
+          where: { status: 'published', category: cat },
+          orderBy: { publishedAt: 'asc' },
+          take: toDelete,
+          select: { id: true },
+        });
+        if (oldest.length > 0) {
+          const r = await db.publishedArticle.deleteMany({
+            where: { id: { in: oldest.map((o) => o.id) } },
+          });
+          log(`  ✓ Max 20 [${cat}]: ${r.count} en eski haber silindi (${catCount} → ${catCount - r.count})`);
+        }
+      }
+    } catch (e) {
+      log(`  ✗ Max 20 [${cat}] hatası: ${(e as Error).message}`);
+    }
+  }
+
+  // 9. Max 50 total published: tüm kategorilerdeki published toplamı 50'yi
+  //    aşarsa, en eskilerden başlayarak sil
   try {
     const publishedCount = await db.publishedArticle.count({ where: { status: 'published' } });
     if (publishedCount > 50) {
       const toDelete = publishedCount - 50;
-      // En eski published'ları bul (publishedAt ASC)
       const oldest = await db.publishedArticle.findMany({
         where: { status: 'published' },
         orderBy: { publishedAt: 'asc' },
@@ -134,11 +165,11 @@ async function runCycle(): Promise<void> {
         const r = await db.publishedArticle.deleteMany({
           where: { id: { in: oldest.map((o) => o.id) } },
         });
-        log(`  ✓ Max 50: ${r.count} en eski haber silindi (toplam ${publishedCount} → ${publishedCount - r.count})`);
+        log(`  ✓ Max 50 (total): ${r.count} en eski haber silindi (${publishedCount} → ${publishedCount - r.count})`);
       }
     }
   } catch (e) {
-    log(`  ✗ Max 50 hatası: ${(e as Error).message}`);
+    log(`  ✗ Max 50 (total) hatası: ${(e as Error).message}`);
   }
 
   currentStage = 'idle';
