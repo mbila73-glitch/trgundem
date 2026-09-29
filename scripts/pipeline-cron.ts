@@ -116,10 +116,10 @@ async function runCycle(): Promise<void> {
     log(`  ✗ Restore hatası: ${(e as Error).message}`);
   }
 
-  // 8. Max 20 per category: her kategoride 20'den fazla published varsa
-  //    en eskilerden başlayarak sil, 20'ye düşür.
+  // 8. Max 30 per category: her kategoride 30'dan fazla published varsa
+  //    en eskilerden başlayarak sil, 30'a düşür.
   //    (AI özetleme limitleri farklıdır — bu YAYINLANAN haber limiti)
-  const MAX_PER_CATEGORY = 20;
+  const MAX_PER_CATEGORY = 30;
   const ALL_CATEGORIES = [
     'Güncel', 'Kamu / Resmi', 'Ekonomi / Finans',
     'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat',
@@ -141,11 +141,11 @@ async function runCycle(): Promise<void> {
           const r = await db.publishedArticle.deleteMany({
             where: { id: { in: oldest.map((o) => o.id) } },
           });
-          log(`  ✓ Max 20 [${cat}]: ${r.count} en eski haber silindi (${catCount} → ${catCount - r.count})`);
+          log(`  ✓ Max 30 [${cat}]: ${r.count} en eski haber silindi (${catCount} → ${catCount - r.count})`);
         }
       }
     } catch (e) {
-      log(`  ✗ Max 20 [${cat}] hatası: ${(e as Error).message}`);
+      log(`  ✗ Max 30 [${cat}] hatası: ${(e as Error).message}`);
     }
   }
 
