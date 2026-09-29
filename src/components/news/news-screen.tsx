@@ -30,6 +30,7 @@ const CATEGORY_MAP: Record<string, string> = {
   bilim: 'Bilim / Teknoloji',
   spor: 'Spor / Magazin',
   kultur: 'Kültür / Sanat',
+  ozel: 'Özel',
 };
 
 const CATEGORY_LIMITS: Record<string, number> = {
@@ -39,6 +40,7 @@ const CATEGORY_LIMITS: Record<string, number> = {
   'Spor / Magazin': 5,
   'Bilim / Teknoloji': 3,
   'Kültür / Sanat': 3,
+  'Özel': 30,
 };
 
 // Inline article detail component (not a dialog)
