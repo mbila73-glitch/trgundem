@@ -128,7 +128,7 @@ function ArticleDetailInline({
     return (
       <div className="mx-auto max-w-3xl space-y-4 py-8">
         <Skeleton className="h-6 w-24" />
-        <Skeleton className="aspect-[16/8] w-full rounded-xl" />
+        <Skeleton className="mx-auto h-[240px] w-full max-w-md rounded-xl" />
         <Skeleton className="h-8 w-3/4" />
         <Skeleton className="h-32 w-full" />
       </div>
@@ -148,46 +148,53 @@ function ArticleDetailInline({
   }
 
   return (
-    <div className="mx-auto max-w-6xl py-4">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onBack}
-        className="mb-4 gap-1.5 text-sm"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Geri
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="mb-4 ml-2 gap-1.5 text-sm"
-        onClick={() => {
-          const url = new URL(window.location.href);
-          url.searchParams.delete('article');
-          window.history.pushState({}, '', url.toString());
-          window.dispatchEvent(new PopStateEvent('popstate'));
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-      >
-        <Home className="h-4 w-4" />
-        Ana Sayfa
-      </Button>
+    <div className="mx-auto max-w-3xl py-4">
+      <div className="mb-4 flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="gap-1.5 text-sm"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Geri
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-sm"
+          onClick={() => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('article');
+            window.history.pushState({}, '', url.toString());
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        >
+          <Home className="h-4 w-4" />
+          Ana Sayfa
+        </Button>
+      </div>
 
+      {/* Görsel: 10 satır yüksekliğinde (~240px), genişlik uygun oranda azaldı */}
       {article.imageUrl ? (
-        <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl bg-muted mb-6">
-          <img
-            src={article.imageUrl}
-            alt={article.aiTitle}
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = 'none';
-            }}
-          />
+        <div className="mb-6 flex justify-center">
+          <div className="relative aspect-[16/9] w-full max-w-md overflow-hidden rounded-xl bg-muted">
+            <img
+              src={article.imageUrl}
+              alt={article.aiTitle}
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
         </div>
       ) : (
-        <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl bg-muted mb-6 flex items-center justify-center">
-          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-20 w-auto object-contain opacity-60" />
+        <div className="mb-6 flex justify-center">
+          <div className="relative flex aspect-[16/9] w-full max-w-md items-center justify-center overflow-hidden rounded-xl bg-muted">
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-20 w-auto object-contain opacity-60" />
+          </div>
         </div>
       )}
 
@@ -210,6 +217,9 @@ function ArticleDetailInline({
           {article.aiSummary}
         </p>
       </div>
+
+      {/* Like / Dislike bar — haberin altında */}
+      <HorizontalLikeBar articleId={article.id} />
     </div>
   );
 }

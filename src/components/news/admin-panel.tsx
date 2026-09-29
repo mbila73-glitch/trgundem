@@ -392,8 +392,16 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
                               <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
-                              <div className="mt-1 flex items-center gap-3 text-[10px] text-muted-foreground">
+                              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
                                 <span>{a.wordCount} kelime</span>
+                                {a.latestPublishedAt && (
+                                  <span className="inline-flex items-center gap-1 tabular-nums">
+                                    <Clock className="h-3 w-3" />
+                                    {new Date(a.latestPublishedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                    <span className="text-border">·</span>
+                                    {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                  </span>
+                                )}
                                 {a.sourceCount > 1 && (
                                   <button type="button" onClick={() => toggleSources(a.id, a.sourceArticleIds)} className="inline-flex items-center gap-0.5 text-news hover:underline">
                                     {a.sourceCount} kaynak {expandedSources === a.id ? '▲' : '▼'}

@@ -87,10 +87,33 @@ export default function Home() {
 
   const formatTime = (d: Date) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+  // Logo veya başlığa tıklanınca: eğer bir haber detayı açıksa kapat ve ana listeye dön.
+  // NewsScreen URL'deki ?article= parametresini dinler (popstate), bu yüzden
+  // parametreyi silip popstate tetiklemek yeterli.
+  const handleHomeClick = () => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('article')) {
+      // Zaten ana ekrandayız, sadece en üste kaydır
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    url.searchParams.delete('article');
+    window.history.pushState({}, '', url.toString());
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const logoEl = (
-    <div className="flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md">
+    <button
+      type="button"
+      onClick={handleHomeClick}
+      aria-label="Ana sayfaya dön"
+      title="Ana sayfaya dön"
+      className="flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+    >
       <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
-    </div>
+    </button>
   );
 
   return (
@@ -119,10 +142,16 @@ export default function Home() {
             {/* Orta: Logo + Başlık + Logo */}
             <div className="flex items-center gap-6">
               {logoEl}
-              <div className="flex flex-col leading-none gap-1">
-                <span className="text-base font-bold tracking-tight uppercase">TÜRKİYE'DE GÜNDEM</span>
+              <button
+                type="button"
+                onClick={handleHomeClick}
+                aria-label="Ana sayfaya dön"
+                title="Ana sayfaya dön"
+                className="flex flex-col leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+              >
+                <span className="text-base font-bold tracking-tight uppercase hover:text-news transition">TÜRKİYE'DE GÜNDEM</span>
                 <span className="text-[10px] font-bold tracking-[0.3em] text-muted-foreground uppercase text-center">TRGUNDEM.NET</span>
-              </div>
+              </button>
               {logoEl}
             </div>
 
