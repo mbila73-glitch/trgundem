@@ -50,14 +50,6 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
             onError={() => setImgError(true)}
           />
-          <div className="absolute left-2 top-2">
-            <Badge
-              className="bg-background/85 text-foreground backdrop-blur"
-              variant="secondary"
-            >
-              {article.sourceCount} kaynak
-            </Badge>
-          </div>
         </div>
       ) : (
         <div className="relative flex aspect-[16/9] w-full items-center justify-center bg-muted text-muted-foreground">
@@ -66,11 +58,6 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
               <Newspaper className="h-5 w-5" />
             </AvatarFallback>
           </Avatar>
-          <div className="absolute left-2 top-2">
-            <Badge variant="secondary" className="bg-background/85">
-              {article.sourceCount} kaynak
-            </Badge>
-          </div>
         </div>
       )}
 
@@ -99,12 +86,6 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
         </p>
 
         <div className="mt-auto flex items-center gap-2 pt-1">
-          <Badge
-            variant="outline"
-            className="px-2 py-0.5 text-[10px] font-normal text-muted-foreground"
-          >
-            {article.wordCount} kelime
-          </Badge>
           <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground opacity-0 transition group-hover:opacity-100">
             <ExternalLink className="h-3 w-3" />
             Detay

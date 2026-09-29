@@ -153,22 +153,6 @@ export function NewsScreen() {
       </nav>
 
       {/* Layout info */}
-      {!loading && articles.length > 0 && (
-        <p className="mb-4 text-xs text-muted-foreground">
-          {active === 'all' ? (
-            <>
-              <strong>{articles.length} haber</strong> · Kategori kotaları: Güncel 10,
-              Kamu 5, Ekonomi 5, Spor 4, Bilim 3, Kültür 3 (toplam 30)
-              {hasMore && ' · daha fazla var'}
-            </>
-          ) : (
-            <>
-              <strong>{articles.length} haber</strong> · Limit:{' '}
-              {CATEGORY_LIMITS[CATEGORY_MAP[active] ?? ''] ?? 30}
-            </>
-          )}
-        </p>
-      )}
 
       {/* Content */}
       {loading ? (
@@ -227,14 +211,6 @@ export function NewsScreen() {
               </Button>
             </div>
           )}
-
-          <div className="mt-4 text-center text-[11px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-news" />
-              AI ile telif güvenli (paraphrase) şekilde yeniden yazıldı · 1
-              kaynaklı haberler yayınlanmaz
-            </span>
-          </div>
         </>
       )}
 

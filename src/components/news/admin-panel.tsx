@@ -298,7 +298,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       className="gap-1.5 text-xs text-destructive hover:text-destructive border-destructive/30"
                     >
                       <RotateCcw className="h-3.5 w-3.5" />
-                      Sıfırla
+                      Siteyi Sıfırla
                     </Button>
                     <Button variant="ghost" size="sm" onClick={handleLogout} className="text-xs">
                       Çıkış

@@ -2,82 +2,64 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Mail } from 'lucide-react';
-import { SiteHeader, type Tab } from '@/components/news/site-header';
 import { NewsScreen } from '@/components/news/news-screen';
-import { IcerikDosyasi } from '@/components/news/icerik-dosyasi';
-import { SourcesPanel } from '@/components/news/sources-panel';
 import { AdminPanel } from '@/components/news/admin-panel';
 import { ReaderContactForm } from '@/components/news/reader-contact-form';
+import { ThemeToggle } from '@/components/news/theme-toggle';
 import { Button } from '@/components/ui/button';
 
-type Stats = { totalSources: number; totalArticles: number };
-
 export default function Home() {
-  const [tab, setTab] = useState<Tab>('news');
-  const [stats, setStats] = useState<Stats | null>(null);
   const [adminOpen, setAdminOpen] = useState(false);
   const [readerFormOpen, setReaderFormOpen] = useState(false);
 
-  const loadStats = useCallback(async () => {
-    try {
-      const r = await fetch('/api/sources', { cache: 'no-store' });
-      const json = (await r.json()) as {
-        sources: { _count: { articles: number } }[];
-      };
-      const totalSources = json.sources?.length ?? 0;
-      const totalArticles =
-        json.sources?.reduce(
-          (acc, s) => acc + (s._count?.articles ?? 0),
-          0,
-        ) ?? 0;
-      setStats({ totalSources, totalArticles });
-    } catch {
-      /* ignore stats errors */
-    }
-  }, []);
-
-  useEffect(() => {
-    Promise.resolve().then(() => loadStats());
-  }, [loadStats]);
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader
-        active={tab}
-        onChange={setTab}
-        totalSources={stats?.totalSources ?? undefined}
-        totalArticles={stats?.totalArticles ?? undefined}
-        onAdminClick={() => setAdminOpen(true)}
-      />
+      {/* Sade header — sadece logo + "+" + tema */}
+      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
+              <span className="text-lg font-bold">H</span>
+            </span>
+            <span className="text-base font-semibold tracking-tight">
+              Haber
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setAdminOpen(true)}
+              aria-label="Yönetici"
+              className="h-9 w-9"
+            >
+              <span className="text-xl">+</span>
+            </Button>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
 
       <main className="flex-1">
-        {tab === 'news' && <NewsScreen />}
-        {tab === 'icerik' && <IcerikDosyasi />}
-        {tab === 'sources' && <SourcesPanel onSourcesChange={() => loadStats()} />}
+        <NewsScreen />
       </main>
 
       <footer className="mt-auto border-t border-border bg-muted/30 py-6">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:px-6 sm:text-left">
-          <p>
-            <span className="font-semibold text-foreground/80">Haber Özet</span>
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 text-center sm:flex-row sm:justify-between sm:px-6">
+          <p className="text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground/80">Haber</span>
             {' — '}
-            RSS kategori derleyici
+            Güncel haber portalı
           </p>
-          <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setReaderFormOpen(true)}
-              className="gap-1.5 text-xs"
-            >
-              <Mail className="h-3.5 w-3.5" />
-              Okuyucu Temsilcisine Ulaşınız
-            </Button>
-            <p>
-              6 kategori · 59 kaynak · Çıktı{' '}
-              <code className="rounded bg-muted px-1 py-0.5">rss_icerik.md</code>
-            </p>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setReaderFormOpen(true)}
+            className="gap-1.5 text-xs"
+          >
+            <Mail className="h-3.5 w-3.5" />
+            Okuyucu Temsilcisine Ulaşınız
+          </Button>
         </div>
       </footer>
 
