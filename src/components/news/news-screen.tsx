@@ -411,8 +411,8 @@ export function NewsScreen() {
       {openArticleId ? (
         <ArticleDetailInline articleId={openArticleId} onBack={goBack} />
       ) : loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />
           ))}
         </div>
@@ -437,7 +437,7 @@ export function NewsScreen() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {articles.map((a, i) => (
               <div key={a.id} className={i === 0 && !openArticleId ? 'col-span-full' : ''}>
                 {i === 0 && !openArticleId ? (
