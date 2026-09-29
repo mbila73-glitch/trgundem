@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Mail } from 'lucide-react';
 import { NewsScreen } from '@/components/news/news-screen';
+import { InfoBands } from '@/components/news/info-bands';
 import { AdminPanel } from '@/components/news/admin-panel';
 import { ReaderContactForm } from '@/components/news/reader-contact-form';
 import { ThemeToggle } from '@/components/news/theme-toggle';
@@ -39,6 +40,11 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Bilgi bantları — son dakika, finans, hava durumu (sticky) */}
+      <div className="sticky top-16 z-30">
+        <InfoBands />
+      </div>
 
       <main className="flex-1">
         <NewsScreen />
