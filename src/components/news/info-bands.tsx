@@ -11,7 +11,7 @@ const HAVA_DATA = [
   { sehir: 'Antalya', derece: 25, durum: 'Güneşli', ikon: 'sun' },
   { sehir: 'Bursa', derece: 19, durum: 'Az Bulutlu', ikon: 'cloud' },
   { sehir: 'Trabzon', derece: 16, durum: 'Yağmurlu', ikon: 'rain' },
-  { sehir: 'Erzurum', derece: 8, durum: 'Karla Karışık Yağmur', ikon: 'snow' },
+  { sehir: 'Erzurum', derece: 8, durum: 'Karla Karışık', ikon: 'snow' },
   { sehir: 'Diyarbakır', derece: 21, durum: 'Açık', ikon: 'sun' },
   { sehir: 'Hatay', derece: 24, durum: 'Az Bulutlu', ikon: 'cloud' },
   { sehir: 'Konya', derece: 14, durum: 'Açık', ikon: 'sun' },
@@ -32,7 +32,6 @@ export function InfoBands() {
   const [finans, setFinans] = useState<FinansItem[]>([]);
   const [finansSource, setFinansSource] = useState('TCMB');
 
-  // Son dakika için yayındaki haber başlıklarını çek
   useEffect(() => {
     fetch('/api/published-articles?layout=all&status=published')
       .then(async (r) => {
@@ -43,7 +42,6 @@ export function InfoBands() {
       .catch(() => {});
   }, []);
 
-  // Finans verilerini TCMB'den çek
   useEffect(() => {
     fetch('/api/finans')
       .then(async (r) => {
@@ -56,7 +54,6 @@ export function InfoBands() {
       .catch(() => {});
   }, []);
 
-  // Son dakika başlığına tıklayınca haberi aç
   const openArticle = (id: string) => {
     const url = new URL(window.location.href);
     url.searchParams.set('article', id);
@@ -69,13 +66,13 @@ export function InfoBands() {
     <div className="border-b border-border bg-card">
       <div className="mx-auto max-w-6xl">
 
-        {/* 1. HAVA DURUMU (yürür, hover-dur) */}
-        <div className="group flex items-center gap-2 overflow-hidden bg-blue-50 dark:bg-blue-950/30 px-4" style={{ minHeight: '48px' }}>
+        {/* 1. HAVA DURUMU */}
+        <div className="group flex items-center gap-2 overflow-hidden bg-blue-50 dark:bg-blue-950/30 px-4" style={{ minHeight: '32px' }}>
           <span className="flex-shrink-0 font-bold text-blue-700 dark:text-blue-300 text-sm uppercase tracking-wide whitespace-nowrap mr-3">
             HAVA
           </span>
           <div className="relative flex-1 overflow-hidden">
-            <div className="flex items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_33s_linear_infinite]">
+            <div className="flex items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_22s_linear_infinite]">
               {HAVA_DATA.concat(HAVA_DATA).map((h, i) => (
                 <span key={i} className="inline-flex items-center gap-1.5 text-sm">
                   <WeatherIcon type={h.ikon} className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -89,14 +86,14 @@ export function InfoBands() {
           </div>
         </div>
 
-        {/* 2. FİNANS (yürür, hover-dur, TCMB) */}
+        {/* 2. FİNANS */}
         {finans.length > 0 && (
-          <div className="group flex items-center gap-2 overflow-hidden bg-slate-900 px-4" style={{ minHeight: '48px' }}>
+          <div className="group flex items-center gap-2 overflow-hidden bg-slate-900 px-4" style={{ minHeight: '32px' }}>
             <span className="flex-shrink-0 font-bold text-amber-400 text-sm uppercase tracking-wide whitespace-nowrap mr-3">
               FİNANS
             </span>
             <div className="relative flex-1 overflow-hidden">
-              <div className="flex items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_30s_linear_infinite]">
+              <div className="flex items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_20s_linear_infinite]">
                 {finans.concat(finans).map((item, i) => (
                   <span key={i} className="inline-flex items-center gap-2 text-sm">
                     <span className="font-medium text-slate-300">{item.name}</span>
@@ -110,23 +107,23 @@ export function InfoBands() {
           </div>
         )}
 
-        {/* 3. SON DAKİKA (yürür, hover-dur, tıkla-aç) */}
+        {/* 3. SON DAKİKA */}
         {sonDakika.length > 0 && (
-          <div className="group flex items-center gap-2 overflow-hidden bg-destructive px-4" style={{ minHeight: '48px' }}>
-            <span className="flex-shrink-0 font-bold text-destructive-foreground text-sm uppercase tracking-wide whitespace-nowrap mr-3">
+          <div className="group flex items-center gap-2 overflow-hidden bg-destructive px-4" style={{ minHeight: '32px' }}>
+            <span className="flex-shrink-0 font-bold text-destructive-foreground text-base uppercase tracking-wider whitespace-nowrap mr-3">
               ⚡ SON DAKİKA
             </span>
             <div className="relative flex-1 overflow-hidden">
-              <div className="flex gap-8 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_27s_linear_infinite] text-destructive-foreground text-sm">
+              <div className="flex gap-10 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_18s_linear_infinite] text-destructive-foreground text-base tracking-wide">
                 {sonDakika.concat(sonDakika).map((item, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => openArticle(item.id)}
-                    className="inline-block font-medium cursor-pointer hover:underline"
+                    className="inline-block font-semibold cursor-pointer hover:underline"
                   >
                     {item.title}
-                    <span className="mx-2 opacity-50">•</span>
+                    <span className="mx-3 opacity-50">•</span>
                   </button>
                 ))}
               </div>

@@ -290,9 +290,17 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <form onSubmit={handleLogin} className="mx-auto max-w-sm space-y-4 py-8">
                 <div className="text-center">
                   <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted"><Lock className="h-6 w-6 text-muted-foreground" /></div>
-                  <p className="text-sm text-muted-foreground">Yönetici paneline erişmek için şifre girin</p>
+                  <h2 className="text-lg font-bold">Abone Girişi</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">Telefonunuza gelen kodu giriniz</p>
                 </div>
-                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Şifre" autoFocus className="text-center" />
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">Telefon numaranızı giriniz</label>
+                  <Input type="tel" placeholder="05XX XXX XX XX" className="text-center" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">Kodu giriniz</label>
+                  <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="• • • • • •" autoFocus className="text-center" />
+                </div>
                 <Button type="submit" disabled={loggingIn || !password.trim()} className="w-full gap-2">{loggingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} Giriş Yap</Button>
               </form>
             ) : (

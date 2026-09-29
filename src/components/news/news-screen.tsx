@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, ExternalLink, Clock } from 'lucide-react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, ArrowRight, ExternalLink, Clock, Home } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -111,6 +111,21 @@ function ArticleDetailInline({
       >
         <ArrowLeft className="h-4 w-4" />
         Geri
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mb-4 ml-2 gap-1.5 text-sm"
+        onClick={() => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('article');
+          window.history.pushState({}, '', url.toString());
+          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      >
+        <Home className="h-4 w-4" />
+        Ana Sayfa
       </Button>
 
       {article.imageUrl && (
@@ -266,11 +281,12 @@ export function NewsScreen() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-      {/* Category tabs — always visible */}
+      {/* Category tabs — sticky (kaybolmasın) */}
       <nav
         role="tablist"
         aria-label="Haber kategorileri"
-        className="mb-6 flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card p-1.5"
+        className="sticky z-20 mb-6 flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 shadow-sm"
+        style={{ top: '176px' }}
       >
         {SUB_TABS.map((tab) => {
           const isActive = tab.id === active;
