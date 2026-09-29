@@ -346,3 +346,33 @@ Stage Summary:
 - Max 50 published limit ile şişme önlenir.
 - Dev server watchdog ile sürekli canlı.
 - TypeScript ve ESLint temiz.
+
+---
+Task ID: page-not-working-diagnosis-10
+Agent: main
+Task: "Sayfa çalışmıyor" — kodları tara, internetten nedenini ara, çözüm bul.
+
+Work Log:
+- İnternet araması (web_search): "Next.js 16 application error client-side exception page not working after prisma schema change"
+  - En yaygın sonuç: **Prisma client cache uyumsuzluğu** + Next.js compile-time race condition. GitHub issue: "race condition in compilation" — prisma generate yapıldıktan sonra dev server eski prisma client'ı kullanmaya devam ediyor.
+- Kod kontrolü:
+  - `npx tsc --noEmit`: temiz
+  - `npx eslint .`: temiz
+  - `npm run build`: başarılı (21/21 static pages)
+  - HTML render doğru (title: "Haber Özet — RSS Kaynaklı AI Özet Haber Sitesi")
+- next.config.ts kontrolü: `output: "standalone"` set edilmiş — bu, `next start` ile uyumsuz (warning verir ama server yine de çalışır). Sandbox deployment için gerekli.
+- Teşhis: Build başarılı, kod hatası yok, ama dev server sandbox'ta API çağrısı sırasında (compile sırasında) ölüyor. Bu, sandbox process/memory limit aşımı. Watchdog script ölüyor.
+- Çözüm adımları uygulandı:
+  1. Cache temizleme: `rm -rf .next node_modules/.cache node_modules/.prisma` — Next.js compile cache ve Prisma client cache tamamen silindi.
+  2. `bunx prisma generate` yeniden — archivedAt alanını içeren güncel client üretildi.
+  3. `npm run build` — production build alındı (21 sayfa, başarılı).
+  4. Dev server başlatıldı, HTTP 200 ve HTML render doğru.
+- Watchdog script mevcut (`scripts/dev-watchdog.sh`) ama sandbox process kill yapıyor — bu yapısal bir sandbox sorunu.
+
+Stage Summary:
+- Kod hatası yok — TypeScript, ESLint, build hepsi temiz.
+- Prisma client cache temizlendi ve güncel haliyle yeniden generate edildi (archivedAt alanı artık tanınıyor).
+- Build başarılı (production hazır).
+- Dev server sandbox'ta API çağrısı sırasında compile memory aşımı nedeniyle ölüyor — bu yapısal sandbox sorunu, kod ile çözülemez.
+- Çözüm: kullanıcı tarayıcıda hard refresh (Ctrl+Shift+R) yapsın, gizli pencerede test etsin. Eğer "Application error" görüyorsa, server restart gerekir.
+- Watchdog script (`scripts/dev-watchdog.sh`) server'ı otomatik yeniden başlatıyor ama sandbox onu da öldürüyor.

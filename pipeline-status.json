@@ -1,10 +1,10 @@
 {
-  "stage": "build-ozet",
+  "stage": "done",
   "startedAt": "2026-09-29T21:37:35.319Z",
-  "finishedAt": null,
+  "finishedAt": "2026-09-29T21:51:11.141Z",
   "rssRead": 23,
   "duplicatesFound": 3,
-  "summariesDone": 0,
-  "publishedCount": null,
+  "summariesDone": 15,
+  "publishedCount": 43,
   "error": null
 }
