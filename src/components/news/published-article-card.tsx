@@ -3,36 +3,52 @@
 import { useState } from 'react';
 import { Clock, ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { PublishedArticle } from '@/lib/types';
-import { colorForName, relativeTime } from '@/lib/format';
+import { colorForName, relativeTime, initials } from '@/lib/format';
 
 type Props = {
   article: PublishedArticle;
   onOpen: (id: string) => void;
 };
 
-function randomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+// Deterministic stable hash from string so SSR and CSR produce the SAME number.
+// This avoids the React hydration mismatch that Math.random() would cause.
+function hashSeed(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0);
+}
+
+// Returns a stable pseudo-random integer in [min, max] based on a seed.
+function seededInt(seed: number, min: number, max: number): number {
+  const range = max - min + 1;
+  return min + (seed % range);
 }
 
 export function PublishedArticleCard({ article, onOpen }: Props) {
   const [imgError, setImgError] = useState(false);
   const showImage = article.imageUrl && !imgError;
 
-  const [likes, setLikes] = useState(() => randomInt(215, 400));
-  const [dislikes, setDislikes] = useState(() => randomInt(5, 25));
+  // SSR-stable initial values (deterministic from article.id).
+  // These do not change on every reload of the same article, which is fine —
+  // they're cosmetic seed values and the user can still like/dislike to update.
+  const seed = hashSeed(article.id || article.aiTitle);
+  const [likes, setLikes] = useState(() => seededInt(seed, 215, 400));
+  const [dislikes, setDislikes] = useState(() => seededInt(seed >> 3, 5, 25));
   const [userAction, setUserAction] = useState<'like' | 'dislike' | null>(null);
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (userAction === 'like') {
-      setLikes(l => l - 1);
+      setLikes((l) => l - 1);
       setUserAction(null);
     } else {
-      setLikes(l => l + 1);
-      if (userAction === 'dislike') setDislikes(d => d - 1);
+      setLikes((l) => l + 1);
+      if (userAction === 'dislike') setDislikes((d) => d - 1);
       setUserAction('like');
     }
   };
@@ -40,11 +56,11 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
   const handleDislike = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (userAction === 'dislike') {
-      setDislikes(d => d - 1);
+      setDislikes((d) => d - 1);
       setUserAction(null);
     } else {
-      setDislikes(d => d + 1);
-      if (userAction === 'like') setLikes(l => l - 1);
+      setDislikes((d) => d + 1);
+      if (userAction === 'like') setLikes((l) => l - 1);
       setUserAction('dislike');
     }
   };
@@ -105,7 +121,8 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
           <button
             type="button"
             onClick={handleLike}
-            className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${
+            aria-label="Beğen"
+            className={`inline-flex items-center gap-1.5 text-xs font-medium transition cursor-pointer ${
               userAction === 'like' ? 'text-blue-600' : 'text-muted-foreground hover:text-blue-600'
             }`}
           >
@@ -115,7 +132,8 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
           <button
             type="button"
             onClick={handleDislike}
-            className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${
+            aria-label="Beğenme"
+            className={`inline-flex items-center gap-1.5 text-xs font-medium transition cursor-pointer ${
               userAction === 'dislike' ? 'text-red-600' : 'text-muted-foreground hover:text-red-600'
             }`}
           >

@@ -61,11 +61,20 @@ function YayinIlkeleri({ onContactClick }: { onContactClick: () => void }) {
 export default function Home() {
   const [adminOpen, setAdminOpen] = useState(false);
   const [readerFormOpen, setReaderFormOpen] = useState(false);
-  const [now, setNow] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [mounted, setMounted] = useState(false);
+  const [now, setNow] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
+    // Hydration-safe mount: SSR renders placeholders (--:--:-- and '— — — —'),
+    // client renders real time after mount. Calling setState here is the
+    // canonical pattern for time-dependent content.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+    const initialDate = new Date();
+    setNow(initialDate);
+    setSelectedDate(initialDate);
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -79,7 +88,7 @@ export default function Home() {
   const formatTime = (d: Date) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   const logoEl = (
-    <div className="flex h-12 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md">
+    <div className="flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md">
       <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
     </div>
   );
@@ -92,12 +101,14 @@ export default function Home() {
             {/* Sol: Saat + Tarih */}
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
-                <button type="button" className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-muted/50 cursor-pointer">
+                <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-muted/50 cursor-pointer">
                   <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-foreground">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    {formatTime(now)}
+                    {mounted && now ? formatTime(now) : '--:--:--'}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">{formatDate(now)}</span>
+                  <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>
+                    {mounted && now ? formatDate(now) : '— — — —'}
+                  </span>
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -126,7 +137,7 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="sticky top-16 z-30 bg-card">
+      <div className="sticky top-16 z-30 bg-background">
         <InfoBands />
       </div>
 

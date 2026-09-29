@@ -43,13 +43,25 @@ const CATEGORY_LIMITS: Record<string, number> = {
   'Özel': 30,
 };
 
-function randomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+// Stable FNV-1a hash so SSR and CSR produce the same seed (avoids hydration mismatch).
+function hashSeed(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
 }
 
-function HorizontalLikeBar({ articleId: _articleId }: { articleId: string }) {
-  const [likes, setLikes] = useState(() => randomInt(215, 400));
-  const [dislikes, setDislikes] = useState(() => randomInt(5, 25));
+function seededInt(seed: number, min: number, max: number): number {
+  const range = max - min + 1;
+  return min + (seed % range);
+}
+
+function HorizontalLikeBar({ articleId }: { articleId: string }) {
+  const seed = hashSeed(articleId);
+  const [likes, setLikes] = useState(() => seededInt(seed, 215, 400));
+  const [dislikes, setDislikes] = useState(() => seededInt(seed >> 3, 5, 25));
   const [userAction, setUserAction] = useState<'like' | 'dislike' | null>(null);
 
   const handleLike = (e: React.MouseEvent) => {
@@ -318,12 +330,12 @@ export function NewsScreen() {
   const current = SUB_TABS.find((t) => t.id === active) ?? SUB_TABS[0];
 
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-6 pt-2 sm:px-6">
+    <section className="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
       {/* Category tabs — sticky (kaybolmasın) */}
       <nav
         role="tablist"
         aria-label="Haber kategorileri"
-        className="sticky z-20 mb-6 flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 shadow-sm"
+        className="sticky z-20 mb-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 shadow-sm"
         style={{ top: '160px' }}
       >
         {SUB_TABS.map((tab) => {
