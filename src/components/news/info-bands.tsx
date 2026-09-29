@@ -87,7 +87,7 @@ export function InfoBands() {
           <div className="relative flex-1 overflow-hidden">
             <div
               className="flex w-max flex-shrink-0 items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused]"
-              style={marqueeStyle('11s')}
+              style={marqueeStyle('22s')}
             >
               {HAVA_DATA.concat(HAVA_DATA).map((h, i) => (
                 <span key={i} className="inline-flex flex-shrink-0 items-center gap-1.5 text-sm" title="Kaynak: Meteoroloji Genel Müdürlüğü (mgm.gov.tr)">
@@ -111,7 +111,7 @@ export function InfoBands() {
             <div className="relative flex-1 overflow-hidden">
               <div
                 className="flex w-max flex-shrink-0 items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused]"
-                style={marqueeStyle('10s')}
+                style={marqueeStyle('20s')}
               >
                 {finans.concat(finans).map((item, i) => {
                   const sourceMap: Record<string, string> = {
@@ -159,7 +159,7 @@ export function InfoBands() {
             <div className="relative flex-1 overflow-hidden">
               <div
                 className="flex w-max flex-shrink-0 gap-10 whitespace-nowrap text-white text-base tracking-wide group-hover:[animation-play-state:paused]"
-                style={marqueeStyle('9s')}
+                style={marqueeStyle('18s')}
               >
                 {sonDakika.concat(sonDakika).map((item, i) => (
                   <button
