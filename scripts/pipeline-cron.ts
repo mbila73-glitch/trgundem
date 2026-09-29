@@ -1,10 +1,11 @@
 // Cron-like pipeline scheduler.
 //
 // Timeline (her 30 dakikalık cycle):
-//   :30 — cycle başlangıcı: archive-stale (eski published'ları stale yap) +
+//   :15 — cycle başlangıcı: archive-stale (eski published'ları stale yap) +
 //         refresh RSS + build rss_icerik + find-duplicates + AI summarize
 //         (incremental — sadece yeni grupları özetler, her 3 hazırda bir publish)
-//   :60 (= sonraki :00) — yeni cycle başlar (aynı işlem)
+//   :45 — yeni cycle başlar (aynı işlem)
+//   :15 (sonraki saat) — yeni cycle
 //
 // Cycle içinde:
 //   - AI özetleme en yüksek kaynak sayısından başlar (sourceCount DESC)
@@ -109,8 +110,8 @@ async function tick(): Promise<void> {
   const now = new Date();
   const minute = now.getMinutes();
 
-  // Cycle starts at minute 0 and 30
-  if (minute === 0 || minute === 30) {
+  // Cycle starts at minute 15 and 45
+  if (minute === 15 || minute === 45) {
     if (currentStage !== 'idle') {
       log(`Tick skipped (stage: ${currentStage}) — önceki cycle hala çalışıyor`);
       return;
@@ -123,8 +124,8 @@ async function main() {
   log(`Pipeline cron başlatıldı. PID: ${process.pid}`);
   log(`Saat dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   log(`Tetikleme saatleri:`);
-  log(`  • :30 — cycle başlat (RSS refresh + pipeline + her 3 draft'ta bir publish)`);
-  log(`  • :60 (yani sonraki :00) — yeni cycle`);
+  log(`  • :15 — cycle başlat (RSS refresh + pipeline + her 3 draft'ta bir publish)`);
+  log(`  • :45 — yeni cycle`);
   log(`Kurallar:`);
   log(`  - En yüksek kaynak sayısından başla özetlemeye`);
   log(`  - Her 3 hazır draft'ta bir publish yap (draft → published)`);
