@@ -47,3 +47,34 @@ Stage Summary:
 - Logo + "TÜRKİYE'DE GÜNDEM" yazısına tıklanınca haber detayı kapanıp ana liste geliyor (browser history ile uyumlu).
 - Admin panel / Yayındaki Haberler sekmesinde her haber kartında yayınlanma zamanı "HH:mm · dd MMM yyyy" formatında görünüyor.
 - TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.
+
+---
+Task ID: bands-and-tabs-fix-3
+Agent: main
+Task: Yürüyen bantlar ring yapmıyor (bir yerden sonra başa dönüyor) — düzelt. Hava bandında durum açıklamasını kaldır. Son dakika bandı yazıları beyaz, zemin bariz kırmızı olsun. SON DAKİKA label'ı maksimum punto + beyaz + bold + ±%15 pulse animasyonu yapsın. Tüm Haberler sekmesi logolarla aynı komutu çalıştırsın.
+
+Work Log:
+- `src/components/news/info-bands.tsx` (yürüyen bant ring sorunu):
+  - `<style jsx>` scoped olduğu için Tailwind'in `animate-[scroll_...]` class'ı keyframe'i bulamıyordu. Bu yüzden animasyon genelde bir kere oynayıp duruyordu.
+  - Çözüm: (1) Keyframe'i `<style jsx global>` ile global yaptım, ismini `bandScroll` olarak değiştirdim. (2) Tailwind class yerine inline `style={{ animationName: 'bandScroll', animationDuration, animationIterationCount: 'infinite' }}` kullandım. Artık bantlar kesintisiz ring (sonsuz döngü) yapıyor.
+- Hava bandı: `{h.durum}` açıklama span'ı kaldırıldı. Artık sembol + şehir + derece görünüyor (örn: ☁ İstanbul 18°C).
+- Son dakika bandı:
+  - Zemin `bg-destructive` → `bg-red-600` (bariz kırmızı, temadan bağımsız).
+  - Tüm yazılar beyaz: `text-white` (label + button'lar + ayraç).
+  - "⚡ SON DAKİKA" label'ı:
+    - Punto: `text-base` → `fontSize: '20px'` (32px band yüksekliğinde max punto).
+    - Beyaz + bold: `text-white font-bold`.
+    - ±%15 pulse animasyon: `@keyframes pulseScale { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.15); } }` ile, 2.2s ease-in-out infinite.
+    - `transformOrigin: 'center'` ve `display: 'inline-block'` ile doğru ortalanmış scale.
+- `src/components/news/news-screen.tsx` (Tüm Haberler = logo):
+  - `closeArticle` artık `window.history.back()` YAPMIYOR.
+  - Yeni mantık (logolardaki `handleHomeClick` ile birebir aynı): URL'deki `?article=` parametresini sil, `history.pushState` ile yeni URL'i set et, `popstate` event'i dispatch et, en üste smooth scroll.
+  - Bu sayede "Tüm Haberler" sekmesi, "Geri" butonu, "Ana Sayfa" butonu ve logoların hepsi AYNI komutu çalıştırıyor.
+
+Stage Summary:
+- Yürüyen bantlar artık ring (sonsuz) yapıyor — keyframe global tanımlı + inline animation referansı.
+- Hava bandında sadece sembol + şehir + derece var, durum açıklaması kalktı.
+- Son dakika bandı bariz kırmızı (bg-red-600), tüm yazılar beyaz.
+- "⚡ SON DAKİKA" label'ı 20px punto, beyaz, bold ve ±%15 pulse animasyonu yapıyor.
+- Tüm Haberler sekmesi, Geri butonu, Ana Sayfa butonu ve logolar aynı komutu çalıştırıyor (URL'den ?article= sil + popstate dispatch + scroll to top).
+- TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.

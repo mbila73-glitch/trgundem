@@ -264,14 +264,20 @@ export function NewsScreen() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Close article: go back in history (or clear URL)
+  // Close article: URL'deki ?article= parametresini sil ve popstate tetikle.
+  // Bu, logoya tıklanınca çalışan handleHomeClick ile AYNI mantık — yani
+  // "Tüm Haberler" sekmesi de, logolar da aynı davranışı sergiler.
   const closeArticle = useCallback(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('article')) {
-      window.history.back();
-    } else {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('article')) {
       setOpenArticleId(null);
+      return;
     }
+    url.searchParams.delete('article');
+    window.history.pushState({}, '', url.toString());
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   // Load articles when tab changes

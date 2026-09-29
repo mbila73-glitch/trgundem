@@ -27,6 +27,15 @@ function WeatherIcon({ type, className }: { type: string; className?: string }) 
 type FinansItem = { name: string; value: string; change: string; up: boolean };
 type SonDakikaItem = { id: string; title: string };
 
+// Stable inline style objects so React doesn't re-create them on each render.
+const marqueeStyle = (duration: string): React.CSSProperties => ({
+  animationName: 'bandScroll',
+  animationDuration: duration,
+  animationTimingFunction: 'linear',
+  animationIterationCount: 'infinite',
+  willChange: 'transform',
+});
+
 export function InfoBands() {
   const [sonDakika, setSonDakika] = useState<SonDakikaItem[]>([]);
   const [finans, setFinans] = useState<FinansItem[]>([]);
@@ -62,6 +71,8 @@ export function InfoBands() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  void finansSource;
+
   return (
     <div className="border-b border-border bg-card">
       <div className="mx-auto max-w-6xl">
@@ -72,13 +83,16 @@ export function InfoBands() {
             HAVA
           </span>
           <div className="relative flex-1 overflow-hidden">
-            <div className="flex items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_11s_linear_infinite]">
+            <div
+              className="flex items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused]"
+              style={marqueeStyle('11s')}
+            >
               {HAVA_DATA.concat(HAVA_DATA).map((h, i) => (
                 <span key={i} className="inline-flex items-center gap-1.5 text-sm" title="Kaynak: Meteoroloji Genel Müdürlüğü (mgm.gov.tr)">
                   <WeatherIcon type={h.ikon} className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <span className="font-medium text-foreground/80">{h.sehir}</span>
                   <span className="font-bold text-foreground">{h.derece}°C</span>
-                  <span className="text-muted-foreground text-xs">{h.durum}</span>
+                  {/* Durum açıklaması kaldırıldı (sadece sembol + şehir + derece kaldı) */}
                   <span className="mx-2 text-border">|</span>
                 </span>
               ))}
@@ -93,7 +107,10 @@ export function InfoBands() {
               FİNANS
             </span>
             <div className="relative flex-1 overflow-hidden">
-              <div className="flex items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_10s_linear_infinite]">
+              <div
+                className="flex items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused]"
+                style={marqueeStyle('10s')}
+              >
                 {finans.concat(finans).map((item, i) => {
                   const sourceMap: Record<string, string> = {
                     'BIST 100': 'Kaynak: Borsa İstanbul (borsaistanbul.com)',
@@ -124,23 +141,38 @@ export function InfoBands() {
           </div>
         )}
 
-        {/* 3. SON DAKİKA */}
+        {/* 3. SON DAKİKA — bariz kırmızı zemin, beyaz yazılar, animasyonlu başlık */}
         {sonDakika.length > 0 && (
-          <div className="group flex items-center gap-2 overflow-hidden bg-destructive px-4" style={{ minHeight: '32px' }}>
-            <span className="flex-shrink-0 font-bold text-destructive-foreground text-base uppercase tracking-wider whitespace-nowrap mr-3">
+          <div className="group flex items-center gap-2 overflow-hidden bg-red-600 px-4" style={{ minHeight: '32px' }}>
+            <span
+              className="flex-shrink-0 whitespace-nowrap mr-3 text-white font-bold uppercase tracking-wider"
+              style={{
+                fontSize: '20px',
+                lineHeight: '32px',
+                animationName: 'pulseScale',
+                animationDuration: '2.2s',
+                animationTimingFunction: 'ease-in-out',
+                animationIterationCount: 'infinite',
+                display: 'inline-block',
+                transformOrigin: 'center',
+              }}
+            >
               ⚡ SON DAKİKA
             </span>
             <div className="relative flex-1 overflow-hidden">
-              <div className="flex gap-10 whitespace-nowrap group-hover:[animation-play-state:paused] animate-[scroll_9s_linear_infinite] text-destructive-foreground text-base tracking-wide">
+              <div
+                className="flex gap-10 whitespace-nowrap text-white text-base tracking-wide group-hover:[animation-play-state:paused]"
+                style={marqueeStyle('9s')}
+              >
                 {sonDakika.concat(sonDakika).map((item, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => openArticle(item.id)}
-                    className="inline-block font-semibold cursor-pointer hover:underline"
+                    className="inline-block font-semibold cursor-pointer hover:underline text-white"
                   >
                     {item.title}
-                    <span className="mx-3 opacity-50">•</span>
+                    <span className="mx-3 opacity-70">•</span>
                   </button>
                 ))}
               </div>
@@ -149,10 +181,15 @@ export function InfoBands() {
         )}
       </div>
 
-      <style jsx>{`
-        @keyframes scroll {
+      {/* Global style — keyframes global olmalı ki inline animation referansları çalışsın */}
+      <style jsx global>{`
+        @keyframes bandScroll {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
+        }
+        @keyframes pulseScale {
+          0%, 100% { transform: scale(0.85); }
+          50% { transform: scale(1.15); }
         }
       `}</style>
     </div>
