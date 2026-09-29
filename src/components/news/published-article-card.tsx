@@ -44,11 +44,11 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (userAction === 'like') {
-      setLikes((l) => l - 1);
+      setLikes((l) => Math.max(0, l - 1));
       setUserAction(null);
     } else {
       setLikes((l) => l + 1);
-      if (userAction === 'dislike') setDislikes((d) => d - 1);
+      if (userAction === 'dislike') setDislikes((d) => Math.max(0, d - 1));
       setUserAction('like');
     }
   };
@@ -56,11 +56,11 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
   const handleDislike = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (userAction === 'dislike') {
-      setDislikes((d) => d - 1);
+      setDislikes((d) => Math.max(0, d - 1));
       setUserAction(null);
     } else {
       setDislikes((d) => d + 1);
-      if (userAction === 'like') setLikes((l) => l - 1);
+      if (userAction === 'like') setLikes((l) => Math.max(0, l - 1));
       setUserAction('dislike');
     }
   };

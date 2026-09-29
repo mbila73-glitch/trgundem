@@ -66,13 +66,13 @@ function HorizontalLikeBar({ articleId }: { articleId: string }) {
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (userAction === 'like') { setLikes(l => l - 1); setUserAction(null); }
-    else { setLikes(l => l + 1); if (userAction === 'dislike') setDislikes(d => d - 1); setUserAction('like'); }
+    if (userAction === 'like') { setLikes(l => Math.max(0, l - 1)); setUserAction(null); }
+    else { setLikes(l => l + 1); if (userAction === 'dislike') setDislikes(d => Math.max(0, d - 1)); setUserAction('like'); }
   };
   const handleDislike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (userAction === 'dislike') { setDislikes(d => d - 1); setUserAction(null); }
-    else { setDislikes(d => d + 1); if (userAction === 'like') setLikes(l => l - 1); setUserAction('dislike'); }
+    if (userAction === 'dislike') { setDislikes(d => Math.max(0, d - 1)); setUserAction(null); }
+    else { setDislikes(d => d + 1); if (userAction === 'like') setLikes(l => Math.max(0, l - 1)); setUserAction('dislike'); }
   };
 
   return (
