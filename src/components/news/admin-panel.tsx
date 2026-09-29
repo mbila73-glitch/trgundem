@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
-  Newspaper, FileText, FolderTree, Edit3, X
+  Newspaper, FileText, FolderTree, Edit3, X, Upload
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -26,7 +26,7 @@ import {
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; status: string; createdAt: string };
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; };
-type AdminTab = 'messages' | 'custom' | 'published';
+type AdminTab = 'home' | 'messages' | 'custom' | 'published';
 
 const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
 
@@ -34,7 +34,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [token, setToken] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
-  const [adminTab, setAdminTab] = useState<AdminTab>('messages');
+  const [adminTab, setAdminTab] = useState<AdminTab>('home');
 
   // Messages state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -212,10 +212,26 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setResetting(false); }
   };
 
-  const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); };
+  const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); setAdminTab('home'); };
   const newCount = messages.filter(m => m.status === 'new').length;
   const allSelected = messages.length > 0 && selectedIds.size === messages.length;
   const resetConfirmed = resetConfirm.trim().toLowerCase() === 'evet';
+
+  // File upload handler (for both custom article and published edit)
+  const [uploading, setUploading] = useState(false);
+  const handleFileUpload = async (file: File, onDone: (url: string) => void) => {
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const r = await fetch('/api/admin/upload', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData });
+      const json = (await r.json()) as { ok?: boolean; url?: string; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Yükleme hatası');
+      onDone(json.url!);
+      toast.success('Görsel yüklendi');
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Yükleme hatası'); }
+    finally { setUploading(false); }
+  };
 
   return (
     <>
@@ -247,13 +263,35 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               </form>
             ) : (
               <>
-                {/* Sub-tabs */}
-                <div className="mb-4 flex gap-1 rounded-lg border border-border bg-muted/30 p-1">
-                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper]] as const).map(([id, label, Icon]) => (
-                    <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                      <Icon className="h-3.5 w-3.5" /> {label}
+                {adminTab === 'home' ? (
+                  /* Home view: 3 big buttons */
+                  <div className="grid gap-3 py-6">
+                    <button type="button" onClick={() => setAdminTab('messages')} className="flex items-center gap-3 rounded-xl border border-border bg-card p-5 text-left transition hover:border-foreground/20 hover:shadow-md">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-news/10 text-news"><Mail className="h-5 w-5" /></span>
+                      <div><p className="text-sm font-semibold">Mesajlar</p><p className="text-xs text-muted-foreground">Okuyucu mesajlarını oku ve yönet</p></div>
+                      {newCount > 0 && <Badge className="ml-auto bg-news text-news-foreground">{newCount}</Badge>}
                     </button>
-                  ))}
+                    <button type="button" onClick={() => setAdminTab('custom')} className="flex items-center gap-3 rounded-xl border border-border bg-card p-5 text-left transition hover:border-foreground/20 hover:shadow-md">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-news/10 text-news"><Star className="h-5 w-5" /></span>
+                      <div><p className="text-sm font-semibold">Özel Haber Ekle</p><p className="text-xs text-muted-foreground">URL'den haber çek veya kendi haberini oluştur</p></div>
+                    </button>
+                    <button type="button" onClick={() => setAdminTab('published')} className="flex items-center gap-3 rounded-xl border border-border bg-card p-5 text-left transition hover:border-foreground/20 hover:shadow-md">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-news/10 text-news"><Newspaper className="h-5 w-5" /></span>
+                      <div><p className="text-sm font-semibold">Yayındaki Haberler</p><p className="text-xs text-muted-foreground">Yayındaki tüm haberleri düzenle veya sil</p></div>
+                    </button>
+                  </div>
+                ) : (
+                <>
+                {/* Geri button + sub-tab nav */}
+                <div className="mb-4 flex items-center gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setAdminTab('home')} className="gap-1.5 text-sm"><ArrowLeft className="h-4 w-4" /> Geri</Button>
+                  <div className="flex flex-1 gap-1 rounded-lg border border-border bg-muted/30 p-1">
+                    {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper]] as const).map(([id, label, Icon]) => (
+                      <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                        <Icon className="h-3.5 w-3.5" /> {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Messages tab */}
@@ -293,6 +331,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         <div className="space-y-1.5"><Label>Başlık</Label><Input value={customTitle} onChange={(e) => setCustomTitle(e.target.value)} /></div>
                         <div className="space-y-1.5"><Label>Özet</Label><Textarea value={customSummary} onChange={(e) => setCustomSummary(e.target.value)} rows={6} className="resize-none" /></div>
                         <div className="space-y-1.5"><Label>Görsel URL</Label><Input value={customImage} onChange={(e) => setCustomImage(e.target.value)} placeholder="https://..." />
+                          <div className="flex items-center gap-2 mt-1">
+                            <Label htmlFor="custom-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
+                            <input id="custom-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setCustomImage(url)); }} />
+                            {customImage && <img src={customImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
+                          </div>
                           {fetchedImages.length > 0 && <div className="flex flex-wrap gap-2 mt-2">{fetchedImages.map((img, i) => <button key={i} type="button" onClick={() => setCustomImage(img)} className={`h-16 w-24 overflow-hidden rounded border-2 ${customImage === img ? 'border-news' : 'border-transparent'}`}><img src={img} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></button>)}</div>}
                         </div>
                         <div className="space-y-1.5"><Label>Kategori</Label><Select value={customCategory} onValueChange={setCustomCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
@@ -314,7 +357,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <div className="space-y-3">
                             <div className="space-y-1"><Label className="text-xs">Başlık</Label><Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
                             <div className="space-y-1"><Label className="text-xs">Özet</Label><Textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} rows={5} className="resize-none" /></div>
-                            <div className="space-y-1"><Label className="text-xs">Görsel URL</Label><Input value={editImage} onChange={(e) => setEditImage(e.target.value)} /></div>
+                            <div className="space-y-1"><Label className="text-xs">Görsel URL</Label><Input value={editImage} onChange={(e) => setEditImage(e.target.value)} />
+                            <div className="flex items-center gap-2 mt-1">
+                              <Label htmlFor="edit-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
+                              <input id="edit-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setEditImage(url)); }} />
+                              {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
+                            </div>
+                            </div>
                             <div className="flex gap-2"><Button size="sm" onClick={() => saveEdit(a.id)} disabled={savingEdit} className="gap-1.5">{savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}Kaydet</Button><Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5"><X className="h-3.5 w-3.5" />İptal</Button></div>
                           </div>
                         ) : (
@@ -336,6 +385,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       </Card>))}
                     </div>}
                   </div>
+                )}
+                </>
                 )}
               </>
             )}
