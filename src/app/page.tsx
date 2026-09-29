@@ -79,8 +79,8 @@ export default function Home() {
   const formatTime = (d: Date) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   const logoEl = (
-    <div className="flex h-[84px] w-[84px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg shadow-md">
-      <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-cover" />
+    <div className="flex h-12 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md">
+      <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
     </div>
   );
 
@@ -88,7 +88,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex h-24 items-center justify-between py-1">
+          <div className="flex h-16 items-center justify-between py-1">
             {/* Sol: Saat + Tarih */}
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
@@ -97,7 +97,7 @@ export default function Home() {
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     {formatTime(now)}
                   </span>
-                  <span className="text-[11px] text-muted-foreground">{formatDate(now)}</span>
+                  <span className="text-[10px] text-muted-foreground">{formatDate(now)}</span>
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -106,11 +106,11 @@ export default function Home() {
             </Popover>
 
             {/* Orta: Logo + Başlık + Logo */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               {logoEl}
-              <div className="flex flex-col leading-none gap-1.5">
-                <span className="text-lg font-bold tracking-tight uppercase">TÜRKİYE'DE GÜNDEM</span>
-                <span className="text-xs font-bold tracking-[0.3em] text-muted-foreground uppercase text-center">TRGUNDEM.NET</span>
+              <div className="flex flex-col leading-none gap-1">
+                <span className="text-base font-bold tracking-tight uppercase">TÜRKİYE'DE GÜNDEM</span>
+                <span className="text-[10px] font-bold tracking-[0.3em] text-muted-foreground uppercase text-center">TRGUNDEM.NET</span>
               </div>
               {logoEl}
             </div>
@@ -126,11 +126,11 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="sticky top-24 z-30">
+      <div className="sticky top-16 z-30 bg-card">
         <InfoBands />
       </div>
 
-      <main className="flex-1">
+      <main className="flex-1 bg-background">
         <NewsScreen />
       </main>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, ArrowRight, ExternalLink, Clock, Home } from 'lucide-react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, ThumbsUp, ThumbsDown, Clock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,6 +42,40 @@ const CATEGORY_LIMITS: Record<string, number> = {
   'Kültür / Sanat': 3,
   'Özel': 30,
 };
+
+function randomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function HorizontalLikeBar({ articleId: _articleId }: { articleId: string }) {
+  const [likes, setLikes] = useState(() => randomInt(215, 400));
+  const [dislikes, setDislikes] = useState(() => randomInt(5, 25));
+  const [userAction, setUserAction] = useState<'like' | 'dislike' | null>(null);
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (userAction === 'like') { setLikes(l => l - 1); setUserAction(null); }
+    else { setLikes(l => l + 1); if (userAction === 'dislike') setDislikes(d => d - 1); setUserAction('like'); }
+  };
+  const handleDislike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (userAction === 'dislike') { setDislikes(d => d - 1); setUserAction(null); }
+    else { setDislikes(d => d + 1); if (userAction === 'like') setLikes(l => l - 1); setUserAction('dislike'); }
+  };
+
+  return (
+    <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
+      <button type="button" onClick={handleLike} className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${userAction === 'like' ? 'text-blue-600' : 'text-muted-foreground hover:text-blue-600'}`}>
+        <ThumbsUp className={`h-4 w-4 ${userAction === 'like' ? 'fill-blue-600' : ''}`} />
+        <span className="tabular-nums">{likes}</span>
+      </button>
+      <button type="button" onClick={handleDislike} className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${userAction === 'dislike' ? 'text-red-600' : 'text-muted-foreground hover:text-red-600'}`}>
+        <ThumbsDown className={`h-4 w-4 ${userAction === 'dislike' ? 'fill-red-600' : ''}`} />
+        <span className="tabular-nums">{dislikes}</span>
+      </button>
+    </div>
+  );
+}
 
 // Inline article detail component (not a dialog)
 function ArticleDetailInline({
@@ -284,13 +318,13 @@ export function NewsScreen() {
   const current = SUB_TABS.find((t) => t.id === active) ?? SUB_TABS[0];
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+    <section className="mx-auto max-w-6xl px-4 pb-6 pt-2 sm:px-6">
       {/* Category tabs — sticky (kaybolmasın) */}
       <nav
         role="tablist"
         aria-label="Haber kategorileri"
         className="sticky z-20 mb-6 flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 shadow-sm"
-        style={{ top: '216px' }}
+        style={{ top: '160px' }}
       >
         {SUB_TABS.map((tab) => {
           const isActive = tab.id === active;
@@ -373,6 +407,7 @@ export function NewsScreen() {
                       </div>
                       <h3 className="text-xl font-bold leading-tight text-foreground hover:text-news">{a.aiTitle}</h3>
                       <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.aiSummary}</p>
+                      <HorizontalLikeBar articleId={a.id} />
                     </div>
                   </div>
                 ) : (

@@ -1,8 +1,7 @@
 'use client';
 
-import { Star, Clock, ExternalLink, Newspaper } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { Star, Clock, ExternalLink, Newspaper, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -22,11 +21,20 @@ type Props = {
   onFeaturedChange?: (id: string, featured: boolean) => void;
 };
 
-export function ArticleCard({ article, onOpen, onFeaturedChange }: Props) {
+function randomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function ArticleCard({ article, onOpen }: Props) {
   const sourceName = article.source?.name ?? 'Bilinmiyor';
   const desc = truncate(article.description ?? article.content, 180);
   const [featured, setFeatured] = useState<boolean>(article.isFeatured ?? false);
   const [busy, setBusy] = useState(false);
+
+  // Like / Dislike state — random initial values
+  const [likes, setLikes] = useState(() => randomInt(215, 400));
+  const [dislikes, setDislikes] = useState(() => randomInt(5, 25));
+  const [userAction, setUserAction] = useState<'like' | 'dislike' | null>(null);
 
   const toggleFeatured = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -40,15 +48,38 @@ export function ArticleCard({ article, onOpen, onFeaturedChange }: Props) {
       if (!r.ok) throw new Error('Güncellenemedi');
       setFeatured(!featured);
       onFeaturedChange?.(article.id, !featured);
-      toast.success(
-        !featured
-          ? 'Haber özel olarak işaretlendi'
-          : 'Özel işaret kaldırıldı',
-      );
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'İşaret hatası');
+    } catch {
+      // ignore
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (userAction === 'like') {
+      setLikes(l => l - 1);
+      setUserAction(null);
+    } else {
+      setLikes(l => l + 1);
+      if (userAction === 'dislike') {
+        setDislikes(d => d - 1);
+      }
+      setUserAction('like');
+    }
+  };
+
+  const handleDislike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (userAction === 'dislike') {
+      setDislikes(d => d - 1);
+      setUserAction(null);
+    } else {
+      setDislikes(d => d + 1);
+      if (userAction === 'like') {
+        setLikes(l => l - 1);
+      }
+      setUserAction('dislike');
     }
   };
 
@@ -63,9 +94,9 @@ export function ArticleCard({ article, onOpen, onFeaturedChange }: Props) {
           onOpen(article.id);
         }
       }}
-      className="group relative flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      {/* Featured star button (top-right corner, above image) */}
+      {/* Featured star button */}
       <Button
         variant="ghost"
         size="icon"
@@ -93,13 +124,7 @@ export function ArticleCard({ article, onOpen, onFeaturedChange }: Props) {
         </div>
       ) : (
         <div className="relative flex aspect-[16/9] w-full items-center justify-center bg-muted text-muted-foreground">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback
-              className={`text-sm font-semibold ${colorForName(sourceName)}`}
-            >
-              {initials(sourceName)}
-            </AvatarFallback>
-          </Avatar>
+          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-16 w-auto object-contain opacity-60" />
         </div>
       )}
 
@@ -137,25 +162,30 @@ export function ArticleCard({ article, onOpen, onFeaturedChange }: Props) {
           </p>
         )}
 
-        <div className="mt-auto flex items-center gap-2 pt-1">
-          {featured ? (
-            <Badge
-              variant="default"
-              className="gap-1 bg-news/10 px-2 py-0.5 text-[10px] font-medium text-news"
-            >
-              <Star className="h-3 w-3 fill-news" />
-              Özel
-            </Badge>
-          ) : (
-            <Badge
-              variant="outline"
-              className="px-2 py-0.5 text-[10px] font-normal text-muted-foreground"
-            >
-              {article.isFeatured ? 'Özel' : 'Yıldızla'}
-            </Badge>
-          )}
+        {/* Like / Dislike bar */}
+        <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
+          <button
+            type="button"
+            onClick={handleLike}
+            className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${
+              userAction === 'like' ? 'text-blue-600' : 'text-muted-foreground hover:text-blue-600'
+            }`}
+          >
+            <ThumbsUp className={`h-4 w-4 ${userAction === 'like' ? 'fill-blue-600' : ''}`} />
+            <span className="tabular-nums">{likes}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleDislike}
+            className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${
+              userAction === 'dislike' ? 'text-red-600' : 'text-muted-foreground hover:text-red-600'
+            }`}
+          >
+            <ThumbsDown className={`h-4 w-4 ${userAction === 'dislike' ? 'fill-red-600' : ''}`} />
+            <span className="tabular-nums">{dislikes}</span>
+          </button>
           <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] text-muted-foreground opacity-0 transition group-hover:opacity-100">
-            <Newspaper className="h-3 w-3" />
+            <ExternalLink className="h-3 w-3" />
             {hostFromUrl(article.link || article.source?.name || '')}
           </span>
         </div>

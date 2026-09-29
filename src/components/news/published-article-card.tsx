@@ -1,32 +1,53 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock, ExternalLink, Star, Newspaper } from 'lucide-react';
+import { Clock, ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import type { PublishedArticle } from '@/lib/types';
-import { colorForName, hostFromUrl, initials, relativeTime } from '@/lib/format';
+import { colorForName, relativeTime } from '@/lib/format';
 
 type Props = {
   article: PublishedArticle;
   onOpen: (id: string) => void;
 };
 
+function randomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 export function PublishedArticleCard({ article, onOpen }: Props) {
   const [imgError, setImgError] = useState(false);
   const showImage = article.imageUrl && !imgError;
-  // Pick a "primary" source name for the avatar
-  let primarySource = 'Haber Özet';
-  try {
-    const links = article.sourceArticleIds
-      ? (JSON.parse(article.sourceArticleIds) as string[])
-      : [];
-    if (links.length > 0) primarySource = `${links.length} kaynak`;
-  } catch {
-    /* ignore */
-  }
+
+  const [likes, setLikes] = useState(() => randomInt(215, 400));
+  const [dislikes, setDislikes] = useState(() => randomInt(5, 25));
+  const [userAction, setUserAction] = useState<'like' | 'dislike' | null>(null);
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (userAction === 'like') {
+      setLikes(l => l - 1);
+      setUserAction(null);
+    } else {
+      setLikes(l => l + 1);
+      if (userAction === 'dislike') setDislikes(d => d - 1);
+      setUserAction('like');
+    }
+  };
+
+  const handleDislike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (userAction === 'dislike') {
+      setDislikes(d => d - 1);
+      setUserAction(null);
+    } else {
+      setDislikes(d => d + 1);
+      if (userAction === 'like') setLikes(l => l - 1);
+      setUserAction('dislike');
+    }
+  };
 
   return (
     <Card
@@ -60,9 +81,7 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
       <div className="flex flex-1 flex-col gap-2.5 p-4">
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <Avatar className="h-5 w-5">
-            <AvatarFallback
-              className={`text-[9px] font-semibold ${colorForName(article.category)}`}
-            >
+            <AvatarFallback className={`text-[9px] font-semibold ${colorForName(article.category)}`}>
               {initials(article.category)}
             </AvatarFallback>
           </Avatar>
@@ -81,8 +100,29 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
           {article.aiSummary}
         </p>
 
-        <div className="mt-auto flex items-center gap-2 pt-1">
-          <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground opacity-0 transition group-hover:opacity-100">
+        {/* Like / Dislike bar */}
+        <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
+          <button
+            type="button"
+            onClick={handleLike}
+            className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${
+              userAction === 'like' ? 'text-blue-600' : 'text-muted-foreground hover:text-blue-600'
+            }`}
+          >
+            <ThumbsUp className={`h-4 w-4 ${userAction === 'like' ? 'fill-blue-600' : ''}`} />
+            <span className="tabular-nums">{likes}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleDislike}
+            className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${
+              userAction === 'dislike' ? 'text-red-600' : 'text-muted-foreground hover:text-red-600'
+            }`}
+          >
+            <ThumbsDown className={`h-4 w-4 ${userAction === 'dislike' ? 'fill-red-600' : ''}`} />
+            <span className="tabular-nums">{dislikes}</span>
+          </button>
+          <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] text-muted-foreground opacity-0 transition group-hover:opacity-100">
             <ExternalLink className="h-3 w-3" />
             Detay
           </span>
@@ -93,4 +133,4 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
 }
 
 // Re-export so consumers can keep using Star for featured action later
-export const _Star = Star;
+export const _Star = ThumbsUp;
