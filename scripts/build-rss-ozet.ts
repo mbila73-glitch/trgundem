@@ -432,8 +432,12 @@ async function main() {
     );
     if (uniqueSources.size >= 2) duplicateGroups.push(group);
   }
-  // Sort by latest publishedAt desc
+  // Sort by sourceCount DESC (highest source count first — kullanıcı kuralı),
+  // then by latest publishedAt DESC (tie-breaker)
   duplicateGroups.sort((a, b) => {
+    const aSources = new Set(a.map((i) => withShingles[i].article.sourceId)).size;
+    const bSources = new Set(b.map((i) => withShingles[i].article.sourceId)).size;
+    if (aSources !== bSources) return bSources - aSources;
     const aMax = Math.max(...a.map((i) => withShingles[i].article.publishedAt.getTime()));
     const bMax = Math.max(...b.map((i) => withShingles[i].article.publishedAt.getTime()));
     return bMax - aMax;
@@ -503,20 +507,21 @@ async function main() {
   console.log(`Toplam AI özetlenecek: ${selectedGroups.length}\n`);
 
   // 7. For each SELECTED group, generate AI summary
-  //    INCREMENTAL: write each PublishedArticle to DB immediately after AI
-  //    success, so a crash mid-run doesn't lose completed work. On rerun,
-  //    skip groups whose sourceArticleIds hash already exists in DB.
+  //    INCREMENTAL + AUTO-PUBLISH: write each PublishedArticle to DB immediately
+  //    after AI success. Every 3 drafts, auto-publish them (draft → published).
+  //    If a hash exists in 'stale' status (from previous cycle), restore it to
+  //    'published' (this story came back in this cycle).
   const existingHashes = new Set<string>();
-  // Check BOTH draft and published — already-summarized groups should not be
-  // re-summarized (waste of AI calls and would create duplicate rows).
+  // Check ALL statuses (draft, published, stale, archived) — already-summarized
+  // groups should not be re-summarized.
   const existing = await db.publishedArticle.findMany({
-    where: { status: { in: ['draft', 'published'] } },
-    select: { sourceArticleIds: true },
+    where: { status: { in: ['draft', 'published', 'stale'] } },
+    select: { sourceArticleIds: true, status: true, id: true },
   });
   for (const d of existing) {
     existingHashes.add(d.sourceArticleIds);
   }
-  console.log(`Mevcut özet (draft+published): ${existingHashes.size} (atlanacak)`);
+  console.log(`Mevcut özet (draft+published+stale): ${existingHashes.size} (atlanacak/restore edilecek)`);
 
   const published: Array<{
     aiTitle: string;
@@ -534,6 +539,21 @@ async function main() {
   let successCount = 0;
   let errorCount = 0;
   let skippedCount = 0;
+  let restoredCount = 0;
+  let autoPublishedBatches = 0;
+  let draftCounter = 0; // counts drafts created this run; every 3 → publish
+
+  async function autoPublishDrafts(): Promise<number> {
+    const r = await db.publishedArticle.updateMany({
+      where: { status: 'draft' },
+      data: { status: 'published', publishedAt: new Date() },
+    });
+    if (r.count > 0) {
+      autoPublishedBatches += 1;
+      console.log(`  📤 Auto-publish (batch ${autoPublishedBatches}): ${r.count} haber yayınlandı`);
+    }
+    return r.count;
+  }
 
   for (let gi = 0; gi < selectedGroups.length; gi += 1) {
     const gm = selectedGroups[gi];
@@ -541,23 +561,36 @@ async function main() {
     const sortedIds = [...gm.allSources.map((a) => a.id)].sort();
     const hash = JSON.stringify(sortedIds);
 
-    // Skip if this group is already drafted
+    // Skip / restore if this group is already in DB
     if (existingHashes.has(hash)) {
-      skippedCount += 1;
-      console.log(
-        `[${gi + 1}/${selectedGroups.length}] ⏭️ Atlandı (zaten draft'ta var)`,
-      );
-      // Still load it into "published" so it ends up in the final file
-      const existing = await db.publishedArticle.findFirst({
-        where: { sourceArticleIds: hash, status: { in: ['draft', 'published'] } },
+      // Find the existing record
+      const existingRow = await db.publishedArticle.findFirst({
+        where: { sourceArticleIds: hash, status: { in: ['draft', 'published', 'stale'] } },
       });
-      if (existing) {
+      if (existingRow) {
+        if (existingRow.status === 'stale') {
+          // Restore: this story came back in this cycle, mark as published
+          await db.publishedArticle.update({
+            where: { id: existingRow.id },
+            data: { status: 'published', publishedAt: new Date() },
+          });
+          restoredCount += 1;
+          console.log(
+            `[${gi + 1}/${selectedGroups.length}] 🔄 Restore (stale → published): ${existingRow.aiTitle.slice(0, 50)}`,
+          );
+        } else {
+          skippedCount += 1;
+          console.log(
+            `[${gi + 1}/${selectedGroups.length}] ⏭️ Atlandı (zaten ${existingRow.status})`,
+          );
+        }
+        // Load it into "published" array for the final file
         published.push({
-          aiTitle: existing.aiTitle,
-          aiSummary: existing.aiSummary,
-          imageUrl: existing.imageUrl,
-          category: existing.category,
-          wordCount: existing.wordCount,
+          aiTitle: existingRow.aiTitle,
+          aiSummary: existingRow.aiSummary,
+          imageUrl: existingRow.imageUrl,
+          category: existingRow.category,
+          wordCount: existingRow.wordCount,
           sourceArticleIds: sortedIds,
           sourceArticleLinks: gm.allSources.map((a) => ({
             title: a.title,
@@ -597,7 +630,7 @@ async function main() {
       publishedAt: a.publishedAt,
     }));
 
-    // IMMEDIATELY write to DB as draft (so a crash doesn't lose this work)
+    // IMMEDIATELY write to DB as draft (incremental save — crash-safe)
     try {
       await db.publishedArticle.create({
         data: {
@@ -613,6 +646,7 @@ async function main() {
           status: 'draft',
         },
       });
+      draftCounter += 1;
     } catch (e) {
       console.log(
         `[${gi + 1}/${selectedGroups.length}] DB yazma hatası: ${e instanceof Error ? e.message : String(e)}`,
@@ -635,10 +669,21 @@ async function main() {
     console.log(
       `[${gi + 1}/${selectedGroups.length}] ✓ "${result.title.slice(0, 60)}" — ${wordCount} kelime, ${gm.sourceCount} kaynak, ${gm.category}`,
     );
+
+    // AUTO-PUBLISH: every 3 drafts, publish them all (draft → published)
+    if (draftCounter >= 3) {
+      await autoPublishDrafts();
+      draftCounter = 0;
+    }
+  }
+
+  // Final auto-publish: any remaining drafts
+  if (draftCounter > 0) {
+    await autoPublishDrafts();
   }
 
   console.log(
-    `\nÖzetleme tamam: ${successCount} yeni, ${skippedCount} atlandı, ${errorCount} hata, ${((Date.now() - started) / 1000).toFixed(1)}s`,
+    `\nÖzetleme tamam: ${successCount} yeni AI özet, ${restoredCount} stale→published, ${skippedCount} atlandı, ${errorCount} hata, ${autoPublishedBatches} publish batch, ${((Date.now() - started) / 1000).toFixed(1)}s`,
   );
 
   const finalSelection = published;

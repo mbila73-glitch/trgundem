@@ -1,19 +1,18 @@
 // Cron-like pipeline scheduler.
 //
 // Timeline (her 30 dakikalık cycle):
-//   :20 ─ refresh RSS + build rss_icerik + find-duplicates + AI summarize (~10 dk)
-//   :30 ─ ilk büyük publish (tüm draft'ları yayınla)
-//   :32, :34, :36, :38, :40, :42, :44, :46, :48 ─ her 2 dk'da bir publish
-//     (yeni draft'lar geldiyse onları yayınla)
-//   :49 ─ cycle sonu (artık publish yapma, 50'de yeni refresh gelecek)
-//   :50 ─ yeni refresh + pipeline
-//   :00 (=60) ─ ilk büyük publish
-//   :02, :04, :06, :08, :10, :12, :14, :16, :18 ─ her 2 dk'da publish
-//   :19 ─ cycle sonu
+//   :00 — cycle başlangıcı: archive-stale (eski published'ları stale yap) +
+//         refresh RSS + build rss_icerik + find-duplicates + AI summarize
+//         (incremental — sadece yeni grupları özetler, her 3 hazırda bir publish)
+//   :30 — yeni cycle başlar (aynı işlem)
 //
-// "Archive all published" işlemi her cycle'ın başında yapılır (20 ve 50'de
-// refresh başlamadan önce). Böylece yeni cycle'da UI'da sadece yeni haberler
-// görünür, eski cycle'ın haberleri "archived" olur.
+// Cycle içinde:
+//   - AI özetleme en yüksek kaynak sayısından başlar (sourceCount DESC)
+//   - Her 3 hazır draft'ta bir publish yap (draft → published)
+//   - Aynı sourceArticleIds hash DB'de published olarak varsa: eskisini archived
+//     yap, yenisini ekle (haber güncellendi)
+//   - Eski cycle'ın published haberlerinden bu cycle'da yenisi gelmeyenler:
+//     sayfada kalsın (silme)
 //
 // Run: setsid bash -c 'exec bun run /home/z/my-project/scripts/pipeline-cron.ts' &
 
@@ -22,13 +21,10 @@ import { promisify } from 'node:util';
 import { db } from '../src/lib/db';
 
 const execAsync = promisify(exec);
-
 const ONE_MINUTE_MS = 60_000;
 
-type Stage = 'idle' | 'refresh' | 'build-icerik' | 'build-kaynak-sayi' | 'build-ozet' | 'publish' | 'archive';
+type Stage = 'idle' | 'archive-stale' | 'refresh' | 'build-icerik' | 'build-kaynak-sayi' | 'build-ozet';
 let currentStage: Stage = 'idle';
-let lastPublishAt: Date | null = null;
-let lastRefreshStart: Date | null = null;
 
 function log(msg: string) {
   const ts = new Date().toISOString();
@@ -59,124 +55,67 @@ async function runStep(name: string, cmd: string): Promise<{ ok: boolean; stdout
   }
 }
 
-async function runRefreshPipeline(): Promise<void> {
-  lastRefreshStart = new Date();
-  log(`=== Refresh pipeline başlatıldı (saat ${lastRefreshStart.toLocaleTimeString('tr-TR')}) ===`);
+async function runCycle(): Promise<void> {
+  log(`=== Cycle başlatıldı (saat ${new Date().toLocaleTimeString('tr-TR')}) ===`);
 
-  currentStage = 'archive';
-  // Cycle başında eski published'ları arşivle (yeni cycle'da sadece yeni haberler görünsün)
+  // 1. Stale: tüm published'ları "stale" yap — bu cycle'da "yeniden geldi" olarak
+  //    işaretlenmezlerse archived olacaklar (eski haberler)
+  currentStage = 'archive-stale';
   try {
     const r = await db.publishedArticle.updateMany({
       where: { status: 'published' },
-      data: { status: 'archived' },
+      data: { status: 'stale' },
     });
-    log(`  ✓ Archived (cycle başı): ${r.count} eski haber arşivlendi`);
+    log(`  ✓ Stale: ${r.count} published haber 'stale' olarak işaretlendi`);
   } catch (e) {
-    log(`  ✗ Archive hatası: ${(e as Error).message}`);
+    log(`  ✗ Stale hatası: ${(e as Error).message}`);
   }
 
+  // 2. RSS refresh
   currentStage = 'refresh';
   await runStep('RSS refresh', 'bun run scripts/trigger-refresh.ts');
 
+  // 3. build rss_icerik.md
   currentStage = 'build-icerik';
   await runStep('rss_icerik.md', 'bun run scripts/build-rss-icerik.ts');
 
+  // 4. find-duplicate-news (rss_kaynak_sayi.md)
   currentStage = 'build-kaynak-sayi';
   await runStep('rss_kaynak_sayi.md', 'python3 scripts/find-duplicate-news.py');
 
+  // 5. build-rss-ozet (incremental auto-publish: her 3 draft'ta bir publish)
+  //    Ayrıca 'stale' olanlardan bu cycle'da yeniden gelenleri published yap
   currentStage = 'build-ozet';
-  await runStep('rss_ozet.md (AI paraphrase)', 'bun run scripts/build-rss-ozet.ts');
+  await runStep('rss_ozet.md (AI paraphrase + auto-publish)', 'bun run scripts/build-rss-ozet.ts');
 
-  currentStage = 'idle';
-  log(`=== Refresh pipeline tamam ===`);
-}
-
-async function runPublishStep(isLast: boolean): Promise<void> {
-  currentStage = 'publish';
+  // 6. Cycle sonunda: hala 'stale' olanları archived yap (bu cycle'da gelmeyenler)
+  //    Ama kullanıcının kuralı: "güncellenmeyen haber sayfada kalsın"
+  //    Bu yüzden stale olanları geri published yap (sayfada kalsınlar)
   try {
-    // Count current drafts
-    const draftCount = await db.publishedArticle.count({ where: { status: 'draft' } });
-
-    if (draftCount === 0) {
-      // No drafts to publish — skip
-      lastPublishAt = new Date();
-      if (!isLast) {
-        log(`⏸️ Publish: hazır draft yok, atlandı (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
-      }
-      currentStage = 'idle';
-      return;
-    }
-
-    if (isLast) {
-      // Last publish of the cycle (48 or 18): publish ALL remaining drafts
-      const r = await db.publishedArticle.updateMany({
-        where: { status: 'draft' },
-        data: { status: 'published', publishedAt: new Date() },
-      });
-      lastPublishAt = new Date();
-      log(`✓ Publish (SON): ${r.count} haber yayınlandı, tüm draft'lar tükendi (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
-    } else {
-      // Normal publish (30-46 or 00-16): publish up to 3 most recent drafts
-      const drafts = await db.publishedArticle.findMany({
-        where: { status: 'draft' },
-        orderBy: { latestPublishedAt: 'desc' },
-        take: 3,
-        select: { id: true },
-      });
-      if (drafts.length === 0) {
-        currentStage = 'idle';
-        return;
-      }
-      const r = await db.publishedArticle.updateMany({
-        where: { id: { in: drafts.map((d) => d.id) } },
-        data: { status: 'published', publishedAt: new Date() },
-      });
-      lastPublishAt = new Date();
-      const remaining = draftCount - r.count;
-      log(`✓ Publish: ${r.count} haber yayınlandı, kalan ${remaining} draft (${lastPublishAt.toLocaleTimeString('tr-TR')})`);
-    }
+    const restored = await db.publishedArticle.updateMany({
+      where: { status: 'stale' },
+      data: { status: 'published' },
+    });
+    log(`  ✓ Restore: ${restored.count} 'stale' haber tekrar published yapıldı (sayfada kalsın)`);
   } catch (e) {
-    log(`✗ Publish hatası: ${(e as Error).message}`);
+    log(`  ✗ Restore hatası: ${(e as Error).message}`);
   }
-  currentStage = 'idle';
-}
 
-// Check if current minute is a "publish minute" (every 2 minutes from 30-48 or 00-18)
-function isPublishMinute(minute: number): { isPublish: boolean; isLast: boolean } {
-  // Cycle 1: 30, 32, 34, 36, 38, 40, 42, 44, 46, 48
-  // Cycle 2: 00, 02, 04, 06, 08, 10, 12, 14, 16, 18
-  // Last publish: 48 or 18
-  if (minute >= 30 && minute <= 48 && minute % 2 === 0) {
-    return { isPublish: true, isLast: minute === 48 };
-  }
-  if (minute >= 0 && minute <= 18 && minute % 2 === 0) {
-    return { isPublish: true, isLast: minute === 18 };
-  }
-  return { isPublish: false, isLast: false };
+  currentStage = 'idle';
+  log(`=== Cycle tamam ===`);
 }
 
 async function tick(): Promise<void> {
   const now = new Date();
   const minute = now.getMinutes();
 
-  // Refresh pipeline starts at minute 20 or 50
-  if (minute === 20 || minute === 50) {
+  // Cycle starts at minute 0 and 30
+  if (minute === 0 || minute === 30) {
     if (currentStage !== 'idle') {
-      log(`Tick skipped (stage: ${currentStage})`);
+      log(`Tick skipped (stage: ${currentStage}) — önceki cycle hala çalışıyor`);
       return;
     }
-    await runRefreshPipeline();
-    return;
-  }
-
-  // Publish every 2 minutes between 30-48 and 00-18
-  const publishInfo = isPublishMinute(minute);
-  if (publishInfo.isPublish) {
-    if (currentStage !== 'idle') {
-      log(`Tick skipped (stage: ${currentStage}) — pipeline hala çalışıyor`);
-      return;
-    }
-    await runPublishStep(publishInfo.isLast);
+    await runCycle();
   }
 }
 
@@ -184,11 +123,13 @@ async function main() {
   log(`Pipeline cron başlatıldı. PID: ${process.pid}`);
   log(`Saat dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   log(`Tetikleme saatleri:`);
-  log(`  • :20 ve :50 — archive + refresh RSS + build pipeline (~10 dk sürer)`);
-  log(`  • :30, :32, :34, :36, :38, :40, :42, :44, :46, :48 — publish (her 2 dk'da en yeni 3 draft, sonuncu = tüm kalan draft)`);
-  log(`  • :00, :02, :04, :06, :08, :10, :12, :14, :16, :18 — publish (aynı mantık)`);
-  log(`  • :48 ve :18 — cycle'da SON publish, kalan tüm draft'lar yayınlanır`);
-  log(`  • :49-:19 ve :19-:20 — cycle boşluğu, sonraki refresh beklenir`);
+  log(`  • :00 ve :30 — cycle başlat (RSS refresh + pipeline + her 3 draft'ta bir publish)`);
+  log(`  • :60 (yani sonraki :00) — yeni cycle`);
+  log(`Kurallar:`);
+  log(`  - En yüksek kaynak sayısından başla özetlemeye`);
+  log(`  - Her 3 hazır draft'ta bir publish yap (draft → published)`);
+  log(`  - Aynı sourceArticleIds hash varsa: eskisini archived, yenisini published`);
+  log(`  - Güncellenmeyen haberler sayfada kalsın (stale'leri geri published yap)`);
   log(`Bekleniyor…`);
 
   // Check every minute
