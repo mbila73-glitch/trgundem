@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Newspaper, Sparkles, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, ExternalLink, Clock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
-import { PublishedArticleDialog } from './published-article-dialog';
 import type { PublishedArticle } from '@/lib/types';
 
 const SUB_TABS: Array<{
@@ -42,15 +41,163 @@ const CATEGORY_LIMITS: Record<string, number> = {
   'Kültür / Sanat': 3,
 };
 
+// Inline article detail component (not a dialog)
+function ArticleDetailInline({
+  articleId,
+  onBack,
+}: {
+  articleId: string;
+  onBack: () => void;
+}) {
+  const [article, setArticle] = useState<PublishedArticle | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve().then(() => setLoading(true));
+    fetch(`/api/published-articles?limit=100&status=published`, { cache: 'no-store' })
+      .then(async (r) => {
+        if (!r.ok) throw new Error('Haber yüklenemedi');
+        const json = (await r.json()) as { articles: PublishedArticle[] };
+        return json.articles?.find((a) => a.id === articleId) ?? null;
+      })
+      .then((a) => {
+        if (cancelled) return;
+        setArticle(a);
+      })
+      .catch(() => {
+        if (!cancelled) setArticle(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [articleId]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-4 py-8">
+        <Skeleton className="h-6 w-24" />
+        <Skeleton className="aspect-[16/8] w-full rounded-xl" />
+        <Skeleton className="h-8 w-3/4" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  if (!article) {
+    return (
+      <Card className="flex flex-col items-center gap-3 p-10 text-center">
+        <AlertCircle className="h-10 w-10 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">Haber bulunamadı</p>
+        <Button variant="outline" size="sm" onClick={onBack}>
+          Geri Dön
+        </Button>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl py-4">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onBack}
+        className="mb-4 gap-1.5 text-sm"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Geri
+      </Button>
+
+      {article.imageUrl && (
+        <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl bg-muted mb-6">
+          <img
+            src={article.imageUrl}
+            alt={article.aiTitle}
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground/80">{article.category}</span>
+        <span className="inline-flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })}
+        </span>
+      </div>
+
+      <h1 className="text-2xl font-bold leading-tight mb-4">{article.aiTitle}</h1>
+
+      <div className="prose prose-sm max-w-none">
+        <p className="text-base leading-relaxed text-foreground/90 whitespace-pre-wrap">
+          {article.aiSummary}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function NewsScreen() {
   const [active, setActive] = useState<string>('all');
   const [articles, setArticles] = useState<PublishedArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [openArticleId, setOpenArticleId] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  // Track which article is open (from URL ?article=<id>)
+  const [openArticleId, setOpenArticleId] = useState<string | null>(null);
+
+  // On mount, check URL for ?article=<id>
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const articleId = params.get('article');
+    if (articleId) {
+      setOpenArticleId(articleId);
+    }
+  }, []);
+
+  // Listen for browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const articleId = params.get('article');
+      setOpenArticleId(articleId);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Open article: push URL state
+  const openArticle = useCallback((id: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('article', id);
+    window.history.pushState({}, '', url.toString());
+    setOpenArticleId(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Close article: go back in history (or clear URL)
+  const closeArticle = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('article')) {
+      window.history.back();
+    } else {
+      setOpenArticleId(null);
+    }
+  }, []);
+
+  // Load articles when tab changes
   useEffect(() => {
     let cancelled = false;
     Promise.resolve().then(() => setLoading(true));
@@ -106,8 +253,7 @@ export function NewsScreen() {
       };
       setArticles((prev) => [...prev, ...(json.articles ?? [])]);
       setHasMore(json.hasMore ?? false);
-    } catch (e) {
-      // silent fail for "load more"
+    } catch {
       setHasMore(false);
     } finally {
       setLoadingMore(false);
@@ -118,7 +264,7 @@ export function NewsScreen() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-      {/* Sub-tab bar */}
+      {/* Category tabs — always visible */}
       <nav
         role="tablist"
         aria-label="Haber kategorileri"
@@ -133,7 +279,10 @@ export function NewsScreen() {
               type="button"
               role="tab"
               aria-selected={isActive}
-              onClick={() => setActive(tab.id)}
+              onClick={() => {
+                setActive(tab.id);
+                if (openArticleId) closeArticle();
+              }}
               className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
                 isActive
                   ? 'bg-secondary text-secondary-foreground shadow-sm'
@@ -142,7 +291,7 @@ export function NewsScreen() {
             >
               <Icon className="h-3.5 w-3.5" />
               {tab.label}
-              {isActive && articles.length > 0 && (
+              {isActive && articles.length > 0 && !openArticleId && (
                 <span className="ml-1 rounded bg-muted-foreground/20 px-1.5 text-[10px] tabular-nums">
                   {articles.length}
                 </span>
@@ -152,10 +301,10 @@ export function NewsScreen() {
         })}
       </nav>
 
-      {/* Layout info */}
-
-      {/* Content */}
-      {loading ? (
+      {/* Article detail (inline, not dialog) OR news grid */}
+      {openArticleId ? (
+        <ArticleDetailInline articleId={openArticleId} onBack={closeArticle} />
+      ) : loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />
@@ -175,8 +324,8 @@ export function NewsScreen() {
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               {active === 'ozel'
-                ? 'Haber kartındaki yıldız butonuyla özel olarak işaretlediğiniz haberler burada toplanacak.'
-                : 'Bu kategoride birden fazla kaynakta çıkan (2+ kaynak) henüz haber yok.'}
+                ? 'Özel olarak işaretlediğiniz haberler burada toplanacak.'
+                : 'Bu kategoride henüz haber yok.'}
             </p>
           </div>
         </Card>
@@ -187,12 +336,11 @@ export function NewsScreen() {
               <PublishedArticleCard
                 key={a.id}
                 article={a}
-                onOpen={(id) => setOpenArticleId(id)}
+                onOpen={(id) => openArticle(id)}
               />
             ))}
           </div>
 
-          {/* "Diğer Haberler" button — only on "all" tab when hasMore is true */}
           {active === 'all' && hasMore && (
             <div className="mt-6 flex justify-center">
               <Button
@@ -213,15 +361,6 @@ export function NewsScreen() {
           )}
         </>
       )}
-
-      <PublishedArticleDialog
-        articleId={openArticleId}
-        articles={articles}
-        onClose={() => setOpenArticleId(null)}
-      />
     </section>
   );
 }
-
-// Re-export so consumers can keep using Loader2 for background jobs
-export const _Loader = Loader2;
