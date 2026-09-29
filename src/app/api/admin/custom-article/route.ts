@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
 
 const ADMIN_PASSWORD = 'Trgundem123';
 
@@ -13,10 +12,49 @@ function checkAuth(req: NextRequest): boolean {
   } catch { return false; }
 }
 
-let zaiPromise: Promise<ZAI> | null = null;
-async function getZAI(): Promise<ZAI> {
-  if (!zaiPromise) zaiPromise = ZAI.create();
-  return zaiPromise;
+// Extract text from HTML (server-side, no CORS issues)
+function extractFromHtml(html: string, url: string) {
+  // Title
+  let title = '';
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (titleMatch) title = titleMatch[1].trim();
+  const ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
+  if (ogTitle) title = ogTitle[1].trim();
+
+  // Description
+  let description = '';
+  const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
+  if (descMatch) description = descMatch[1].trim();
+  if (!description) {
+    const ogDesc = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
+    if (ogDesc) description = ogDesc[1].trim();
+  }
+  if (!description) {
+    // Get first paragraph with text
+    const pMatches = html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+    for (const m of pMatches) {
+      const text = m[1].replace(/<[^>]+>/g, '').trim();
+      if (text.length > 50) { description = text.slice(0, 1000); break; }
+    }
+  }
+
+  // Images
+  const images: string[] = [];
+  const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+  let match;
+  while ((match = imgRegex.exec(html)) !== null && images.length < 15) {
+    const src = match[1];
+    if (src.match(/\.(jpg|jpeg|png|webp|gif)/i) && !src.includes('logo') && !src.includes('icon') && !src.includes('sprite') && !src.includes('avatar') && src.length > 20) {
+      try {
+        const absUrl = new URL(src, url).href;
+        images.push(absUrl);
+      } catch {
+        // skip invalid URLs
+      }
+    }
+  }
+
+  return { title, description: description.slice(0, 2000), images };
 }
 
 // POST /api/admin/custom-article
@@ -30,44 +68,18 @@ export async function POST(req: NextRequest) {
 
   if (data.action === 'fetch' && data.url) {
     try {
-      const zai = await getZAI();
-      const result = await zai.functions.invoke('page_reader', { url: data.url });
-      const pageData = result.data;
-      // Extract images from HTML
-      const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
-      const images: string[] = [];
-      let match;
-      const html = pageData.html || '';
-      while ((match = imgRegex.exec(html)) !== null && images.length < 10) {
-        const src = match[1];
-        if (src.match(/\.(jpg|jpeg|png|webp|gif)/i) && !src.includes('logo') && !src.includes('icon')) {
-          // Make absolute URL if relative
-          try {
-            const absUrl = new URL(src, data.url).href;
-            images.push(absUrl);
-          } catch {
-            images.push(src);
-          }
-        }
-      }
-      // Get description from meta or first paragraph
-      let description = '';
-      const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
-      if (descMatch) description = descMatch[1];
-      if (!description) {
-        const ogDesc = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
-        if (ogDesc) description = ogDesc[1];
-      }
-      if (!description) {
-        const pMatch = html.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-        if (pMatch) description = pMatch[1].replace(/<[^>]+>/g, '').trim().slice(0, 500);
-      }
-      return NextResponse.json({
-        ok: true,
-        title: pageData.title || '',
-        description: description.slice(0, 1000),
-        images,
+      // Direct fetch (server-side, no CORS)
+      const r = await fetch(data.url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; HaberOzet/1.0; +https://haberozet.local)',
+          'Accept': 'text/html,application/xhtml+xml',
+        },
+        signal: AbortSignal.timeout(15000),
       });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const html = await r.text();
+      const { title, description, images } = extractFromHtml(html, data.url);
+      return NextResponse.json({ ok: true, title, description, images });
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : 'Sayfa okunamadı' }, { status: 500 });
     }
@@ -83,7 +95,7 @@ export async function POST(req: NextRequest) {
           aiTitle: data.title.trim(),
           aiSummary: data.summary.trim(),
           imageUrl: data.imageUrl || null,
-          category: data.category || 'Güncel',
+          category: 'Özel',
           wordCount: data.summary.trim().split(/\s+/).filter(Boolean).length,
           sourceArticleIds: JSON.stringify(['custom']),
           sourceCount: 1,

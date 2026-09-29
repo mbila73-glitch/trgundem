@@ -332,12 +332,27 @@ export function NewsScreen() {
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {articles.map((a) => (
-              <PublishedArticleCard
-                key={a.id}
-                article={a}
-                onOpen={(id) => openArticle(id)}
-              />
+            {articles.map((a, i) => (
+              <div key={a.id} className={i === 0 && active === 'all' && !openArticleId ? 'col-span-full' : ''}>
+                {i === 0 && active === 'all' && !openArticleId ? (
+                  <div className="flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md hover:border-foreground/20 sm:flex-row" onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
+                    {a.imageUrl && (
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px]">
+                        <img src={a.imageUrl} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col gap-2 p-6">
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <span className="font-medium text-foreground/80">{a.category}</span>
+                      </div>
+                      <h3 className="text-xl font-bold leading-tight text-foreground hover:text-news">{a.aiTitle}</h3>
+                      <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.aiSummary}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} />
+                )}
+              </div>
             ))}
           </div>
 

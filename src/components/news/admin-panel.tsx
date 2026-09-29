@@ -26,7 +26,7 @@ import {
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; status: string; createdAt: string };
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; };
-type AdminTab = 'home' | 'messages' | 'custom' | 'published';
+type AdminTab = 'messages' | 'custom' | 'published';
 
 const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
 
@@ -34,7 +34,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [token, setToken] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
-  const [adminTab, setAdminTab] = useState<AdminTab>('home');
+  const [adminTab, setAdminTab] = useState<AdminTab>('messages');
 
   // Messages state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,7 +55,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [customTitle, setCustomTitle] = useState('');
   const [customSummary, setCustomSummary] = useState('');
   const [customImage, setCustomImage] = useState('');
-  const [customCategory, setCustomCategory] = useState('Güncel');
+  const [customCategory] = useState('Özel');
   const [fetchedImages, setFetchedImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -212,7 +212,41 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setResetting(false); }
   };
 
-  const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); setAdminTab('home'); };
+  const [expandedSources, setExpandedSources] = useState<string | null>(null);
+  const [sourceLinks, setSourceLinks] = useState<{ [key: string]: Array<{ title: string; link: string; source: string }> }>({});
+  const [loadingSources, setLoadingSources] = useState(false);
+
+  const toggleSources = async (articleId: string, sourceIdsJson: string) => {
+    if (expandedSources === articleId) {
+      setExpandedSources(null);
+      return;
+    }
+    setExpandedSources(articleId);
+    if (sourceLinks[articleId]) return;
+
+    setLoadingSources(true);
+    try {
+      let ids: string[] = [];
+      try { ids = JSON.parse(sourceIdsJson); } catch { /* ignore */ }
+      if (ids[0] === 'custom' || ids.length === 0) {
+        setSourceLinks(prev => ({ ...prev, [articleId]: [] }));
+        return;
+      }
+      const results = await Promise.all(ids.map(async (id) => {
+        try {
+          const r = await fetch(`/api/articles/${id}`, { cache: 'no-store' });
+          if (!r.ok) return null;
+          const json = (await r.json()) as { article: { title: string; link: string; source: { name: string } } };
+          return { title: json.article.title, link: json.article.link, source: json.article.source.name };
+        } catch { return null; }
+      }));
+      const valid = results.filter((r): r is { title: string; link: string; source: string } => r !== null);
+      setSourceLinks(prev => ({ ...prev, [articleId]: valid }));
+    } catch { /* ignore */ }
+    finally { setLoadingSources(false); }
+  };
+
+  const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); setAdminTab('messages'); };
   const newCount = messages.filter(m => m.status === 'new').length;
   const allSelected = messages.length > 0 && selectedIds.size === messages.length;
   const resetConfirmed = resetConfirm.trim().toLowerCase() === 'evet';
@@ -263,35 +297,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               </form>
             ) : (
               <>
-                {adminTab === 'home' ? (
-                  /* Home view: 3 big buttons */
-                  <div className="grid gap-3 py-6">
-                    <button type="button" onClick={() => setAdminTab('messages')} className="flex items-center gap-3 rounded-xl border border-border bg-card p-5 text-left transition hover:border-foreground/20 hover:shadow-md">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-news/10 text-news"><Mail className="h-5 w-5" /></span>
-                      <div><p className="text-sm font-semibold">Mesajlar</p><p className="text-xs text-muted-foreground">Okuyucu mesajlarını oku ve yönet</p></div>
-                      {newCount > 0 && <Badge className="ml-auto bg-news text-news-foreground">{newCount}</Badge>}
+                {/* Sub-tabs */}
+                <div className="mb-4 flex gap-1 rounded-lg border border-border bg-muted/30 p-1">
+                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper]] as const).map(([id, label, Icon]) => (
+                    <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                      <Icon className="h-3.5 w-3.5" /> {label}
                     </button>
-                    <button type="button" onClick={() => setAdminTab('custom')} className="flex items-center gap-3 rounded-xl border border-border bg-card p-5 text-left transition hover:border-foreground/20 hover:shadow-md">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-news/10 text-news"><Star className="h-5 w-5" /></span>
-                      <div><p className="text-sm font-semibold">Özel Haber Ekle</p><p className="text-xs text-muted-foreground">URL'den haber çek veya kendi haberini oluştur</p></div>
-                    </button>
-                    <button type="button" onClick={() => setAdminTab('published')} className="flex items-center gap-3 rounded-xl border border-border bg-card p-5 text-left transition hover:border-foreground/20 hover:shadow-md">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-news/10 text-news"><Newspaper className="h-5 w-5" /></span>
-                      <div><p className="text-sm font-semibold">Yayındaki Haberler</p><p className="text-xs text-muted-foreground">Yayındaki tüm haberleri düzenle veya sil</p></div>
-                    </button>
-                  </div>
-                ) : (
-                <>
-                {/* Geri button + sub-tab nav */}
-                <div className="mb-4 flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => setAdminTab('home')} className="gap-1.5 text-sm"><ArrowLeft className="h-4 w-4" /> Geri</Button>
-                  <div className="flex flex-1 gap-1 rounded-lg border border-border bg-muted/30 p-1">
-                    {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper]] as const).map(([id, label, Icon]) => (
-                      <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                        <Icon className="h-3.5 w-3.5" /> {label}
-                      </button>
-                    ))}
-                  </div>
+                  ))}
                 </div>
 
                 {/* Messages tab */}
@@ -338,7 +350,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           </div>
                           {fetchedImages.length > 0 && <div className="flex flex-wrap gap-2 mt-2">{fetchedImages.map((img, i) => <button key={i} type="button" onClick={() => setCustomImage(img)} className={`h-16 w-24 overflow-hidden rounded border-2 ${customImage === img ? 'border-news' : 'border-transparent'}`}><img src={img} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></button>)}</div>}
                         </div>
-                        <div className="space-y-1.5"><Label>Kategori</Label><Select value={customCategory} onValueChange={setCustomCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                        <div className="text-xs text-muted-foreground">Kategori: Özel (otomatik)</div>
                         <Button onClick={handleSaveCustom} disabled={saving || !customTitle.trim() || !customSummary.trim()} className="w-full gap-2">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}Kaydet ve Yayınla</Button>
                       </div>
                     )}
@@ -372,7 +384,28 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
                               <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
-                              <div className="mt-1 flex items-center gap-3 text-[10px] text-muted-foreground"><span>{a.wordCount} kelime</span>{a.sourceCount > 1 && <span>{a.sourceCount} kaynak</span>}</div>
+                              <div className="mt-1 flex items-center gap-3 text-[10px] text-muted-foreground">
+                                <span>{a.wordCount} kelime</span>
+                                {a.sourceCount > 1 && (
+                                  <button type="button" onClick={() => toggleSources(a.id, a.sourceArticleIds)} className="inline-flex items-center gap-0.5 text-news hover:underline">
+                                    {a.sourceCount} kaynak {expandedSources === a.id ? '▲' : '▼'}
+                                  </button>
+                                )}
+                              </div>
+                              {expandedSources === a.id && (
+                                <div className="mt-2 rounded-md border border-border bg-muted/30 p-2">
+                                  {loadingSources ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
+                                   sourceLinks[a.id]?.length ? (
+                                    <div className="space-y-1">
+                                      {sourceLinks[a.id].map((s, i) => (
+                                        <a key={i} href={s.link} target="_blank" rel="noopener noreferrer" className="block text-[11px] text-muted-foreground hover:text-news">
+                                          {i + 1}. {s.title.slice(0, 60)} — <span className="font-medium">{s.source}</span>
+                                        </a>
+                                      ))}
+                                    </div>
+                                  ) : <p className="text-[11px] text-muted-foreground">Kaynak bulunamadı</p>}
+                                </div>
+                              )}
                             </div>
                             <div className="flex flex-shrink-0 items-center gap-1"><Button variant="ghost" size="icon" onClick={() => startEdit(a)} className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
                               <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
@@ -385,8 +418,6 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       </Card>))}
                     </div>}
                   </div>
-                )}
-                </>
                 )}
               </>
             )}
