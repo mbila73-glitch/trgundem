@@ -2,14 +2,14 @@
 
 Birden fazla kaynakta çıkan haberler için AI tarafından telif güvenli (paraphrase) şekilde yeniden yazılmış başlık ve özetler.
 
-- **Oluşturulma:** 29 Eyl 2026 19:49
-- **Toplam özetlenen haber:** 17
+- **Oluşturulma:** 29 Eyl 2026 19:50
+- **Toplam özetlenen haber:** 19
 - **Kategori limitleri:** Güncel 10, Kamu 7, Ekonomi 7, Spor 5, Bilim 3, Kültür 3
 - **Kelime hedefi:** en az 100 kelime
 
 ---
 
-## Güncel (9 haber)
+## Güncel (10 haber)
 
 ### Mersin ve Yahşihan'da Tutuklama Kararları
 
@@ -294,12 +294,12 @@ Kütahya'da yaşanan üzücü olayda 51 yaşındaki Nalan Temelkıran, işletti�
 
 - **Yayın aralığı:** 29 Eyl 2026 17:14 – 29 Eyl 2026 18:37
 - **Farklı kaynak sayısı:** 3
-- **Kelime sayısı:** 105
+- **Kelime sayısı:** 120
 - **Görsel:** https://media.cumhuriyet.com.tr/Archive/d3205260-2852-463e-9146-a4291090cdb6.jpg
 
 **Özet:**
 
-Türkiye'nin köklü seramik üreticilerinden Uşak Seramik Sanayi AŞ, mali yapısını yeniden düzenlemek amacıyla konkordato başvurusunda bulundu. Şirket, 54 yıllık geçmişe sahip olan ve Borsa İstanbul'da işlem gören önemli sanayi kuruluşlarından biridir. Borçların yeniden yapılandırılması talebiyle yapılan başvuru üzerine Banaz 2. Asliye Hukuk Mahkemesi geçici mühlet kararı vererek 3 kişilik komiser heyeti görevlendirdi. Bu karar, şirketin mali zorluklar yaşadığını ve borçlarını ödeyemez duruma geldiğini gösteriyor. Konkordato süreci, şirketin iflasını önlemek ve varlıklarının korunması amacıyla borçların ödenmesine yönelik bir planın hazırlanmasını sağlıyor. Uşak Seramik'in bu adımı, seramik sektöründe ve genel ekonomide potansiyel etkiler yaratması bekleniyor. Şirketin bu süreçteki gelişmeler sektördeki diğer firmalar tarafından da yakından takip edilecek.
+Türkiye'nin köklü seramik üreticilerinden Uşak Seramik Sanayi AŞ, mali yapısını yeniden düzenlemek amacıyla konkordato başvurusunda bulundu. Şirket, Borsa İstanbul'da işlem gören ve Türkiye'nin en eski sanayi kuruluşları arasında yer alıyor. Borçların yeniden yapılandırılması talebiyle yapılan başvuru üzerine Banaz 2. Asliye Hukuk Mahkemesi geçici mühlet kararı verdi. Mahkeme, şirketin finansal durumunu incelemek üzere 3 kişilik bir komiser heyeti görevlendirdi. Uşak Seramik, 54 yıllık geçmişine rağmen son dönemdeki ekonomik koşullar nedeniyle finansal zorluklar yaşadı. Şirketin bu adımı, seramik sektöründe ve genel ekonomide yaşanan dalgalanmalara işaret ediyor. Konkordato süreci, şirketin varlıklarının korunması ve borçlarının ödenmesi için bir yol haritası sunacak. Mahkemenin aldığı geçici mühlet kararı, şirketin alacaklılarıyla anlaşma sürecini başlatmasına olanak tanıyacak. Bu gelişme, sanayi sektöründe yaşanan mali zorlukların bir yansıması olarak değerlendiriliyor.
 
 **Kaynaklar:**
 
@@ -309,18 +309,73 @@ Türkiye'nin köklü seramik üreticilerinden Uşak Seramik Sanayi AŞ, mali yap
 
 ---
 
-## Kamu / Resmi (5 haber)
+### Kayseri'de Yaşlı Adam Tuvalette Ölü Bulundu
 
-### Yapay zekayla sahte timsah görüntüsü üreten kişi hapse mahkum edildi
+- **Yayın aralığı:** 29 Eyl 2026 18:32 – 29 Eyl 2026 18:35
+- **Farklı kaynak sayısı:** 2
+- **Kelime sayısı:** 84
+- **Görsel:** https://media.cumhuriyet.com.tr/Archive/9c9e56fa-173f-42e0-9208-15a5de8ab709.jpg
+
+**Özet:**
+
+Kayseri'nin Kocasinan ilçesinde yalnız yaşayan 74 yaşındaki Ahmet Ö., evinin tuvaletinde ölü halde bulundu. Komşularının şüphelenmesi üzerine olay yerine sağlık ve jandarma ekipleri sevk edildi. Yapılan ilk incelemelerde yaşlı adamın vücudunda dışarıdan gelebilecek bir müdahalee rastlanmadı. Olayla ilgili olarak soruşturma başlatıldı. Yaşlı adamın cenazesi, olay yerinde yapılan incelemenin tamamlanmasının sonra otopsi yapılmak üzere morga kaldırıldı. Komşuları, Ahmet Ö.'nün son zamanlarda sağlığının bozuk olduğunu ve yalnız yaşadığını belirterek, olayın doğal ölümle ilgili olabileceğini düşündüklerini ifade etti. Jandarma ekipleri, olayla ilgili olarak detaylı bir soruşturma başlattı.
+
+**Kaynaklar:**
+
+1. [74 yaşındaki erkek evinin tuvaletinde ölü bulundu](https://www.cumhuriyet.com.tr/turkiye/74-yasindaki-erkek-evinin-tuvaletinde-olu-bulundu-2542263) — Cumhuriyet · Son dakika — 29 Eyl 2026 18:35
+2. [Kayseri'de 74 yaşındaki adam, evinin tuvaletinde ölü bulundu](https://www.iscihaber.net/kayseri/kayseride-74-yasindaki-adam-evinin-tuvaletinde-olu-bulundu/267258) — Iscihaber · News — 29 Eyl 2026 18:32
+
+---
+
+## Kamu / Resmi (6 haber)
+
+### Ekim Kira Zammı Tarih Belli Oldu
+
+- **Yayın aralığı:** 28 Eyl 2026 08:46 – 29 Eyl 2026 19:15
+- **Farklı kaynak sayısı:** 2
+- **Kelime sayısı:** 111
+- **Görsel:** https://www.iscihaber.net/cropImages/1280x720/uploads/haberler/2026/9/9-iscihaber-resim.jpg
+
+**Özet:**
+
+Ekim 2026'da uygulanacak kira artış oranı, TÜİK'in Eylül ayı enflasyon verilerine göre belirlenecek. Milyonlarca kiracı ve ev sahibi tarafından merakla beklenen bu oran, 5 Ekim 2026 tarihinde kamuoyuna açıklanacak. Kira zamlarının hesaplanmasında kullanılacak olan 12 aylık TÜFE (Tüketici Fiyat Endeksi) ortalamasının sonucuna göre belirlenecek bu oran, kiracılar ve ev sahipleri için önemli bir finansal planlamaya işaret ediyor. Ekim ayı itibarıyla yürürlüğe girecek olan kira artışı, ülke genelinde milyonlarca kişinin bütçesini doğrudan etkileyecek. TÜİK tarafından yayımlanan enflasyon verileri, kira zamlarının temelini oluştururken, ekonomik koşullardaki değişiklikler de bu oranı etkileyebiliyor. Kira artış oranı, özellikle büyük şehirlerde yaşayanlar için önemli bir maliyet unsurunu oluşturuyor ve bu nedenle her ayın enflasyon verileri yakından takip ediliyor.
+
+**Kaynaklar:**
+
+1. [Ekim kira zammı ne kadar olacak? Yeni kira artış oranı ne zaman açıklanacak?](https://www.iscihaber.net/gundem/ekim-kira-zammi-ne-kadar-olacak-yeni-kira-artis-orani-ne-zaman-aciklanacak/267275) — Iscihaber · News — 29 Eyl 2026 19:15
+2. [Kiracılar ve ev sahipleri dikkat: Kira zammı ne kadar olacak?](https://www.kamudanhaber.net/kiracilar-ve-ev-sahipleri-dikkat-kira-zammi-ne-kadar-olacak) — Kamudanhaber — 28 Eyl 2026 08:46
+
+---
+
+### Çin'de Yapay Zeka Kullanıcı Sayısı Rekor Kırdı
+
+- **Yayın aralığı:** 29 Eyl 2026 16:55 – 29 Eyl 2026 18:27
+- **Farklı kaynak sayısı:** 3
+- **Kelime sayısı:** 110
+- **Görsel:** https://www.iscihaber.net/cropImages/1280x720/uploads/haberler/2026/9/769-iscihaber-resim.jpg
+
+**Özet:**
+
+Çin'de üretken yapay zeka teknolojilerine olan ilgi son zamanlarda rekor bir seviyeye ulaştı. Ülke genelinde bu teknolojileri kullanan insan sayısı Haziran 2026 itibarıyla 700 milyonu aştı. Bu rakam, yapay zeka alanında yaşanan hızlı büyümeye dikkat çekiyor. Çinli kullanıcılar, üretken yapay zeka araçlarını günlük hayatlarına ve işlerine entegre etmeye başladı. Bu teknolojilerin benimsenme hızının bu kadar yüksek olmasının arkasında, hükümetin yapay zeka alanına yaptığı önemli yatırımlar ve teşvikler yatıyor. Uzmanlar, bu gelişmenin Çin'in teknoloji alanındaki küresel konumunu daha da güçlendireceğini belirtiyor. Kullanıcı sayısındaki bu artış, üretken yapay zeka teknolojilerinin ekonomi ve toplum üzerindeki etkisinin ne kadar büyük olduğunu gösteriyor. Çin'in bu alandaki başarısı, diğer ülkeler için de bir referans niteliği taşıyor.
+
+**Kaynaklar:**
+
+1. [Çin’de üretken yapay zekaya yoğun ilgi : Kullanıcı sayısı 700 milyonu aştı](https://www.iscihaber.net/teknoloji/cinde-uretken-yapay-zekaya-yogun-ilgi-kullanici-sayisi-700-milyonu-asti/267255) — Iscihaber · News — 29 Eyl 2026 18:27
+2. [Çin'de üretken yapay zeka kullanıcı sayısı 700 milyonu aştı](https://www.cumhuriyet.com.tr/bilim-teknoloji/cin-de-uretken-yapay-zeka-kullanici-sayisi-700-milyonu-asti-2542251) — Cumhuriyet · Son dakika — 29 Eyl 2026 17:42
+3. [Çin'de yapay zeka devrimi: Kullanıcı sayısı 700 milyonu geride bıraktı](https://www.megabayt.com/teknoloji/cinde-yapay-zeka-devrimi-kullanici-sayisi-700-milyonu-geride-birakti/103420) — Megabayt · News — 29 Eyl 2026 16:55
+
+---
+
+### Yapay Zekayla Sahte Timsah Görüntüsü Oluşturdu Hapis Cezası Aldı
 
 - **Yayın aralığı:** 29 Eyl 2026 17:51 – 29 Eyl 2026 18:24
 - **Farklı kaynak sayısı:** 2
-- **Kelime sayısı:** 133
+- **Kelime sayısı:** 104
 - **Görsel:** https://www.iscihaber.net/cropImages/1280x720/uploads/haberler/2026/9/8031-iscihaber-resim.jpg
 
 **Özet:**
 
-Singapur'da bir kişi, yapay zeka teknolojisini kullanarak sahte bir timsah görüntüsü ürettiği için hapis cezasıyla karşı karşıya kaldı. Olay, Singapur'da meydana gelen bu ilginç durumda, şüphelinin yapay zekayı kötüye kullandığı tespit edildi. Yapay zeka teknolojisinin yanlış kullanımı sonucu oluşturulan bu sahte görüntü, yetkililerin dikkatini çekti. Şüpheli, yapay zekayı kullanarak gerçek olmayan bir timsah görüntüsü oluşturarak hukuka aykırı bir eylemde bulundu. Yapay zeka teknolojisinin kötüye kullanımı konusunda Singapur'da alınan bu karar, önemli bir örnek teşkil ediyor. Olayla ilgili soruşturma tamamlandı ve şüpheli hakkında mahkemece hapis cezasına hükmedildi. Bu karar, yapay zeka teknolojisinin doğru kullanımı konusunda bir uyarı niteliği taşıyor. Singapur'da bu tür teknolojik suçlarla mücadele eden yetkililer, bu tür eylemlere karşı caydırıcı cezalar uyguladıklarını belirtti. Yapay zeka teknolojisinin kötüye kullanımı konusunda farkındalığı artırmak amacıyla alınan bu karar, diğer ülkeler için de bir referans olabilir.
+Singapur'da bir kişi, yapay zeka teknolojisini kullanarak sahte bir timsah görüntüsü oluşturması nedeniyle hapis cezasıyla karşı karşıya kaldı. Olay, Singapur'da meydana geldi ve bu tür yapay zeka kullanımlarının yasalara aykırı olduğunu gösteren bir örnek teşkil etti. Yapay zekayı kötüye kullandığı tespit edilen kişi, mahkeme tarafından hapis cezasına çarptırıldı. Bu karar, yapay zeka teknolojisinin kötüye kullanımının ciddi sonuçları olabileceğine dikkat çekiyor. Singapur yetkilileri, yapay zeka teknolojisinin etik ve yasal sınırlar içinde kullanılmasını teşvik ediyor. Bu olay, yapay zeka teknolojisinin hızla gelişmesiyle birlikte bu alanda yeni yasal düzenlemelerin gerekliliğini bir kez daha ortaya koyuyor. Yapay zeka kullanımına ilişkin yasal çerçevenin ne zaman netleştirileceği ise henüz bilinmiyor.
 
 **Kaynaklar:**
 
@@ -333,12 +388,12 @@ Singapur'da bir kişi, yapay zeka teknolojisini kullanarak sahte bir timsah gör
 
 - **Yayın aralığı:** 29 Eyl 2026 17:49 – 29 Eyl 2026 18:12
 - **Farklı kaynak sayısı:** 2
-- **Kelime sayısı:** 95
+- **Kelime sayısı:** 83
 - **Görsel:** https://www.iscihaber.net/cropImages/1280x720/uploads/haberler/2026/09/CyLp-trabzonspor-samsunspor-maci-hazirliklarini-surdurdu.jpg
 
 **Özet:**
 
-Trendyol Süper Lig'in 7. haftasında 10 Ekim Cumartesi günü deplasmanda Samsunspor ile karşılaşacak olan Trabzonspor, maçın hazırlıklarını sürdürmektedir. Trabzon'da bulunan Mehmet Ali Yılmaz Tesisleri'nde teknik direktör Thomas Reis yönetiminde gerçekleştirilen antrenmanda bordo-mavililer, hem bireysel hem de takım çalışmaları yaparak form durumlarını korumaya çalıştı. Futbolcular önce dinamik ısınma hareketleriyle günlük antrenmana başladı. Ardından takım içi pas çalışmaları olan rondo egzersizleriyle oyun ritmini artıran Trabzonsporlu oyuncular, dar alanda yapılan oyun çalışmasıyla taktiksel hazırlıklarını tamamladı. Antrenmanın son bölümünde ise çift kale maçı oynayan takım, maçı simüle ederek hazırlıklarını pekiştirdi. Trabzonspor, yarın yapacağı antrenmanla Samsunspor maçı hazırlıklarına devam edecek.
+Trendyol Süper Lig'in 7. haftasında 10 Ekim Cumartesi günü deplasmanda Samsunspor ile karşılaşacak olan Trabzonspor, maç hazırlıklarını Mehmet Ali Yılmaz Tesisleri'nde sürdürüyor. Teknik Direktör Thomas Reis yönetiminde gerçekleştirilen antrenmanda bordo-mavililer, önce dinamik ısınma hareketleriyle başladı. Ardından takım, rondo çalışması yaparak pas ve kontrol becerilerini geliştirdi. Antrenmanın ilerleyen bölümlerinde dar alanda oyun çalışması gerçekleştiren Trabzonspor oyuncuları, son olarak çift kale maçı ile antrenmanı tamamladı. Bu antrenman, takımın Samsunspor maçı için hazırlık sürecinin önemli bir parçası olarak değerlendiriliyor. Trabzonspor, yarın yapacağı antrenmanla hazırlıklarına devam edecek.
 
 **Kaynaklar:**
 
@@ -347,16 +402,16 @@ Trendyol Süper Lig'in 7. haftasında 10 Ekim Cumartesi günü deplasmanda Samsu
 
 ---
 
-### KKTC gemi faciasında can kaybı 18'e yükseldi
+### KKTC'de gemi faciası: Can kaybı 18'e yükseldi
 
 - **Yayın aralığı:** 29 Eyl 2026 17:05 – 29 Eyl 2026 18:02
 - **Farklı kaynak sayısı:** 4
-- **Kelime sayısı:** 99
+- **Kelime sayısı:** 100
 - **Görsel:** https://www.iscihaber.net/cropImages/1280x720/uploads/haberler/2026/09/rsYd-kktcdeki-gemi-faciasinda-bir-kisinin-daha-naasina-ulasildi.jpg
 
 **Özet:**
 
-Kuzey Kıbrıs Türk Cumhuriyeti (KKTC) açıklarında meydana gelen Filo Jet gemi faciasında bir kişinin daha naaşına ulaşılmış olup, bu durumda can kaybı 18'e yükselmiştir. Dün yapılan çalışmalarda bulunan iki naaşın DNA testleri sonucunda 5 yaşındaki Mehmet Asaf Biçer ile Nihat Pancar'a ait olduğu tespit edilmiştir. Başbakanlık tarafından yapılan açıklamada, faciada hayatını kaybedenlerin kimliklerinin belirlenmesi için çalışmaların devam ettiği bildirilmiştir. Arama kurtarma ekipleri, hâlâ kayıp olan 10 kişiye ulaşmak için bölgedeki çalışmalarını sürdürmektedir. Gemi faciasının nedenine dair henüz net bir bilgi olmamakla birlikte, yetkililer konuyla ilgili soruşturmanın devam ettiğini belirtmiştir. Bu facianın ardından deniz güvenliği önlemleriyle ilgili değerlendirmelerin yapıldığı öğrenilmiştir.
+Kuzey Kıbrıs Türk Cumhuriyeti'nde (KKTC) Girne açıklarında meydana gelen Filo Jet gemi faciasında yeni bir gelişme yaşandı. Yapılan arama çalışmalarında bir kişinin daha naaşına ulaşıldı. Bu gelişmeyle birlikte faciada hayatını kaybedenlerin sayısı 18'e yükseldi. Öte yandan, hafta sonu bulunan iki naaşın DNA çalışmaları sonucu 5 yaşındaki Mehmet Asaf Biçer ile Nihat Pancar'a ait olduğu belirlendi. Başbakanlık tarafından yapılan açıklamada, bu kişilerin kimliklerinin tespit edildiği duyuruldu. Faciada hâlâ 10 kişinin kayıp olduğu öğrenildi. Arama ve kurtarma çalışmaları, bölgedeki deniz koşullarına rağmen devam ediyor. Gemi faciası, KKTC'de büyük bir üzüntü ve endişeye neden olurken, kayıpların aileleri için zorlu bir süreç yaşandığı belirtiliyor.
 
 **Kaynaklar:**
 
@@ -367,16 +422,16 @@ Kuzey Kıbrıs Türk Cumhuriyeti (KKTC) açıklarında meydana gelen Filo Jet ge
 
 ---
 
-### OpenAI'dan GPT-6.1 Sol Modeli Tanıtıldı
+### OpenAI'dan Yeni Yapay Zeka Modeli GPT-6.1 Sol
 
 - **Yayın aralığı:** 29 Eyl 2026 17:50 – 29 Eyl 2026 17:56
 - **Farklı kaynak sayısı:** 2
-- **Kelime sayısı:** 108
+- **Kelime sayısı:** 113
 - **Görsel:** https://www.iscihaber.net/cropImages/1280x720/uploads/haberler/2026/09/uhnl-gpt-61-sol-modeli-nedir-ve-ne-gibi-yenilikler-sunuyor.jpg
 
 **Özet:**
 
-OpenAI, yapay zeka dünyasında önemli bir gelişme olarak GPT-6.1 Sol modelini tanıttı. Bu yeni model, maliyet ve performans dengesini yeniden şekillendirerek sektörde dikkatleri üzerine çekiyor. GPT-6.1 Sol, daha önceki Astra modeline yakın performans sunarken, maliyeti beşte bir oranında azaltıyor. Bu gelişme, özellikle geliştiriciler için önemli fırsatlar sunuyor. Modelin daha uygun maliyetli olması, yapay zeka uygulamalarının daha geniş kitlelere ulaşmasını sağlayacak. OpenAI, bu yeni modelin yapay zeka teknolojisinin erişilebilirliğini artıracağını belirtiyor. GPT-6.1 Sol'un tanıtımı, yapay zeka alanındaki rekabete de yeni bir boyut katacak. Geliştiriciler, bu modeli kullanarak daha karmaşık ve yenilikçi uygulamalar geliştirebilecek. OpenAI, bu yeni modelin maliyet etkinliği sayesinde yapay zeka teknolojisinin daha yaygın kullanılmasına katkı sağlayacağını vurguluyor.
+OpenAI, yapay zeka teknolojisi alanında önemli bir gelişme olarak GPT-6.1 Sol modelini tanıttı. Yeni model, maliyet ve performans dengesini yeniden şekillendirirken geliştiricilere önemli avantajlar sunuyor. GPT-6.1 Sol, daha önce piyasaya sürülen GPT-6 Astra modeline yakın bir performans seviyesine ulaşırken, bu performansı beşte bir maliyetle sağlayabiliyor. Bu durum, yapay zeka teknolojisinin daha geniş kitlelere ulaşmasına olanak tanıyacak. OpenAI'nin bu yeni modeli, özellikle kaynak kısıtlamalarıyla mücadele eden geliştiriciler için önemli bir çözüm sunuyor. Modelin bu düşük maliyet yüksek performans dengesi, yapay zeka uygulamalarının daha demokratik hale gelmesine katkı sağlayacak. Geliştiriciler, bu modeli kullanarak daha karmaşık projeleri daha uygun bütçelerle hayata geçirebilecek. GPT-6.1 Sol'un piyasaya sürülmesiyle birlikte yapay zeka tabanlı ürün ve hizmetlerin çeşitliliğinin artması bekleniyor.
 
 **Kaynaklar:**
 
@@ -385,57 +440,31 @@ OpenAI, yapay zeka dünyasında önemli bir gelişme olarak GPT-6.1 Sol modelini
 
 ---
 
-### Sarıoğlan'da Eğitim Yönetimi Değişikliği
-
-- **Yayın aralığı:** 26 Eyl 2026 16:01 – 29 Eyl 2026 17:55
-- **Farklı kaynak sayısı:** 2
-- **Kelime sayısı:** 113
-- **Görsel:** https://cdn.ajanskamu.net/news/123071.jpg
-
-**Özet:**
-
-Kayseri'nin Sarıoğlan ilçesinde Milli Eğitim Müdürlüğünde önemli bir değişiklik yaşandı. Bu değişiklikle birlikte bir okul müdürü, il milli eğitim müdür yardımcılığı görevine atandı. Atama, Milli Eğitim Bakanlığı'nın Ekim ayı norm kadro güncellemesi kapsamında gerçekleştirildi. Bu güncelleme sonucu çok sayıda müdür ve müdür yardımcısı norm fazlası durumuna düşebilecek. Bu durum, eğitim yönetiminde yeniden yapılanma sürecinin başladığını gösteriyor. Öte yandan, ülkedeki farklı illerde de 6 ilçe milli eğitim müdürü ataması yapıldı. Bu atamalar, eğitim sektöründeki personel hareketliliğini artırıyor. Milli Eğitim Bakanlığı, norm kadro düzenlemeleriyle eğitim kurumlarının daha verimli çalışmasını hedefliyor. Bu tür atamalar ve değişiklikler, eğitim kalitesinin artırılması için önemli adımlar olarak değerlendiriliyor. Özellikle Sarıoğlan'daki bu değişiklik, bölgedeki eğitim yönetiminde yeni bir dönemin başladığını gösteriyor.
-
-**Kaynaklar:**
-
-1. [Bir İlçe Milli Eğitim Müdürlüğünde Flaş Değişim](https://www.kamudanhaber.net/bir-ilce-milli-egitim-mudurlugunde-flas-degisim) — Kamudanhaber — 29 Eyl 2026 17:55
-2. [Okul Müdürü, İl Milli Eğitim Müdür Yardımcılığı Görevine Getirildi](https://www.kamudanhaber.net/okul-muduru-il-milli-egitim-mudur-yardimciligi-gorevine-getirildi) — Kamudanhaber — 29 Eyl 2026 17:40
-3. [MEB’de Gözler Ekim Ayı Norm Kadro Güncellemesine Çevrildi](https://www.kamudanhaber.net/mebde-gozler-ekim-ayi-norm-kadro-guncellemesine-cevrildi) — Kamudanhaber — 28 Eyl 2026 15:15
-4. [Ekim Ayında Çok Sayıda Müdür ve Müdür Yardımcısı Norm Fazlası Olacak](https://www.ajanskamu.net/meb/ekim-ayinda-cok-sayida-mudur-ve-mudur-yardimcisi-norm-fazlasi-olacak-h225646.html) — Ajanskamu — 26 Eyl 2026 21:03
-5. [6 İlçe Milli Eğitim Müdürü Ataması Yapıldı](https://www.ajanskamu.net/meb/6-ilce-milli-egitim-muduru-atamasi-yapildi-h225644.html) — Ajanskamu — 26 Eyl 2026 16:01
-
----
-
-## Ekonomi / Finans (1 haber)
-
-### Fon Koordinasyon Kurulu Oluşturuldu
-
-- **Yayın aralığı:** 29 Eyl 2026 17:48 – 29 Eyl 2026 18:45
-- **Farklı kaynak sayısı:** 7
-- **Kelime sayısı:** 103
-- **Görsel:** https://news-files.foreks.com/images/0819754b44fc41f1a331740ae1353a3f.jpeg
-
-**Özet:**
-
-Cumhurbaşkanı Recep Tayyip Erdoğan başkanlığında ekonomi yönetimi ve ilgili kurumların üst düzey yöneticilerinin katılımıyla sermaye piyasalarındaki son gelişmelerin ele alındığı bir eşgüdüm toplantısı gerçekleştirildi. Toplantıda tasfiye kapsamındaki fonlara ilişkin yol haritası belirlendi ve yatırımcı haklarının korunması ile ödemelerin hızlı ve adil bir şekilde yapılması amacıyla Cumhurbaşkanı Yardımcısı Cevdet Yılmaz başkanlığında Fon Koordinasyon Kurulu oluşturuldu. İletişim Başkanlığı tarafından yapılan açıklamada, kuruluşun amaçları ve fon soruşturmasıyla ilgili diğer gelişmeler paylaşıldı. Ayrıca, Devlet Denetleme Kurulu'nun son dönemdeki yatırım fonu işlemlerine ilişkin inceleme ve denetim sürecini başlattığı öğrenildi. Bu adımlar, sermaye piyasalarındaki son dönemdeki gelişmeleri ele almak ve yatırımcı güvenini sağlamak için atılan önemli adımlar olarak değerlendiriliyor.
-
-**Kaynaklar:**
-
-1. [Fon süreci için Koordinasyon Kurulu oluşturuldu](https://www.foreks.com/haber/detay/6abc073124008d7d437392c1/PICNEWS/tr/fon-sureci-icin-koordinasyon-kurulu-olusturuldu-29-09-26/) — Foreks — 29 Eyl 2026 18:45
-2. [Fon Zirvesi'nden çıkan 5 karar! İletişim Başkanlığı açıkladı](https://www.sozcu.com.tr/son-dakika-fon-koordinasyon-kurulu-olusturuldu-p364628) — Sozcu — 29 Eyl 2026 18:18
-3. [Fonla ilgili alınan yeni tedbirler duyuruldu](https://www.haberturk.com/ekonomi/iletisim-baskanligi-fon-sorusturmasi-cercevesinde-alinan-yeni-tedbirleri-duyurdu-3915992) — Haberturk · Ekonomi — 29 Eyl 2026 17:59
-4. [Cevdet Yılmaz başkanlığında “Fon Koordinasyon Kurulu” kuruldu](https://www.karar.com/guncel-haberler/cevdet-yilmaz-baskanliginda-fon-koordinasyon-kurulu-kuruldu-2075155) — Karar — 29 Eyl 2026 17:54
-5. [Fon soruşturmasında yeni yol haritası: Fon Koordinasyon Kurulu oluşturuldu](https://www.cnbce.com/haberler/fon-sorusturmasinda-yeni-yol-haritasi-fon-koordinasyon-kurulu-olusturuldu-h38338) — Cnbce — 29 Eyl 2026 17:51
-6. [Fon tasfiye sürecinde yeni gelişme: ‘Fon Koordinasyon Kurulu’ oluşturuldu](https://www.cumhuriyet.com.tr/turkiye/fon-tasfiye-surecinde-yeni-gelisme-fon-koordinasyon-kurulu-olusturuldu-2542254) — Cumhuriyet · Son dakika — 29 Eyl 2026 17:50
-7. [İletişim Başkanlığı, Fon Zirvesi Sonrası Alınan Kararları Açıkladı: Fon Koordinasyon Kurulu Kuruldu](https://onedio.com/haber/iletisim-baskanligi-fon-zirvesi-sonrasi-alinan-kararlari-acikladi-koordinasyon-kurulu-kuruldu-1384798) — Onedio · Daily — 29 Eyl 2026 17:48
-
----
+## Ekonomi / Finans (0 haber)
 
 ## Spor / Magazin (0 haber)
 
 ## Bilim / Teknoloji (0 haber)
 
-## Kültür / Sanat (2 haber)
+## Kültür / Sanat (3 haber)
+
+### Mustafa Sandal'dan ortak iş açıklaması
+
+- **Yayın aralığı:** 29 Eyl 2026 11:12 – 29 Eyl 2026 12:52
+- **Farklı kaynak sayısı:** 2
+- **Kelime sayısı:** 117
+- **Görsel:** https://i.elele.com.tr/2/150/84/storage/files/images/2026/09/29/yy-u2s7-cover-x56j_cover.jpg
+
+**Özet:**
+
+Sermaye piyasalarına yönelik yürütülen fon soruşturması kapsamında adı geçen ünlü şarkıcı Mustafa Sandal ile eşi Melis Sandal hakkında çeşitli iddialar gündeme geldi. Bu iddialar üzerine açıklama yapan Mustafa Sandal, eşinin maddi anlamda iş ortağı olmadığını belirtti. Ünlü sanatçı, "Melis ile karı-koca olmak dışında maddi anlamda hiçbir ortak işimiz olmamıştır" şeklinde konuştu. Sandal'ın bu açıklaması, sermaye piyasalarında yürütülen soruşturma ile ilgili kendisi ve eşi hakkında ortaya atılan spekülasyonları giderme amacı taşıyor. Özellikle finansal iş birliklerine dair iddiaların ortaya çıkması üzerine bu açıklamanın yapılması, kamuoyunda oluşan kafa karışıklığını gidermek istediği anlaşılıyor. Mustafa Sandal, açıklamasında eşine olan maddi bağımlılığı olmadığını vurgulayarak soruşturma ile ilgili endişeleri azaltmaya çalıştı. Bu durum, ünlü çiftin kamuya açık bir açıklama yapma zorunluluğu hissetmesine neden oldu.
+
+**Kaynaklar:**
+
+1. [Mustafa Sandal'dan açıklama: Melis Sandal ile ortak işimiz yok](https://www.elele.com.tr/magazin/mustafa-sandaldan-aciklama-melis-sandal-ile-ortak-isimiz-yok) — Elele — 29 Eyl 2026 12:52
+2. ["Eşim iş ortağım değil"](https://www.haberturk.com/magazin/foto/mustafa-sandal-dan-aciklama-melis-esim-ama-ortagim-degil-3915894) — Haberturk · Magazin — 29 Eyl 2026 11:12
+
+---
 
 ### Pandora'dan Burç Temalı Yeni Mücevher Koleksiyonu
 
@@ -476,6 +505,6 @@ Bu sonbahar Pandora, burçlardan ilham alan Pandora Tılsım Charm'ları Koleksi
 ## Üretim Bilgisi
 
 - **Oluşturan:** build-rss-ozet.ts
-- **Tarih:** 2026-09-29T19:49:08.581Z
+- **Tarih:** 2026-09-29T19:50:28.508Z
 - **Algoritma:** HİBRİT — 2-gram shingle Jaccard ≥ %20 VEYA 1-gram (kelime kümesi) Jaccard ≥ %22 + Union-Find + z-ai-web-dev-sdk paraphrase
-- **Çalışma süresi:** 641.6 saniye
+- **Çalışma süresi:** 603.8 saniye

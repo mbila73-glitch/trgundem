@@ -148,11 +148,14 @@ function fmtDate(d: Date | string | null | undefined): string {
   return `${date.getDate()} ${TR_MONTHS[date.getMonth()]} ${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
-function pickImage(sources: RawArticle[]): string | null {
-  // Prefer an image that appears in 2+ sources (the "common" image)
+function pickImage(sources: RawArticle[], excludeUrls?: Set<string>): string | null {
+  // Prefer an image that appears in 2+ sources (the "common" image).
+  // excludeUrls içindeki URL'leri seçme — bu, aynı görselin birden fazla
+  // published haberde kullanılmasını önler (görsel dedup).
   const counts = new Map<string, number>();
   for (const s of sources) {
     if (!s.imageUrl) continue;
+    if (excludeUrls && excludeUrls.has(s.imageUrl)) continue;
     counts.set(s.imageUrl, (counts.get(s.imageUrl) ?? 0) + 1);
   }
   let common: string | null = null;
@@ -164,11 +167,13 @@ function pickImage(sources: RawArticle[]): string | null {
     }
   }
   if (common && commonCount >= 2) return common;
-  // Fallback: most recently published source with an image
+  // Fallback: most recently published source with an image (not in exclude)
   const sorted = [...sources].sort(
     (a, b) => b.publishedAt.getTime() - a.publishedAt.getTime(),
   );
-  for (const s of sorted) if (s.imageUrl) return s.imageUrl;
+  for (const s of sorted) {
+    if (s.imageUrl && (!excludeUrls || !excludeUrls.has(s.imageUrl))) return s.imageUrl;
+  }
   return null;
 }
 
@@ -511,17 +516,65 @@ async function main() {
   //    after AI success. Every 3 drafts, auto-publish them (draft → published).
   //    If a hash exists in 'stale' status (from previous cycle), restore it to
   //    'published' (this story came back in this cycle).
+  //
+  //    BENZERLİK KONTROLÜ: Yeni AI özetin başlığı, mevcut published haberlerle
+  //    benzerse (shingle Jaccard), yeni haberi atla. Bu, aynı içeriğin farklı
+  //    kaynak setleriyle tekrar yayınlanmasını önler.
+  //
+  //    GÖRSEL DEDUP: Yeni haberin görseli, mevcut published bir haberde
+  //    kullanılmışsa, alternatif bir görsel seç. Tüm alternatifler doluysa
+  //    görselsiz yayınla (placeholder logo gösterilir).
   const existingHashes = new Set<string>();
+  // Mevcut published başlıkların shingle setleri — benzerlik kontrolü için
+  const existingTitles: Array<{
+    title: string;
+    sh1: Set<string>;
+    sh2: Set<string>;
+  }> = [];
+  // Mevcut published görseller — görsel dedup için
+  const usedImageUrls = new Set<string>();
   // Check ALL statuses (draft, published, stale, archived) — already-summarized
   // groups should not be re-summarized.
   const existing = await db.publishedArticle.findMany({
     where: { status: { in: ['draft', 'published', 'stale'] } },
-    select: { sourceArticleIds: true, status: true, id: true },
+    select: {
+      sourceArticleIds: true,
+      status: true,
+      id: true,
+      aiTitle: true,
+      aiSummary: true,
+      imageUrl: true,
+    },
   });
   for (const d of existing) {
     existingHashes.add(d.sourceArticleIds);
+    if (d.aiTitle) {
+      const norm = normalize(d.aiTitle);
+      existingTitles.push({
+        title: d.aiTitle,
+        sh1: shingles(norm, 1),
+        sh2: shingles(norm, 2),
+      });
+    }
+    if (d.imageUrl) usedImageUrls.add(d.imageUrl);
   }
   console.log(`Mevcut özet (draft+published+stale): ${existingHashes.size} (atlanacak/restore edilecek)`);
+  console.log(`Mevcut başlık sayısı (benzerlik kontrolü için): ${existingTitles.length}`);
+  console.log(`Mevcut görsel sayısı (görsel dedup için): ${usedImageUrls.size}`);
+
+  // Yeni başlığın mevcut published başlıklarla benzer olup olmadığını kontrol et.
+  // Hibrit shingle algoritması: 2-gram ≥ %20 VEYA 1-gram ≥ %22.
+  function findSimilarExisting(title: string): { title: string; sh1: Set<string>; sh2: Set<string> } | null {
+    const norm = normalize(title);
+    const sh1 = shingles(norm, 1);
+    const sh2 = shingles(norm, 2);
+    for (const e of existingTitles) {
+      if (isSimilar(sh1, sh2, e.sh1, e.sh2)) {
+        return { title: e.title, sh1: e.sh1, sh2: e.sh2 };
+      }
+    }
+    return null;
+  }
 
   const published: Array<{
     aiTitle: string;
@@ -615,6 +668,19 @@ async function main() {
       continue;
     }
 
+    // BENZERLİK KONTROLÜ: Yeni AI özetin başlığı mevcut published/draft/stale
+    // başlıklardan birine benzerse (hibrit shingle Jaccard), bu haber zaten
+    // yayınlanmış demektir. Yenisini atla — böylece aynı içeriğin farklı
+    // kaynak setleriyle tekrar yayınlanmasını önlemiş oluyoruz.
+    const similar = findSimilarExisting(result.title);
+    if (similar) {
+      skippedCount += 1;
+      console.log(
+        `[${gi + 1}/${selectedGroups.length}] ⏭️ Benzer başlık atlandı: "${result.title.slice(0, 50)}" ≈ "${similar.title.slice(0, 50)}"`,
+      );
+      continue;
+    }
+
     const wordCount = countWords(result.summary);
     if (wordCount < MIN_SUMMARY_WORDS - 30) {
       console.log(
@@ -622,7 +688,27 @@ async function main() {
       );
     }
 
-    const imageUrl = pickImage(gm.allSources);
+    // GÖRSEL DEDUP: pickImage'e usedImageUrls set'i geç — kullanılmış görselleri
+    // seçmez. Tüm alternatifler doluysa null döner (görselsiz yayınlanır,
+    // placeholder logo gösterilir).
+    const imageUrl = pickImage(gm.allSources, usedImageUrls);
+    if (imageUrl) {
+      usedImageUrls.add(imageUrl);
+    } else {
+      console.log(
+        `[${gi + 1}/${selectedGroups.length}] 🖼️ Görsel benzersiz seçilemedi (tüm alternatifler kullanımda) — görselsiz yayınlanacak`,
+      );
+    }
+
+    // Yeni başlığı existingTitles'a ekle — bu cycle'daki sonraki gruplar
+    // için benzerlik kontrolü yapılabilsin.
+    const newNorm = normalize(result.title);
+    existingTitles.push({
+      title: result.title,
+      sh1: shingles(newNorm, 1),
+      sh2: shingles(newNorm, 2),
+    });
+
     const sourceArticleLinks = gm.allSources.map((a) => ({
       title: a.title,
       link: a.link,

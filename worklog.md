@@ -143,3 +143,33 @@ Stage Summary:
 - DB güncel: 50 published haber, en son 2026-09-29 19:48:39'da yayınlandı (Özel haber: "Deniz Baysal ve Barış Yurtçu 7 Yıllık Evliliğine Son Verdi").
 - Otomatik tetikleme için external cron service (cron-job.org, uptime-robot, GitHub Actions) bu endpoint'i her :00 ve :30'da çağırabilir.
 - TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.
+
+---
+Task ID: dedup-and-image-fix-6
+Agent: main
+Task: Yayınlanan haberlerde birçok tekrar haber ve alakasız görseller var. Düzelt.
+
+Work Log:
+- Teşhis: DB'de 50 published haber vardı. 5 başlık tekrar grubu (10 haber) ve 15 görsel tekrar grubu (bazıları alakasız — örn. "6 İlçe Milli Eğitim Müdürü Atandı" farklı bir haberle aynı görseli paylaşıyordu).
+- `scripts/build-rss-ozet.ts` (yeni haberler için önleme):
+  - `pickImage()` fonksiyonuna `excludeUrls?: Set<string>` parametresi eklendi. Kullanılmış görselleri seçmez, tüm alternatifler doluysa null döner (placeholder logo gösterilir).
+  - Mevcut published haberlerin `aiTitle`, `aiSummary`, `imageUrl` alanları yükleniyor (önceden sadece `sourceArticleIds` yükleniyordu).
+  - Yeni AI özetin başlığı, mevcut published başlıklarla hibrit shingle Jaccard (2-gram ≥ %20 VEYA 1-gram ≥ %22) ile karşılaştırılıyor. Benzerse yeni haber atlanıyor (draft olarak yazılmıyor).
+  - Yeni başlık `existingTitles`'a ekleniyor — bu cycle'daki sonraki gruplar da benzerlikle kontrol ediliyor.
+  - `pickImage(gm.allSources, usedImageUrls)` ile görsel dedup uygulanıyor. Seçilen görsel `usedImageUrls`'a ekleniyor.
+- `scripts/dedup-published.ts` (yeni — mevcut tekrarları temizleme):
+  - Tüm published haberleri `publishedAt DESC` sıralamasıyla yükler.
+  - Başlık shingles (1-gram ve 2-gram) hesaplar.
+  - En yeni haberleri `keep` set'ine ekler. Sonraki haberlerin başlığı `keep`'teki herhangi birine benzerse `archived` yapılır.
+  - Aynı görseli paylaşan haberlerden eskisi archived yapılır.
+  - Hibrit Jaccard: 2-gram ≥ %20 VEYA 1-gram ≥ %22.
+  - Idempotent: birden çok kez çalıştırılabilir.
+- Çalıştırma: `bun run scripts/dedup-published.ts`
+  - İlk çalıştırmada: 50 → 28 published, 22 archived.
+  - İkinci çalıştırmada: 28 → 28 published, 0 archived (temiz).
+
+Stage Summary:
+- 22 tekrar/alakasız görsel haberi DB'den temizlendi (archived).
+- 28 published eşsiz haber kaldı, 0 görsel tekrarı.
+- Yeni haber eklemelerinde artık benzer başlık kontrolü (hibrit shingle Jaccard) ve görsel dedup uygulanacak — aynı içeriğin farklı kaynak setleriyle tekrar yayınlanması ve alakasız görsellerin aynı haberde kullanılması önlendi.
+- TypeScript ve ESLint temiz.
