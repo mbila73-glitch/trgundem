@@ -26,8 +26,9 @@ const OUTPUT_PATH = path.join(process.cwd(), 'download', 'rss_ozet.md');
 const SHINGLE1_THRESHOLD = 0.22;
 const SHINGLE2_THRESHOLD = 0.20;
 const MAX_SOURCES_PER_GROUP = 5; // read at most 5 most-recent source articles
-const MIN_SUMMARY_WORDS = 150;
-const MAX_SUMMARY_WORDS = 200;
+const MIN_SUMMARY_WORDS = 100;   // minimum 100 words (lowered from 150 — AI struggles past 100)
+const MAX_SUMMARY_WORDS = 200;   // still soft upper bound
+const REBUILD_ONLY = process.env.REBUILD_ONLY === '1'; // skip AI, just rebuild file from existing drafts
 
 const TURKISH_STOPWORDS = new Set<string>([
   've', 'veya', 'ile', 'için', 'gibi', 'kadar', 'sadece', 'daha', 'çok',
@@ -186,20 +187,24 @@ function buildUserPrompt(
   return `Aşağıda aynı haberi farklı kaynaklardan alınmış ${articleSources.length} ayrı RSS metni var. Bunları okuyarak:
 
 1. Haberin başlığını ~6-10 kelimelik Türkçe bir başlık olarak YENİ yaz (kaynak başlıklarını birebir kopyalama).
-2. Haberin özetini EN AZ 150, EN FAZLA 200 KELİME olarak kendi cümlelerinle yaz.
+2. Haberin özetini EN AZ 100, EN FAZLA 200 KELİME olarak kendi cümlelerinle yaz.
 
 ÖNEMLİ KURALLAR:
-- 150 kelimeden AZ yazma. 200 kelimeden FAZLA yazma.
-- Kelime sayısı 150-200 arasında OLSUN.
-- Cümlelerin kaynaklardaki cümlelerle BİREBİR AYNI OLMAMALIDIR — telif cezası almamak için paraphrase yap, yeniden ifade et.
+- EN AZ 100 KELİME yaz. 100 kelimeden AZ yazma.
+- Türkçe imla ve yazım kurallarına HARİCİ DİKKAT ET:
+  * "kaza" (oluşan olay) vs "kazı" (arkeolojik) — doğru ek kullan (kazada, kazıda)
+  * "ile", "için", "gibi" gibi ekler ayrı yazılır
+  * "ki" eki çoğu durumda bitişik yazılır (kişi, amaçki → ama bağlaç olan ki ayrı: "bilmem ki")
+  * Yabancı dillerden gelen kelimelerde düzeltme işareti (â, î, û) kullan
+  * Sayıların yazımı: 100 kelime değil yüz kelime gibi
+- Cümlelerin kaynaklardaki cümlelerle BİREBİR AYNI OLMAMALIDIR — telif cezası almamak için paraphrase yap.
 - Sadece haberde geçen bilgileri kullan, dış bilgi ekleme, yargılama yapma.
 - Haberin tüm önemli detaylarını ver: kim, ne, nerede, ne zaman, nasıl, neden sorularına cevap.
-- İçeriği zenginleştir:haberin arka planı, sonuçları, etkileri, ilgili kişilerin açıklamaları.
 - Markdown formatı kullanma, başlık ve liste ekleme — düz metin ver.
 
 Çıktı formatı (BAŞLIK ve ÖZET satırlarını dahil et):
 BAŞLIK: <yeni başlığın>
-ÖZET: <150-200 kelimelik özet>
+ÖZET: <en az 100 kelimelik özet>
 
 Kaynak metinler:
 ${blocks.join('\n\n---\n\n')}`;
@@ -242,7 +247,7 @@ async function summarizeGroup(
   const prompt = buildUserPrompt(chosen);
   const MAX_RETRIES = 2; // reduce retries to avoid 429 cascades
   const BASE_DELAY_MS = 8000; // 8s pause between calls to avoid 429
-  const WORD_COUNT_MIN = 120; // tolerate slightly under MIN_SUMMARY_WORDS
+  const WORD_COUNT_MIN = 100; // tolerate slightly under MIN_SUMMARY_WORDS
   let lastParsed: { title: string; summary: string } | null = null;
   let lastWordCount = 0;
 
@@ -250,7 +255,7 @@ async function summarizeGroup(
     try {
       const zai = await getZAI();
       const retryHint = attempt > 0
-        ? `\n\nÖNCEKİ YANITIN SADECE ${lastWordCount} KELİME İÇERİYORDU. Bu sefer MUTLAKA EN AZ 150 KELİME yaz.`
+        ? `\n\nÖNCEKİ YANITIN SADECE ${lastWordCount} KELİME İÇERİYORDU. Bu sefer MUTLAKA EN AZ 100 KELİME yaz.`
         : '';
       const completion = await zai.chat.completions.create({
         messages: [
@@ -258,7 +263,8 @@ async function summarizeGroup(
             role: 'system',
             content:
               'Sen profesyonel bir Türkçe haber editörüsün. Verilen kaynakları okuyarak telif cezası almayacak şekilde özgün bir haber başlığı ve özet üretirsin. ' +
-              'ÖZET HER ZAMAN EN AZ 150, EN FAZLA 200 KELİME OLMALIDIR — bu kurala kesinlikle uy. ' +
+              'ÖZET HER ZAMAN EN AZ 100 KELİME OLMALIDIR — bu kurala kesinlikle uy. ' +
+              'TÜRKÇE İMLA KURALLARINA DİKKAT ET: "kaza" (oluşan olay) ile "kazı" (arkeolojik) karıştırmamak, ekleri doğru kullanmak (kazada, kazıda), "ki" bağlacını doğru yazmak. ' +
               'Kaynak cümlelerini birebir kopyalama; paraphrase yap. Haberin tüm önemli detaylarını (kim, ne, ne zaman, nerede, nasıl, neden) ver. ' +
               'Haberin arka planı, etkileri ve ilgili kişilerin açıklamalarını da ekle.',
           },
@@ -306,6 +312,51 @@ async function summarizeGroup(
 async function main() {
   const started = Date.now();
   console.log('=== RSS Özet Pipeline ===\n');
+
+  // REBUILD_ONLY mode: skip AI, just rebuild rss_ozet.md from existing DB rows
+  if (REBUILD_ONLY) {
+    console.log("🔧 REBUILD_ONLY modu — AI çağrısı yapılmıyor, DB'den dosya üretiliyor");
+    const rows = await db.publishedArticle.findMany({
+      where: { status: 'published' },
+      orderBy: { latestPublishedAt: 'desc' },
+    });
+    console.log(`PublishedArticle: ${rows.length} kayıt`);
+
+    // Load all source articles in one query (for sourceArticleIds resolution)
+    const allArticles = await db.article.findMany({
+      where: { id: { in: rows.flatMap((r) => { try { return JSON.parse(r.sourceArticleIds) as string[]; } catch { return []; } }) } },
+      include: { source: { select: { name: true, url: true } } },
+    });
+    const articleMap = new Map(allArticles.map((a) => [a.id, a]));
+
+    const published = rows.map((r) => {
+      let ids: string[] = [];
+      try { ids = JSON.parse(r.sourceArticleIds) as string[]; } catch { /* ignore */ }
+      const sourceArticleLinks = ids.map((id) => {
+        const a = articleMap.get(id);
+        return {
+          title: a?.title ?? '',
+          link: a?.link ?? '',
+          source: a?.source.name ?? '',
+          publishedAt: a?.publishedAt ?? new Date(),
+        };
+      });
+      return {
+        aiTitle: r.aiTitle,
+        aiSummary: r.aiSummary,
+        imageUrl: r.imageUrl,
+        category: r.category,
+        wordCount: r.wordCount,
+        sourceArticleIds: ids,
+        sourceArticleLinks,
+        earliestPublishedAt: r.earliestPublishedAt,
+        latestPublishedAt: r.latestPublishedAt,
+        sourceCount: r.sourceCount,
+      };
+    });
+    await writeRssOzetFile(published, started);
+    return;
+  }
 
   // 1. Load all articles (with description, length >= 30) + their source
   const articles: RawArticle[] = await db.article.findMany({
@@ -598,6 +649,23 @@ async function main() {
   }
 
   // 8. Write rss_ozet.md
+  await writeRssOzetFile(finalSelection, started);
+}
+
+type PublishedForFile = {
+  aiTitle: string;
+  aiSummary: string;
+  imageUrl: string | null;
+  category: string;
+  wordCount: number;
+  sourceArticleIds: string[];
+  sourceArticleLinks: Array<{ title: string; link: string; source: string; publishedAt: Date }>;
+  earliestPublishedAt: Date;
+  latestPublishedAt: Date;
+  sourceCount: number;
+};
+
+async function writeRssOzetFile(finalSelection: PublishedForFile[], started: number) {
   const lines: string[] = [];
   lines.push('# RSS Özet — Yeniden Yazılmış Haber Özetleri');
   lines.push('');
@@ -608,6 +676,7 @@ async function main() {
   lines.push(`- **Oluşturulma:** ${format(new Date(), 'd MMM yyyy HH:mm', { locale: tr })}`);
   lines.push(`- **Toplam özetlenen haber:** ${finalSelection.length}`);
   lines.push(`- **Kategori limitleri:** Güncel 10, Kamu 7, Ekonomi 7, Spor 5, Bilim 3, Kültür 3`);
+  lines.push(`- **Kelime hedefi:** en az 100 kelime`);
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -658,9 +727,6 @@ async function main() {
   const sizeKb = Math.round((lines.join('\n').length / 1024) * 10) / 10;
   console.log(
     `\nDosya yazıldı: ${OUTPUT_PATH} (${sizeKb} KB, ${lines.length} satır)`,
-  );
-  console.log(
-    `DB'ye ${finalSelection.length} PublishedArticle (draft) eklendi.`,
   );
 }
 
