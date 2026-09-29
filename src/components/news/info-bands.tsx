@@ -28,6 +28,8 @@ type FinansItem = { name: string; value: string; change: string; up: boolean };
 type SonDakikaItem = { id: string; title: string };
 
 // Stable inline style objects so React doesn't re-create them on each render.
+// w-max + flex-shrink-0 ile parent'ı içeriğin doğal genişliğinde tutuyoruz,
+// böylece translateX(-50%) animasyonu gerçek "ring" (sonsuz) döngü yapıyor.
 const marqueeStyle = (duration: string): React.CSSProperties => ({
   animationName: 'bandScroll',
   animationDuration: duration,
@@ -84,11 +86,11 @@ export function InfoBands() {
           </span>
           <div className="relative flex-1 overflow-hidden">
             <div
-              className="flex items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused]"
+              className="flex w-max flex-shrink-0 items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused]"
               style={marqueeStyle('11s')}
             >
               {HAVA_DATA.concat(HAVA_DATA).map((h, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 text-sm" title="Kaynak: Meteoroloji Genel Müdürlüğü (mgm.gov.tr)">
+                <span key={i} className="inline-flex flex-shrink-0 items-center gap-1.5 text-sm" title="Kaynak: Meteoroloji Genel Müdürlüğü (mgm.gov.tr)">
                   <WeatherIcon type={h.ikon} className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <span className="font-medium text-foreground/80">{h.sehir}</span>
                   <span className="font-bold text-foreground">{h.derece}°C</span>
@@ -108,7 +110,7 @@ export function InfoBands() {
             </span>
             <div className="relative flex-1 overflow-hidden">
               <div
-                className="flex items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused]"
+                className="flex w-max flex-shrink-0 items-center gap-8 whitespace-nowrap group-hover:[animation-play-state:paused]"
                 style={marqueeStyle('10s')}
               >
                 {finans.concat(finans).map((item, i) => {
@@ -123,7 +125,7 @@ export function InfoBands() {
                     'GRAM ALTIN': 'Hesaplanan: (Ons Altın × USD/TL) / 31,1035',
                   };
                   return (
-                  <span key={i} className="inline-flex items-center gap-2 text-sm" title={sourceMap[item.name] || ''}>
+                  <span key={i} className="inline-flex flex-shrink-0 items-center gap-2 text-sm" title={sourceMap[item.name] || ''}>
                     <span className="font-medium text-slate-300">{item.name}</span>
                     <span className="font-bold text-white">{item.value}</span>
                     {item.change !== '—' && (
@@ -141,7 +143,7 @@ export function InfoBands() {
           </div>
         )}
 
-        {/* 3. SON DAKİKA — bariz kırmızı zemin, beyaz yazılar, animasyonlu başlık */}
+        {/* 3. SON DAKİKA — bariz kırmızı zemin, beyaz yazılar. Animasyon iptal edildi (gerisi aynı). */}
         {sonDakika.length > 0 && (
           <div className="group flex items-center gap-2 overflow-hidden bg-red-600 px-4" style={{ minHeight: '32px' }}>
             <span
@@ -149,19 +151,14 @@ export function InfoBands() {
               style={{
                 fontSize: '20px',
                 lineHeight: '32px',
-                animationName: 'pulseScale',
-                animationDuration: '2.2s',
-                animationTimingFunction: 'ease-in-out',
-                animationIterationCount: 'infinite',
                 display: 'inline-block',
-                transformOrigin: 'center',
               }}
             >
               ⚡ SON DAKİKA
             </span>
             <div className="relative flex-1 overflow-hidden">
               <div
-                className="flex gap-10 whitespace-nowrap text-white text-base tracking-wide group-hover:[animation-play-state:paused]"
+                className="flex w-max flex-shrink-0 gap-10 whitespace-nowrap text-white text-base tracking-wide group-hover:[animation-play-state:paused]"
                 style={marqueeStyle('9s')}
               >
                 {sonDakika.concat(sonDakika).map((item, i) => (
@@ -169,7 +166,7 @@ export function InfoBands() {
                     key={i}
                     type="button"
                     onClick={() => openArticle(item.id)}
-                    className="inline-block font-semibold cursor-pointer hover:underline text-white"
+                    className="inline-block flex-shrink-0 font-semibold cursor-pointer hover:underline text-white"
                   >
                     {item.title}
                     <span className="mx-3 opacity-70">•</span>
@@ -181,7 +178,8 @@ export function InfoBands() {
         )}
       </div>
 
-      {/* Global style — keyframes global olmalı ki inline animation referansları çalışsın */}
+      {/* Global style — keyframes global olmalı ki inline animation referansları çalışsın.
+          pulseScale artık sadece site başlığında (page.tsx) kullanılıyor. */}
       <style jsx global>{`
         @keyframes bandScroll {
           0% { transform: translateX(0); }

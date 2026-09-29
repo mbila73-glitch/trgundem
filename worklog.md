@@ -78,3 +78,42 @@ Stage Summary:
 - "⚡ SON DAKİKA" label'ı 20px punto, beyaz, bold ve ±%15 pulse animasyonu yapıyor.
 - Tüm Haberler sekmesi, Geri butonu, Ana Sayfa butonu ve logolar aynı komutu çalıştırıyor (URL'den ?article= sil + popstate dispatch + scroll to top).
 - TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.
+
+---
+Task ID: header-and-back-fix-4
+Agent: main
+Task: Yanlış yere uygulanan başlık animasyonunu düzelt: son dakika bandındaki pulse animasyonunu kaldır (gerisi kalsın), bunun yerine site başlığına (TÜRKİYE'DE GÜNDEM + TRGUNDEM.NET) uygula. Başlık zeminini kırmızı, yazıları beyaz+bold, puntoyu arttır. Yürüyen bantlar hala ring olmuyor — düzelt. Geri butonu ana sayfaya değil önceki sayfaya gitsin.
+
+Work Log:
+- `src/components/news/info-bands.tsx` (son dakika bandı animasyonu iptal):
+  - "⚡ SON DAKİKA" label'ından `animationName: 'pulseScale'` kaldırıldı.
+  - Diğer özellikler korundu: bg-red-600 (kırmızı zemin), text-white (beyaz yazılar), fontSize 20px, font-bold.
+  - `pulseScale` keyframe'i global tanımda bırakıldı çünkü site başlığı page.tsx'te kullanacak.
+- `src/components/news/info-bands.tsx` (yürüyen bant ring sorunu — kesin çözüm):
+  - Tüm 3 banttaki yürüyen div'lere `w-max flex-shrink-0` eklendi (hava, finans, son dakika).
+  - Tüm span/button children'lara `flex-shrink-0` eklendi.
+  - Sorun: flex parent içinde children default `flex-shrink: 1` olduğu için parent daralınca children da küçülüyordu. `w-max` ile parent doğal genişlikte, `flex-shrink-0` ile children küçülmüyor. Artık translateX(-50%) animasyonu gerçek ring (sonsuz) döngü yapıyor.
+- `src/app/page.tsx` (site başlığına kırmızı zemin + beyaz yazılar + pulse animasyon):
+  - Header zemin: `bg-background/95 backdrop-blur border-border` → `bg-red-600 backdrop-blur border-red-800`.
+  - Saat/tarih yazıları: `text-foreground` → `text-white`, hover `bg-muted/50` → `bg-white/10`, Clock ikonu `text-muted-foreground` → `text-white/80`.
+  - "TÜRKİYE'DE GÜNDEM" yazısı: `text-base` (16px) → `fontSize: 24px` (header h-16=64px içinde 2 satıra sığan maksimum punto). Beyaz + bold. ±%15 pulse animasyonu (2.4s ease-in-out infinite, `pulseScale` keyframe).
+  - "TRGUNDEM.NET" yazısı: `text-[10px]` → `fontSize: 13px`. Beyaz + bold. ±%15 pulse animasyonu, 0.3s delay ile (üst satırla senkron değil, hafif offset).
+  - Sağdaki + butonu: `text-white hover:bg-white/10 hover:text-white`.
+  - ThemeToggle beyaz parent div içine alındı (`<div className="text-white">`), parent currentColor ile iconlar beyaz olur.
+- `src/components/news/news-screen.tsx` (Geri butonu önceki sayfaya gitsin):
+  - Yeni `goBack` fonksiyonu eklendi: `window.history.back()` çağırır. Eğer 300ms sonra hala article açıksa (önceki sayfa yoksa, örn. doğrudan link açılmışsa), `closeArticle` fallback'i çağrılır.
+  - `ArticleDetailInline`'a `onBack={goBack}` geçiliyor (eskiden `closeArticle` idi).
+  - `closeArticle` artık sadece "Tüm Haberler" sekmesi ve "Ana Sayfa" butonu için kullanılıyor — yani logolarla AYNI mantıkta çalışıyor (URL'i temizle + popstate dispatch).
+  - "Geri" butonu → önceki sayfa (browser back).
+  - "Ana Sayfa" butonu → ana sayfa (URL'i temizle).
+  - "Tüm Haberler" sekmesi → ana sayfa (URL'i temizle, logolarla aynı).
+  - Logolar → ana sayfa (handleHomeClick ile URL'i temizle).
+
+Stage Summary:
+- Son dakika bandı pulse animasyonu KALDIRILDI. Kırmızı zemin + beyaz yazılar + 20px punto KORUNDU.
+- Site başlığı (TÜRKİYE'DE GÜNDEM): 24px punto, beyaz, bold, ±%15 pulse animasyonu.
+- Site alt başlığı (TRGUNDEM.NET): 13px punto, beyaz, bold, ±%15 pulse animasyonu (0.3s offset).
+- Header zeminini bg-red-600 yapıldı, tüm yazılar beyaz.
+- Yürüyen bantlar artık gerçek ring (sonsuz döngü) yapıyor — w-max + flex-shrink-0 ile flex shrink sorunu çözüldü.
+- Geri butonu browser history.back() yapıyor (önceki sayfa). Ana Sayfa, Tüm Haberler ve logolar URL'i temizleyip ana listeye döndürüyor.
+- TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.

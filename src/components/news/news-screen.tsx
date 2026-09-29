@@ -264,9 +264,9 @@ export function NewsScreen() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Close article: URL'deki ?article= parametresini sil ve popstate tetikle.
+  // Close article (go home): URL'deki ?article= parametresini sil ve popstate tetikle.
   // Bu, logoya tıklanınca çalışan handleHomeClick ile AYNI mantık — yani
-  // "Tüm Haberler" sekmesi de, logolar da aynı davranışı sergiler.
+  // "Tüm Haberler" sekmesi de, "Ana Sayfa" butonu da, logolar da aynı davranışı sergiler.
   const closeArticle = useCallback(() => {
     if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
@@ -279,6 +279,28 @@ export function NewsScreen() {
     window.dispatchEvent(new PopStateEvent('popstate'));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  // Go back to previous page in browser history (browser back button behavior).
+  // "Geri" butonu için: ana sayfaya değil, kullanıcının geldiği önceki sayfaya gider.
+  // Eğer önceki sayfa yoksa (doğrudan article linki açılmışsa), closeArticle fallback'i
+  // çağrılıp URL temizlenir ve ana listeye dönülür.
+  const goBack = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    // history.back() asenkron — popstate dinleyicisi state'i güncelleyecek.
+    // Eğer history'de önceki sayfa yoksa (referrless navigation), back() hiçbir şey
+    // yapmaz. Bu yüzden kısa bir timeout ile kontrol edip fallback uyguluyoruz.
+    const hadArticle = new URL(window.location.href).searchParams.has('article');
+    window.history.back();
+    if (hadArticle) {
+      // 300ms sonra hala article açıksa, back() hiçbir şey yapmadı demektir — fallback.
+      setTimeout(() => {
+        const stillHasArticle = new URL(window.location.href).searchParams.has('article');
+        if (stillHasArticle) {
+          closeArticle();
+        }
+      }, 300);
+    }
+  }, [closeArticle]);
 
   // Load articles when tab changes
   useEffect(() => {
@@ -387,7 +409,7 @@ export function NewsScreen() {
 
       {/* Article detail (inline, not dialog) OR news grid */}
       {openArticleId ? (
-        <ArticleDetailInline articleId={openArticleId} onBack={closeArticle} />
+        <ArticleDetailInline articleId={openArticleId} onBack={goBack} />
       ) : loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (

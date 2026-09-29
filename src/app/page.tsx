@@ -118,18 +118,18 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-red-800 bg-red-600 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between py-1">
             {/* Sol: Saat + Tarih */}
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
-                <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-muted/50 cursor-pointer">
-                  <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-foreground">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
+                <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-white/10 cursor-pointer">
+                  <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-white">
+                    <Clock className="h-4 w-4 text-white/80" />
                     {mounted && now ? formatTime(now) : '--:--:--'}
                   </span>
-                  <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>
+                  <span className="text-[10px] text-white/70" suppressHydrationWarning>
                     {mounted && now ? formatDate(now) : '— — — —'}
                   </span>
                 </button>
@@ -147,20 +147,51 @@ export default function Home() {
                 onClick={handleHomeClick}
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfaya dön"
-                className="flex flex-col leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                className="flex flex-col leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
               >
-                <span className="text-base font-bold tracking-tight uppercase hover:text-news transition">TÜRKİYE'DE GÜNDEM</span>
-                <span className="text-[10px] font-bold tracking-[0.3em] text-muted-foreground uppercase text-center">TRGUNDEM.NET</span>
+                <span
+                  className="font-bold tracking-tight uppercase text-white whitespace-nowrap"
+                  style={{
+                    fontSize: '24px',
+                    lineHeight: '1.1',
+                    animationName: 'pulseScale',
+                    animationDuration: '2.4s',
+                    animationTimingFunction: 'ease-in-out',
+                    animationIterationCount: 'infinite',
+                    display: 'inline-block',
+                    transformOrigin: 'center',
+                  }}
+                >
+                  TÜRKİYE'DE GÜNDEM
+                </span>
+                <span
+                  className="font-bold tracking-[0.3em] uppercase text-center text-white"
+                  style={{
+                    fontSize: '13px',
+                    lineHeight: '1.1',
+                    animationName: 'pulseScale',
+                    animationDuration: '2.4s',
+                    animationTimingFunction: 'ease-in-out',
+                    animationIterationCount: 'infinite',
+                    animationDelay: '0.3s',
+                    display: 'inline-block',
+                    transformOrigin: 'center',
+                  }}
+                >
+                  TRGUNDEM.NET
+                </span>
               </button>
               {logoEl}
             </div>
 
             {/* Sağ: + + Tema */}
             <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-9 w-9">
+              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-9 w-9 text-white hover:bg-white/10 hover:text-white">
                 <span className="text-xl">+</span>
               </Button>
-              <ThemeToggle />
+              <div className="text-white">
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         </div>
