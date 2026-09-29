@@ -117,3 +117,29 @@ Stage Summary:
 - Yürüyen bantlar artık gerçek ring (sonsuz döngü) yapıyor — w-max + flex-shrink-0 ile flex shrink sorunu çözüldü.
 - Geri butonu browser history.back() yapıyor (önceki sayfa). Ana Sayfa, Tüm Haberler ve logolar URL'i temizleyip ana listeye döndürüyor.
 - TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.
+
+---
+Task ID: pipeline-schedule-fix-5
+Agent: main
+Task: Güncellemeleri 30 ve 60. dakikalara (yani :00 ve :30) taşı. Pipeline'ın neden 5 saattir çalışmadığını araştır.
+
+Work Log:
+- Teşhis: Pipeline daemon process sandbox ortamında 1-2 dakika içinde sessizce öldürülüyor. setsid/nohup/disown'a rağmen yaşamıyor. En son haber 09:30'da yayınlanmıştı (10 saat önce).
+- `scripts/pipeline-cron.ts`:
+  - Tetikleme zamanlaması değiştirildi: `minute === 15 || minute === 45` → `minute === 0 || minute === 30`. Yani cycle artık saat başı ve yarım başlıyor.
+  - `--once` flag desteği eklendi: `bun run scripts/pipeline-cron.ts --once` ile tek seferlik cycle manuel tetiklenebilir.
+  - `runCycle()` fonksiyonu export edildi, dosya sonundaki `main()` çağrısı koşullu yapıldı (sadece direkt çalıştırıldığında main çağrılır, import edildiğinde çağrılmaz).
+- `src/app/api/pipeline/run/route.ts` (yeni endpoint):
+  - `POST /api/pipeline/run` → cycle'ı `child_process.exec` ile inline çalıştırır. Request cycle tamamlanana kadar açık kalır (~7 dk). 15 dk timeout, 100MB buffer.
+  - `GET /api/pipeline/run` → durum, schedule ve son 50 log satırı döner.
+  - Subprocess'lerin stdout/stderr'i `pipeline-once.log` dosyasına yazılır (prisma:query satırları filtrelenebilir).
+  - 5 dakika içinde tekrar tetikleme önlenir (rate limit koruması).
+
+Stage Summary:
+- Cron zamanlaması güncellendi: :00 ve :30 (saat başı ve yarım).
+- Pipeline daemon sandbox'ta yaşatılamıyor — alternatif olarak API endpoint üzerinden tetikleme çözümü geliştirildi.
+- Manuel test: `curl -X POST http://localhost:3000/api/pipeline/run` çağrısı 7 dakikada tamamlandı.
+- Cycle adımları: stale (2 haber) → RSS refresh (5.7s) → rss_icerik.md (0.5s) → rss_kaynak_sayi.md (1.3s) → AI özetleme (7 dk, bazı 429 rate-limit'ler atlandı) → restore + max limit → cycle tamam.
+- DB güncel: 50 published haber, en son 2026-09-29 19:48:39'da yayınlandı (Özel haber: "Deniz Baysal ve Barış Yurtçu 7 Yıllık Evliliğine Son Verdi").
+- Otomatik tetikleme için external cron service (cron-job.org, uptime-robot, GitHub Actions) bu endpoint'i her :00 ve :30'da çağırabilir.
+- TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.

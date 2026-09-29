@@ -5,14 +5,14 @@ Aynı haberin kaç farklı RSS kaynağında geçtiğini gösterir. Birebir eşle
   • 1-gram (kelime kümesi) Jaccard ≥ %22 (anahtar kelime örtüşmesi)
 Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varyasyonu) sayılmaz.
 
-- **Oluşturulma:** 29 Eyl 2026 08:46
-- **Toplam makale:** 3829
+- **Oluşturulma:** 29 Eyl 2026 19:42
+- **Toplam makale:** 4994
 - **Toplam kaynak:** 59
-- **İşlenen makale (açıklamalı):** 3720
-- **Aday çift:** 67,252
-- **Tekrar eden haber grubu:** 225
-- **Tekrar eden toplam makale:** 1063 (toplam makalenin %27.8'i)
-- **Tekrar eden toplam farklı kaynak:** 668 (grup başına ortalama 3.0 farklı kaynak)
+- **İşlenen makale (açıklamalı):** 4866
+- **Aday çift:** 111,020
+- **Tekrar eden haber grubu:** 313
+- **Tekrar eden toplam makale:** 1451 (toplam makalenin %29.1'i)
+- **Tekrar eden toplam farklı kaynak:** 922 (grup başına ortalama 2.9 farklı kaynak)
 
 ---
 
@@ -20,51 +20,51 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 | # | Farklı Kaynak | Toplam Makale | Kategori | Başlık |
 |---|---|---|---|---|
-| 1 | 20 | 100 | Ekonomi / Finans | SPK'dan 37 kişi hakkında suç duyurusu |
-| 2 | 16 | 158 | Spor / Magazin | TÜRKİYE - İTALYA MAÇI CANLI İZLE \| Milli Maç ATV Şifresiz Canlı Ya… |
-| 3 | 12 | 89 | Kamu / Resmi | Borsa İstanbul günü yüzde 2,38 kayıpla tamamladı |
-| 4 | 9 | 16 | Spor / Magazin | 88 Gün Sonra Hakim Karşısına Çıkan Komedyen Deniz Göktaş Serbest Kaldı |
-| 5 | 9 | 10 | Güncel | Ekonomik güven endeksi eylülde 101,3 oldu |
-| 6 | 9 | 10 | Spor / Magazin | Okul Bahçesinde Öğretmene Silahlı Saldırı: Osmaniye&apos;de Yeğeni … |
-| 7 | 8 | 9 | Güncel | Son Dakika... YENİ Parti'nin isim tartışmasında yeni gelişme: AYM'd… |
-| 8 | 7 | 10 | Kültür / Sanat | Paris Moda Haftası'nda ünlü geçidi: Jane Fonda, Kendal Jenner, Eva … |
-| 9 | 7 | 8 | Ekonomi / Finans | TOKİ'den 46 ilde büyük arsa fırsatı! Yüzde 25 peşinat ve 48 ay taks… |
-| 10 | 7 | 7 | Spor / Magazin | Cumhurbaşkanı Recep Tayyip Erdoğan Kabine Toplantısı Sonrası Gündem… |
-| 11 | 7 | 7 | Ekonomi / Finans | Bakan Şimşek'ten fon soruşturması hakkında açıklama |
-| 12 | 7 | 7 | Spor / Magazin | Rafael Leao'dan flaş transfer itirafı! Galatasaray... |
-| 13 | 6 | 14 | Spor / Magazin | Fenerbahçe’de eski başkan Sadettin Saran ve yönetimi ibra edildi |
-| 14 | 6 | 13 | Güncel | Erakçi: Arabuluculara önerilerimizi ilettik ABD'nin cevabını bekliy… |
-| 15 | 6 | 9 | Ekonomi / Finans | Fon soruşturmasında 9 gözaltı |
-| 16 | 6 | 6 | Güncel | Aslı Enver ve Berkin Gökbudak Türkiye’den ayrılıyor! Ünlü çiftin ye… |
-| 17 | 6 | 6 | Spor / Magazin | İstanbul Havalimanı&apos;nda Kalkış Hazırlığındaki Uçak Haczedildi:… |
-| 18 | 6 | 6 | Spor / Magazin | Şimdi Altın Alan Yıl Sonuna Kadar Kazanır? |
-| 19 | 5 | 7 | Spor / Magazin | Motovlogcu Dayı Olarak Tanınan Cumhur Kahraman, Motosikletine Tır Ç… |
-| 20 | 5 | 7 | Güncel | 6 ilde FETÖ operasyonu: 20 şüpheli gözaltında |
-| 21 | 5 | 5 | Ekonomi / Finans | Anthropic, Claude Sonnet 5.5'i piyasaya sürdü: Selefiyle aynı fiyat… |
-| 22 | 5 | 5 | Spor / Magazin | Trabzonspor'da Ruslan Malinovskyi ameliyat edildi! |
-| 23 | 5 | 5 | Güncel | Eşi tarafından bıçaklanarak ağır yaralanan 6 çocuk annesi, 23 günlü… |
-| 24 | 4 | 6 | Güncel | ABD-İran hattında yaptırım pazarlığı iddiası: Trump reddetti |
-| 25 | 4 | 6 | Ekonomi / Finans | 34 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan … |
-| 26 | 4 | 6 | Kültür / Sanat | Oyuncu Biran Damla Yılmaz'a Almanya'dan hapis cezası |
-| 27 | 4 | 5 | Güncel | Cumhuriyet Silivri'den bildiriyor... ‘Casusluk’ davasında üçüncü ce… |
-| 28 | 4 | 5 | Ekonomi / Finans | Bakanlık açıkladı: Tapu işlemlerinde yeni dönem ne zaman başlıyor? |
-| 29 | 4 | 5 | Güncel | TÜİK açıkladı: Muhtemel eğitim süresi 2025'te 16,8 yıla geriledi |
-| 30 | 4 | 5 | Spor / Magazin | Abdulkadir Selvi Anlattı: Fatma Betül Sayan Kaya&apos;nın İstifa Et… |
+| 1 | 21 | 127 | Spor / Magazin | Fon Skandalında &apos;Balıkçı İsmet&apos; İddiası: İsmet Öğüt Adına… |
+| 2 | 16 | 189 | Spor / Magazin | TÜRKİYE - İTALYA MAÇI CANLI İZLE \| Milli Maç ATV Şifresiz Canlı Ya… |
+| 3 | 14 | 38 | Spor / Magazin | Cumhurbaşkanı Recep Tayyip Erdoğan Kabine Toplantısı Sonrası Gündem… |
+| 4 | 12 | 96 | Kamu / Resmi | Borsa İstanbul günü yüzde 2,38 kayıpla tamamladı |
+| 5 | 11 | 13 | Spor / Magazin | PFDK Açıkladı: Galatasaray Teknik Direktörü Okan Buruk&apos;a 1 Maç… |
+| 6 | 9 | 16 | Spor / Magazin | 88 Gün Sonra Hakim Karşısına Çıkan Komedyen Deniz Göktaş Serbest Kaldı |
+| 7 | 9 | 11 | Spor / Magazin | Okul Bahçesinde Öğretmene Silahlı Saldırı: Osmaniye&apos;de Yeğeni … |
+| 8 | 9 | 10 | Güncel | Ekonomik güven endeksi eylülde 101,3 oldu |
+| 9 | 9 | 9 | Güncel | Serdal Adalı yönetim kurulu aday listesini teslim etti! |
+| 10 | 8 | 11 | Spor / Magazin | Mustafa Sandal, Eşi Melisa Sütşurup&apos;un Adı Geçen Fon Kriziyle … |
+| 11 | 8 | 9 | Güncel | Son Dakika... YENİ Parti'nin isim tartışmasında yeni gelişme: AYM'd… |
+| 12 | 7 | 12 | Kültür / Sanat | Serenay Sarıkaya'nın Paris Moda Haftası'ndaki elbisesi mercek altında |
+| 13 | 7 | 8 | Ekonomi / Finans | TOKİ'den 46 ilde büyük arsa fırsatı! Yüzde 25 peşinat ve 48 ay taks… |
+| 14 | 7 | 7 | Güncel | Cevdet Yılmaz başkanlığında “Fon Koordinasyon Kurulu” kuruldu |
+| 15 | 7 | 7 | Spor / Magazin | Eyüpspor'un yeni teknik direktörü Mustafa Dalcı oldu! |
+| 16 | 7 | 7 | Ekonomi / Finans | Bakan Şimşek'ten fon soruşturması hakkında açıklama |
+| 17 | 7 | 7 | Spor / Magazin | Rafael Leao'dan flaş transfer itirafı! Galatasaray... |
+| 18 | 6 | 14 | Spor / Magazin | Fenerbahçe’de eski başkan Sadettin Saran ve yönetimi ibra edildi |
+| 19 | 6 | 13 | Güncel | Erakçi: Arabuluculara önerilerimizi ilettik ABD'nin cevabını bekliy… |
+| 20 | 6 | 9 | Ekonomi / Finans | Fon soruşturmasında 9 gözaltı |
+| 21 | 6 | 7 | Spor / Magazin | Futbol Dünyasını Sarsan Karar: Manchester City Mali Kuralları İhlal… |
+| 22 | 6 | 7 | Güncel | Deniz Yavuzyılmaz’dan eşine yönelik soruşturmaya tepki: Fon vurgunu… |
+| 23 | 6 | 6 | Güncel | Usta tiyatrocu Ali Hürol hayatını kaybetti: Melek Baykal'dan duygus… |
+| 24 | 6 | 6 | Güncel | Aslı Enver ve Berkin Gökbudak Türkiye’den ayrılıyor! Ünlü çiftin ye… |
+| 25 | 6 | 6 | Spor / Magazin | İstanbul Havalimanı&apos;nda Kalkış Hazırlığındaki Uçak Haczedildi:… |
+| 26 | 6 | 6 | Spor / Magazin | Şimdi Altın Alan Yıl Sonuna Kadar Kazanır? |
+| 27 | 5 | 7 | Spor / Magazin | Motovlogcu Dayı Olarak Tanınan Cumhur Kahraman, Motosikletine Tır Ç… |
+| 28 | 5 | 7 | Güncel | 6 ilde FETÖ operasyonu: 20 şüpheli gözaltında |
+| 29 | 5 | 6 | Güncel | Dursun Özbek seçimi kazandı: Ali Koç'un yerini aldı |
+| 30 | 5 | 5 | Spor / Magazin | Cumhurbaşkanı Erdoğan&apos;dan Fatma Betül Sayan Kaya İstifası Sonr… |
 
 ---
 
 ## Tüm Tekrar Eden Haber Grupları
 
-### [1] SPK'dan 37 kişi hakkında suç duyurusu  (20 farklı kaynakta, 100 makale)
+### [1] Fon Skandalında &apos;Balıkçı İsmet&apos; İddiası: İsmet Öğüt Adına 3 Milyar 92 Milyon 75 Bin 513 TL Para Çıkışı Oldu!  (21 farklı kaynakta, 127 makale)
 
-**Kategori:** Ekonomi / Finans
+**Kategori:** Spor / Magazin
 
 **Açıklama:**
 
-> Sermaye Piyasası Kurulu (SPK), Tera Finansal Yatırımlar Holding AŞ (TRHOL) pay piyasasında gerçekleştirilen işlemlere ilişkin yürüttüğü inceleme sonucunda 37 kişi hakkında suç duyurusunda bulunulmasına karar verdi. Kurul ayrıca, Tera Yatırım Menkul Değerler AŞ ve Tera Portföy Yönetimi AŞ ile söz konusu 37 kişi hakkında 2 yıl süreyle işlem yasağı uygulanmasını kararlaştırdı. SPK, 107/1 maddesi kapsamında suç duyurusunda bulunulan kişilerin etkin pişmanlık hükümlerinden yararlanabilmeleri için 15 günlük bir süre tanıdı
+> İstanbul Cumhuriyet Başsavcılığı tarafından yürütülen milyarlık fon soruşturmasının mali ve siber suç deşifreleri ayağında, yeni bir bir para trafiğinin gün yüzüne çıktığı iddia edildi. A Haber’de yer alan iddiaya göre; Kamuoyunda “Balıkçı İsmet” olarak bilinen İsmet Öğüt adına, kritik süreçte tam 3 milyar 92 milyon 75 bin 513 TL tutarında şüpheli fon çıkışı yapıldığı iddia edildi. Adli makamlar, bu devasa para hareketleri ile şahsın ağabeyi olan 22, 23 ve 24. dönem CHP Ardahan Milletvekili Ensar Öğüt arasında organik bir ekonomik menfaat ilişkisi bulunup bulunmadığını araştırmaya başladı.Kayn
 
-**Farklı kaynak sayısı:** 20
-**Toplam makale sayısı:** 100
+**Farklı kaynak sayısı:** 21
+**Toplam makale sayısı:** 127
 
 **Geçtiği farklı kaynaklar:**
 
@@ -102,46 +102,53 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
    - 1. [Fonculara etkin pişmanlık kıyağı](https://www.sozcu.com.tr/fonculara-etkin-pismanlik-kiyagi-p363812) — 27 Eyl 2026 09:43
 
-5. **Haberturk · Ekonomi** (`haberturk.com`) — 3 makale
+5. **Haberturk · Ekonomi** (`haberturk.com`) — 4 makale
 
    - 1. [Tera Portföy Yönetim Kurulu Başkanı Erdin Özel gözaltına alındı](https://www.haberturk.com/ekonomi/fon-sorusturmasinda-yeni-gozaltilar-3915382) — 27 Eyl 2026 14:55
-   - 2. [SPK'dan 37 kişi hakkında suç duyurusu](https://www.haberturk.com/ekonomi/son-dakika-spk-dan-37-kisi-hakkinda-suc-duyurusu-3915727) — 28 Eyl 2026 19:54
-   - 3. [SPK'dan 37 kişi hakkında suç duyurusu](https://www.haberturk.com/ekonomi/spk-dan-37-kisi-hakkinda-suc-duyurusu-etkin-pismanlik-icin-15-gunluk-sure-tanindi-3915794) — 29 Eyl 2026 06:23
+   - 2. [Balıkçı İsmet’in hesabından 3 milyar TL’lik çıkış oldu](https://www.haberturk.com/ekonomi/balikci-ismetin-hesabindan-3-milyar-tllik-cikis-oldu-3915623) — 28 Eyl 2026 10:57
+   - 3. [SPK'dan 37 kişi hakkında suç duyurusu](https://www.haberturk.com/ekonomi/son-dakika-spk-dan-37-kisi-hakkinda-suc-duyurusu-3915727) — 28 Eyl 2026 19:54
+   - 4. [SPK'dan 37 kişi hakkında suç duyurusu](https://www.haberturk.com/ekonomi/spk-dan-37-kisi-hakkinda-suc-duyurusu-etkin-pismanlik-icin-15-gunluk-sure-tanindi-3915794) — 29 Eyl 2026 06:23
 
-6. **Onedio · Daily** (`onedio.com`) — 4 makale
+6. **Onedio · Daily** (`onedio.com`) — 6 makale
 
    - 1. [Fon Soruşturması: Destek Yatırım Bankası Genel Müdürü Özgür Akayoğlu Gözaltına Alındı](https://onedio.com/haber/fon-sorusturmasi-destek-yatirim-bankasi-genel-muduru-ozgur-akayoglu-gozaltina-alindi-1384295) — 28 Eyl 2026 05:27
    - 2. [Fon Soruşturmasında, SPK’nın Başsavcılığa Gönderdiği Yazı Ortaya Çıktı](https://onedio.com/haber/fon-sorusturmasinda-spk-nin-bassavciliga-gonderdigi-yazi-ortaya-cikti-1384350) — 28 Eyl 2026 08:33
-   - 3. [SPK&apos;dan Tera Holding İşlemleri İçin 37 Kişiye Suç Duyurusu ve 2 Yıl İşlem Yasağı](https://onedio.com/haber/spk-dan-tera-holding-islemleri-icin-37-kisiye-suc-duyurusu-ve-2-yil-islem-yasagi-1384479) — 28 Eyl 2026 19:05
-   - 4. [Türkiye Futbol Federasyonu Merkez Hakem Kurulu Başkanı Ferhat Gündoğdu Gözaltına Alındı](https://onedio.com/haber/turkiye-futbol-federasyonu-merkez-hakem-kurulu-baskani-ferhat-gundogdu-gozaltina-alindi-1384513) — 29 Eyl 2026 05:28
+   - 3. [Fon Skandalında &apos;Balıkçı İsmet&apos; İddiası: İsmet Öğüt Adına 3 Milyar 92 Milyon …](https://onedio.com/haber/fon-skandalinda-balikci-ismet-iddiasi-ismet-ogut-adina-3-milyar-92-milyon-75-bin-513-tl-para-cikisi-oldu-1384386) — 28 Eyl 2026 11:02
+   - 4. [SPK&apos;dan Tera Holding İşlemleri İçin 37 Kişiye Suç Duyurusu ve 2 Yıl İşlem Yasağı](https://onedio.com/haber/spk-dan-tera-holding-islemleri-icin-37-kisiye-suc-duyurusu-ve-2-yil-islem-yasagi-1384479) — 28 Eyl 2026 19:05
+   - 5. [Türkiye Futbol Federasyonu Merkez Hakem Kurulu Başkanı Ferhat Gündoğdu Gözaltına Alındı](https://onedio.com/haber/turkiye-futbol-federasyonu-merkez-hakem-kurulu-baskani-ferhat-gundogdu-gozaltina-alindi-1384513) — 29 Eyl 2026 05:28
+   - 6. [İsmet Öğüt Fon Soruşturması Kapsamında Gözaltına Alındı](https://onedio.com/haber/ismet-ogut-fon-sorusturmasi-kapsaminda-gozaltina-alindi-1384792) — 29 Eyl 2026 17:01
 
-7. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 1 makale
+7. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 2 makale
 
    - 1. [45 firma ve 19 fon üzerindeki mal varlığı tedbiri kaldırıldı](https://www.ekonomigazetesi.com/ekonomi/45-firma-ve-19-fon-uzerindeki-mal-varligi-tedbiri-kaldirildi-88480) — 28 Eyl 2026 07:00
+   - 2. [CW Enerji Yönetim Kurulu Başkanı Sarvan: Mal varlığıma yönelik tedbir geçici koruma ted…](https://www.ekonomigazetesi.com/sirket-haberleri/cw-enerji-yonetim-kurulu-baskani-sarvan-mal-varligima-yonelik-tedbir-gecici-bir-koruma-tedbiridir-88569) — 29 Eyl 2026 11:24
 
-8. **Kamudanhaber** (`kamudanhaber.net`) — 6 makale
+8. **Kamudanhaber** (`kamudanhaber.net`) — 8 makale
 
-   - 1. [Fon soruşturmasında bankanın kurucu ortağı da gözaltında](https://www.kamudanhaber.net/fon-sorusturmasinda-bankanin-kurucu-ortagi-da-gozaltinda) — 28 Eyl 2026 07:49
-   - 2. [Son dakika: MHK Başkanı Ferhat Gündoğdu ve kurul üyeleri gözaltına alındı](https://www.kamudanhaber.net/son-dakika-mhk-baskani-ferhat-gundogdu-ve-kurul-uyeleri-gozaltina-alindi) — 29 Eyl 2026 05:36
-   - 3. [SPK'dan 37 Kişi Hakkında Suç Duyurusu](https://www.kamudanhaber.net/spkdan-37-kisi-hakkinda-suc-duyurusu) — 29 Eyl 2026 05:45
-   - 4. [12 İlde Yasa Dışı Bahis Operasyonu: 4.1 Milyarlık Vurgun](https://www.kamudanhaber.net/12-ilde-yasa-disi-bahis-operasyonu-41-milyarlik-vurgun) — 29 Eyl 2026 06:13
-   - 5. [Muhsin Yazıcıoğlu Soruşturmasında 36 Tutuklama](https://www.kamudanhaber.net/muhsin-yazicioglu-sorusturmasinda-36-tutuklama) — 29 Eyl 2026 06:15
-   - 6. [MHK yazışmaları ifşa oldu: “Kopar kafasını gitsin” mesajı](https://www.kamudanhaber.net/mhk-yazismalari-ifsa-oldu-kopar-kafasini-gitsin-mesaji) — 29 Eyl 2026 08:29
+   - 1. [Fon Soruşturmasında 7 Şüpheli Daha Gözaltında](https://www.kamudanhaber.net/fon-sorusturmasinda-7-supheli-daha-gozal) — 28 Eyl 2026 07:45
+   - 2. [Fon soruşturmasında bankanın kurucu ortağı da gözaltında](https://www.kamudanhaber.net/fon-sorusturmasinda-bankanin-kurucu-ortagi-da-gozaltinda) — 28 Eyl 2026 07:49
+   - 3. [Son dakika: MHK Başkanı Ferhat Gündoğdu ve kurul üyeleri gözaltına alındı](https://www.kamudanhaber.net/son-dakika-mhk-baskani-ferhat-gundogdu-ve-kurul-uyeleri-gozaltina-alindi) — 29 Eyl 2026 05:36
+   - 4. [SPK'dan 37 Kişi Hakkında Suç Duyurusu](https://www.kamudanhaber.net/spkdan-37-kisi-hakkinda-suc-duyurusu) — 29 Eyl 2026 05:45
+   - 5. [12 İlde Yasa Dışı Bahis Operasyonu: 4.1 Milyarlık Vurgun](https://www.kamudanhaber.net/12-ilde-yasa-disi-bahis-operasyonu-41-milyarlik-vurgun) — 29 Eyl 2026 06:13
+   - 6. [Muhsin Yazıcıoğlu Soruşturmasında 36 Tutuklama](https://www.kamudanhaber.net/muhsin-yazicioglu-sorusturmasinda-36-tutuklama) — 29 Eyl 2026 06:15
+   - 7. [Yahşihan'da İki Eski Başkan Tutuklandı](https://www.kamudanhaber.net/yahsiyanda-iki-eski-baskan-tutuklandi) — 29 Eyl 2026 06:45
+   - 8. [MHK yazışmaları ifşa oldu: “Kopar kafasını gitsin” mesajı](https://www.kamudanhaber.net/mhk-yazismalari-ifsa-oldu-kopar-kafasini-gitsin-mesaji) — 29 Eyl 2026 08:29
 
-9. **Aydinlik** (`aydinlik.com.tr`) — 10 makale
+9. **Aydinlik** (`aydinlik.com.tr`) — 11 makale
 
    - 1. [MASAK soruşturmasında 4 şüpheli tutuklama talebiyle hakimliğe sevk edildi](https://www.aydinlik.com.tr/haber/masak-sorusturmasinda-4-supheli-tutuklama-talebiyle-hakimlige-sevk-edildi-591980) — 28 Eyl 2026 10:36
-   - 2. [Siyasal-askeri casusluk soruşturması: FETÖ bağlantılı 4 şüpheliye tutuklama talebi](https://www.aydinlik.com.tr/haber/siyasal-askeri-casusluk-sorusturmasi-feto-baglantili-4-supheliye-tutuklama-talebi-592015) — 28 Eyl 2026 14:21
-   - 3. [Kaşif Kozinoğlu soruşturmasında yeni gelişme! Gazeteci Fatih Ergin'in tutuklanması tale…](https://www.aydinlik.com.tr/haber/kasif-kozinoglu-sorusturmasinda-yeni-gelisme-gazeteci-fatih-erginin-tutuklanmasi-talep-edildi-592021) — 28 Eyl 2026 15:20
-   - 4. [SPK'dan Tera Holding işlemlerinde 37 kişi hakkında suç duyurusu](https://www.aydinlik.com.tr/haber/spkdan-tera-holding-islemlerinde-37-kisi-hakkinda-suc-duyurusu-592068) — 28 Eyl 2026 19:02
-   - 5. [Gazeteci Fatih Ergin tutuklandı](https://www.aydinlik.com.tr/haber/gazeteci-fatih-ergin-tutuklandi-592070) — 28 Eyl 2026 19:21
-   - 6. [Muhsin Yazıcıoğlu soruşturmasında yeni gelişme: 36 kişi tutuklandı](https://www.aydinlik.com.tr/haber/muhsin-yazicioglu-sorusturmasinda-yeni-gelisme-36-kisi-tutuklandi-592082) — 28 Eyl 2026 21:25
-   - 7. [‘Hakemler dosyası’ için düğmeye basıldı! MHK Başkanı dahil 7 gözaltı](https://www.aydinlik.com.tr/haber/hakemler-dosyasi-icin-dugmeye-basildi-mhk-baskani-dahil-7-gozalti-592093) — 29 Eyl 2026 06:12
-   - 8. [12 ilde yasa dışı bahis operasyonu: 4,1 milyar TL'lik işlem hacmi belirlendi](https://www.aydinlik.com.tr/haber/12-ilde-yasa-disi-bahis-operasyonu-41-milyar-tllik-islem-hacmi-belirlendi-592096) — 29 Eyl 2026 06:32
-   - 9. [Aydın merkezli 4 ilde yasa dışı bahis operasyonu! 12 şüpheli tutuklandı](https://www.aydinlik.com.tr/haber/aydin-merkezli-4-ilde-yasa-disi-bahis-operasyonu-12-supheli-tutuklandi-592099) — 29 Eyl 2026 06:45
-   - 10. [Ankara merkezli dolandırıcılık soruşturmasında 7 şüpheli tutuklandı](https://www.aydinlik.com.tr/haber/toki-arsasi-dolandiriciligi-sorusturmasinda-7-tutuklama-592102) — 29 Eyl 2026 07:02
+   - 2. [Fon soruşturmasında Balıkçı İsmet'in hesap hareketleri mercek altında](https://www.aydinlik.com.tr/haber/fon-sorusturmasinda-balikci-ismetin-hesap-hareketleri-mercek-altinda-591989) — 28 Eyl 2026 11:15
+   - 3. [Siyasal-askeri casusluk soruşturması: FETÖ bağlantılı 4 şüpheliye tutuklama talebi](https://www.aydinlik.com.tr/haber/siyasal-askeri-casusluk-sorusturmasi-feto-baglantili-4-supheliye-tutuklama-talebi-592015) — 28 Eyl 2026 14:21
+   - 4. [Kaşif Kozinoğlu soruşturmasında yeni gelişme! Gazeteci Fatih Ergin'in tutuklanması tale…](https://www.aydinlik.com.tr/haber/kasif-kozinoglu-sorusturmasinda-yeni-gelisme-gazeteci-fatih-erginin-tutuklanmasi-talep-edildi-592021) — 28 Eyl 2026 15:20
+   - 5. [SPK'dan Tera Holding işlemlerinde 37 kişi hakkında suç duyurusu](https://www.aydinlik.com.tr/haber/spkdan-tera-holding-islemlerinde-37-kisi-hakkinda-suc-duyurusu-592068) — 28 Eyl 2026 19:02
+   - 6. [Gazeteci Fatih Ergin tutuklandı](https://www.aydinlik.com.tr/haber/gazeteci-fatih-ergin-tutuklandi-592070) — 28 Eyl 2026 19:21
+   - 7. [Muhsin Yazıcıoğlu soruşturmasında yeni gelişme: 36 kişi tutuklandı](https://www.aydinlik.com.tr/haber/muhsin-yazicioglu-sorusturmasinda-yeni-gelisme-36-kisi-tutuklandi-592082) — 28 Eyl 2026 21:25
+   - 8. [‘Hakemler dosyası’ için düğmeye basıldı! MHK Başkanı dahil 7 gözaltı](https://www.aydinlik.com.tr/haber/hakemler-dosyasi-icin-dugmeye-basildi-mhk-baskani-dahil-7-gozalti-592093) — 29 Eyl 2026 06:12
+   - 9. [12 ilde yasa dışı bahis operasyonu: 4,1 milyar TL'lik işlem hacmi belirlendi](https://www.aydinlik.com.tr/haber/12-ilde-yasa-disi-bahis-operasyonu-41-milyar-tllik-islem-hacmi-belirlendi-592096) — 29 Eyl 2026 06:32
+   - 10. [Aydın merkezli 4 ilde yasa dışı bahis operasyonu! 12 şüpheli tutuklandı](https://www.aydinlik.com.tr/haber/aydin-merkezli-4-ilde-yasa-disi-bahis-operasyonu-12-supheli-tutuklandi-592099) — 29 Eyl 2026 06:45
+   - 11. [Ankara merkezli dolandırıcılık soruşturmasında 7 şüpheli tutuklandı](https://www.aydinlik.com.tr/haber/toki-arsasi-dolandiriciligi-sorusturmasinda-7-tutuklama-592102) — 29 Eyl 2026 07:02
 
-10. **Halktv** (`halktv.com.tr`) — 8 makale
+10. **Halktv** (`halktv.com.tr`) — 11 makale
 
    - 1. [Gazeteci Fatih Ergin adliyeye sevk edildi](https://halktv.com.tr/turkiye/gazeteci-fatih-ergin-adliyeye-sevk-edildi-1058041h) — 28 Eyl 2026 12:03
    - 2. [Erdoğan'ın bilgilerini sorgulamışlardı: Eski MASAK yöneticisi dahil 3 kişi tutuklandı](https://halktv.com.tr/turkiye/erdoganin-bilgilerini-sorgulamislardi-eski-masak-yoneticisi-dahil-4-kisiye-tutuklama-talebi-1058047h) — 28 Eyl 2026 12:35
@@ -151,6 +158,9 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 6. [Son Dakika | SPK'dan Tera Holding kararı: 37 kişi hakkında suç duyurusu](https://halktv.com.tr/ekonomi/son-dakika-spkdan-tera-holding-karari-37-kisi-hakkinda-suc-duyurusu-1058124h) — 28 Eyl 2026 18:57
    - 7. [TOKİ arsasını miras diye satıp 95 milyon liralık vurgun yaptılar](https://halktv.com.tr/turkiye/toki-arsasini-miras-diye-satip-95-milyon-liralik-vurgun-yaptilar-1058184h) — 29 Eyl 2026 06:34
    - 8. [Yasa dışı bahis sitelerine hizmet veren 30 kişi gözaltında](https://halktv.com.tr/turkiye/yasa-disi-bahis-sitelerine-hizmet-veren-30-kisi-gozaltinda-1058207h) — 29 Eyl 2026 07:17
+   - 9. [Son Dakika | Polis ekipleri TFF'ye geldi: VAR odasının kamera kayıtları inceleniyor](https://halktv.com.tr/spor/son-dakika-polis-ekipleri-tffye-geldi-var-odasinin-kamera-kayitlari-inceleniyor-1058345h) — 29 Eyl 2026 15:00
+   - 10. [TFF kararını verdi: Ferhat Gündoğdu'nun yerine geçecek isim belli oldu](https://halktv.com.tr/spor/tff-kararini-verdi-ferhat-gundogdunun-yerine-gececek-isim-belli-oldu-1058356h) — 29 Eyl 2026 16:11
+   - 11. [Son Dakika | 'Balıkçı İsmet' gözaltına alındı](https://halktv.com.tr/turkiye/son-dakika-balikci-ismet-gozaltina-alindi-1058369h) — 29 Eyl 2026 17:41
 
 11. **Karar** (`karar.com`) — 4 makale
 
@@ -159,7 +169,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 3. [Gazeteci Fatih Ergin tutuklandı](https://www.karar.com/guncel-haberler/gazeteci-fatih-ergin-tutuklandi-2074904) — 28 Eyl 2026 17:32
    - 4. [9 yasa dışı bahis sitesine operasyon: 4,1 milyar liralık trafik](https://www.karar.com/guncel-haberler/9-yasa-disi-bahis-sitesine-operasyon-41-milyar-liralik-trafik-2074974) — 29 Eyl 2026 06:49
 
-12. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 14 makale
+12. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 19 makale
 
    - 1. [Eskişehir'de 'çocuğa karşı müstehcenlik' soruşturması: 2 kişi tutuklandı](https://www.cumhuriyet.com.tr/turkiye/eskisehir-de-cocuga-karsi-mustehcenlik-sorusturmasi-2-kisi-tutuklandi-2541864) — 28 Eyl 2026 14:52
    - 2. [Gözaltına alınmıştı: Gazeteci Fatih Ergin hakkında yeni gelişme](https://www.cumhuriyet.com.tr/siyaset/gozaltina-alinmisti-gazeteci-fatih-ergin-hakkinda-yeni-gelisme-2541869) — 28 Eyl 2026 15:06
@@ -175,15 +185,21 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 12. ['Miras kaldı' yalanıyla milyonluk vurgun... TOKİ arsasını sahte belgelerle sattılar: 20…](https://www.cumhuriyet.com.tr/turkiye/miras-kaldi-yalaniyla-milyonluk-vurgun-toki-arsasini-sahte-belgelerle-sattilar-20-kisiyi-95-milyon-tl-dolandirdilar-2541991) — 29 Eyl 2026 06:49
    - 13. [7 kişi gözaltına alınmıştı: MHK Başkanı Ferhat Gündoğdu'ya yöneltilen suçlamalar belli …](https://www.cumhuriyet.com.tr/spor/7-kisi-gozaltina-alinmisti-mhk-baskani-ferhat-gundogdu-ya-yoneltilen-suclamalar-belli-oldu-2542019) — 29 Eyl 2026 07:46
    - 14. [Yunus Yıldırım kimdir? Eski hakem Yunus Yıldırım neden gözaltına alındı?](https://www.cumhuriyet.com.tr/spor/yunus-yildirim-kimdir-eski-hakem-yunus-yildirim-neden-gozaltina-alindi-2542037) — 29 Eyl 2026 08:32
+   - 15. [MHK nedir? Merkez Hakem Kurulu kimlerden oluşuyor, görevleri neler?](https://www.cumhuriyet.com.tr/spor/mhk-nedir-merkez-hakem-kurulu-kimlerden-olusuyor-gorevleri-neler-2542161) — 29 Eyl 2026 13:19
+   - 16. [TFF'den gözaltılar sonrası ilk açıklama: 'Yönetimimiz, birden fazla suç duyurusunda bul…](https://www.cumhuriyet.com.tr/spor/tff-den-gozaltilar-sonrasi-ilk-aciklama-yonetimimiz-birden-fazla-suc-duyurusunda-bulunmustur-2542168) — 29 Eyl 2026 13:39
+   - 17. [‘Balıkçı İsmet’ fon soruşturması kapsamında gözaltına alındı](https://www.cumhuriyet.com.tr/turkiye/balikci-ismet-fon-sorusturmasi-kapsaminda-gozaltina-alindi-2542260) — 29 Eyl 2026 18:07
+   - 18. [Soruşturma kapsamında gözaltına alınmıştı: Serdal Adalı'dan MHK Başkanı önerisi!](https://www.cumhuriyet.com.tr/spor/sorusturma-kapsaminda-gozaltina-alinmisti-serdal-adali-dan-mhk-baskani-onerisi-2542271) — 29 Eyl 2026 19:07
+   - 19. [Mersin’de IŞİD operasyonu: 3 tutuklama](https://www.cumhuriyet.com.tr/turkiye/mersin-de-isid-operasyonu-3-tutuklama-2542273) — 29 Eyl 2026 19:14
 
-13. **Sozcu** (`sozcu.com.tr`) — 4 makale
+13. **Sozcu** (`sozcu.com.tr`) — 5 makale
 
    - 1. [3 eski MASAK başkanı ifade verdi; eski MASAK Başkan Yardımcısı tutuklandı](https://www.sozcu.com.tr/inonu-akgun-alp-tutuklandi-p364275) — 28 Eyl 2026 14:55
    - 2. [Gazeteci Fatih Ergin'e tutuklama talebi](https://www.sozcu.com.tr/fatih-ergin-hakkinda-karar-28-eylul-2026-p364283) — 28 Eyl 2026 15:16
    - 3. [SON DAKİKA... MHK Başkanı Ferhat Gündoğdu gözaltına alındı](https://www.sozcu.com.tr/mhk-baskani-ferhat-gundogdu-gozaltina-alindi-p364398) — 29 Eyl 2026 07:13
    - 4. [Ferhat Gündoğdu gözaltına alındı, Ali Koç'un sözleri akıllara geldi](https://www.sozcu.com.tr/ferhat-gundogdu-gozaltina-alindi-ali-koc-un-sozleri-akillara-geldi-p364459) — 29 Eyl 2026 07:24
+   - 5. ['Balıkçı İsmet' fon soruşturmasında gözaltına alındı!](https://www.sozcu.com.tr/balikci-ismet-gozaltina-alindi-p364637) — 29 Eyl 2026 18:48
 
-14. **Iscihaber · News** (`iscihaber.net`) — 12 makale
+14. **Iscihaber · News** (`iscihaber.net`) — 13 makale
 
    - 1. [Eski MASAK Başkanı Mürsel Ali Kaplan kimdir, kaç yaşında, nereli, neden ifade verdi, gö…](https://www.iscihaber.net/gundem/eski-masak-baskani-mursel-ali-kaplan-kimdir-kac-yasinda-nereli-neden-ifade-verdi-gozaltina-mi-alindi/266907) — 28 Eyl 2026 15:23
    - 2. [Eskişehir'deki müstehcenlik soruşturmasında 2 tutuklama](https://www.iscihaber.net/gundem/eskisehirdeki-mustehcenlik-sorusturmasinda-2-tutuklama/266911) — 28 Eyl 2026 15:29
@@ -197,14 +213,17 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 10. [MHK Başkanı Ferhat Gündoğdu gözaltında : 7 şüpheli için operasyon](https://www.iscihaber.net/gundem/mhk-baskani-ferhat-gundogdu-gozaltinda-7-supheli-icin-operasyon/267059) — 29 Eyl 2026 06:30
    - 11. [Yasa dışı bahis operasyonu : 30 şüphelinin hesaplarında 4,1 milyar TL'lik işlem hacmi](https://www.iscihaber.net/istanbul/yasa-disi-bahis-operasyonu-30-suphelinin-hesaplarinda-41-milyar-tllik-islem-hacmi/267076) — 29 Eyl 2026 08:10
    - 12. [TOKİ arazisi dolandırıcılığında 7 tutuklama : 95,5 milyon TL'lik haksız kazanç](https://www.iscihaber.net/ankara/toki-arazisi-dolandiriciliginda-7-tutuklama-955-milyon-tllik-haksiz-kazanc/267078) — 29 Eyl 2026 08:24
+   - 13. [Mersin'de 'torbacı' operasyonunda 4 şüpheli tutuklandı](https://www.iscihaber.net/mersin/mersinde-torbaci-operasyonunda-4-supheli-tutuklandi/267257) — 29 Eyl 2026 18:31
 
-15. **Artigercek** (`artigercek.com`) — 5 makale
+15. **Artigercek** (`artigercek.com`) — 7 makale
 
    - 1. [Casusluk soruşturması: MASAK Eski Başkan Yardımcısı dahil 3 isim tutuklandı](https://artigercek.com/politika/casusluk-sorusturmasi-masak-eski-baskan-yardimcisi-dahil-3-isim-tutuklandi-350984h) — 28 Eyl 2026 15:41
    - 2. [Gazeteci Fatih Ergin tutuklandı](https://artigercek.com/politika/gazeteci-fatih-ergin-tutuklandi-350995h) — 28 Eyl 2026 19:24
    - 3. [MHK Başkanı Ferhat Gündoğdu ve 6 kişi gözaltına alındı](https://artigercek.com/spor/mhk-baskani-ferhat-gundogdu-ve-6-kisi-gozaltina-alindi-350998h) — 29 Eyl 2026 06:22
    - 4. [Muhsin Yazıcıoğlu soruşturmasında 36 kişi daha tutuklandı](https://artigercek.com/politika/muhsin-yazicioglu-sorusturmasinda-36-kisi-daha-tutuklandi-351000h) — 29 Eyl 2026 06:38
-   - 5. [Fon soruşturmasında 5 şüpheli daha tutuklandı](https://artigercek.com/ekonomi/fon-sorusturmasinda-5-supheli-daha-tutuklandi-351003h) — 29 Eyl 2026 07:12
+   - 5. [Yahşihan Belediyesi soruşturması: Eski AKP ve MHP'li başkanlar dahil 15 tutuklama](https://artigercek.com/politika/yahsihan-belediyesi-sorusturmasi-eski-akp-ve-mhpli-baskanlar-dahil-15-tutuklama-351001h) — 29 Eyl 2026 06:41
+   - 6. [Fon soruşturmasında 5 şüpheli daha tutuklandı](https://artigercek.com/ekonomi/fon-sorusturmasinda-5-supheli-daha-tutuklandi-351003h) — 29 Eyl 2026 07:12
+   - 7. [MHK operasyonunda mesaj kayıtları: Gerekirse mobbing yapalım, istifa etsin](https://artigercek.com/spor/mhk-operasyonunda-mesaj-kayitlari-gerekirse-mobbing-yapalim-istifa-etsin-351012h) — 29 Eyl 2026 09:09
 
 16. **Cnnturk · News** (`cnnturk.com`) — 2 makale
 
@@ -215,22 +234,33 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
    - 1. [SPK'dan Bomba Suç Duyurusu: 37 Kişi Hakkında Dev İşlem Başlatıldı!](https://yeniceida.com/haber/spkdan-bomba-suc-duyurusu-37-kisi-hakkinda-dev-islem-baslatildi) — 29 Eyl 2026 01:41
 
-18. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
+18. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 3 makale
 
    - 1. [MHK Başkanı Ferhat Gündoğdu gözaltına alındı](https://www.fotomac.com.tr/haberler/2026/09/29/mhk-baskani-ferhat-gundogdu-gozaltina-alindi) — 29 Eyl 2026 05:44
+   - 2. [Beşiktaş Başkanı Serdal Adalı transfer müjdesini verdi! "Devre arasında alacağız"](https://www.fotomac.com.tr/besiktas/2026/09/29/besiktas-baskani-serdal-adali-transfer-mujdesini-verdi-devre-arasinda-alacagiz) — 29 Eyl 2026 11:00
+   - 3. [TFF'den yapılan gözaltılar sonrası ilk açıklama! MHK Başkanı ve 6 kişi gözaltına alınmıştı](https://www.fotomac.com.tr/futbol/2026/09/29/tffden-yapilan-gozaltilar-sonrasi-ilk-aciklama-mhk-baskani-ve-6-kisi-gozaltina-alinmisti) — 29 Eyl 2026 13:37
 
 19. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 2 makale
 
    - 1. [Fon soruşturmasında kritik gün! Cumhurbaşkanı Erdoğan ekonomi yönetimini topluyor](https://www.sozcu.com.tr/fon-sorusturmasinda-kritik-gun-cumhurbaskani-erdogan-ekonomi-yonetimini-topluyor-p364441) — 29 Eyl 2026 06:34
    - 2. [Hedef Holding milyarlık borcunu ödeyemedi](https://www.sozcu.com.tr/hedef-holding-milyarlik-liralik-borcunu-odeyemedi-p364484) — 29 Eyl 2026 08:40
 
-20. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+20. **Sozcu · Spor** (`sozcu.com.tr`) — 6 makale
 
    - 1. [Ferhat Gündoğdu gözaltına alındı, Ali Koç'un sözleri akıllara geldi](https://www.sozcu.com.tr/ferhat-gundogdu-gozaltina-alindi-ali-koc-un-sozleri-akillara-geldi-p364459) — 29 Eyl 2026 07:24
+   - 2. [Ferhat Gündoğdu gözaltına alındı, Burak Yılmaz'ın aylar önceki sözleri gündem oldu](https://www.sozcu.com.tr/ferhat-gundogdu-gozaltina-alindi-burak-yilmaz-in-aylar-onceki-sozleri-gundem-oldu-p364491) — 29 Eyl 2026 08:54
+   - 3. [Serdal Adalı'dan transfer müjdesi](https://www.sozcu.com.tr/serdal-adali-dan-transfer-mujdesi-p364523) — 29 Eyl 2026 11:08
+   - 4. [Fırat Aydınus hakem operasyonunu öngörmüş! Eski paylaşımı gündem oldu](https://www.sozcu.com.tr/firat-aydinusun-eski-paylasimi-gundem-oldu-hakem-operasyonunu-ongormus-p364565) — 29 Eyl 2026 13:44
+   - 5. [MHK operasyonunun ardından TFF sessizliğini bozdu](https://www.sozcu.com.tr/mhk-operasyonunun-ardindan-tff-sessizligini-bozdu-p364570) — 29 Eyl 2026 13:47
+   - 6. [Serdal Adalı'dan MHK operasyonu açıklaması! Ayrıcalık istemiyoruz](https://www.sozcu.com.tr/serdal-adalidan-mhk-operasyonu-aciklamasi-ayricalik-istemiyoruz-p364624) — 29 Eyl 2026 17:41
+
+21. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [SON DAKİKA... TFF'den MHK Başkanı'nın gözaltına alınmasıyla ilgili açıklama](https://www.cnnturk.com/spor/futbol/tffden-mhk-baskani-ferhat-gundogdunun-gozaltina-alinmasiyla-ilgili-aciklama-3472921) — 29 Eyl 2026 17:20
 
 ---
 
-### [2] TÜRKİYE - İTALYA MAÇI CANLI İZLE | Milli Maç ATV Şifresiz Canlı Yayın İzleme Ekranı: Türkiye İtalya Maçı Şifreli mi, Şifresiz Kanalda mı? Uluslar Ligi'nde Kritik Maç!  (16 farklı kaynakta, 158 makale)
+### [2] TÜRKİYE - İTALYA MAÇI CANLI İZLE | Milli Maç ATV Şifresiz Canlı Yayın İzleme Ekranı: Türkiye İtalya Maçı Şifreli mi, Şifresiz Kanalda mı? Uluslar Ligi'nde Kritik Maç!  (16 farklı kaynakta, 189 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -239,7 +269,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 > Türkiye - İtalya maçı canlı izle ekranı, kritik karşılaşma öncesinde futbolseverlerin gündeminde yer alıyor. UEFA Uluslar Ligi A Ligi 1. Grup'ta mücadele eden A Milli Futbol Takımı, grubun ikinci maçında güçlü rakibi İtalya ile karşı karşıya gelecek. Ay-Yıldızlı ekip, 28 Eylül 2026 Pazartesi akşamı Bursa Yüzüncü Yıl Atatürk Stadyumu'nda İtalya'yı konuk edecek. Karşılaşmayı kaçırmak istemeyen taraftarlar ise "Türkiye - İtalya maçı canlı nasıl izlenir?", "Milli maç hangi kanalda yayınlanacak?", "ATV canlı yayın ekranına nasıl ulaşılır?" sorularına yanıt arıyor. A Milli Takım, İtalya ile tarihind
 
 **Farklı kaynak sayısı:** 16
-**Toplam makale sayısı:** 158
+**Toplam makale sayısı:** 189
 
 **Geçtiği farklı kaynaklar:**
 
@@ -257,7 +287,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
    - 1. [Türkiye salladı ama yıkamadı: Fransa, Mbappe ile kazandı](https://www.nehaberkibris.com/turkiye-salladi-ama-yikamadi-fransa-mbappe-ile-kazandi-46442) — 26 Eyl 2026 07:01
 
-3. **Cnnturk · News** (`cnnturk.com`) — 11 makale
+3. **Cnnturk · News** (`cnnturk.com`) — 13 makale
 
    - 1. [Türkiye 0-1 Fransa Maç Özeti | Millîlerimiz, tek golle mağlup](https://www.cnnturk.com/spor/futbol/live-turkiye-0-1-fransa-mac-ozeti-millilerimiz-tek-golle-maglup-3471201) — 26 Eyl 2026 10:00
    - 2. [İspanya, İngiltere'yi devirdi; yenilmezlik serisini 39 maça çıkardı](https://www.cnnturk.com/spor/futbol/ispanya-ingiltereyi-devirdi-yenilmezlik-serisini-39-maca-cikardi-3471930) — 27 Eyl 2026 00:27
@@ -270,8 +300,10 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 9. [A Milli Takım Belçika'ya Konuk Oluyor! Belçika Türkiye Maçı Ne Zaman, Hangi Kanalda, Sa…](https://www.cnnturk.com/spor/futbol/a-milli-takim-belcikaya-konuk-oluyor-belcika-turkiye-maci-ne-zaman-hangi-kanalda-saat-kacta-belcika-turkiye-maci-sifreli-mi-3472588) — 28 Eyl 2026 23:41
    - 10. [Roberto Mancini: Önemli olan, Türkiye karşısında kazanmaktı](https://www.cnnturk.com/spor/futbol/roberto-mancini-onemli-olan-turkiye-karsisinda-kazanmakti-3472591) — 29 Eyl 2026 00:22
    - 11. [Fatih Terim'den ıslık tepkisi: Ay-Yıldız taşıyan kimse buna layık değil](https://www.cnnturk.com/spor/futbol/fatih-terimden-islik-tepkisi-ay-yildiz-tasiyan-kimse-buna-layik-degil-3472704) — 29 Eyl 2026 10:48
+   - 12. [A Millî Takım, FIFA sıralamasında geriledi](https://www.cnnturk.com/spor/futbol/a-milli-takim-fifa-siralamasinda-geriledi-3472935) — 29 Eyl 2026 17:13
+   - 13. [Fenerbahçe ve Türk futbolunun acı kaybı: Ali Şükrü Ersoy](https://www.cnnturk.com/spor/futbol/fenerbahce-ve-turk-futbolunun-aci-kaybi-ali-sukru-ersoy-3472980) — 29 Eyl 2026 19:15
 
-4. **Aa · Spor** (`aa.com.tr`) — 12 makale
+4. **Aa · Spor** (`aa.com.tr`) — 13 makale
 
    - 1. [Türkiye'nin UEFA Uluslar Ligi'ndeki ikinci rakibi İtalya](https://www.aa.com.tr/tr/spor/turkiyenin-uefa-uluslar-ligindeki-ikinci-rakibi-italya/4070549) — 27 Eyl 2026 07:21
    - 2. [A Milli Futbol Takımı, 656. maçına İtalya karşısında çıkacak](https://www.aa.com.tr/tr/spor/a-milli-futbol-takimi-656-macina-italya-karsisinda-cikacak/4070596) — 27 Eyl 2026 08:07
@@ -285,8 +317,9 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 10. [A Milli Futbol Takımı, İtalya'ya 4-1 yenildi](https://www.aa.com.tr/tr/spor/a-milli-futbol-takimi-italyaya-4-1-yenildi/4072045) — 28 Eyl 2026 20:38
    - 11. [UEFA Uluslar Ligi'nin ikinci haftasına 8 maçla devam edildi](https://www.aa.com.tr/tr/spor/uefa-uluslar-liginin-ikinci-haftasina-8-macla-devam-edildi/4072053) — 28 Eyl 2026 20:52
    - 12. [Beşiktaş, Avrupa Ligi'ndeki ikinci maçında yarın Maccabi Rapyd ile karşılaşacak](https://www.aa.com.tr/tr/spor/besiktas-avrupa-ligindeki-ikinci-macinda-yarin-maccabi-rapyd-ile-karsilasacak/4072318) — 29 Eyl 2026 08:24
+   - 13. [Fenerbahçe'nin eski kalecisi Ali Şükrü Ersoy vefat etti](https://www.aa.com.tr/tr/spor/fenerbahcenin-eski-kalecisi-ali-sukru-ersoy-vefat-etti/4072966) — 29 Eyl 2026 16:43
 
-5. **Sozcu · Spor** (`sozcu.com.tr`) — 23 makale
+5. **Sozcu · Spor** (`sozcu.com.tr`) — 30 makale
 
    - 1. [Kuzeyde kazanan çıkmadı!](https://www.sozcu.com.tr/kuzeyde-kazanan-cikmadi-p363899) — 27 Eyl 2026 08:54
    - 2. [Mancini Türkiye maçı öncesi 10 futbolcuyu kadrodan çıkardı](https://www.sozcu.com.tr/mancini-turkiye-maci-oncesi-10-futbolcuyu-kadrodan-cikardi-p363930) — 27 Eyl 2026 10:24
@@ -309,8 +342,15 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 19. [İstifa sorusu basın toplantısını karıştırdı! Montella merak edilen konuyu açıkladı](https://www.sozcu.com.tr/istifa-sorusu-basin-toplantisini-karistirdi-montella-merak-edilen-konuyu-acikladi-p364368) — 28 Eyl 2026 22:13
    - 20. [Hacıosmanoğlu o tezahüratların ardından stadyumu terk etti](https://www.sozcu.com.tr/haciosmanoglu-o-tezahuratlarin-ardindan-stadyumu-terk-etti-p364394) — 29 Eyl 2026 04:42
    - 21. [Mancini tek kelime ile Galatasaraylıları mest etti](https://www.sozcu.com.tr/mancini-tek-kelime-ile-galatasaraylilari-mest-etti-p364424) — 29 Eyl 2026 05:59
-   - 22. [Montella'nın geleceği tek ihtimale bağlı](https://www.sozcu.com.tr/montellanin-gelecegi-tek-ihtimale-bagli-p364431) — 29 Eyl 2026 06:27
-   - 23. [Bruno Fernandes'ten Galatasaraylıları heyecanlandıran hareket](https://www.sozcu.com.tr/bruno-fernandes-ten-galatasaraylilari-heyecanlandiran-hareket-p364489) — 29 Eyl 2026 08:44
+   - 22. [Serdar Ali Çelikler'den olay öneri: Milli formayı giymeli](https://www.sozcu.com.tr/serdar-ali-celiklerden-dikkat-ceken-oneri-p364436) — 29 Eyl 2026 06:25
+   - 23. [Montella'nın geleceği tek ihtimale bağlı](https://www.sozcu.com.tr/montellanin-gelecegi-tek-ihtimale-bagli-p364431) — 29 Eyl 2026 06:27
+   - 24. [Bruno Fernandes'ten Galatasaraylıları heyecanlandıran hareket](https://www.sozcu.com.tr/bruno-fernandes-ten-galatasaraylilari-heyecanlandiran-hareket-p364489) — 29 Eyl 2026 08:44
+   - 25. [Milli Takım hezimet sonrası tepetaklak oldu! Üzen tabloyu açıkladılar](https://www.sozcu.com.tr/milli-takim-hezimet-sonrasi-tepetaklak-oldu-uzen-tabloyu-acikladilar-p364577) — 29 Eyl 2026 14:02
+   - 26. [TFF'de İbrahim Hacıosmanoğlu dönemi bitiyor!](https://www.sozcu.com.tr/tff-de-ibrahim-haciosmanoglu-donemi-bitiyor-p364583) — 29 Eyl 2026 14:32
+   - 27. [Fenerbahçe camiasının acı günü! 95 yaşında vefat etti](https://www.sozcu.com.tr/fenerbahce-camiasinin-aci-gunu-95-yasinda-vefat-etti-p364611) — 29 Eyl 2026 16:18
+   - 28. [Milli Takım'a iki kötü haber birden](https://www.sozcu.com.tr/milli-takim-a-iki-kotu-haber-birden-p364630) — 29 Eyl 2026 18:01
+   - 29. [Fenerbahçe maç öncesi eski yıldızına veda etti](https://www.sozcu.com.tr/fenerbahce-mac-oncesi-eski-yildizina-veda-etti-p364632) — 29 Eyl 2026 18:06
+   - 30. [Anadolu Efes Real Madrid'i devirdi](https://www.sozcu.com.tr/anadolu-efes-real-madrid-i-devirdi-p364643) — 29 Eyl 2026 19:33
 
 6. **Onedio · Daily** (`onedio.com`) — 7 makale
 
@@ -322,7 +362,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 6. [Tribünlerden &apos;İbrahim Dışarı&apos; Tezahüratı Sonrasında Hacıosmanoğlu Milli Maçı …](https://onedio.com/haber/tribunlerden-ibrahim-disari-tezahurati-haciosmanoglu-milli-maci-yarida-birakti-1384489) — 28 Eyl 2026 20:04
    - 7. [Milli Takımın İç Sahada Yaşadığı Hezimet Sosyal Medyada Tepkilere Neden Oldu](https://onedio.com/haber/milli-takimin-ic-sahada-yasadigi-hezimet-sosyal-medyada-tepkilere-neden-oldu-1384494) — 28 Eyl 2026 21:11
 
-7. **Fotospor · Sondakika** (`fotospor.com`) — 19 makale
+7. **Fotospor · Sondakika** (`fotospor.com`) — 23 makale
 
    - 1. [Mancini'den Montella ve T�rkiye a��klamas�](https://www.fotospor.com.tr/avrupadan-futbol/manciniden-montella-ve-turkiye-aciklamasi-713669) — 27 Eyl 2026 16:17
    - 2. [Bah�e�ehir Koleji - Fenerbah�e Tarfin: 98-83 (MA� SONUCU)](https://www.fotospor.com.tr/basketbol/bahcesehir-koleji--fenerbahce-tarfin-9883-mac-sonucu-713671) — 27 Eyl 2026 16:56
@@ -343,8 +383,12 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 17. [Fransa, Bel�ika'y� son dakika gol�yle y�kt�](https://www.fotospor.com.tr/avrupadan-futbol/fransa-belcikayi-son-dakika-goluyle-yikti-713751) — 28 Eyl 2026 21:44
    - 18. [�sve� f�rt�nas� dinmiyor: Polonya'y� da 3 golle ge�tiler!](https://www.fotospor.com.tr/avrupadan-futbol/isvec-firtinasi-dinmiyor-polonyayi-da-3-golle-gectiler-713752) — 28 Eyl 2026 21:48
    - 19. [Vincenzo Montella: Yuhalanmay� hak ettik](https://www.fotospor.com.tr/milli-takim/vincenzo-montella-yuhalanmayi-hak-ettik-713753) — 28 Eyl 2026 21:57
+   - 20. [FIFA d�nya s�ralamas�nda A Milli Tak�m tepetaklak](https://www.fotospor.com.tr/dunyadan-futbol/fifa-dunya-siralamasinda-a-milli-takim-tepetaklak-713767) — 29 Eyl 2026 10:38
+   - 21. [�spanyollar Arda G�ler'i konu�uyor](https://www.fotospor.com.tr/milli-takim/ispanyollar-arda-guleri-konusuyor-713768) — 29 Eyl 2026 10:43
+   - 22. [Fenerbah�e'nin ac� g�n�](https://www.fotospor.com.tr/fenerbahce/fenerbahcenin-aci-gunu-713801) — 29 Eyl 2026 16:23
+   - 23. [Anadolu Efes-Real Madrid: 94-84 (MA� SONUCU)](https://www.fotospor.com.tr/basketbol/anadolu-efesreal-madrid-9484-mac-sonucu-713819) — 29 Eyl 2026 19:29
 
-8. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 30 makale
+8. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 35 makale
 
    - 1. [Vincenzo Montella'dan flaş ilk 11 kararı! İtalya maçında...](https://www.fotomac.com.tr/millitakim/2026/09/27/vincenzo-montelladan-flas-ilk-11-karari-italya-macinda) — 27 Eyl 2026 21:44
    - 2. [Hollanda Sırbistan'ı Meerdink ile yıktı!](https://www.fotomac.com.tr/uluslar-ligi/2026/09/27/hollanda-sirbistani-meerdink-ile-yikti) — 27 Eyl 2026 21:44
@@ -376,8 +420,13 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 28. [Spor yazarları Türkiye-İtalya maçını değerlendirdi](https://www.fotomac.com.tr/millitakim/2026/09/29/spor-yazarlari-turkiye-italya-macini-degerlendirdi) — 29 Eyl 2026 05:55
    - 29. [İtalyan basını Türkiye-İtalya maçını manşetlerine taşıdı!](https://www.fotomac.com.tr/millitakim/2026/09/29/italyan-basini-turkiye-italya-macini-mansetlerine-tasidi) — 29 Eyl 2026 06:45
    - 30. [FIFA dünya sıralaması güncellendi! İşte Türkiye'nin yeri](https://www.fotomac.com.tr/millitakim/2026/09/29/fifa-dunya-siralamasi-guncellendi-iste-turkiyenin-yeri) — 29 Eyl 2026 07:17
+   - 31. [Fenerbahçe Tarfin-Bayern Münih maçı CANLI (EuroLeague)](https://www.fotomac.com.tr/fenerbahce/2026/09/29/fenerbahce-tarfin-bayern-munih-maci-canli-euroleague) — 29 Eyl 2026 14:55
+   - 32. [Anadolu Efes, sahasında Real Madrid'i devirdi!](https://www.fotomac.com.tr/basketbol/2026/09/29/anadolu-efes-sahasinda-real-madridi-devirdi) — 29 Eyl 2026 15:24
+   - 33. [İspanya-Hırvatistan | CANLI (UEFA Uluslar Ligi)](https://www.fotomac.com.tr/uluslar-ligi/2026/09/29/ispanya-hirvatistan-canli-uefa-uluslar-ligi) — 29 Eyl 2026 15:57
+   - 34. [Fenerbahçe ve A Milli Takım'ın eski kalecisi Şükrü Ersoy hayatını kaybetti](https://www.fotomac.com.tr/fenerbahce/2026/09/29/fenerbahce-ve-a-milli-takimin-eski-kalecisi-sukru-ersoy-hayatini-kaybetti) — 29 Eyl 2026 17:00
+   - 35. [Uluslar Ligi'nde Moldova ile Faroe Adaları berabere kaldı!](https://www.fotomac.com.tr/uluslar-ligi/2026/09/29/uluslar-liginde-moldova-ile-faroe-adalari-berabere-kaldi) — 29 Eyl 2026 18:37
 
-9. **Aydinlik** (`aydinlik.com.tr`) — 7 makale
+9. **Aydinlik** (`aydinlik.com.tr`) — 8 makale
 
    - 1. [Halil Umut Meler’e UEFA Uluslar Ligi’nde görev](https://www.aydinlik.com.tr/haber/halil-umut-melere-uefa-uluslar-liginde-gorev-591999) — 28 Eyl 2026 12:15
    - 2. [Türkiye - İtalya maçı canlı izle](https://www.aydinlik.com.tr/haber/turkiye-italya-maci-canli-izle-592022) — 28 Eyl 2026 15:31
@@ -386,8 +435,9 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 5. [Roberto Mancini: Türkiye futbolu her geçen gün ilerliyor](https://www.aydinlik.com.tr/haber/manciniden-turkiye-ve-italya-maci-degerlendirmesi-592088) — 29 Eyl 2026 04:15
    - 6. [A Ligi 2. Grup güncel puan tablosu: Belçika millî futbol takımı - Fransa millî futbol t…](https://www.aydinlik.com.tr/haber/a-ligi-2-grup-guncel-puan-tablosu-belcika-milli-futbol-takimi-fransa-milli-futbol-takimi-puan-durumlari-592107) — 29 Eyl 2026 07:11
    - 7. [Türkiye'nin İtalya yenilgisi dış basında gündem oldu: "Çöküşü sürüyor"](https://www.aydinlik.com.tr/haber/turkiyenin-italya-yenilgisi-dis-basinda-gundem-oldu-cokusu-suruyor-592110) — 29 Eyl 2026 07:56
+   - 8. [A Milli Takım'ın FIFA sıralamasında sert düşüş: 4 basamak geriledi](https://www.aydinlik.com.tr/haber/a-milli-takimin-fifa-siralamasinda-sert-dusus-4-basamak-geriledi-592163) — 29 Eyl 2026 13:12
 
-10. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 12 makale
+10. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 15 makale
 
    - 1. [UEFA'dan Halil Umut Meler'e görev](https://www.cumhuriyet.com.tr/spor/uefa-dan-halil-umut-meler-e-gorev-2541792) — 28 Eyl 2026 12:25
    - 2. [CANLI ANLATIM: Türkiye 0-3 İtalya | UEFA Uluslar Ligi 2. Hafta Mücadelesi](https://www.cumhuriyet.com.tr/spor/canli-anlatim-turkiye-italya-uefa-uluslar-ligi-2-hafta-mucadelesi-2541848) — 28 Eyl 2026 17:38
@@ -401,8 +451,11 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 10. [İstifa etmeyi düşünmediğini açıklamıştı: TFF'den Vincenzo Montella kararı](https://www.cumhuriyet.com.tr/spor/istifa-etmeyi-dusunmedigini-aciklamisti-tff-den-vincenzo-montella-karari-2542008) — 29 Eyl 2026 07:22
    - 11. [Anadolu Efes - Real Madrid maçı ne zaman, saat kaçta, hangi kanalda? Şifresiz mi?](https://www.cumhuriyet.com.tr/spor/anadolu-efes-real-madrid-maci-ne-zaman-saat-kacta-hangi-kanalda-sifresiz-mi-2542034) — 29 Eyl 2026 08:30
    - 12. [Fenerbahçe Tarfin - Bayern Münih maçı ne zaman, saat kaçta, hangi kanalda? Şifresiz mi?](https://www.cumhuriyet.com.tr/spor/fenerbahce-tarfin-bayern-munih-maci-ne-zaman-saat-kacta-hangi-kanalda-sifresiz-mi-2542039) — 29 Eyl 2026 08:38
+   - 13. [Fenerbahçe'nin eski kalecisi Ali Şükrü Ersoy hayatını kaybetti](https://www.cumhuriyet.com.tr/spor/fenerbahce-nin-eski-kalecisi-ali-sukru-ersoy-hayatini-kaybetti-2542244) — 29 Eyl 2026 16:45
+   - 14. [Belçika maçı öncesi A Milli Futbol Takımı'nda iki oyuncu idmana çıkmadı!](https://www.cumhuriyet.com.tr/spor/belcika-maci-oncesi-a-milli-futbol-takimi-nda-iki-oyuncu-idmana-cikmadi-2542262) — 29 Eyl 2026 18:30
+   - 15. [Anadolu Efes'ten Real Madrid'e geçit yok! EuroLeague'de galibiyetle tanıştı...](https://www.cumhuriyet.com.tr/spor/anadolu-efes-ten-real-madrid-e-gecit-yok-euroleague-de-galibiyetle-tanisti-2542275) — 29 Eyl 2026 19:21
 
-11. **Halktv** (`halktv.com.tr`) — 11 makale
+11. **Halktv** (`halktv.com.tr`) — 13 makale
 
    - 1. [Sinan Engin Türkiye İtalya maçının sonucunu açıkladı](https://halktv.com.tr/spor/sinan-engin-turkiye-italya-macinin-sonucunu-acikladi-1058043h) — 28 Eyl 2026 12:28
    - 2. [Milli maçta Fatih Terim'e görev: Yıllar sonra büyük sürpriz](https://halktv.com.tr/spor/milli-macta-fatih-terime-gorev-yillar-sonra-buyuk-surpriz-1058107h) — 28 Eyl 2026 17:18
@@ -412,21 +465,26 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 6. [Belçika-Türkiye maçı ne zaman saat kaçta hangi kanalda?](https://halktv.com.tr/spor/turkiye-belcika-maci-ne-zaman-saat-kacta-hangi-kanalda-1058178h) — 29 Eyl 2026 06:04
    - 7. [İsmail Yüksek utanç verici tabloyu açıkladı](https://halktv.com.tr/spor/ismail-yuksek-utanc-verici-tabloyu-acikladi-1058180h) — 29 Eyl 2026 06:22
    - 8. [Montella'nın biletini tarihini vererek kestiler: İtalya'yı kurtardı kendisi bitti!](https://halktv.com.tr/spor/montellanin-biletini-tarihini-vererek-kestiler-italyayi-kurtardi-kendisi-bitti-1058181h) — 29 Eyl 2026 06:23
-   - 9. [TFF'nin Montella kararı belli oldu](https://halktv.com.tr/spor/tffnin-montella-karari-belli-oldu-1058213h) — 29 Eyl 2026 07:41
-   - 10. [İran Ekvador ve Cezayir bile bizi geçti: Milli takımın dünya sıralamasındaki yeri belli…](https://halktv.com.tr/spor/iran-ekvador-ve-cezayir-bile-bizi-gecti-milli-takimin-dunya-siralamasindaki-yeri-belli-oldu-1058222h) — 29 Eyl 2026 07:56
-   - 11. [Belçika teknik direktörü Van Bommel'den flaş Türkiye yorumu](https://halktv.com.tr/spor/belcika-teknik-direktoru-van-bommelden-flas-turkiye-yorumu-1058226h) — 29 Eyl 2026 08:17
+   - 9. [Serdar Ali Çelikler milli formayı giymesi gereken yabancı golcüyü açıkladı](https://halktv.com.tr/spor/serdar-ali-celikler-milli-formayi-giymesi-gereken-yabanci-golcuyu-acikladi-1058192h) — 29 Eyl 2026 06:47
+   - 10. [TFF'nin Montella kararı belli oldu](https://halktv.com.tr/spor/tffnin-montella-karari-belli-oldu-1058213h) — 29 Eyl 2026 07:41
+   - 11. [İran Ekvador ve Cezayir bile bizi geçti: Milli takımın dünya sıralamasındaki yeri belli…](https://halktv.com.tr/spor/iran-ekvador-ve-cezayir-bile-bizi-gecti-milli-takimin-dunya-siralamasindaki-yeri-belli-oldu-1058222h) — 29 Eyl 2026 07:56
+   - 12. [Belçika teknik direktörü Van Bommel'den flaş Türkiye yorumu](https://halktv.com.tr/spor/belcika-teknik-direktoru-van-bommelden-flas-turkiye-yorumu-1058226h) — 29 Eyl 2026 08:17
+   - 13. [Son Dakika | TFF'den son dakika açıklaması: Kötü haberi duyurdu](https://halktv.com.tr/spor/tffden-son-dakika-aciklamasi-kotu-haberi-duyurdu-1058373h) — 29 Eyl 2026 18:07
 
-12. **Karar** (`karar.com`) — 4 makale
+12. **Karar** (`karar.com`) — 6 makale
 
    - 1. [Hakan Çalhanoğlu Türkiye İtalya maçında neden yok, sakat mı? Yıldız futbolcunun son dur…](https://www.karar.com/spor-haberleri/hakan-calhanoglu-turkiye-italya-macinda-neden-yok-sakat-mi-yildiz-2074862) — 28 Eyl 2026 12:57
    - 2. [Milli maçta ilk 11’ler açıklandı: 3 isim yedek kulübesinde](https://www.karar.com/spor-haberleri/turkiye-italya-macinin-ilk-11leri-belli-oldu-2074905) — 28 Eyl 2026 17:42
    - 3. [A Milli Takım ilk yarıda dağıldı: Bursa’da “Montella istifa” sesleri](https://www.karar.com/spor-haberleri/a-milli-takim-ilk-yarida-dagildi-bursada-montella-istifa-sesleri-2074918) — 28 Eyl 2026 19:29
    - 4. [Arda Güler performansıyla geceye damga vurdu](https://www.karar.com/spor-haberleri/arda-guler-performansiyla-geceye-damga-vurdu-2075010) — 29 Eyl 2026 08:14
+   - 5. [Belçika Türkiye maçı ne zaman, saat kaçta , hangi kanalda? UEFA Uluslar Ligi canlı yayı…](https://www.karar.com/spor-haberleri/belcika-turkiye-maci-ne-zaman-saat-kacta-hangi-kanalda-uefa-uluslar-ligi-2075136) — 29 Eyl 2026 15:19
+   - 6. [Milliler düşüşe geçti: FIFA sıralaması belli oldu](https://www.karar.com/spor-haberleri/milliler-dususe-gecti-fifa-siralamasi-belli-oldu-2075149) — 29 Eyl 2026 17:09
 
-13. **Gundemkibris** (`gundemkibris.com`) — 2 makale
+13. **Gundemkibris** (`gundemkibris.com`) — 3 makale
 
    - 1. [Bizim Çocuklar, İtalya ile karşılaşacak](https://www.gundemkibris.com/bizim-cocuklar-italya-ile-karsilasacak) — 28 Eyl 2026 16:15
    - 2. [Bursa'da hüsran: Bizim çocuklar, İtalya'ya farklı yenildi](https://www.gundemkibris.com/bursada-husran-bizim-cocuklar-italyaya-farkli-yenildi) — 28 Eyl 2026 20:41
+   - 3. [Fenerbahçe'nin eski kalecisi Ali Şükrü Ersoy vefat etti](https://www.gundemkibris.com/fenerbahcenin-eski-kalecisi-ali-sukru-ersoy-vefat-etti) — 29 Eyl 2026 18:15
 
 14. **Iscihaber · News** (`iscihaber.net`) — 6 makale
 
@@ -437,13 +495,16 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 5. [Merih Demiral : Bu mücadeleden dolayı utanç duyuyoruz](https://www.iscihaber.net/spor/merih-demiral-bu-mucadeleden-dolayi-utanc-duyuyoruz/267047) — 28 Eyl 2026 21:38
    - 6. [Roberto Mancini : Bu maçı kazanmak çok önemliydi](https://www.iscihaber.net/spor/roberto-mancini-bu-maci-kazanmak-cok-onemliydi/267049) — 28 Eyl 2026 21:46
 
-15. **Sozcu** (`sozcu.com.tr`) — 5 makale
+15. **Sozcu** (`sozcu.com.tr`) — 8 makale
 
    - 1. [A Milli Takım'da Fatih Terim sürprizi! Yıllar sonra bir ilk](https://www.sozcu.com.tr/a-milli-takim-da-fatih-terim-surprizi-yillar-sonra-bir-ilk-p364315) — 28 Eyl 2026 19:03
    - 2. [Canlı | Türkiye-İtalya maçı canlı yayın](https://www.sozcu.com.tr/canli-veya-turkiye-italya-maci-canli-yayin-p364289) — 28 Eyl 2026 19:34
    - 3. [Merih Demiral özür diledi! 'Utanç duyuyoruz'](https://www.sozcu.com.tr/merih-demiral-ozur-diledi-utanc-duyuyoruz-p364350) — 28 Eyl 2026 21:02
    - 4. [Mancini'den Türk futboluna övgüler](https://www.sozcu.com.tr/mancini-den-turk-futboluna-ovguler-p364366) — 28 Eyl 2026 21:51
-   - 5. [Montella'nın geleceği tek ihtimale bağlı](https://www.sozcu.com.tr/montellanin-gelecegi-tek-ihtimale-bagli-p364431) — 29 Eyl 2026 06:27
+   - 5. [Serdar Ali Çelikler'den olay öneri: Milli formayı giymeli](https://www.sozcu.com.tr/serdar-ali-celiklerden-dikkat-ceken-oneri-p364436) — 29 Eyl 2026 06:25
+   - 6. [Montella'nın geleceği tek ihtimale bağlı](https://www.sozcu.com.tr/montellanin-gelecegi-tek-ihtimale-bagli-p364431) — 29 Eyl 2026 06:27
+   - 7. [Fenerbahçe camiasının acı günü! 95 yaşında vefat etti](https://www.sozcu.com.tr/fenerbahce-camiasinin-aci-gunu-95-yasinda-vefat-etti-p364611) — 29 Eyl 2026 16:18
+   - 8. [Anadolu Efes Real Madrid'i devirdi](https://www.sozcu.com.tr/anadolu-efes-real-madrid-i-devirdi-p364643) — 29 Eyl 2026 19:17
 
 16. **Yeniceida** (`yeniceida.com`) — 1 makale
 
@@ -451,7 +512,102 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [3] Borsa İstanbul günü yüzde 2,38 kayıpla tamamladı  (12 farklı kaynakta, 89 makale)
+### [3] Cumhurbaşkanı Recep Tayyip Erdoğan Kabine Toplantısı Sonrası Gündemdeki Fon Kriziyle İlgili Konuştu  (14 farklı kaynakta, 38 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Cumhurbaşkanı Erdoğan, Kabine Toplantısı'nın ardından yaptığı açıklamada fon krizine ilişkin değerlendirmelerde bulundu. Erdoğan, 'Her kim milletin hakkına, hukuka, mülküne el uzatırsa karşısında bizi bulur, devleti bulur' ifadelerini kullandı.Yarın ekonomi kurmayları ve ilgili kurumların yöneticileriyle toplantı yapılacağını belirten Erdoğan, 'Yarın ekonomi kurmaylarımızla, sorumlu kurumlarımızın yöneticileriyle bir araya geleceğim. Hukuk devleti sınırları dahilinde gereken her türlü adım atılacak' dedi.
+
+**Farklı kaynak sayısı:** 14
+**Toplam makale sayısı:** 38
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [Ak Parti Genel Başkan Yardımcısı Fatma Betül Sayan Kaya görevlerinden affını istedi: Öz…](https://www.foreks.com/haber/detay/6ab8aa3595016b5817e60c1c/PICNEWS/tr/ak-parti-genel-baskan-yardimcisi-fatma-betul-sayan-kaya-gorevlerinden-affini-istedi-ozata-hisseleri-iddiasi-gundemde-27-09-26/) — 27 Eyl 2026 05:31
+
+2. **Artigercek** (`artigercek.com`) — 5 makale
+
+   - 1. [Fatma Betül Sayan Kaya ve eşinin mal varlıklarına tedbir talebi](https://artigercek.com/politika/fatma-betul-sayan-kaya-ve-esinin-mal-varliklarina-tedbir-talebi-350940h) — 27 Eyl 2026 09:54
+   - 2. [Özel'den Erdoğan'a Fatma Betül Sayan Kaya sorusu](https://artigercek.com/politika/ozelden-erdogana-fatma-betul-sayan-kaya-sorusu-350943h) — 27 Eyl 2026 10:42
+   - 3. [Cumhurbaşkanı Erdoğan'dan fon krizi açıklaması](https://artigercek.com/politika/cumhurbaskani-erdogandan-fon-krizi-aciklamasi-350988h) — 28 Eyl 2026 17:53
+   - 4. [Fatma Betül Sayan Kaya 2.2 milyar TL'yi iade etti iddiası](https://artigercek.com/politika/fatma-betul-sayan-kaya-22-milyar-tlyi-iade-etti-iddiasi-351020h) — 29 Eyl 2026 11:46
+   - 5. [AKP'li Fatma Betül Sayan Kaya ve eşinin tüm mal varlıkları için dondurma kararı](https://artigercek.com/guncel/akpli-fatma-betul-sayan-kaya-ve-esinin-tum-mal-varliklari-icin-dondurma-karari-351035h) — 29 Eyl 2026 16:52
+
+3. **Nehaberkibris · Genel 0** (`nehaberkibris.com`) — 1 makale
+
+   - 1. [Fatma Betül Sayan Kaya: Tüm görevlerimden affımı istedim](https://www.nehaberkibris.com/fatma-betul-sayan-kaya-tum-gorevlerimden-affimi-istedim-46454) — 28 Eyl 2026 04:57
+
+4. **Sozcu** (`sozcu.com.tr`) — 5 makale
+
+   - 1. [AKP'de fon soruşturması gerilimi... Birinci'den Fatma Betül Sayan Kaya'ya sert sözler](https://www.sozcu.com.tr/akp-li-eski-isimden-fatma-betul-sayan-kaya-ya-sert-tepki-hic-mi-vicdan-yok-allah-a-iman-da-mi-yok-p364221) — 28 Eyl 2026 11:43
+   - 2. ['Tavan tavan' yükseldi, zirvede satıldı! İşte Fatma Betül Sayan Kaya'nın son işlemi...](https://www.sozcu.com.tr/fatma-betul-sayan-kaya-nin-son-islemi-ne-p364321) — 28 Eyl 2026 19:16
+   - 3. [Fatma Betül Sayan Kaya’nın son hamlesi de sonuç vermedi](https://www.sozcu.com.tr/fatma-betul-sayan-kaya-nin-istifasinda-yeni-iddia-p364399) — 29 Eyl 2026 05:10
+   - 4. [Fatma Betül Sayan Kaya günler süren sessizliğini bozdu](https://www.sozcu.com.tr/fatma-betul-sayan-kaya-gunler-suren-sessizligini-bozdu-onlarca-iddiadan-yalnizca-suna-yanit-verdi-p364457) — 29 Eyl 2026 07:21
+   - 5. [Fatma Betül Sayan Kaya ve eşinin mal varlıklarının dondurulması talebi](https://www.sozcu.com.tr/fatma-betul-sayan-kaya-mal-varligina-dondurma-talebi-p364615) — 29 Eyl 2026 17:44
+
+5. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 4 makale
+
+   - 1. [Cumhurbaşkanlığı Kabinesi toplandı](https://www.cumhuriyet.com.tr/turkiye/cumhurbaskanligi-kabinesi-toplandi-2541835) — 28 Eyl 2026 13:54
+   - 2. [Gökhan Günaydın yarına işaret etti: 'Fon' krizinde yeni AKP dosyası geliyor!](https://www.cumhuriyet.com.tr/turkiye/gokhan-gunaydin-yarina-isaret-etti-fon-krizinde-yeni-akp-dosyasi-geliyor-2541851) — 28 Eyl 2026 14:27
+   - 3. [Fon krizi sonrası harekete geçtiler: Erdoğan, Mehmet Şimşek ve Fatma Betül Sayan Kaya h…](https://www.cumhuriyet.com.tr/siyaset/fon-krizi-sonrasi-harekete-gectiler-erdogan-mehmet-simsek-ve-fatma-betul-sayan-kaya-hakkinda-suc-duyurusu-2541856) — 28 Eyl 2026 14:43
+   - 4. [Eski bakan Fatma Betül Sayan Kaya ve eşi İlyas Kaya’nın mal varlıkları için dondurma ta…](https://www.cumhuriyet.com.tr/turkiye/fonzi-fatma-betul-sayan-kaya-ve-esi-ilyas-kaya-nin-mal-varliklari-icin-dondurma-talebi-2542243) — 29 Eyl 2026 16:44
+
+6. **Halktv** (`halktv.com.tr`) — 4 makale
+
+   - 1. [Konu: Fon skandalı... Cumhurbaşkanı Erdoğan, Mehmet Şimşek ve Fatma Betül Sayan Kaya'ya…](https://halktv.com.tr/gundem/konu-fon-skandali-cumhurbaskani-erdogan-mehmet-simsek-ve-fatma-betul-sayan-kayaya-suc-duyurusu-1058091h) — 28 Eyl 2026 15:52
+   - 2. [Son Dakika | Fonzi Betül Sayan'ın istifasının ardından Erdoğan'dan sert sözler](https://halktv.com.tr/siyaset/son-dakika-fonzi-betul-sayanin-istifasinin-ardindan-erdogandan-sert-sozler-1058350h) — 29 Eyl 2026 15:29
+   - 3. [Son Dakika | AKP'li Fatma Sayan Kaya ve eşinin mal varlığı hakkında dondurma talebi](https://halktv.com.tr/siyaset/son-dakika-akpli-fatma-sayan-kaya-ve-esinin-mal-varligi-hakkinda-dondurulma-talebi-1058364h) — 29 Eyl 2026 16:46
+   - 4. [Son Dakika | “Fon Koordinasyon Kurulu” oluşturuldu](https://halktv.com.tr/siyaset/son-dakika-bestepedeki-fon-skandali-zirvesinde-alinan-kararlar-aciklandi-1058371h) — 29 Eyl 2026 17:48
+
+7. **Karar** (`karar.com`) — 2 makale
+
+   - 1. [Erdoğan: Milletin malına el uzatan karşısında devleti bulur](https://www.karar.com/guncel-haberler/bakanlar-kurulu-toplantisi-sona-erdi-erdogandan-guvenli-okul-mesaji-2074901) — 28 Eyl 2026 16:48
+   - 2. [2,2 milyarlık iade yetmedi: Fatma Betül Sayan Kaya'nın tüm mal varlıklarına dondurma ta…](https://www.karar.com/guncel-haberler/22-milyarlik-iade-yetmedi-fatma-betul-sayan-kaya-tum-mal-varliklarina-2075147) — 29 Eyl 2026 16:50
+
+8. **Onedio · Daily** (`onedio.com`) — 5 makale
+
+   - 1. [Cumhurbaşkanı Recep Tayyip Erdoğan Kabine Toplantısı Sonrası Gündemdeki Fon Kriziyle İl…](https://onedio.com/haber/cumhurbaskani-recep-tayyip-erdogan-gundemdeki-fon-kriziyle-ilgili-ilk-kez-konustu-1384464) — 28 Eyl 2026 16:52
+   - 2. [Fatma Betül Sayan Kaya&apos;nın Borsa İşlemleri: 255 Liradan Aldığı Özata Hissesini 4 B…](https://onedio.com/haber/fatma-betul-sayan-kaya-nin-borsa-islemleri-255-liradan-aldigi-ozata-hissesini-4-bin-482-liradan-satti-1384496) — 29 Eyl 2026 04:12
+   - 3. [Abdulkadir Selvi Anlattı: Fatma Betül Sayan Kaya&apos;nın İstifa Etmeden Önceki Son Ham…](https://onedio.com/haber/fatma-betul-sayan-kaya-nin-istifa-etmeden-onceki-son-hamlesi-ortaya-cikti-erdogan-a-ulasmak-istemis-1384514) — 29 Eyl 2026 05:52
+   - 4. [Eski Bakan Fatma Betül Sayan Kaya&apos;nın Borsadan 4 Ayda Kazandığı 2,2 Milyar TL&apos…](https://onedio.com/haber/eski-bakan-fatma-betul-sayan-kaya-nin-borsadan-4-ayda-kazandigi-2-2-milyar-tl-yi-iade-ettigi-iddia-edildi-1384646) — 29 Eyl 2026 10:42
+   - 5. [Fatma Betül Sayan Kaya ve Eşi İlyas Kaya’nın Tüm Mal Varlığını Dondurma Kararı Çıktı](https://onedio.com/haber/fatma-betul-sayan-kaya-ve-esi-ilyas-kaya-nin-tum-mal-varligini-dondurma-karari-cikti-1384785) — 29 Eyl 2026 16:45
+
+9. **Aydinlik** (`aydinlik.com.tr`) — 2 makale
+
+   - 1. [Cumhurbaşkanı Erdoğan'dan fon soruşturması açıklaması: "Kim milletin hakkına el uzatırs…](https://www.aydinlik.com.tr/haber/cumhurbaskani-erdogandan-fon-sorusturmasi-aciklamasi-kim-milletin-hakkina-el-uzatirsa-karsisinda-bizi-bulur-592032) — 28 Eyl 2026 16:53
+   - 2. [Fon skandalına adı karışmıştı! Fatma Betül Sayan Kaya ve eşinin mal varlıkları için har…](https://www.aydinlik.com.tr/haber/fon-skandalina-adi-karismisti-fatma-betul-sayan-kaya-ve-esinin-mal-varliklari-icin-harekete-gecildi-592191) — 29 Eyl 2026 16:51
+
+10. **Kamudanhaber** (`kamudanhaber.net`) — 4 makale
+
+   - 1. [Cumhurbaşkanı Erdoğan: Fon Soruşturmalarında Gereken Her Türlü Adım Atılacak](https://www.kamudanhaber.net/cumhurbaskani-erdogan-fon-sorusturmalarinda-gereken-her-turlu-adim-atilacak) — 28 Eyl 2026 17:12
+   - 2. [Fatma Betül Sayan Kaya 2,2 milyar lirayı geri ödedi](https://www.kamudanhaber.net/fatma-betul-sayan-kaya-22-milyar-lirayi-geri-odedi) — 29 Eyl 2026 10:48
+   - 3. [Son Dakika! Fatma Betül Sayan Kaya ve Eşinin Mal Varlıkları Donduruluyor](https://www.kamudanhaber.net/son-dakika-fatma-betul-sayan-kaya-ve-esinin-mal-varliklari-donduruluyor) — 29 Eyl 2026 17:10
+   - 4. [Fatma Betül Sayan Kaya hakkında mal varlığı dondurma talebi](https://www.kamudanhaber.net/fatma-betul-sayan-kaya-hakkinda-mal-varligi-dondurma-talebi) — 29 Eyl 2026 17:26
+
+11. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [Cumhurbaşkanı Erdoğan ekonomi kurmaylarını topluyor](https://www.cnnturk.com/ekonomi/cumhurbaskani-erdogan-ekonomi-kurmaylarini-topluyor-3472682) — 29 Eyl 2026 10:39
+
+12. **Cnbce** (`cnbce.com`) — 2 makale
+
+   - 1. [Fatma Betül Sayan Kaya ve eşi 2,2 milyar lirayı Hazine'ye iade etti](https://www.cnbce.com/haberler/fatma-betul-sayan-kaya-ve-esi-22-milyar-lirayi-hazineye-iade-etti-h38304) — 29 Eyl 2026 11:23
+   - 2. [Fon soruşturmasında yeni gelişme: Fatma Betül Sayan Kaya ve eşinin mal varlıkları için …](https://www.cnbce.com/haberler/fon-sorusturmasinda-yeni-gelisme-fatma-betul-sayan-kaya-ve-esinin-mal-varliklari-icin-aciklama-h38334) — 29 Eyl 2026 17:15
+
+13. **Hukukihaber** (`hukukihaber.net`) — 1 makale
+
+   - 1. [SERMAYE PİYASASI KANUNU’NDA ETKİN PİŞMANLIK KURUMU: 2,2 Milyar TL’lik İade Vakası Işığı…](https://www.hukukihaber.net/sermaye-piyasasi-kanununda-etkin-pismanlik-kurumu-22-milyar-tllik-iade-vakasi-isiginda-hukuki-bir-analiz) — 29 Eyl 2026 14:23
+
+14. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Cumhurbaşkanı Erdoğan, Türkiye Özel Sporcular Spor Federasyonu temsilcilerini kabul etti](https://www.aa.com.tr/tr/spor/cumhurbaskani-erdogan-turkiye-ozel-sporcular-spor-federasyonu-temsilcilerini-kabul-etti/4073055) — 29 Eyl 2026 18:50
+
+---
+
+### [4] Borsa İstanbul günü yüzde 2,38 kayıpla tamamladı  (12 farklı kaynakta, 96 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -460,7 +616,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 > Borsa İstanbul'da BIST 100 endeksi, gün içinde etkili olan satışlarla birlikte günü yüzde 2,38 değer kaybederek 12.592,76 puandan tamamladı. Endeks, önceki kapanışa göre 306,59 puan gerilerken toplam işlem hacmi 115,2 milyar lira olarak gerçekleşti.
 
 **Farklı kaynak sayısı:** 12
-**Toplam makale sayısı:** 89
+**Toplam makale sayısı:** 96
 
 **Geçtiği farklı kaynaklar:**
 
@@ -472,7 +628,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 4. [Petrol haftanın son işlem gününde yatay seyrediyor](https://www.sozcu.com.tr/petrol-haftanin-son-islem-gununde-yatay-seyrediyor-p190683) — 4 Tem 2025 08:18
    - 5. [Petrol fiyatları haftaya yatay başladı - 7 Temmuz 2025](https://www.sozcu.com.tr/petrol-fiyatlari-haftaya-yatay-basladi-7-temmuz-2025-p192567) — 7 Tem 2025 07:36
 
-2. **Sozcu · Borsa** (`sozcu.com.tr`) — 43 makale
+2. **Sozcu · Borsa** (`sozcu.com.tr`) — 44 makale
 
    - 1. [VİOP'ta endeks kontratı güne yatay başladı -6 Ağustos 2026](https://www.sozcu.com.tr/viop-ta-endeks-kontrati-gune-yatay-basladi-6-agustos-2026-p342821) — 6 Ağu 2026 06:33
    - 2. [Borsa güne yükselişle başladı - 6 Ağustos 2026](https://www.sozcu.com.tr/borsa-gune-yukselisle-basladi-6-agustos-2026-p342840) — 6 Ağu 2026 07:06
@@ -517,8 +673,9 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 41. [Borsa güne düşüşle başladı - 23 Eylül 2026](https://www.sozcu.com.tr/borsa-gune-dususle-basladi-23-eylul-2026-p362739) — 23 Eyl 2026 07:03
    - 42. [Borsa güne yatay başladı -25 Eylül 2026](https://www.sozcu.com.tr/borsa-gune-yatay-basladi-25-eylul-2026-p363383) — 25 Eyl 2026 07:05
    - 43. [Borsa güne düşüşle başladı -29 Eylül 2026](https://www.sozcu.com.tr/borsa-gune-dususle-basladi-29-eylul-2026-p364453) — 29 Eyl 2026 07:08
+   - 44. [Borsa günün ilk yarısında değer kaybetti -29 Eylül 2026](https://www.sozcu.com.tr/borsa-gunun-ilk-yarisinda-deger-kaybetti-29-eylul-2026-p364520) — 29 Eyl 2026 10:17
 
-3. **Sozcu · Finans** (`sozcu.com.tr`) — 17 makale
+3. **Sozcu · Finans** (`sozcu.com.tr`) — 18 makale
 
    - 1. [Borsa güne düşüşle başladı - 4 Eylül 2026](https://www.sozcu.com.tr/borsa-gune-dususle-basladi-4-eylul-2026-p355297) — 4 Eyl 2026 07:14
    - 2. [Borsa haftaya yükselişle başladı - 7 Eylül 2026](https://www.sozcu.com.tr/borsa-haftaya-yukselisle-basladi-7-eylul-2026-p355989) — 7 Eyl 2026 07:02
@@ -537,6 +694,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 15. [Borsa güne düşüşle başladı - 23 Eylül 2026](https://www.sozcu.com.tr/borsa-gune-dususle-basladi-23-eylul-2026-p362739) — 23 Eyl 2026 07:03
    - 16. [Borsa güne yatay başladı -25 Eylül 2026](https://www.sozcu.com.tr/borsa-gune-yatay-basladi-25-eylul-2026-p363383) — 25 Eyl 2026 07:05
    - 17. [Borsa güne düşüşle başladı -29 Eylül 2026](https://www.sozcu.com.tr/borsa-gune-dususle-basladi-29-eylul-2026-p364453) — 29 Eyl 2026 07:08
+   - 18. [Borsa günün ilk yarısında değer kaybetti -29 Eylül 2026](https://www.sozcu.com.tr/borsa-gunun-ilk-yarisinda-deger-kaybetti-29-eylul-2026-p364520) — 29 Eyl 2026 10:17
 
 4. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
 
@@ -552,26 +710,30 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 6. [Borsada sert kapanış: İşte yatırımcısına en çok kazandıran ve kaybettiren hisseler](https://www.cnbce.com/borsa/borsada-sert-kapanis-iste-yatirimcisina-en-cok-kazandiran-ve-kaybettiren-hisseler-g38227) — 28 Eyl 2026 16:44
    - 7. [Borsa İstanbul seansa düşüşle başladı: İşte günün öne çıkan gelişmeleri](https://www.cnbce.com/borsa/borsa-istanbul-seansa-dususle-basladi-iste-gunun-one-cikan-gelismeleri-h38264) — 29 Eyl 2026 06:59
 
-6. **Foreks** (`foreks.com`) — 5 makale
+6. **Foreks** (`foreks.com`) — 7 makale
 
    - 1. [PİYASAYA BAKIŞ- Borsa günü yükselişle tamamladı](https://www.foreks.com/haber/detay/6ab6906924008d7d4373754a/PICNEWS/tr/piyasaya-bakis-borsa-gunu-yukselisle-tamamladi-25-09-26/) — 25 Eyl 2026 15:16
    - 2. [Avrupa borsaları günü genel olarak yükselişle tamamladı](https://www.foreks.com/haber/detay/6ab69d6f95016b5817e606b9/PICNEWS/tr/avrupa-borsalari-gunu-genel-olarak-yukselisle-tamamladi-25-09-26/) — 25 Eyl 2026 16:12
    - 3. [PİYASAYA BAKIŞ- Borsa güne düşüşle başladı](https://www.foreks.com/haber/detay/6aba0fd14d81dd16523f90f9/PICNEWS/tr/piyasaya-bakis-borsa-gune-dususle-basladi-28-09-26/) — 28 Eyl 2026 06:57
    - 4. [PİYASAYA BAKIŞ- Borsa günü düşüşle kapattı](https://www.foreks.com/haber/detay/6aba84ec95016b5817e61564/PICNEWS/tr/piyasaya-bakis-borsa-gunu-dususle-kapatti-28-09-26/) — 28 Eyl 2026 15:17
    - 5. [PİYASAYA BAKIŞ- Borsa güne düşüşle başladı](https://www.foreks.com/haber/detay/6abb615995016b5817e61bda/PICNEWS/tr/piyasaya-bakis-borsa-gune-dususle-basladi-29-09-26/) — 29 Eyl 2026 06:57
+   - 6. [Wall Street kararsız açıldı](https://www.foreks.com/haber/detay/6abbbfbe724cdd0bc40fa8d0/PICNEWS/tr/wall-street-kararsiz-acildi-29-09-26/) — 29 Eyl 2026 13:40
+   - 7. [PİYASAYA BAKIŞ- Borsa günü düşüşle tamamladı](https://www.foreks.com/haber/detay/6abbd66495016b5817e620b7/PICNEWS/tr/piyasaya-bakis-borsa-gunu-dususle-tamamladi-29-09-26/) — 29 Eyl 2026 15:16
 
-7. **Cnnturk · News** (`cnnturk.com`) — 3 makale
+7. **Cnnturk · News** (`cnnturk.com`) — 4 makale
 
    - 1. [SON DAKİKA | Borsa haftayı yükselişle tamamladı](https://www.cnnturk.com/ekonomi/sson-dakika-borsa-haftayi-yukselisle-tamamladi-3471514) — 25 Eyl 2026 21:22
    - 2. [Bu hafta yatırım araçlarında yatırımcıların odağında ne oldu?](https://www.cnnturk.com/ekonomi/bu-hafta-yatirim-araclarinda-yatirimcilarin-odaginda-ne-oldu-3471708) — 26 Eyl 2026 13:45
    - 3. [SON DAKİKA HABERİ: Borsa günü düşüşle tamamladı](https://www.cnnturk.com/ekonomi/son-dakika-haberi-borsa-gunu-dususle-tamamladi-3472566) — 28 Eyl 2026 20:13
+   - 4. [SON DAKİKA | Borsa salı gününü düşüşle tamamladı](https://www.cnnturk.com/ekonomi/son-dakika-borsa-sali-gununu-dususle-tamamladi-3472974) — 29 Eyl 2026 18:37
 
-8. **Haberturk · Ekonomi** (`haberturk.com`) — 4 makale
+8. **Haberturk · Ekonomi** (`haberturk.com`) — 5 makale
 
    - 1. [Borsa haftaya düşüşle başladı](https://www.haberturk.com/ekonomi/borsa-haftaya-dususle-basladi-3915547) — 28 Eyl 2026 07:02
    - 2. [Borsa günü düşüşle tamamladı](https://www.haberturk.com/ekonomi/borsa-gunu-dususle-tamamladi-3915683) — 28 Eyl 2026 15:30
    - 3. [Borsa güne düşüşle başladı](https://www.haberturk.com/ekonomi/borsa-istanbul-gune-dususle-basladi-3915837) — 29 Eyl 2026 07:48
    - 4. [Petrol 100 dolara yakın](https://www.haberturk.com/ekonomi/petrol-100-dolara-yakin-3915838) — 29 Eyl 2026 07:49
+   - 5. [Borsa günü düşüşle tamamladı](https://www.haberturk.com/ekonomi/borsa-gunu-dususle-tamamladi-3915972) — 29 Eyl 2026 16:16
 
 9. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
 
@@ -585,13 +747,75 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
    - 1. [Borsa İstanbul günü yüzde 2,38 kayıpla tamamladı](https://www.iscihaber.net/ekonomi/borsa-istanbul-gunu-yuzde-238-kayipla-tamamladi/266914) — 28 Eyl 2026 15:38
 
-12. **Sozcu** (`sozcu.com.tr`) — 1 makale
+12. **Sozcu** (`sozcu.com.tr`) — 2 makale
 
    - 1. [Borsa güne düşüşle başladı -29 Eylül 2026](https://www.sozcu.com.tr/borsa-gune-dususle-basladi-29-eylul-2026-p364453) — 29 Eyl 2026 07:08
+   - 2. [Borsa günün ilk yarısında değer kaybetti -29 Eylül 2026](https://www.sozcu.com.tr/borsa-gunun-ilk-yarisinda-deger-kaybetti-29-eylul-2026-p364520) — 29 Eyl 2026 10:17
 
 ---
 
-### [4] 88 Gün Sonra Hakim Karşısına Çıkan Komedyen Deniz Göktaş Serbest Kaldı  (9 farklı kaynakta, 16 makale)
+### [5] PFDK Açıkladı: Galatasaray Teknik Direktörü Okan Buruk&apos;a 1 Maç Kulübe Yasağı ve 100 Bin TL Ceza  (11 farklı kaynakta, 13 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Trabzonspor'a 4-0 kaybedilen maçta kırmızı kart gören Galatasaray Teknik Direktörü Okan Buruk'un cezası belli oldu. Profesyonel Futbol Disiplin Kurulu (PFDK), Buruk'a hakeme yönelik sportmenliğe aykırı hareketi nedeniyle 1 resmi müsabakada soyunma odası ve yedek kulübesine giriş yasağı ile 100 bin TL para cezası verdi.Karar, sarı-kırmızılı ekibin Fenerbahçe derbisine teknik direktörüyle çıkabileceği anlamına geliyor.
+
+**Farklı kaynak sayısı:** 11
+**Toplam makale sayısı:** 13
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Trthaber · Spor** (`trthaber.com`) — 2 makale
+
+   - 1. [PFDK'den 7 Süper Lig ekibine para cezası](https://www.trthaber.com/haber/spor/pfdkden-7-super-lig-ekibine-para-cezasi-954493.html) — 20 Ağu 2026 17:14
+   - 2. [Üç kulüp başkanı ve 10 takım PFDK'ye sevk edildi](https://www.trthaber.com/haber/spor/uc-kulup-baskani-ve-10-takim-pfdkye-sevk-edildi-954930.html) — 25 Ağu 2026 23:24
+
+2. **Halktv** (`halktv.com.tr`) — 2 makale
+
+   - 1. [Son Dakika | Galatasaray'da TFF depremi: Karar resmen açıklandı](https://halktv.com.tr/spor/son-dakika-galatasarayda-tff-depremi-karar-resmen-aciklandi-1058368h) — 29 Eyl 2026 17:30
+   - 2. [Amedspor'a Beşiktaş'ı 3 golle yendiği maçtan kötü haber: TFF duyurdu](https://halktv.com.tr/spor/amedspora-besiktasi-3-golle-yendigi-mactan-kotu-haber-tff-duyurdu-1058387h) — 29 Eyl 2026 19:31
+
+3. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
+
+   - 1. [PFDK'den Okan Buruk ve Ugochukwu için ceza kararı!](https://www.fotomac.com.tr/galatasaray/2026/09/29/pfdkdan-okan-buruk-ve-ugochukwu-icin-ceza-karari) — 29 Eyl 2026 17:30
+
+4. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Okan Buruk'un cezası belli oldu! Kritik maçta yok](https://www.sozcu.com.tr/okan-burukun-cezasi-belli-oldu-kritik-macta-yok-p364622) — 29 Eyl 2026 17:34
+
+5. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [TFF açıkladı! Okan Buruk'un cezası belli oldu](https://www.aydinlik.com.tr/haber/tff-acikladi-okan-burukun-cezasi-belli-oldu-592216) — 29 Eyl 2026 17:35
+
+6. **Fotospor · Sondakika** (`fotospor.com`) — 1 makale
+
+   - 1. [K�rm�z� kart g�rm��t�! PFDK Okan Buruk'un cezas�n� a��klad�](https://www.fotospor.com.tr/galatasaray/kirmizi-kart-gormustu-pfdk-okan-burukun-cezasini-acikladi-713809) — 29 Eyl 2026 17:36
+
+7. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [PFDK'dan Okan Buruk'a 1 maç men ve para cezası](https://www.iscihaber.net/spor/pfdkdan-okan-buruka-1-mac-men-ve-para-cezasi/267233) — 29 Eyl 2026 17:42
+
+8. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [PFDK açıkladı: Okan Buruk'un cezası belli oldu!](https://www.cumhuriyet.com.tr/spor/pfdk-acikladi-okan-buruk-un-cezasi-belli-oldu-2542252) — 29 Eyl 2026 17:45
+
+9. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [PFDK Açıkladı: Galatasaray Teknik Direktörü Okan Buruk&apos;a 1 Maç Kulübe Yasağı ve 10…](https://onedio.com/haber/pfdk-acikladi-galatasaray-teknik-direktoru-okan-buruk-a-1-mac-kulube-yasagi-ve-100-bin-tl-ceza-1384797) — 29 Eyl 2026 17:58
+
+10. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [PFDK, Galatasaray Teknik Direktörü Okan Buruk'a 1 maç ceza verdi](https://www.aa.com.tr/tr/spor/pfdk-galatasaray-teknik-direktoru-okan-buruka-1-mac-ceza-verdi/4073035) — 29 Eyl 2026 18:17
+
+11. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [SON DAKİKA | Okan Buruk’un cezası belli oldu](https://www.cnnturk.com/spor/futbol/son-dakika-okan-burukun-cezasi-belli-oldu-3473002) — 29 Eyl 2026 21:00
+
+---
+
+### [6] 88 Gün Sonra Hakim Karşısına Çıkan Komedyen Deniz Göktaş Serbest Kaldı  (9 farklı kaynakta, 16 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -649,7 +873,60 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [5] Ekonomik güven endeksi eylülde 101,3 oldu  (9 farklı kaynakta, 10 makale)
+### [7] Okul Bahçesinde Öğretmene Silahlı Saldırı: Osmaniye&apos;de Yeğeni Tarafından Vurulan Öğretmen Hayatını Kaybetti  (9 farklı kaynakta, 11 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Osmaniye'nin Çardak köyündeki Farabi Anadolu Lisesi'nin bahçesinde bugün öğle saatlerinde silah sesleri yükseldi. Okulda görev yapan öğretmen M.B., aralarında önceden husumet bulunan A.B. tarafından ruhsatsız tabancayla vurularak ağır yaralandı. Yaralanan öğretmen tüm müdahalelere rağmen hayatını kaybetti. Şüpheli, olayın ardından kısa sürede silahıyla birlikte yakalandı.
+
+**Farklı kaynak sayısı:** 9
+**Toplam makale sayısı:** 11
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Ajanskamu** (`ajanskamu.net`) — 3 makale
+
+   - 1. [Osmaniye’de Okul Saldırısı: Öğretmen Yeğeni Tarafından Öldürüldü](https://www.ajanskamu.net/meb/osmaniyede-okul-saldirisi-ogretmen-yegeni-tarafindan-olduruldu-h225658.html) — 28 Eyl 2026 09:45
+   - 2. [Osmaniye'de Okul Bahçesinde Öldürülen Öğretmen İçin MEB Açıklama Yaptı](https://www.ajanskamu.net/meb/osmaniyede-okul-bahcesinde-oldurulen-ogretmen-icin-meb-aciklama-yapti-h225659.html) — 28 Eyl 2026 13:43
+   - 3. [Okul Bahçesinde Öğretmen Amcasını Öldüren Zanlı Cezaevine Gönderildi](https://www.ajanskamu.net/meb/okul-bahcesinde-ogretmen-amcasini-olduren-zanli-cezaevine-gonderildi-h225667.html) — 29 Eyl 2026 13:04
+
+2. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [Okul Bahçesinde Öğretmene Silahlı Saldırı: Osmaniye&apos;de Yeğeni Tarafından Vurulan Ö…](https://onedio.com/haber/okul-bahcesinde-ogretmene-silahli-saldiri-osmaniye-de-yegeni-tarafindan-vurulan-ogretmenin-durumu-agir-1384368) — 28 Eyl 2026 10:13
+
+3. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
+
+   - 1. [Okul bahçesinde öğretmene silahlı saldırı: Ağır yaralanan öğretmen hastanede](https://www.kamudanhaber.net/okul-bahcesinde-ogretmene-silahli-saldiri-agir-yaralanan-ogretmen-hastanede) — 28 Eyl 2026 10:20
+
+4. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Osmaniye'de okul bahçesinde öğretmene silahlı saldırı: Hayatını kaybetti](https://www.aydinlik.com.tr/haber/osmaniyede-okul-bahcesinde-ogretmene-silahli-saldiri-hayatini-kaybetti-591978) — 28 Eyl 2026 10:26
+
+5. **Artigercek** (`artigercek.com`) — 1 makale
+
+   - 1. [Osmaniye'de okulda silahlı saldırı: Öğretmen yaşamını yitirdi](https://artigercek.com/guncel/osmaniyede-okulda-silahli-saldiri-ogretmen-yasamini-yitirdi-350965h) — 28 Eyl 2026 10:31
+
+6. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Osmaniye'de okul bahçesinde silahlı saldırı! Öğretmen hayatını kaybetti](https://www.sozcu.com.tr/osmaniye-de-okul-bahcesinde-ogretmene-silahli-saldiri-p364198) — 28 Eyl 2026 11:39
+
+7. **Gundemkibris** (`gundemkibris.com`) — 1 makale
+
+   - 1. [Osmaniye'de okul bahçesinde silahlı saldırı: Öğretmen yaşamını yitirdi](https://www.gundemkibris.com/osmaniyede-okul-bahcesinde-silahli-saldiri-ogretmen-yasamini-yitirdi) — 28 Eyl 2026 11:43
+
+8. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Son Dakika | RTÜK'ten Osmaniye'deki okul saldırısına yayın yasağı](https://halktv.com.tr/turkiye/son-dakika-rtukten-osmaniye-saldirisina-yayin-yasagi-1058055h) — 28 Eyl 2026 12:57
+
+9. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [Şanlıurfa'da kahreden olay : Balkondan düşen bebek hayatını kaybetti](https://www.iscihaber.net/sanliurfa/sanliurfada-kahreden-olay-balkondan-dusen-bebek-hayatini-kaybetti/266972) — 28 Eyl 2026 18:12
+
+---
+
+### [8] Ekonomik güven endeksi eylülde 101,3 oldu  (9 farklı kaynakta, 10 makale)
 
 **Kategori:** Güncel
 
@@ -701,59 +978,108 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [6] Okul Bahçesinde Öğretmene Silahlı Saldırı: Osmaniye&apos;de Yeğeni Tarafından Vurulan Öğretmen Hayatını Kaybetti  (9 farklı kaynakta, 10 makale)
+### [9] Serdal Adalı yönetim kurulu aday listesini teslim etti!  (9 farklı kaynakta, 9 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Beşiktaş Kulübü Başkanı Serdal Adalı, 4 Ekim'de yapılacak olağanüstü seçimli genel kurul toplantısı öncesi yönetim kurulu aday listesini Divan Kurulu Başkanı Ahmet Ürkmezgil'e takdim etti.
+
+**Farklı kaynak sayısı:** 9
+**Toplam makale sayısı:** 9
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Trthaber · Spor** (`trthaber.com`) — 1 makale
+
+   - 1. [Beşiktaş seçime gidiyor](https://www.trthaber.com/haber/spor/besiktas-secime-gidiyor-956269.html) — 8 Eyl 2026 17:03
+
+2. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Serdal Adalı listeyi resmen açıkladı](https://halktv.com.tr/spor/serdal-adali-listeyi-resmen-acikladi-1058197h) — 29 Eyl 2026 06:56
+
+3. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
+
+   - 1. [Beşiktaş'ta Başkan Serdal Adalı'nın yönetim kurulu listesi açıklandı!](https://www.fotomac.com.tr/besiktas/2026/09/29/serdal-adalinin-yonetim-kurulu-aday-listesi-belli-oldu) — 29 Eyl 2026 14:51
+
+4. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Serdal Adalı'nın yönetim listesi belli oldu! Beşiktaş'ta seçime doğru](https://www.sozcu.com.tr/serdal-adali-nin-yonetim-listesi-belli-oldu-besiktas-ta-secime-dogru-p364594) — 29 Eyl 2026 14:58
+
+5. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Serdal Adalı'nın yönetim listesi belli oldu! Beşiktaş'ta seçime doğru](https://www.sozcu.com.tr/serdal-adali-nin-yonetim-listesi-belli-oldu-besiktas-ta-secime-dogru-p364594) — 29 Eyl 2026 14:58
+
+6. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Serdal Adalı yönetim kurulu aday listesini teslim etti!](https://www.cumhuriyet.com.tr/spor/serdal-adali-yonetim-kurulu-aday-listesini-teslim-etti-2542218) — 29 Eyl 2026 15:17
+
+7. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Beşiktaş'ta seçim heyecanı: Serdal Adalı'nın yönetim listesi açıklandı](https://www.cnbce.com/borsa/besiktasta-secim-heyecani-serdal-adalinin-yonetim-listesi-aciklandi-h38324) — 29 Eyl 2026 15:20
+
+8. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Beşiktaş'ta Serdal Adalı'nın yönetim kurulu aday listesi belli oldu](https://www.aa.com.tr/tr/spor/besiktasta-serdal-adalinin-yonetim-kurulu-aday-listesi-belli-oldu/4072972) — 29 Eyl 2026 16:51
+
+9. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [Beşiktaş’ta Serdal Adalı’nın yönetim listesi açıklandı](https://www.cnnturk.com/spor/futbol/besiktasta-serdal-adalinin-yonetim-listesi-aciklandi-3472969) — 29 Eyl 2026 18:22
+
+---
+
+### [10] Mustafa Sandal, Eşi Melisa Sütşurup&apos;un Adı Geçen Fon Kriziyle İlgili İlk Açıklamayı Yaptı  (8 farklı kaynakta, 11 makale)
 
 **Kategori:** Spor / Magazin
 
 **Açıklama:**
 
-> Osmaniye'nin Çardak köyündeki Farabi Anadolu Lisesi'nin bahçesinde bugün öğle saatlerinde silah sesleri yükseldi. Okulda görev yapan öğretmen M.B., aralarında önceden husumet bulunan A.B. tarafından ruhsatsız tabancayla vurularak ağır yaralandı. Yaralanan öğretmen tüm müdahalelere rağmen hayatını kaybetti. Şüpheli, olayın ardından kısa sürede silahıyla birlikte yakalandı.
+> İstanbul'da yürütülen fon soruşturmasında şarkıcı Mustafa Sandal'ın eşi Melis Sütşurup Sandal hakkında yeni bir karar alındı. Yurtdışına çıkış yasağı kararının ardından Melis Sütşurup ile ilgili mal varlıklarının dondurulmasına da karar verildi.Mustafa Sandal'dan konuyla ilgili ilk açıklama sosyal medyadan geldi.
 
-**Farklı kaynak sayısı:** 9
-**Toplam makale sayısı:** 10
+**Farklı kaynak sayısı:** 8
+**Toplam makale sayısı:** 11
 
 **Geçtiği farklı kaynaklar:**
 
-1. **Ajanskamu** (`ajanskamu.net`) — 2 makale
+1. **Onedio · Daily** (`onedio.com`) — 3 makale
 
-   - 1. [Osmaniye’de Okul Saldırısı: Öğretmen Yeğeni Tarafından Öldürüldü](https://www.ajanskamu.net/meb/osmaniyede-okul-saldirisi-ogretmen-yegeni-tarafindan-olduruldu-h225658.html) — 28 Eyl 2026 09:45
-   - 2. [Osmaniye'de Okul Bahçesinde Öldürülen Öğretmen İçin MEB Açıklama Yaptı](https://www.ajanskamu.net/meb/osmaniyede-okul-bahcesinde-oldurulen-ogretmen-icin-meb-aciklama-yapti-h225659.html) — 28 Eyl 2026 13:43
+   - 1. [Melis Sütşurup Sandal&apos;a Yurt Dışı Çıkış Yasağı Getirildi ve Mal Varlıkları Donduruldu](https://onedio.com/haber/fon-sorusturmasinda-melis-sutsurup-sandal-a-yurt-disi-cikis-yasagi-mal-varliklari-donduruldu-1384208) — 27 Eyl 2026 17:14
+   - 2. [Mustafa Sandal, Eşi Melisa Sütşurup&apos;un Adı Geçen Fon Kriziyle İlgili İlk Açıklamay…](https://onedio.com/haber/mustafa-sandal-esi-melisa-sutsurup-un-adi-gecen-fon-kriziyle-ilgili-ilk-aciklamayi-yapti-1384258) — 27 Eyl 2026 18:57
+   - 3. [Melis Sütşurup ve Babasının Mal Varlığına El Konuldu, Haklarında Yakalama Kararı Çıkarıldı](https://onedio.com/haber/melis-sutsurup-ve-babasinin-mal-varligina-el-konuldu-haklarinda-yakalama-karari-cikarildi-1384787) — 29 Eyl 2026 16:46
 
-2. **Onedio · Daily** (`onedio.com`) — 1 makale
+2. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
 
-   - 1. [Okul Bahçesinde Öğretmene Silahlı Saldırı: Osmaniye&apos;de Yeğeni Tarafından Vurulan Ö…](https://onedio.com/haber/okul-bahcesinde-ogretmene-silahli-saldiri-osmaniye-de-yegeni-tarafindan-vurulan-ogretmenin-durumu-agir-1384368) — 28 Eyl 2026 10:13
+   - 1. [Mustafa Sandal ve Melis Sütşurup hakkında yeni iddia: Dubai'den oturum izni başvurusu](https://www.kamudanhaber.net/mustafa-sandal-ve-melis-sutsurup-hakkinda-yeni-iddia-dubaiden-oturum-izni-basvurusu) — 29 Eyl 2026 06:29
 
-3. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
+3. **Karar** (`karar.com`) — 2 makale
 
-   - 1. [Okul bahçesinde öğretmene silahlı saldırı: Ağır yaralanan öğretmen hastanede](https://www.kamudanhaber.net/okul-bahcesinde-ogretmene-silahli-saldiri-agir-yaralanan-ogretmen-hastanede) — 28 Eyl 2026 10:20
+   - 1. [Fon soruşturmasında adı geçen Sandal çiftiyle ilgili yeni iddia: Dubai'de oturum başvurusu](https://www.karar.com/guncel-haberler/fon-sorusturmasinda-adi-gecen-sandal-ciftiyle-ilgili-yeni-iddia-dubaide-2075004) — 29 Eyl 2026 07:59
+   - 2. [Melis Sandal ve Cihan Sütşurup hakkında yakalama kararı](https://www.karar.com/guncel-haberler/melis-sandal-ve-cihan-sutsurup-hakkinda-yakalama-karari-2075150) — 29 Eyl 2026 17:16
 
-4. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+4. **Halktv** (`halktv.com.tr`) — 1 makale
 
-   - 1. [Osmaniye'de okul bahçesinde öğretmene silahlı saldırı: Hayatını kaybetti](https://www.aydinlik.com.tr/haber/osmaniyede-okul-bahcesinde-ogretmene-silahli-saldiri-hayatini-kaybetti-591978) — 28 Eyl 2026 10:26
+   - 1. [Son Dakika | Melis Sandal ve Cihan Sütşurup hakkında yakalama kararı](https://halktv.com.tr/turkiye/son-dakika-mustafa-sandal-ve-esi-hakkinda-yakalama-karari-1058363h) — 29 Eyl 2026 16:45
 
-5. **Artigercek** (`artigercek.com`) — 1 makale
+5. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
 
-   - 1. [Osmaniye'de okulda silahlı saldırı: Öğretmen yaşamını yitirdi](https://artigercek.com/guncel/osmaniyede-okulda-silahli-saldiri-ogretmen-yasamini-yitirdi-350965h) — 28 Eyl 2026 10:31
+   - 1. [Melis Sandal ve Cihan Sütşurup’un mal varlığına el konuldu: Yakalama kararı çıkarıldı](https://www.cumhuriyet.com.tr/siyaset/melis-sandal-ve-cihan-sutsurup-un-mal-varligina-el-konuldu-yakalama-karari-cikarildi-2542246) — 29 Eyl 2026 17:10
 
-6. **Sozcu** (`sozcu.com.tr`) — 1 makale
+6. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
 
-   - 1. [Osmaniye'de okul bahçesinde silahlı saldırı! Öğretmen hayatını kaybetti](https://www.sozcu.com.tr/osmaniye-de-okul-bahcesinde-ogretmene-silahli-saldiri-p364198) — 28 Eyl 2026 11:39
+   - 1. [Fon soruşturmasında yeni gelişme! Mustafa Sandal'ın eşi ve kayınpederi için yakalama ka…](https://www.aydinlik.com.tr/haber/fon-sorusturmasinda-yeni-gelisme-mustafa-sandalin-esi-ve-kayinpederi-icin-yakalama-karari-592215) — 29 Eyl 2026 17:22
 
-7. **Gundemkibris** (`gundemkibris.com`) — 1 makale
+7. **Iscihaber · News** (`iscihaber.net`) — 1 makale
 
-   - 1. [Osmaniye'de okul bahçesinde silahlı saldırı: Öğretmen yaşamını yitirdi](https://www.gundemkibris.com/osmaniyede-okul-bahcesinde-silahli-saldiri-ogretmen-yasamini-yitirdi) — 28 Eyl 2026 11:43
+   - 1. [Mustafa Sandal'ın eşi Melis Sandal hakkında yakalama kararı çıkarıldı](https://www.iscihaber.net/gundem/mustafa-sandalin-esi-melis-sandal-hakkinda-yakalama-karari-cikarildi/267230) — 29 Eyl 2026 17:34
 
-8. **Halktv** (`halktv.com.tr`) — 1 makale
+8. **Sozcu** (`sozcu.com.tr`) — 1 makale
 
-   - 1. [Son Dakika | RTÜK'ten Osmaniye'deki okul saldırısına yayın yasağı](https://halktv.com.tr/turkiye/son-dakika-rtukten-osmaniye-saldirisina-yayin-yasagi-1058055h) — 28 Eyl 2026 12:57
-
-9. **Iscihaber · News** (`iscihaber.net`) — 1 makale
-
-   - 1. [Şanlıurfa'da kahreden olay : Balkondan düşen bebek hayatını kaybetti](https://www.iscihaber.net/sanliurfa/sanliurfada-kahreden-olay-balkondan-dusen-bebek-hayatini-kaybetti/266972) — 28 Eyl 2026 18:12
+   - 1. [Melis Sandal ve Cihan Sütşurup’un mal varlığına el konuldu](https://www.sozcu.com.tr/melis-sandal-ve-cihan-sutsurup-un-mal-varligina-el-konuldu-p364617) — 29 Eyl 2026 18:44
 
 ---
 
-### [7] Son Dakika... YENİ Parti'nin isim tartışmasında yeni gelişme: AYM'den 30 günlük süre  (8 farklı kaynakta, 9 makale)
+### [11] Son Dakika... YENİ Parti'nin isim tartışmasında yeni gelişme: AYM'den 30 günlük süre  (8 farklı kaynakta, 9 makale)
 
 **Kategori:** Güncel
 
@@ -801,16 +1127,16 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [8] Paris Moda Haftası'nda ünlü geçidi: Jane Fonda, Kendal Jenner, Eva Longoria aynı podyumda  (7 farklı kaynakta, 10 makale)
+### [12] Serenay Sarıkaya'nın Paris Moda Haftası'ndaki elbisesi mercek altında  (7 farklı kaynakta, 12 makale)
 
 **Kategori:** Kültür / Sanat
 
 **Açıklama:**
 
-> Paris Moda Haftası kapsamında dün gerçekleşen görkemli defile, dünya çapındaki yıldızların katılımıyla unutulmaz anlara sahne oldu. Moda dünyasının kalbinin attığı organizasyonda; Kendall Jenner, Jane Fonda, Eva Longoria, Viola Davis ve Andie MacDowell gibi dünyaca ünlü isimler aynı podyumu paylaşarak nefes kesen bir şov sergiledi.
+> Paris Moda Haftası, her sezon olduğu gibi yine moda dünyasının kalbinin attığı, estetik ve ihtişamın zirve yaptığı anlara sahne oldu. Serenay Sarıkaya, Eyfel Kulesi’nin görkemli atmosferinde düzenlenen dev defilede podyuma çıkarak Kendall Jenner, Jane Fonda ve Eva Longoria gibi dünya yıldızlarıyla aynı sahneyi paylaştı. İşte Serenay'ın tercih ettiği altın rengi elbisesi...
 
 **Farklı kaynak sayısı:** 7
-**Toplam makale sayısı:** 10
+**Toplam makale sayısı:** 12
 
 **Geçtiği farklı kaynaklar:**
 
@@ -828,18 +1154,20 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 2. [Serenay podyumda](https://www.haberturk.com/magazin/foto/serenay-sarikaya-paris-moda-haftasi-nda-podyuma-cikti-3915776) — 29 Eyl 2026 07:14
    - 3. [Ünlüler geçidi](https://www.haberturk.com/magazin/foto/paris-moda-haftasi-nda-unlu-yildizlar-gecidi-jane-fonda-kendal-jenner-eva-longoria-ayni-podyumda-3915805) — 29 Eyl 2026 07:42
 
-4. **Sozcu · Magazin** (`sozcu.com.tr`) — 1 makale
+4. **Sozcu · Magazin** (`sozcu.com.tr`) — 2 makale
 
    - 1. [Serenay Sarıkaya Paris'i salladı: Altın elbisesiyle podyuma çıktı](https://www.sozcu.com.tr/serenay-sarikaya-paris-i-salladi-altin-elbisesiyle-podyuma-cikti-p364415) — 29 Eyl 2026 05:42
+   - 2. [Serenay Sarıkaya’nın altın sarısı elbisesi servet değerinde çıktı](https://www.sozcu.com.tr/serenay-sarikaya-nin-altin-sarisi-elbisesi-servet-degerinde-cikti-p364553) — 29 Eyl 2026 13:55
 
 5. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
 
    - 1. [Paris Moda Haftası'na Serenay Sarıkaya damgası: Dünya yıldızlarıyla aynı podyumda](https://www.cumhuriyet.com.tr/magazin/paris-moda-haftasi-na-serenay-sarikaya-damgasi-dunya-yildizlariyla-ayni-podyumda-2541980) — 29 Eyl 2026 06:28
 
-6. **Elele** (`elele.com.tr`) — 2 makale
+6. **Elele** (`elele.com.tr`) — 3 makale
 
    - 1. [Serenay Sarıkaya, Paris Moda Haftası'nda podyumda yürüdü](https://www.elele.com.tr/moda/serenay-sarikaya-paris-moda-haftasinda-podyumda-yurudu) — 29 Eyl 2026 06:35
    - 2. [Paris Moda Haftası'nda ünlü geçidi: Jane Fonda, Kendal Jenner, Eva Longoria aynı podyumda](https://www.elele.com.tr/moda/paris-moda-haftasinda-unlu-gecidi-jane-fonda-kendal-jenner-eva-longoria-ayni-podyumda) — 29 Eyl 2026 08:38
+   - 3. [Serenay Sarıkaya'nın Paris Moda Haftası'ndaki elbisesi mercek altında](https://www.elele.com.tr/moda/serenay-sarikayanin-paris-moda-haftasindaki-elbisesi-mercek-altinda) — 29 Eyl 2026 11:51
 
 7. **Halktv** (`halktv.com.tr`) — 1 makale
 
@@ -847,7 +1175,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [9] TOKİ'den 46 ilde büyük arsa fırsatı! Yüzde 25 peşinat ve 48 ay taksit imkanı  (7 farklı kaynakta, 8 makale)
+### [13] TOKİ'den 46 ilde büyük arsa fırsatı! Yüzde 25 peşinat ve 48 ay taksit imkanı  (7 farklı kaynakta, 8 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -891,50 +1219,93 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [10] Cumhurbaşkanı Recep Tayyip Erdoğan Kabine Toplantısı Sonrası Gündemdeki Fon Kriziyle İlgili Konuştu  (7 farklı kaynakta, 7 makale)
+### [14] Cevdet Yılmaz başkanlığında “Fon Koordinasyon Kurulu” kuruldu  (7 farklı kaynakta, 7 makale)
 
-**Kategori:** Spor / Magazin
+**Kategori:** Güncel
 
 **Açıklama:**
 
-> Cumhurbaşkanı Erdoğan, Kabine Toplantısı'nın ardından yaptığı açıklamada fon krizine ilişkin değerlendirmelerde bulundu. Erdoğan, 'Her kim milletin hakkına, hukuka, mülküne el uzatırsa karşısında bizi bulur, devleti bulur' ifadelerini kullandı.Yarın ekonomi kurmayları ve ilgili kurumların yöneticileriyle toplantı yapılacağını belirten Erdoğan, 'Yarın ekonomi kurmaylarımızla, sorumlu kurumlarımızın yöneticileriyle bir araya geleceğim. Hukuk devleti sınırları dahilinde gereken her türlü adım atılacak' dedi.
+> Cumhurbaşkanı Erdoğan başkanlığında ekonomi yönetimi ve ilgili kurumların üst düzey yöneticilerinin katılımıyla sermaye piyasalarındaki son gelişmelerin ele alındığı eşgüdüm toplantısı yapıldı. Toplantının ardından tasfiye edilen fonlara ilişkin sürecin koordinasyonu için Cumhurbaşkanı Yardımcısı Yılmaz başkanlığında “Fon Koordinasyon Kurulu” oluşturulduğu açıklandı. Devlet Denetleme Kurulu da son dönemdeki yatırım fonu işlemlerine ilişkin inceleme ve denetim süreci başlattı.
 
 **Farklı kaynak sayısı:** 7
 **Toplam makale sayısı:** 7
 
 **Geçtiği farklı kaynaklar:**
 
-1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+1. **Onedio · Daily** (`onedio.com`) — 1 makale
 
-   - 1. [Cumhurbaşkanlığı Kabinesi toplandı](https://www.cumhuriyet.com.tr/turkiye/cumhurbaskanligi-kabinesi-toplandi-2541835) — 28 Eyl 2026 13:54
+   - 1. [İletişim Başkanlığı, Fon Zirvesi Sonrası Alınan Kararları Açıkladı: Fon Koordinasyon Ku…](https://onedio.com/haber/iletisim-baskanligi-fon-zirvesi-sonrasi-alinan-kararlari-acikladi-koordinasyon-kurulu-kuruldu-1384798) — 29 Eyl 2026 17:48
 
-2. **Karar** (`karar.com`) — 1 makale
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
 
-   - 1. [Erdoğan: Milletin malına el uzatan karşısında devleti bulur](https://www.karar.com/guncel-haberler/bakanlar-kurulu-toplantisi-sona-erdi-erdogandan-guvenli-okul-mesaji-2074901) — 28 Eyl 2026 16:48
+   - 1. [Fon tasfiye sürecinde yeni gelişme: ‘Fon Koordinasyon Kurulu’ oluşturuldu](https://www.cumhuriyet.com.tr/turkiye/fon-tasfiye-surecinde-yeni-gelisme-fon-koordinasyon-kurulu-olusturuldu-2542254) — 29 Eyl 2026 17:50
 
-3. **Onedio · Daily** (`onedio.com`) — 1 makale
+3. **Cnbce** (`cnbce.com`) — 1 makale
 
-   - 1. [Cumhurbaşkanı Recep Tayyip Erdoğan Kabine Toplantısı Sonrası Gündemdeki Fon Kriziyle İl…](https://onedio.com/haber/cumhurbaskani-recep-tayyip-erdogan-gundemdeki-fon-kriziyle-ilgili-ilk-kez-konustu-1384464) — 28 Eyl 2026 16:52
+   - 1. [Fon soruşturmasında yeni yol haritası: Fon Koordinasyon Kurulu oluşturuldu](https://www.cnbce.com/haberler/fon-sorusturmasinda-yeni-yol-haritasi-fon-koordinasyon-kurulu-olusturuldu-h38338) — 29 Eyl 2026 17:51
 
-4. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+4. **Karar** (`karar.com`) — 1 makale
 
-   - 1. [Cumhurbaşkanı Erdoğan'dan fon soruşturması açıklaması: "Kim milletin hakkına el uzatırs…](https://www.aydinlik.com.tr/haber/cumhurbaskani-erdogandan-fon-sorusturmasi-aciklamasi-kim-milletin-hakkina-el-uzatirsa-karsisinda-bizi-bulur-592032) — 28 Eyl 2026 16:53
+   - 1. [Cevdet Yılmaz başkanlığında “Fon Koordinasyon Kurulu” kuruldu](https://www.karar.com/guncel-haberler/cevdet-yilmaz-baskanliginda-fon-koordinasyon-kurulu-kuruldu-2075155) — 29 Eyl 2026 17:54
 
-5. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
+5. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
 
-   - 1. [Cumhurbaşkanı Erdoğan: Fon Soruşturmalarında Gereken Her Türlü Adım Atılacak](https://www.kamudanhaber.net/cumhurbaskani-erdogan-fon-sorusturmalarinda-gereken-her-turlu-adim-atilacak) — 28 Eyl 2026 17:12
+   - 1. [Fonla ilgili alınan yeni tedbirler duyuruldu](https://www.haberturk.com/ekonomi/iletisim-baskanligi-fon-sorusturmasi-cercevesinde-alinan-yeni-tedbirleri-duyurdu-3915992) — 29 Eyl 2026 17:59
 
-6. **Artigercek** (`artigercek.com`) — 1 makale
+6. **Sozcu** (`sozcu.com.tr`) — 1 makale
 
-   - 1. [Cumhurbaşkanı Erdoğan'dan fon krizi açıklaması](https://artigercek.com/politika/cumhurbaskani-erdogandan-fon-krizi-aciklamasi-350988h) — 28 Eyl 2026 17:53
+   - 1. [Fon Zirvesi'nden çıkan 5 karar! İletişim Başkanlığı açıkladı](https://www.sozcu.com.tr/son-dakika-fon-koordinasyon-kurulu-olusturuldu-p364628) — 29 Eyl 2026 18:18
 
-7. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+7. **Foreks** (`foreks.com`) — 1 makale
 
-   - 1. [Cumhurbaşkanı Erdoğan ekonomi kurmaylarını topluyor](https://www.cnnturk.com/ekonomi/cumhurbaskani-erdogan-ekonomi-kurmaylarini-topluyor-3472682) — 29 Eyl 2026 10:39
+   - 1. [Fon süreci için Koordinasyon Kurulu oluşturuldu](https://www.foreks.com/haber/detay/6abc073124008d7d437392c1/PICNEWS/tr/fon-sureci-icin-koordinasyon-kurulu-olusturuldu-29-09-26/) — 29 Eyl 2026 18:45
 
 ---
 
-### [11] Bakan Şimşek'ten fon soruşturması hakkında açıklama  (7 farklı kaynakta, 7 makale)
+### [15] Eyüpspor'un yeni teknik direktörü Mustafa Dalcı oldu!  (7 farklı kaynakta, 7 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Süper Lig ekiplerinden Eyüpspor'da sıcak gelişmeler yaşanıyor. Son olarak Eyüpspor yeni teknik direktörünün Mustafa Dalcı olduğunu resmen duyurdu. İşte detaylar...Devamı için tıklayınız
+
+**Farklı kaynak sayısı:** 7
+**Toplam makale sayısı:** 7
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
+
+   - 1. [Eyüpspor'un yeni teknik direktörü Mustafa Dalcı oldu!](https://www.fotomac.com.tr/eyupspor/2026/09/29/eyupsporun-yeni-teknik-direktoru-mustafa-dalci-oldu) — 29 Eyl 2026 15:01
+
+2. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Eyüpspor'un yeni teknik direktörü belli oldu](https://www.sozcu.com.tr/eyupsporun-yeni-teknik-direktoru-belli-oldu-p364596) — 29 Eyl 2026 15:06
+
+3. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Eyüpspor'un yeni teknik direktörü belli oldu](https://www.sozcu.com.tr/eyupsporun-yeni-teknik-direktoru-belli-oldu-p364596) — 29 Eyl 2026 15:06
+
+4. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Eyüpspor'un yeni teknik direktörü belli oldu!](https://www.cumhuriyet.com.tr/spor/eyupspor-un-yeni-teknik-direktoru-belli-oldu-2542216) — 29 Eyl 2026 15:10
+
+5. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Son Dakika | Süper Lig ekibi yeni teknik direktörünü resmen açıkladı](https://halktv.com.tr/spor/son-dakika-super-lig-ekibi-yeni-teknik-direktorunu-resmen-acikladi-1058351h) — 29 Eyl 2026 15:31
+
+6. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Eyüpspor'un yeni teknik direktörü Mustafa Dalcı oldu](https://www.aa.com.tr/tr/spor/eyupsporun-yeni-teknik-direktoru-mustafa-dalci-oldu-/4072906) — 29 Eyl 2026 15:48
+
+7. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [Eyüpspor, Mustafa Dalcı’ya emanet](https://www.cnnturk.com/spor/futbol/eyupspor-mustafa-dalciya-emanet-3472965) — 29 Eyl 2026 18:05
+
+---
+
+### [16] Bakan Şimşek'ten fon soruşturması hakkında açıklama  (7 farklı kaynakta, 7 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -977,7 +1348,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [12] Rafael Leao'dan flaş transfer itirafı! Galatasaray...  (7 farklı kaynakta, 7 makale)
+### [17] Rafael Leao'dan flaş transfer itirafı! Galatasaray...  (7 farklı kaynakta, 7 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -1020,7 +1391,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [13] Fenerbahçe’de eski başkan Sadettin Saran ve yönetimi ibra edildi  (6 farklı kaynakta, 14 makale)
+### [18] Fenerbahçe’de eski başkan Sadettin Saran ve yönetimi ibra edildi  (6 farklı kaynakta, 14 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -1067,7 +1438,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [14] Erakçi: Arabuluculara önerilerimizi ilettik ABD'nin cevabını bekliyoruz  (6 farklı kaynakta, 13 makale)
+### [19] Erakçi: Arabuluculara önerilerimizi ilettik ABD'nin cevabını bekliyoruz  (6 farklı kaynakta, 13 makale)
 
 **Kategori:** Güncel
 
@@ -1113,7 +1484,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [15] Fon soruşturmasında 9 gözaltı  (6 farklı kaynakta, 9 makale)
+### [20] Fon soruşturmasında 9 gözaltı  (6 farklı kaynakta, 9 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -1155,7 +1526,126 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [16] Aslı Enver ve Berkin Gökbudak Türkiye’den ayrılıyor! Ünlü çiftin yeni adresi Çekya oldu  (6 farklı kaynakta, 6 makale)
+### [21] Futbol Dünyasını Sarsan Karar: Manchester City Mali Kuralları İhlal Etmekten Suçlu Bulundu  (6 farklı kaynakta, 7 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> İngiltere Premier Lig yönetimi, Manchester City'nin dokuz sezon boyunca finansal kuralları kasıtlı olarak çiğnediğini ve evrakta usulsüzlük yaptığını resmen duyurdu. Futbol dünyasında deprem etkisi yaratan kararda verilecek ceza henüz netleşmezken, kulübün karara itiraz için kısa bir süresi bulunuyor.
+
+**Farklı kaynak sayısı:** 6
+**Toplam makale sayısı:** 7
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu · Spor** (`sozcu.com.tr`) — 2 makale
+
+   - 1. [Acun Ilıcalı ateş püskürdü: 'Bunun adı finansal doping'](https://www.sozcu.com.tr/acun-ilicali-ates-puskurdu-bunun-adi-finansal-doping-p364535) — 29 Eyl 2026 11:45
+   - 2. [İngiliz futbolunda deprem! Manchester City hakkında resmi açıklama geldi](https://www.sozcu.com.tr/ingiliz-futbolunda-deprem-manchester-city-hakkinda-resmi-aciklama-geldi-p364613) — 29 Eyl 2026 16:47
+
+2. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Hull City'nin sahibi Ilıcalı'dan Manchester City'le ilgili iddialara "finansal doping" …](https://www.aa.com.tr/tr/spor/hull-citynin-sahibi-ilicalidan-manchester-cityle-ilgili-iddialara-finansal-doping-benzetmesi-/4072581) — 29 Eyl 2026 11:49
+
+3. **Fotospor · Sondakika** (`fotospor.com`) — 1 makale
+
+   - 1. [Acun Il�cal�'dan Manchester City a��klamas�](https://www.fotospor.com.tr/avrupadan-futbol/acun-ilicalidan-manchester-city-aciklamasi-713790) — 29 Eyl 2026 14:29
+
+4. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [Futbol Dünyasını Sarsan Karar: Manchester City Mali Kuralları İhlal Etmekten Suçlu Bulundu](https://onedio.com/haber/futbol-dunyasini-sarsan-karar-manchester-city-mali-kurallari-ihlal-etmekten-suclu-bulundu-1384783) — 29 Eyl 2026 16:32
+
+5. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [İngiltere Premier Lig'den Manchester City kararı: Resmen açıklandı!](https://www.cumhuriyet.com.tr/spor/ingiltere-premier-lig-den-manchester-city-karari-resmen-aciklandi-2542240) — 29 Eyl 2026 16:37
+
+6. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [Acun Ilıcalı’dan Manchester City’e doping benzetmesi](https://www.cnnturk.com/spor/futbol/acun-ilicalidan-manchester-citye-doping-benzetmesi-3472925) — 29 Eyl 2026 16:46
+
+---
+
+### [22] Deniz Yavuzyılmaz’dan eşine yönelik soruşturmaya tepki: Fon vurgununu kurcalamayın mesajı veriliyor  (6 farklı kaynakta, 7 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Yeni Partili Deniz Yavuzyılmaz, eşi Serpil Yavuzyılmaz hakkında “yağma” ve “kamu kurum veya kuruluşlarının zararına dolandırıcılık” suçlamaları kapsamında soruşturma başlatılmasının ardından açıklama yaptı. Soruşturmayı fon krizine ilişkin çalışmalarına bağlayan Yavuzyılmaz, “Bana dokunamadıklarından ailem üzerinden beni tehdit etmelerinden ibarettir” dedi. Yavuzyılmaz, çalışmalarını sürdüreceğini belirterek “Bu tehdide pabuç bırakacak değilim” ifadelerini kullandı.
+
+**Farklı kaynak sayısı:** 6
+**Toplam makale sayısı:** 7
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Artigercek** (`artigercek.com`) — 2 makale
+
+   - 1. [YENİ Parti Milletvekili Mustafa Erdem hakkında soruşturma başlatıldı](https://artigercek.com/politika/yeni-parti-milletvekili-mustafa-erdem-hakkinda-sorusturma-baslatildi-350939h) — 27 Eyl 2026 09:33
+   - 2. [YENİ Partili Yavuzyılmaz'ın eşi hakkında soruşturma başlatıldı](https://artigercek.com/politika/yeni-partili-yavuzyilmazin-esi-hakkinda-sorusturma-baslatildi-351034h) — 29 Eyl 2026 14:27
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Son dakika... Deniz Yavuzyılmaz'ın eşi Serpil Yavuzyılmaz hakkında soruşturma başlatıldı](https://www.cumhuriyet.com.tr/siyaset/son-dakika-deniz-yavuzyilmaz-in-esi-sera-yavuzyilmaz-hakkinda-sorusturma-baslatildi-2542176) — 29 Eyl 2026 14:00
+
+3. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Deniz Yavuzyılmaz’ın eşi Serpil Yavuzyılmaz hakkında soruşturma başlatıldı](https://www.sozcu.com.tr/deniz-yavuzyilmaz-in-esi-serpil-yavuzyilmaz-hakkinda-sorusturma-baslatildi-p364581) — 29 Eyl 2026 14:29
+
+4. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Deniz Yavuzyılmaz'ın eşi hakkında soruşturma](https://www.aydinlik.com.tr/haber/deniz-yavuzyilmazin-esi-hakkinda-sorusturma-592183) — 29 Eyl 2026 15:46
+
+5. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Eşi hakkında soruşturma başlatıldı: Deniz Yavuzyılmaz'dan zehir zemberek sözler](https://halktv.com.tr/turkiye/esi-hakkinda-sorusturma-baslatildi-deniz-yavuzyilmazdan-zehir-zemberek-sozler-1058355h) — 29 Eyl 2026 15:55
+
+6. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Deniz Yavuzyılmaz’dan eşine yönelik soruşturmaya tepki: Fon vurgununu kurcalamayın mesa…](https://www.karar.com/guncel-haberler/deniz-yavuzyilmazdan-esine-yonelik-sorusturmaya-tepki-fon-vurgununu-2075145) — 29 Eyl 2026 16:44
+
+---
+
+### [23] Usta tiyatrocu Ali Hürol hayatını kaybetti: Melek Baykal'dan duygusal veda  (6 farklı kaynakta, 6 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Tiyatro dünyasının duayen isimlerinden, usta oyuncu ve yönetmen Ali Hürol 76 yaşında yaşamını yitirdi. Acı haberin ardından sanat camiası yasa boğulurken, Melek Baykal ve Arda Aydın sosyal medya hesaplarından duygusal veda mesajları yayımladı.
+
+**Farklı kaynak sayısı:** 6
+**Toplam makale sayısı:** 6
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Haberturk · Magazin** (`haberturk.com`) — 1 makale
+
+   - 1. [Usta tiyatrocu hayatını kaybetti](https://www.haberturk.com/magazin/ali-hurol-hayatini-kaybetti-3915901) — 29 Eyl 2026 11:43
+
+2. **Sozcu · Magazin** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Usta tiyatrocu Ali Hürol hayatını kaybetti: Melek Baykal'dan duygusal veda](https://www.sozcu.com.tr/usta-tiyatrocu-ali-hurol-hayatini-kaybetti-melek-baykal-dan-duygusal-veda-p364574) — 29 Eyl 2026 13:47
+
+3. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Usta tiyatrocu Ali Hürol hayatını kaybetti: Melek Baykal'dan duygusal veda](https://www.sozcu.com.tr/usta-tiyatrocu-ali-hurol-hayatini-kaybetti-melek-baykal-dan-duygusal-veda-p364574) — 29 Eyl 2026 13:47
+
+4. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Usta oyuncu Ali Hürol hayatını kaybetti](https://www.aydinlik.com.tr/haber/usta-oyuncu-ali-hurol-hayatini-kaybetti-592168) — 29 Eyl 2026 13:55
+
+5. **Elele** (`elele.com.tr`) — 1 makale
+
+   - 1. [Aşkına Eşkıya'nın Cemşit'i Ali Hürol hayatını kaybetti](https://www.elele.com.tr/magazin/askina-eskiyanin-cemsiti-ali-hurol-hayatini-kaybetti) — 29 Eyl 2026 14:03
+
+6. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Usta tiyatrocu Ali Hürol hayatını kaybetti: Melek Baykal'dan duygusal veda](https://www.cumhuriyet.com.tr/kultur-sanat/usta-tiyatrocu-ali-hurol-hayatini-kaybetti-melek-baykal-dan-duygusal-veda-2542196) — 29 Eyl 2026 14:40
+
+---
+
+### [24] Aslı Enver ve Berkin Gökbudak Türkiye’den ayrılıyor! Ünlü çiftin yeni adresi Çekya oldu  (6 farklı kaynakta, 6 makale)
 
 **Kategori:** Güncel
 
@@ -1194,7 +1684,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [17] İstanbul Havalimanı&apos;nda Kalkış Hazırlığındaki Uçak Haczedildi: Yolcular Uçaktan İndirildi  (6 farklı kaynakta, 6 makale)
+### [25] İstanbul Havalimanı&apos;nda Kalkış Hazırlığındaki Uçak Haczedildi: Yolcular Uçaktan İndirildi  (6 farklı kaynakta, 6 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -1233,7 +1723,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [18] Şimdi Altın Alan Yıl Sonuna Kadar Kazanır?  (6 farklı kaynakta, 6 makale)
+### [26] Şimdi Altın Alan Yıl Sonuna Kadar Kazanır?  (6 farklı kaynakta, 6 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -1272,7 +1762,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [19] Motovlogcu Dayı Olarak Tanınan Cumhur Kahraman, Motosikletine Tır Çarpması Sonucu Hayatını Kaybetti  (5 farklı kaynakta, 7 makale)
+### [27] Motovlogcu Dayı Olarak Tanınan Cumhur Kahraman, Motosikletine Tır Çarpması Sonucu Hayatını Kaybetti  (5 farklı kaynakta, 7 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -1309,7 +1799,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [20] 6 ilde FETÖ operasyonu: 20 şüpheli gözaltında  (5 farklı kaynakta, 7 makale)
+### [28] 6 ilde FETÖ operasyonu: 20 şüpheli gözaltında  (5 farklı kaynakta, 7 makale)
 
 **Kategori:** Güncel
 
@@ -1346,7 +1836,183 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [21] Anthropic, Claude Sonnet 5.5'i piyasaya sürdü: Selefiyle aynı fiyata yüzde 30 daha hızlı ve daha ucuz  (5 farklı kaynakta, 5 makale)
+### [29] Dursun Özbek seçimi kazandı: Ali Koç'un yerini aldı  (5 farklı kaynakta, 6 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Galatasaray Başkanı Dursun Özbek seçimlerde istediğini aldı. Özbek daha öncesinde Ali Koç'un da üstlendiği yönetim kurulu üyeliğine seçildi.
+
+**Farklı kaynak sayısı:** 5
+**Toplam makale sayısı:** 6
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu · Spor** (`sozcu.com.tr`) — 2 makale
+
+   - 1. [Ali Koç ayrıldı, Dursun Özbek aday oldu](https://www.sozcu.com.tr/ali-koc-ayrildi-dursun-ozbek-aday-oldu-p363991) — 27 Eyl 2026 17:10
+   - 2. [Dursun Özbek'e önemli görev! Avrupa Futbol Kulüpleri yönetimine seçildi](https://www.sozcu.com.tr/dursun-ozbek-e-onemli-gorev-avrupa-futbol-kulupleri-yonetimine-secildi-p364636) — 29 Eyl 2026 18:29
+
+2. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Dursun Özbek'e önemli görev! Avrupa Futbol Kulüpleri yönetimine seçildi](https://www.sozcu.com.tr/dursun-ozbek-e-onemli-gorev-avrupa-futbol-kulupleri-yonetimine-secildi-p364636) — 29 Eyl 2026 18:29
+
+3. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Dursun Özbek seçimi kazandı: Ali Koç'un yerini aldı](https://halktv.com.tr/spor/dursun-ozbek-secimi-kazandi-ali-kocun-yerini-aldi-1058377h) — 29 Eyl 2026 18:32
+
+4. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Galatasaray Başkanı Dursun Özbek, Avrupa Futbol Kulüpleri Yönetim Kurulu Üyesi oldu](https://www.aa.com.tr/tr/spor/galatasaray-baskani-dursun-ozbek-avrupa-futbol-kulupleri-yonetim-kurulu-uyesi-oldu/4073047) — 29 Eyl 2026 18:40
+
+5. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [Dursun Özbek, EFC yönetime seçildi](https://www.cnnturk.com/spor/futbol/dursun-ozbek-efc-yonetime-secildi-3473017) — 29 Eyl 2026 22:28
+
+---
+
+### [30] Cumhurbaşkanı Erdoğan&apos;dan Fatma Betül Sayan Kaya İstifası Sonrası Fon Açıklaması: &quot;Yanlış Yapanla Vedalaşırız&quot;  (5 farklı kaynakta, 5 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Fon iddialarının odağındaki Fatma Betül Sayan Kaya'nın AK Parti'deki görevlerinden istifasının ardından gözler Cumhurbaşkanı Recep Tayyip Erdoğan'a çevrilmişti. Erdoğan, AK Parti Kongre Merkezi'ndeki Genişletilmiş İl Başkanları Toplantısı'nda isim vermeden sert mesajlar verdi.Tasfiyesine karar verilen fonlar için Cumhurbaşkanı Yardımcısı Cevdet Yılmaz başkanlığında tam yetkili bir kurul kurulduğunu, Devlet Denetleme Kurulu'nun da görevlendirildiğini açıklayan Erdoğan, 'İnşallah bu süreci süratle neticelendireceğiz' dedi. [Kaynak: Hürriyet]
+
+**Farklı kaynak sayısı:** 5
+**Toplam makale sayısı:** 5
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Erdoğan'dan fon soruşturması açıklaması: Devlet Denetleme Kurulu'nu yetkilendirdim](https://www.cnbce.com/haberler/erdogandan-fon-sorusturmasi-aciklamasi-devlet-denetleme-kurulunu-yetkilendirdim-h38327) — 29 Eyl 2026 15:43
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Erdoğan: 'Fon soruşturması için tam yetkili kurul oluşturduk'](https://www.cumhuriyet.com.tr/turkiye/erdogan-fon-sorusturmasi-icin-tam-yetkili-kurul-olusturduk-2542225) — 29 Eyl 2026 15:52
+
+3. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 1 makale
+
+   - 1. [Erdoğan'dan 'fon' açıklaması: Devlet Denetleme Kurulumuzu görevlendirdim](https://www.ekonomigazetesi.com/gundem/erdogandan-fon-aciklamasi-devlet-denetleme-kurulumuzu-gorevlendirdim-88585) — 29 Eyl 2026 16:24
+
+4. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Erdoğan: Devlet Denetleme Kurulu devrede](https://www.karar.com/guncel-haberler/erdogan-devlet-denetleme-kurulu-devrede-2075143) — 29 Eyl 2026 16:25
+
+5. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [Cumhurbaşkanı Erdoğan&apos;dan Fatma Betül Sayan Kaya İstifası Sonrası Fon Açıklaması: …](https://onedio.com/haber/erdogan-dan-fatma-betul-sayan-kaya-istifasi-sonrasi-fon-mesaji-yanlis-yapanla-vedalasiriz-1384782) — 29 Eyl 2026 16:27
+
+---
+
+### [31] AMD'den yapay zeka hamlesi : World Labs'i 8,2 milyar dolara satın alacak  (5 farklı kaynakta, 5 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> AMD, yapay zeka alanında faaliyet gösteren World Labs'i yaklaşık 8,2 milyar dolar değerindeki anlaşmayla satın alacak. Şirket, satın almayla yapay zeka donanımı, yazılımı ve sistemleri geliştirme kapasitesini güçlendirmeyi hedefliyor.
+
+**Farklı kaynak sayısı:** 5
+**Toplam makale sayısı:** 5
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [AMD'den yapay zeka hamlesi : World Labs'i 8,2 milyar dolara satın alacak](https://www.iscihaber.net/teknoloji/amdden-yapay-zeka-hamlesi-world-labsi-82-milyar-dolara-satin-alacak/267042) — 28 Eyl 2026 21:17
+
+2. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [AMD, World Labs'i 8,2 milyar dolara satın alıyor](https://www.foreks.com/haber/detay/6abb2ac495016b5817e61a41/PICNEWS/tr/amd-world-labs-i-8-2-milyar-dolara-satin-aliyor-29-09-26/) — 29 Eyl 2026 03:04
+
+3. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Teknoloji devi, yapay zeka devini satın aldı](https://www.sozcu.com.tr/teknoloji-devi-yapay-zeka-devini-satin-aldi-p364411) — 29 Eyl 2026 05:33
+
+4. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [AMD'den 8.2 milyar dolarlık satın alma](https://www.haberturk.com/ekonomi/amd-yapay-zeka-sirketi-world-labs-i-8-2-milyar-dolara-satin-alacak-3915831) — 29 Eyl 2026 07:39
+
+5. **Shiftdelete** (`shiftdelete.net`) — 1 makale
+
+   - 1. [AMD’den 8 Milyar Dolarlık Yapay Zeka Hamlesi: World Labs Satın Alındı](https://shiftdelete.net/amd-world-labs-satin-almasi) — 29 Eyl 2026 12:00
+
+---
+
+### [32] Burak Sel: Finans Piyasalarında Güven Öngörülebilir Kurallarla Sağlanır - GÜNDEM - İnternetin Ajansı  (5 farklı kaynakta, 5 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> FONLARDA PEŞ PEŞE YENİ KARARLAR Sermaye piyasalarındaki fon işlemlerine ilişkin soruşturma devam ederken son günlerde hem adli hem de idari alanda yeni kararlar alındı. SPK’nın değerlendirmelerinin ardından bazı şirket ve fonlar üzerindeki mal varlığı tedbirleri kaldırılırken gerçek kişiler ve para hareketlerine ilişkin incelemelerin sürdüğü bildirildi. Tasfiye sürecindeki fonlar için de yeni düzenlemeler gündeme geldi. SPK, 17 Eylül’de TEFAS üzerinden iletilip platform tarafından iptal edilen bazı alım-satım talimatlarının sahiplerine tasfiye bakiyesinden, katılma payı sahipliği oranında ödem
+
+**Farklı kaynak sayısı:** 5
+**Toplam makale sayısı:** 5
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [SPK'dan tasfiye edilen fonların işlemlerine ilişkin yeni açıklama](https://www.cnbce.com/haberler/spkdan-tasfiye-edilen-fonlarin-islemlerine-iliskin-yeni-aciklama-h38146) — 27 Eyl 2026 22:47
+
+2. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [SPK&apos;dan Tasfiyedeki Fonlarla İlgili Ödeme Açıklaması: 17 Eylül&apos;de İptal Edile…](https://onedio.com/haber/spk-dan-tasfiyedeki-fonlarla-ilgili-odeme-aciklamasi-17-eylul-de-iptal-edilen-talimatlara-odeme-yapilacak-1384286) — 28 Eyl 2026 04:33
+
+3. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [SPK’dan tasfiye edilen fonlar için ödeme açıklaması](https://www.haberturk.com/ekonomi/spkdan-tasfiye-edilen-fonlar-icin-odeme-aciklamasi-3915507) — 28 Eyl 2026 09:17
+
+4. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 1 makale
+
+   - 1. [Tasfiye sürecindeki fonların talimatlarıyla ilgili açıklama](https://www.ekonomigazetesi.com/ekonomi/tasfiye-surecindeki-fonlarin-talimatlariyla-ilgili-aciklama-88492) — 28 Eyl 2026 10:00
+
+5. **Kibrisgazetesi** (`kibrisgazetesi.com.tr`) — 1 makale
+
+   - 1. [Burak Sel: Finans Piyasalarında Güven Öngörülebilir Kurallarla Sağlanır - GÜNDEM - İnte…](https://kibrisgazetesi.com.tr/burak-sel-finans-piyasalarinda-guven-ongorulebilir-kurallarla-saglanir-gundem-internetin-ajansi/47583/) — 29 Eyl 2026 11:45
+
+---
+
+### [33] Uzay yarışında kritik eşik aşıldı: SpaceX'in Starship roketi ilk kez yörüngeye ulaştı  (5 farklı kaynakta, 5 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> SpaceX'in geliştirme süreci yaklaşık 10 yıldır süren dev roketi Starship, 14’üncü test uçuşunda ilk kez Dünya yörüngesine ulaşmayı başardı. TSK ile 15.46'da fırlatılan roket, ilk operasyonel yükü kapsamında 26 adet Starlink V3 uydusunu başarıyla yörüngeye konuşlandırdı.
+
+**Farklı kaynak sayısı:** 5
+**Toplam makale sayısı:** 5
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [SpaceX’in Starship roketi 14. testinde ilk kez yörüngeye ulaştı](https://www.cnbce.com/teknoloji/spacexin-starship-roketi-14-testinde-ilk-kez-yorungeye-ulasti-h38215) — 28 Eyl 2026 13:54
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Uzay yarışında kritik eşik aşıldı: SpaceX'in Starship roketi ilk kez yörüngeye ulaştı](https://www.cumhuriyet.com.tr/bilim-teknoloji/uzay-yarisinda-kritik-esik-asildi-spacex-in-starship-roketi-ilk-kez-yorungeye-ulasti-2541857) — 28 Eyl 2026 14:44
+
+3. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [SpaceX tarih yazdı: Starship ilk kez Dünya yörüngesine ulaştı](https://www.karar.com/teknoloji-haberleri/spacex-tarih-yazdi-starship-ilk-kez-dunya-yorungesine-ulasti-2074896) — 28 Eyl 2026 15:17
+
+4. **Chip** (`chip.com.tr`) — 1 makale
+
+   - 1. [Starship ilk kez yörüngede: 10 saatlik görev neden erken bitti?](https://www.chip.com.tr/guncel/starship-ilk-kez-yorungede-10-saatlik-gorev-neden-erken-bitti_184166.html) — 29 Eyl 2026 06:37
+
+5. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [Elon Musk'ın dev roketi ilk kez yörüngeye ulaştı](https://www.haberturk.com/ekonomi/elon-musk-in-dev-roketi-ilk-kez-yorungeye-ulasti-3915864) — 29 Eyl 2026 09:20
+
+---
+
+### [34] Anthropic, Claude Sonnet 5.5'i piyasaya sürdü: Selefiyle aynı fiyata yüzde 30 daha hızlı ve daha ucuz  (5 farklı kaynakta, 5 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -1383,7 +2049,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [22] Trabzonspor'da Ruslan Malinovskyi ameliyat edildi!  (5 farklı kaynakta, 5 makale)
+### [35] Trabzonspor'da Ruslan Malinovskyi ameliyat edildi!  (5 farklı kaynakta, 5 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -1418,7 +2084,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [23] Eşi tarafından bıçaklanarak ağır yaralanan 6 çocuk annesi, 23 günlük yaşam savaşını kaybetti  (5 farklı kaynakta, 5 makale)
+### [36] Eşi tarafından bıçaklanarak ağır yaralanan 6 çocuk annesi, 23 günlük yaşam savaşını kaybetti  (5 farklı kaynakta, 5 makale)
 
 **Kategori:** Güncel
 
@@ -1453,7 +2119,208 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [24] ABD-İran hattında yaptırım pazarlığı iddiası: Trump reddetti  (4 farklı kaynakta, 6 makale)
+### [37] 40 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler  (4 farklı kaynakta, 7 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Borsa İstanbul'da şirketler pay piyasasında sağlıklı fiyat oluşumunu desteklemek ve yatırımcı güvenini korumak amacıyla geri alım hamlelerini sürdürüyor. Son duyurularla birlikte birçok şirket yeni program başlattı.
+
+**Farklı kaynak sayısı:** 4
+**Toplam makale sayısı:** 7
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Bloomberght** (`bloomberght.com`) — 1 makale
+
+   - 1. [Türk Telekom'dan 2,5 milyar liralık azami fon tutarlı geri alım programı](https://www.bloomberght.com/turk-telekom-dan-2-5-milyar-liralik-azami-fon-tutarli-geri-alim-programi-3788148) — 14 Eyl 2026 07:01
+
+2. **Cnbce** (`cnbce.com`) — 4 makale
+
+   - 1. [33 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler](https://www.cnbce.com/borsa/33-sirket-borsada-kendi-paylarini-aldi-iste-hisse-geri-alim-yapan-sirketler-g37993) — 24 Eyl 2026 18:17
+   - 2. [17 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler](https://www.cnbce.com/borsa/17-sirket-borsada-kendi-paylarini-aldi-iste-hisse-geri-alim-yapan-sirketler-g38074) — 25 Eyl 2026 17:33
+   - 3. [34 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler](https://www.cnbce.com/borsa/34-sirket-borsada-kendi-paylarini-aldi-iste-hisse-geri-alim-yapan-sirketler-g38235) — 28 Eyl 2026 19:21
+   - 4. [40 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler](https://www.cnbce.com/borsa/40-sirket-borsada-kendi-paylarini-aldi-iste-hisse-geri-alim-yapan-sirketler-g38339) — 29 Eyl 2026 18:43
+
+3. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [Kardemir 750 milyon TL'lik pay geri alım programı başlattı](https://www.foreks.com/haber/detay/6ab8df0695016b5817e60c78/PICNEWS/tr/kardemir-750-milyon-tl-lik-pay-geri-alim-programi-baslatti-27-09-26/) — 27 Eyl 2026 09:16
+
+4. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
+
+   - 1. [Borsada Dev Geri Alım: 34 Şirket Kendi Hissesini Topladı](https://www.kamudanhaber.net/borsada-dev-geri-alim-34-sirket-kendi-hissesini-topladi) — 29 Eyl 2026 05:19
+
+---
+
+### [38] Balıkesir Marmara Belediye Başkanı Aydın Dinçer kimdir? Aydın Dinçer kaç yaşında, nereli?  (4 farklı kaynakta, 7 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Balıkesir'de Marmara Belediye Başkanı Aydın Dinçer AKP'ye katıldı. Peki, Balıkesir Marmara Belediye Başkanı Aydın Dinçer kimdir? Aydın Dinçer kaç yaşında, nereli?
+
+**Farklı kaynak sayısı:** 4
+**Toplam makale sayısı:** 7
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [9 belediye başkanı AKP'ye katıldı](https://www.sozcu.com.tr/9-belediye-baskani-akp-ye-katildi-29-eylul-2026-p364597) — 29 Eyl 2026 15:34
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 3 makale
+
+   - 1. [Antalya Elmalı Belediye Başkanı Halil Öztürk kimdir? Halil Öztürk kaç yaşında, nereli?](https://www.cumhuriyet.com.tr/turkiye/antalya-elmali-belediye-baskani-halil-ozturk-kimdir-halil-ozturk-kac-yasinda-nereli-2542237) — 29 Eyl 2026 16:26
+   - 2. [Balıkesir Marmara Belediye Başkanı Aydın Dinçer kimdir? Aydın Dinçer kaç yaşında, nereli?](https://www.cumhuriyet.com.tr/turkiye/balikesir-marmara-belediye-baskani-aydin-dincer-kimdir-aydin-dincer-kac-yasinda-nereli-2542239) — 29 Eyl 2026 16:32
+   - 3. [Erzurum Şenkaya Belediye Başkanı Görbil Özcan kimdir? Aydın Dinçer kaç yaşında, nereli?](https://www.cumhuriyet.com.tr/turkiye/erzurum-senkaya-belediye-baskani-gorbil-ozcan-kimdir-aydin-dincer-kac-yasinda-nereli-2542242) — 29 Eyl 2026 16:37
+
+3. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
+
+   - 1. [AK Parti’ye 9 Belediye Başkanı Daha Katıldı! İşte Katılan İsimler...](https://www.kamudanhaber.net/ak-partiye-9-belediye-baskani-daha-katildi-iste-katilan-isimler) — 29 Eyl 2026 17:04
+
+4. **Iscihaber · News** (`iscihaber.net`) — 2 makale
+
+   - 1. [Erzurum Şenkaya Belediye Başkanı Görbil Özcan kimdir, kaç yaşında ve nereli?](https://www.iscihaber.net/gundem/erzurum-senkaya-belediye-baskani-gorbil-ozcan-kimdir-kac-yasinda-ve-nereli/267235) — 29 Eyl 2026 17:48
+   - 2. [Balıkesir Marmara Belediye Başkanı Aydın Dinçer kimdir, kaç yaşında ve nereli?](https://www.iscihaber.net/gundem/balikesir-marmara-belediye-baskani-aydin-dincer-kimdir-kac-yasinda-ve-nereli/267236) — 29 Eyl 2026 17:49
+
+---
+
+### [39] Deniz ulaşımına hava engeli: Kabatepe-Gökçeada hattındaki bazı feribot seferleri yarın yapılamayacak  (4 farklı kaynakta, 7 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Ege Denizi’nin kuzeyindeki olumsuz hava koşulları nedeniyle Kabatepe-Gökçeada hattında yarın bazı feribot seferleri iptal edildi. GESTAŞ, Kabatepe’den 12.00 ve 16.00, Gökçeada’dan 10.00 ve 14.00 seferlerinin yapılacağını, tarifedeki diğer tüm seferlerin ise gerçekleştirilemeyeceğini açıkladı.
+
+**Farklı kaynak sayısı:** 4
+**Toplam makale sayısı:** 7
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 2 makale
+
+   - 1. [BUDO'nun 12 seferi iptal edildi](https://www.cumhuriyet.com.tr/turkiye/budo-nun-12-seferi-iptal-edildi-2541838) — 28 Eyl 2026 13:59
+   - 2. [BUDO'nun 8 seferi olumsuz hava koşulları nedeniyle iptal edildi](https://www.cumhuriyet.com.tr/turkiye/budo-nun-8-seferi-olumsuz-hava-kosullari-nedeniyle-iptal-edildi-2541952) — 28 Eyl 2026 21:40
+
+2. **Halktv** (`halktv.com.tr`) — 2 makale
+
+   - 1. [Sağanak Marmara'yı esir aldı: BUDO'nun 12 seferi iptal edildi](https://halktv.com.tr/turkiye/saganak-marmarayi-esir-aldi-budonun-12-seferi-iptal-edildi-1058072h) — 28 Eyl 2026 14:07
+   - 2. [Ulaşım durdu: Yarınki feribot seferleri iptal edildi!](https://halktv.com.tr/turkiye/ulasim-durdu-yarinki-feribot-seferleri-iptal-edildi-1058361h) — 29 Eyl 2026 16:29
+
+3. **Karar** (`karar.com`) — 2 makale
+
+   - 1. [Olumsuz hava ulaşımı vurdu: BUDO’nun 12 seferi iptal edildi](https://www.karar.com/sehir-haberleri/olumsuz-hava-ulasimi-vurdu-budonun-12-seferi-iptal-edildi-2074881) — 28 Eyl 2026 14:10
+   - 2. [Deniz ulaşımına hava engeli: Kabatepe-Gökçeada hattındaki bazı feribot seferleri yarın …](https://www.karar.com/sehir-haberleri/deniz-ulasimina-hava-engeli-kabatepe-gokceada-hattindaki-bazi-feribot-2075132) — 29 Eyl 2026 14:51
+
+4. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [BUDO'nun 8 seferi, olumsuz hava şartları nedeniyle iptal edildi](https://www.iscihaber.net/gundem/budonun-8-seferi-olumsuz-hava-sartlari-nedeniyle-iptal-edildi/267050) — 28 Eyl 2026 21:56
+
+---
+
+### [40] Türkiye'nin ekonomi ajandası yoğun: Ekim ayında kritik veriler ve faiz kararı takip edilecek  (4 farklı kaynakta, 6 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Türkiye ekonomisinde ekim ayı yoğun bir veri ve toplantı trafiğine sahne olacak. Dış ticaret ve enflasyon verilerinin yanı sıra Türkiye Cumhuriyet Merkez Bankası (TCMB) Başkanı Fatih Karahan'ın TBMM'de yapacağı sunum, sanayi üretimi, ödemeler dengesi ve 2027 yılı bütçe sürecine ilişkin gelişmeler takip edilecek.
+
+**Farklı kaynak sayısı:** 4
+**Toplam makale sayısı:** 6
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [TCMB Başkanı Karahan'ın Meclis sunumunun tarihi belli oldu](https://www.cnbce.com/haberler/tcmb-baskani-karahanin-meclis-sunumunun-tarihi-belli-oldu-h38199) — 28 Eyl 2026 11:46
+
+2. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 1 makale
+
+   - 1. [Merkez Bankası Başkanı Karahan 6 Ekim’de Meclise sunum yapacak](https://www.ekonomigazetesi.com/ekonomi/merkez-bankasi-6-ekimde-meclise-sunum-yapacak-88495) — 28 Eyl 2026 12:15
+
+3. **Haberturk · Ekonomi** (`haberturk.com`) — 2 makale
+
+   - 1. [TCMB Başkanı Karahan Meclis'te sunum yapacak](https://www.haberturk.com/ekonomi/tcmb-baskani-karahan-meclis-te-sunum-yapacak-3915775) — 29 Eyl 2026 04:41
+   - 2. [Ekonominin ekim ayı gündemi yoğun](https://www.haberturk.com/ekonomi/ekonominin-ekim-ayi-gundemi-yogun-gececek-3915857) — 29 Eyl 2026 08:43
+
+4. **Cnnturk · News** (`cnnturk.com`) — 2 makale
+
+   - 1. [Türkiye'nin ekonomi ajandası yoğun: Ekim ayında kritik veriler ve faiz kararı takip edi…](https://www.cnnturk.com/ekonomi/turkiyenin-ekonomi-ajandasi-yogun-ekim-ayinda-kritik-veriler-ve-faiz-karari-takip-edilecek-3472774) — 29 Eyl 2026 11:31
+   - 2. [Merkez Bankası, TBMM'de sunum yapacak](https://www.cnnturk.com/video/ekonomi/merkez-bankasi-tbmmde-sunum-yapacak-3472879) — 29 Eyl 2026 15:46
+
+---
+
+### [41] Kılıçdaroğlu ihraç edilmişti: Faik Öztrak istifasını açıkladı  (4 farklı kaynakta, 6 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Butlan CHP'sinin grup başkanvekili Faik Öztrak, Sosyal Demokrasi Derneği’nin, mahkeme kararıyla CHP Genel Başkanlığı'na "atanan" Kemal Kılıçdaroğlu'nu üyelikten ihraç etmesinin ardından dernek üyeliğinden istifa ettiğini açıkladı.
+
+**Farklı kaynak sayısı:** 4
+**Toplam makale sayısı:** 6
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Sosyal Demokrasi Derneği'nden Kılıçdaroğlu kararı: Üyelikten ihraç edildi](https://www.sozcu.com.tr/sosyal-demokrasi-dernegi-nden-kilicdaroglu-karari-uyelikten-ihrac-edildi-p364183) — 28 Eyl 2026 09:28
+
+2. **Artigercek** (`artigercek.com`) — 1 makale
+
+   - 1. [Sosyal Demokrasi Derneği Kemal Kılıçdaroğlu'nu ihraç etti](https://artigercek.com/politika/sosyal-demokrasi-dernegi-kemal-kilicdaroglunu-ihrac-etti-350968h) — 28 Eyl 2026 11:15
+
+3. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 2 makale
+
+   - 1. [Kılıçdaroğlu ihraç edilmişti: Faik Öztrak istifasını açıkladı](https://www.cumhuriyet.com.tr/siyaset/kilicdaroglu-ihrac-edilmisti-faik-oztrak-istifasini-acikladi-2541847) — 28 Eyl 2026 14:18
+   - 2. [Kılıçdaroğlu ihraç edildi, Öztrak istifa etti: O dernek için CHP'den bir istifa daha geldi](https://www.cumhuriyet.com.tr/siyaset/kilicdaroglu-ihrac-edildi-oztrak-istifa-etti-o-dernek-icin-chp-den-bir-istifa-daha-geldi-2541918) — 28 Eyl 2026 19:13
+
+4. **Aydinlik** (`aydinlik.com.tr`) — 2 makale
+
+   - 1. [Sosyal Demokrasi Derneği, Kemal Kılıçdaroğlu'nu ihraç etti](https://www.aydinlik.com.tr/haber/sosyal-demokrasi-dernegi-kemal-kilicdaroglunu-ihrac-etti-592024) — 28 Eyl 2026 15:57
+   - 2. [Kılıçdaroğlu'nun ihracına tepki](https://www.aydinlik.com.tr/haber/kilicdaroglunun-ihracina-tepki-592173) — 29 Eyl 2026 14:19
+
+---
+
+### [42] Cumhuriyet Silivri'den bildiriyor... ‘Casusluk’ davasında üçüncü celse! İmamoğlu'ndan sert tepki: 'Bir tane delil yansıtılmaz mı?'  (4 farklı kaynakta, 6 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Tutuklu İBB Başkanı Ekrem İmamoğlu, gazeteci Merdan Yanardağ, Necati Özkan ve Hüseyin Gün’ün “siyasal casusluk” suçlamasıyla yargılandığı davanın üçüncü celsesi bugün görülecek. Önceki celsede MİT’ten beklenen yanıtın henüz dosyaya ulaşmadığı belirtilirken dört sanığın da tutukluluk hallerinin devamına karar verilmişti.
+
+**Farklı kaynak sayısı:** 4
+**Toplam makale sayısı:** 6
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Casusluk davasında üçüncü duruşma: Ekrem İmamoğlu ve Merdan Yanardağ yeniden hakim karş…](https://halktv.com.tr/siyaset/casusluk-davasinda-ucuncu-durusma-ekrem-imamoglu-ve-merdan-yanardag-yeniden-hakim-karsisinda-1058198h) — 29 Eyl 2026 07:07
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 2 makale
+
+   - 1. [Cumhuriyet Silivri'den bildiriyor... ‘Casusluk’ davasında üçüncü celse! İmamoğlu'ndan s…](https://www.cumhuriyet.com.tr/turkiye/cumhuriyet-silivri-den-bildiriyor-casusluk-davasinda-ucuncu-celse-imamoglu-ndan-sert-tepki-bir-tane-delil-yansitilmaz-mi-2542007) — 29 Eyl 2026 07:19
+   - 2. [Cumhuriyet Silivri'den bildiriyor... ‘Casusluk’ davasında üçüncü celse: Gözler MİT’ten …](https://www.cumhuriyet.com.tr/turkiye/cumhuriyet-silivri-den-bildiriyor-casusluk-davasinda-ucuncu-celse-gozler-mit-ten-beklenen-yazida-2542007) — 29 Eyl 2026 07:19
+
+3. **Artigercek** (`artigercek.com`) — 2 makale
+
+   - 1. [Casusluk davası | İmamoğlu'ndan fon krizi ve Fatma Betül Sayan Kaya tepkisi](https://artigercek.com/politika/casusluk-davasi-imamoglundan-fon-krizi-ve-fatma-betul-sayan-kaya-tepkisi-351007h) — 29 Eyl 2026 08:12
+   - 2. [Casusluk davası | İmamoğlu: Asrın akıl tutulmuşluğu](https://artigercek.com/politika/casusluk-davasi-imamoglu-asrin-akil-tutulmuslugu-351007h) — 29 Eyl 2026 08:12
+
+4. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [İmamoğlu ve 3 ismin yargılandığı ‘casusluk’ davasında 5’inci duruşma](https://www.aydinlik.com.tr/haber/imamoglu-ve-3-ismin-yargilandigi-casusluk-davasinda-5inci-durusma-592116) — 29 Eyl 2026 08:22
+
+---
+
+### [43] ABD-İran hattında yaptırım pazarlığı iddiası: Trump reddetti  (4 farklı kaynakta, 6 makale)
 
 **Kategori:** Güncel
 
@@ -1486,40 +2353,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [25] 34 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler  (4 farklı kaynakta, 6 makale)
-
-**Kategori:** Ekonomi / Finans
-
-**Açıklama:**
-
-> Borsa İstanbul'da şirketler pay piyasasında sağlıklı fiyat oluşumunu desteklemek ve yatırımcı güvenini korumak amacıyla geri alım hamlelerini sürdürüyor. Son duyurularla birlikte birçok şirket yeni program başlattı.
-
-**Farklı kaynak sayısı:** 4
-**Toplam makale sayısı:** 6
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Bloomberght** (`bloomberght.com`) — 1 makale
-
-   - 1. [Türk Telekom'dan 2,5 milyar liralık azami fon tutarlı geri alım programı](https://www.bloomberght.com/turk-telekom-dan-2-5-milyar-liralik-azami-fon-tutarli-geri-alim-programi-3788148) — 14 Eyl 2026 07:01
-
-2. **Cnbce** (`cnbce.com`) — 3 makale
-
-   - 1. [33 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler](https://www.cnbce.com/borsa/33-sirket-borsada-kendi-paylarini-aldi-iste-hisse-geri-alim-yapan-sirketler-g37993) — 24 Eyl 2026 18:17
-   - 2. [17 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler](https://www.cnbce.com/borsa/17-sirket-borsada-kendi-paylarini-aldi-iste-hisse-geri-alim-yapan-sirketler-g38074) — 25 Eyl 2026 17:33
-   - 3. [34 şirket borsada kendi paylarını aldı: İşte hisse geri alım yapan şirketler](https://www.cnbce.com/borsa/34-sirket-borsada-kendi-paylarini-aldi-iste-hisse-geri-alim-yapan-sirketler-g38235) — 28 Eyl 2026 19:21
-
-3. **Foreks** (`foreks.com`) — 1 makale
-
-   - 1. [Kardemir 750 milyon TL'lik pay geri alım programı başlattı](https://www.foreks.com/haber/detay/6ab8df0695016b5817e60c78/PICNEWS/tr/kardemir-750-milyon-tl-lik-pay-geri-alim-programi-baslatti-27-09-26/) — 27 Eyl 2026 09:16
-
-4. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
-
-   - 1. [Borsada Dev Geri Alım: 34 Şirket Kendi Hissesini Topladı](https://www.kamudanhaber.net/borsada-dev-geri-alim-34-sirket-kendi-hissesini-topladi) — 29 Eyl 2026 05:19
-
----
-
-### [26] Oyuncu Biran Damla Yılmaz'a Almanya'dan hapis cezası  (4 farklı kaynakta, 6 makale)
+### [44] Oyuncu Biran Damla Yılmaz'a Almanya'dan hapis cezası  (4 farklı kaynakta, 6 makale)
 
 **Kategori:** Kültür / Sanat
 
@@ -1552,39 +2386,41 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [27] Cumhuriyet Silivri'den bildiriyor... ‘Casusluk’ davasında üçüncü celse! İmamoğlu'ndan sert tepki: 'Bir tane delil yansıtılmaz mı?'  (4 farklı kaynakta, 5 makale)
+### [45] ASELSAN ve Türk Telekom İmzalı Yerli Telefonun Çıkış Tarihi ve Üretim Yeri Belli Oldu  (4 farklı kaynakta, 5 makale)
 
-**Kategori:** Güncel
+**Kategori:** Bilim / Teknoloji
 
 **Açıklama:**
 
-> Tutuklu İBB Başkanı Ekrem İmamoğlu, gazeteci Merdan Yanardağ, Necati Özkan ve Hüseyin Gün’ün “siyasal casusluk” suçlamasıyla yargılandığı davanın üçüncü celsesi bugün görülecek. Önceki celsede MİT’ten beklenen yanıtın henüz dosyaya ulaşmadığı belirtilirken dört sanığın da tutukluluk hallerinin devamına karar verilmişti.
+> Türkiye teknoloji ekosisteminde uzun süredir beklenen yerli akıllı telefon hamlesi somut adımlarla hayata geçiyor. Savunma sanayisinin öncü gücü ASELSAN ile iletişim devi Türk Telekom, yerli akıllı telefon projesi için güçlerini birleştirdi. Üretim üssü Malatya olarak belirlenen ve Ar-Ge süreci TTT İnovasyon çatısı altında yürütülen yerli cihazın 2027 yılının ilk yarısında raflardaki yerini alması planlanıyor. ASELSAN […]
 
 **Farklı kaynak sayısı:** 4
 **Toplam makale sayısı:** 5
 
 **Geçtiği farklı kaynaklar:**
 
-1. **Halktv** (`halktv.com.tr`) — 1 makale
+1. **Karar** (`karar.com`) — 1 makale
 
-   - 1. [Casusluk davasında üçüncü duruşma: Ekrem İmamoğlu ve Merdan Yanardağ yeniden hakim karş…](https://halktv.com.tr/siyaset/casusluk-davasinda-ucuncu-durusma-ekrem-imamoglu-ve-merdan-yanardag-yeniden-hakim-karsisinda-1058198h) — 29 Eyl 2026 07:07
+   - 1. [Türkiye'nin yeni yerli telefonu geliyor: Üretim yeri Malatya, çıkış tarihi belli oldu](https://www.karar.com/teknoloji-haberleri/turkiyenin-yeni-yerli-telefonu-geliyor-uretim-yeri-malatya-cikis-2074990) — 29 Eyl 2026 07:23
 
-2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 2 makale
+2. **Shiftdelete** (`shiftdelete.net`) — 1 makale
 
-   - 1. [Cumhuriyet Silivri'den bildiriyor... ‘Casusluk’ davasında üçüncü celse! İmamoğlu'ndan s…](https://www.cumhuriyet.com.tr/turkiye/cumhuriyet-silivri-den-bildiriyor-casusluk-davasinda-ucuncu-celse-imamoglu-ndan-sert-tepki-bir-tane-delil-yansitilmaz-mi-2542007) — 29 Eyl 2026 07:19
-   - 2. [Cumhuriyet Silivri'den bildiriyor... ‘Casusluk’ davasında üçüncü celse: Gözler MİT’ten …](https://www.cumhuriyet.com.tr/turkiye/cumhuriyet-silivri-den-bildiriyor-casusluk-davasinda-ucuncu-celse-gozler-mit-ten-beklenen-yazida-2542007) — 29 Eyl 2026 07:19
+   - 1. [ASELSAN ve Türk Telekom İmzalı Yerli Telefonun Çıkış Tarihi ve Üretim Yeri Belli Oldu](https://shiftdelete.net/aselsan-ve-turk-telekom-imzali-yerli-telefonun-cikis-tarihi-ve-uretim-yeri-belli-oldu) — 29 Eyl 2026 08:29
 
-3. **Artigercek** (`artigercek.com`) — 1 makale
+3. **Webtekno** (`webtekno.com`) — 1 makale
 
-   - 1. [Casusluk davası | İmamoğlu: Asrın akıl tutulmuşluğu](https://artigercek.com/politika/casusluk-davasi-imamoglu-asrin-akil-tutulmuslugu-351007h) — 29 Eyl 2026 08:12
+   - 1. [Yeni Yerli ve Milli Akıllı Telefon Geliyor: Aselsan ve Türk Telekom Üretecek!](
+                    https://www.webtekno.com/yeni-yerli-ve-milli-akilli-telefon-geliyor-h225907.html
+                    ) — 29 Eyl 2026 10:05
 
-4. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+4. **Megabayt · News** (`megabayt.com`) — 2 makale
 
-   - 1. [İmamoğlu ve 3 ismin yargılandığı ‘casusluk’ davasında 5’inci duruşma](https://www.aydinlik.com.tr/haber/imamoglu-ve-3-ismin-yargilandigi-casusluk-davasinda-5inci-durusma-592116) — 29 Eyl 2026 08:22
+   - 1. [ASELSAN ve Türk Telekom'dan dev iş birliği: Yerli telefon için geri sayım başladı](https://www.megabayt.com/teknoloji/aselsan-ve-turk-telekomdan-dev-is-birligi-yerli-telefon-icin-geri-sayim-basladi/103406) — 29 Eyl 2026 10:49
+   - 2. [ASELSAN ve Türk Telekom'dan dev iş birliği: Yerli akıllı telefon için geri sayım başladı](https://www.megabayt.com/teknoloji/aselsan-ve-turk-telekomdan-dev-is-birligi-yerli-akilli-telefon-icin-geri-sayim-basladi/103421) — 29 Eyl 2026 17:51
 
 ---
 
-### [28] Bakanlık açıkladı: Tapu işlemlerinde yeni dönem ne zaman başlıyor?  (4 farklı kaynakta, 5 makale)
+### [46] Bakanlık açıkladı: Tapu işlemlerinde yeni dönem ne zaman başlıyor?  (4 farklı kaynakta, 5 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -1616,7 +2452,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [29] TÜİK açıkladı: Muhtemel eğitim süresi 2025'te 16,8 yıla geriledi  (4 farklı kaynakta, 5 makale)
+### [47] TÜİK açıkladı: Muhtemel eğitim süresi 2025'te 16,8 yıla geriledi  (4 farklı kaynakta, 5 makale)
 
 **Kategori:** Güncel
 
@@ -1648,109 +2484,106 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [30] Abdulkadir Selvi Anlattı: Fatma Betül Sayan Kaya&apos;nın İstifa Etmeden Önceki Son Hamlesi Ortaya Çıktı  (4 farklı kaynakta, 5 makale)
-
-**Kategori:** Spor / Magazin
-
-**Açıklama:**
-
-> Fon soruşturmasında adı geçen ve AK Parti'deki tüm görevlerinden istifa eden Fatma Betül Sayan Kaya'nın, istifa kararından hemen önce Cumhurbaşkanı Recep Tayyip Erdoğan'a ulaşmaya çalıştığı iddia edildi. Kulisi CNN Türk canlı yayınında aktaran isim, gazeteci Abdulkadir Selvi oldu.Selvi'ye göre Erdoğan'ın yanıtı tek cümleden ibaretti: 'Derhal istifa etsin.'
-
-**Farklı kaynak sayısı:** 4
-**Toplam makale sayısı:** 5
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Artigercek** (`artigercek.com`) — 2 makale
-
-   - 1. [Fatma Betül Sayan Kaya ve eşinin mal varlıklarına tedbir talebi](https://artigercek.com/politika/fatma-betul-sayan-kaya-ve-esinin-mal-varliklarina-tedbir-talebi-350940h) — 27 Eyl 2026 09:54
-   - 2. [Özel'den Erdoğan'a Fatma Betül Sayan Kaya sorusu](https://artigercek.com/politika/ozelden-erdogana-fatma-betul-sayan-kaya-sorusu-350943h) — 27 Eyl 2026 10:42
-
-2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
-
-   - 1. [Fon krizi sonrası harekete geçtiler: Erdoğan, Mehmet Şimşek ve Fatma Betül Sayan Kaya h…](https://www.cumhuriyet.com.tr/siyaset/fon-krizi-sonrasi-harekete-gectiler-erdogan-mehmet-simsek-ve-fatma-betul-sayan-kaya-hakkinda-suc-duyurusu-2541856) — 28 Eyl 2026 14:43
-
-3. **Halktv** (`halktv.com.tr`) — 1 makale
-
-   - 1. [Konu: Fon skandalı... Cumhurbaşkanı Erdoğan, Mehmet Şimşek ve Fatma Betül Sayan Kaya'ya…](https://halktv.com.tr/gundem/konu-fon-skandali-cumhurbaskani-erdogan-mehmet-simsek-ve-fatma-betul-sayan-kayaya-suc-duyurusu-1058091h) — 28 Eyl 2026 15:52
-
-4. **Onedio · Daily** (`onedio.com`) — 1 makale
-
-   - 1. [Abdulkadir Selvi Anlattı: Fatma Betül Sayan Kaya&apos;nın İstifa Etmeden Önceki Son Ham…](https://onedio.com/haber/fatma-betul-sayan-kaya-nin-istifa-etmeden-onceki-son-hamlesi-ortaya-cikti-erdogan-a-ulasmak-istemis-1384514) — 29 Eyl 2026 05:52
-
----
-
-### [31] BUDO'nun 8 seferi, olumsuz hava şartları nedeniyle iptal edildi  (4 farklı kaynakta, 5 makale)
-
-**Kategori:** Kamu / Resmi
-
-**Açıklama:**
-
-> Bursa Deniz Otobüslerinin (BUDO) Bursa, İstanbul ve Armutlu arasında düzenlediği 8 sefer, olumsuz hava koşulları nedeniyle iptal edildi. İptal edilen seferlerin saatleri BUDO'nun internet sitesinde duyuruldu.
-
-**Farklı kaynak sayısı:** 4
-**Toplam makale sayısı:** 5
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 2 makale
-
-   - 1. [BUDO'nun 12 seferi iptal edildi](https://www.cumhuriyet.com.tr/turkiye/budo-nun-12-seferi-iptal-edildi-2541838) — 28 Eyl 2026 13:59
-   - 2. [BUDO'nun 8 seferi olumsuz hava koşulları nedeniyle iptal edildi](https://www.cumhuriyet.com.tr/turkiye/budo-nun-8-seferi-olumsuz-hava-kosullari-nedeniyle-iptal-edildi-2541952) — 28 Eyl 2026 21:40
-
-2. **Halktv** (`halktv.com.tr`) — 1 makale
-
-   - 1. [Sağanak Marmara'yı esir aldı: BUDO'nun 12 seferi iptal edildi](https://halktv.com.tr/turkiye/saganak-marmarayi-esir-aldi-budonun-12-seferi-iptal-edildi-1058072h) — 28 Eyl 2026 14:07
-
-3. **Karar** (`karar.com`) — 1 makale
-
-   - 1. [Olumsuz hava ulaşımı vurdu: BUDO’nun 12 seferi iptal edildi](https://www.karar.com/sehir-haberleri/olumsuz-hava-ulasimi-vurdu-budonun-12-seferi-iptal-edildi-2074881) — 28 Eyl 2026 14:10
-
-4. **Iscihaber · News** (`iscihaber.net`) — 1 makale
-
-   - 1. [BUDO'nun 8 seferi, olumsuz hava şartları nedeniyle iptal edildi](https://www.iscihaber.net/gundem/budonun-8-seferi-olumsuz-hava-sartlari-nedeniyle-iptal-edildi/267050) — 28 Eyl 2026 21:56
-
----
-
-### [32] Kılıçdaroğlu ihraç edilmişti: Faik Öztrak istifasını açıkladı  (4 farklı kaynakta, 5 makale)
+### [48] UEFA'dan kulüplere milli takım ödemesi!  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Güncel
 
 **Açıklama:**
 
-> Butlan CHP'sinin grup başkanvekili Faik Öztrak, Sosyal Demokrasi Derneği’nin, mahkeme kararıyla CHP Genel Başkanlığı'na "atanan" Kemal Kılıçdaroğlu'nu üyelikten ihraç etmesinin ardından dernek üyeliğinden istifa ettiğini açıkladı.
+> Avrupa Futbol Federasyonları Birliği (UEFA), 2024-2025 sezonunda milli takımlara futbolcu gönderen kulüplere para dağıtacak.
 
 **Farklı kaynak sayısı:** 4
-**Toplam makale sayısı:** 5
+**Toplam makale sayısı:** 4
 
 **Geçtiği farklı kaynaklar:**
 
-1. **Sozcu** (`sozcu.com.tr`) — 1 makale
+1. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
 
-   - 1. [Sosyal Demokrasi Derneği'nden Kılıçdaroğlu kararı: Üyelikten ihraç edildi](https://www.sozcu.com.tr/sosyal-demokrasi-dernegi-nden-kilicdaroglu-karari-uyelikten-ihrac-edildi-p364183) — 28 Eyl 2026 09:28
+   - 1. [UEFA milli takımlara futbolcu gönderen kulüplere para dağıtacak](https://www.sozcu.com.tr/uefa-milli-takimlara-futbolcu-gonderen-kuluplere-para-dagitacak-p364629) — 29 Eyl 2026 17:52
 
-2. **Artigercek** (`artigercek.com`) — 1 makale
+2. **Sozcu** (`sozcu.com.tr`) — 1 makale
 
-   - 1. [Sosyal Demokrasi Derneği Kemal Kılıçdaroğlu'nu ihraç etti](https://artigercek.com/politika/sosyal-demokrasi-dernegi-kemal-kilicdaroglunu-ihrac-etti-350968h) — 28 Eyl 2026 11:15
+   - 1. [UEFA milli takımlara futbolcu gönderen kulüplere para dağıtacak](https://www.sozcu.com.tr/uefa-milli-takimlara-futbolcu-gonderen-kuluplere-para-dagitacak-p364629) — 29 Eyl 2026 17:52
 
-3. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 2 makale
+3. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
 
-   - 1. [Kılıçdaroğlu ihraç edilmişti: Faik Öztrak istifasını açıkladı](https://www.cumhuriyet.com.tr/siyaset/kilicdaroglu-ihrac-edilmisti-faik-oztrak-istifasini-acikladi-2541847) — 28 Eyl 2026 14:18
-   - 2. [Kılıçdaroğlu ihraç edildi, Öztrak istifa etti: O dernek için CHP'den bir istifa daha geldi](https://www.cumhuriyet.com.tr/siyaset/kilicdaroglu-ihrac-edildi-oztrak-istifa-etti-o-dernek-icin-chp-den-bir-istifa-daha-geldi-2541918) — 28 Eyl 2026 19:13
+   - 1. [UEFA'dan kulüplere milli takım ödemesi!](https://www.cumhuriyet.com.tr/spor/uefa-dan-kuluplere-milli-takim-odemesi-2542258) — 29 Eyl 2026 18:01
 
-4. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+4. **Fotospor · Sondakika** (`fotospor.com`) — 1 makale
 
-   - 1. [Sosyal Demokrasi Derneği, Kemal Kılıçdaroğlu'nu ihraç etti](https://www.aydinlik.com.tr/haber/sosyal-demokrasi-dernegi-kemal-kilicdaroglunu-ihrac-etti-592024) — 28 Eyl 2026 15:57
+   - 1. [UEFA'dan milli tak�m s�rprizi](https://www.fotospor.com.tr/futbol/uefadan-milli-takim-surprizi-713815) — 29 Eyl 2026 18:39
 
 ---
 
-### [33] Türkiye'nin ekonomi ajandası yoğun: Ekim ayında kritik veriler ve faiz kararı takip edilecek  (4 farklı kaynakta, 4 makale)
+### [49] Gemi faciasında iki naaşın kimliği belirlendi, bir naaşa daha ulaşıldı  (4 farklı kaynakta, 4 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Başbakanlık, Girne açıklarında yaşanan gemi faciasının ardından hafta sonu bulunan iki naaşın 5 yaşındaki Mehmet Asaf Biçer ile Nihat Pancar’a ait olduğunun DNA çalışmalarıyla belirlendiğini açıkladı. Bugünkü arama çalışmalarında ise bir naaşa daha ulaşıldı.
+
+**Farklı kaynak sayısı:** 4
+**Toplam makale sayısı:** 4
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Gundemkibris** (`gundemkibris.com`) — 1 makale
+
+   - 1. [Gemi faciasında iki naaşın kimliği belirlendi, bir naaşa daha ulaşıldı](https://www.gundemkibris.com/gemi-faciasinda-iki-naasin-kimligi-belirlendi-bir-naasa-daha-ulasildi) — 29 Eyl 2026 17:05
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Girne açıklarındaki gemi faciasında iki naaşın kimliği belirlendi, bir naaşa daha ulaşıldı](https://www.cumhuriyet.com.tr/dunya/girne-aciklarindaki-gemi-faciasinda-iki-naasin-kimligi-belirlendi-bir-naasa-daha-ulasildi-2542247) — 29 Eyl 2026 17:23
+
+3. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Gemi faciasında yeni gelişme: Bir cansız beden daha bulundu! iki naaşın kimliği belirlendi](https://halktv.com.tr/turkiye/son-dakika-gemi-faciasinda-yeni-gelisme-bir-naas-daha-bulundu-iki-naasin-kimligi-belirlendi-1058370h) — 29 Eyl 2026 17:45
+
+4. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [KKTC'deki gemi faciasında bir kişinin daha naaşına ulaşıldı](https://www.iscihaber.net/gundem/kktcdeki-gemi-faciasinda-bir-kisinin-daha-naasina-ulasildi/267243) — 29 Eyl 2026 18:02
+
+---
+
+### [50] Eyüpsultan Camisi'nde silah sesleri... Namaz kılma şeklini beğenmedi, silahını çekip 4 el ateş açtı  (4 farklı kaynakta, 4 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Eyüpsultan Camisi'nde yatsı namazı sırasında yan yana namaz kılan iki kişi arasında çıkan tartışma kavgaya dönüştü. Servet A.'nın, namaz kılma şeklini beğenmediği Alper M.Ç.'nin yüzüne tükürerek “Sen kafirsin” dediği öne sürüldü. Alper M.Ç. ise ruhsatlı silahıyla havaya 4 el ateş etti.
+
+**Farklı kaynak sayısı:** 4
+**Toplam makale sayısı:** 4
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [Eyüpsultan Camii'nde namaz sırasında silahlı kavga: 2 kişi gözaltına alındı](https://www.iscihaber.net/istanbul/eyupsultan-camiinde-namaz-sirasinda-silahli-kavga-2-kisi-gozaltina-alindi/267005) — 28 Eyl 2026 19:39
+
+2. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
+
+   - 1. [Eyüpsultan Camii'nde Silahlı Kavga: 2 Şüpheli Gözaltında](https://www.kamudanhaber.net/eyupsultan-camiinde-silahli-kavga-2-supheli-gozaltinda) — 29 Eyl 2026 06:00
+
+3. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Eyüpsultan Camii'ndeki tartışmanın ardından iki şüpheli adliyeye sevk edildi](https://www.aydinlik.com.tr/haber/eyupsultan-camiindeki-olayda-iki-supheli-adliyeye-sevk-edildi-592172) — 29 Eyl 2026 14:30
+
+4. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Eyüpsultan Camisi'nde silah sesleri... Namaz kılma şeklini beğenmedi, silahını çekip 4 …](https://www.cumhuriyet.com.tr/turkiye/eyupsultan-camisi-nde-silah-sesleri-namaz-kilma-seklini-begenmedi-silahini-cekip-4-el-ates-acti-2542200) — 29 Eyl 2026 14:45
+
+---
+
+### [51] Fon soruşturmasında kritik gün! Cumhurbaşkanı Erdoğan Ankara'da ekonomi yönetimini topluyor  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Ekonomi / Finans
 
 **Açıklama:**
 
-> Türkiye ekonomisinde ekim ayı yoğun bir veri ve toplantı trafiğine sahne olacak. Dış ticaret ve enflasyon verilerinin yanı sıra Türkiye Cumhuriyet Merkez Bankası (TCMB) Başkanı Fatih Karahan'ın TBMM'de yapacağı sunum, sanayi üretimi, ödemeler dengesi ve 2027 yılı bütçe sürecine ilişkin gelişmeler takip edilecek.
+> Fon soruşturmasına ilişkin gelişmeler sürerken, Cumhurbaşkanı Erdoğan'ın ekonomi yönetimi ve düzenleyici-denetleyici kurumların başkanlarıyla bir araya gelmesinin beklendiği aktarıldı. Toplantının saat 14:00'te yapılması tahmin ediliyor.
 
 **Farklı kaynak sayısı:** 4
 **Toplam makale sayısı:** 4
@@ -1759,23 +2592,23 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 1. **Cnbce** (`cnbce.com`) — 1 makale
 
-   - 1. [TCMB Başkanı Karahan'ın Meclis sunumunun tarihi belli oldu](https://www.cnbce.com/haberler/tcmb-baskani-karahanin-meclis-sunumunun-tarihi-belli-oldu-h38199) — 28 Eyl 2026 11:46
+   - 1. [Fon soruşturmasında kritik gün! Cumhurbaşkanı Erdoğan Ankara'da ekonomi yönetimini topl…](https://www.cnbce.com/haberler/fon-sorusturmasinda-kritik-gun-cumhurbaskani-erdogan-ankarada-ekonomi-yonetimini-topluyor-h38258) — 29 Eyl 2026 06:19
 
-2. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 1 makale
+2. **Sozcu** (`sozcu.com.tr`) — 1 makale
 
-   - 1. [Merkez Bankası Başkanı Karahan 6 Ekim’de Meclise sunum yapacak](https://www.ekonomigazetesi.com/ekonomi/merkez-bankasi-6-ekimde-meclise-sunum-yapacak-88495) — 28 Eyl 2026 12:15
+   - 1. [Fon soruşturmasında kritik gün! Cumhurbaşkanı Erdoğan ekonomi yönetimini topluyor](https://www.sozcu.com.tr/fon-sorusturmasinda-kritik-gun-cumhurbaskani-erdogan-ekonomi-yonetimini-topluyor-p364441) — 29 Eyl 2026 06:34
 
-3. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+3. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
 
-   - 1. [TCMB Başkanı Karahan Meclis'te sunum yapacak](https://www.haberturk.com/ekonomi/tcmb-baskani-karahan-meclis-te-sunum-yapacak-3915775) — 29 Eyl 2026 04:41
+   - 1. [Fon soruşturmasında Erdoğan ekonomi yönetimini topladı](https://www.kamudanhaber.net/fon-sorusturmasinda-erdogan-ekonomi-yonetimini-topladi) — 29 Eyl 2026 12:38
 
-4. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+4. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
 
-   - 1. [Türkiye'nin ekonomi ajandası yoğun: Ekim ayında kritik veriler ve faiz kararı takip edi…](https://www.cnnturk.com/ekonomi/turkiyenin-ekonomi-ajandasi-yogun-ekim-ayinda-kritik-veriler-ve-faiz-karari-takip-edilecek-3472774) — 29 Eyl 2026 11:31
+   - 1. [Fon soruşturmasında kritik gün!  Merakla beklenen toplantı başladı](https://www.sozcu.com.tr/fon-sorusturmasi-cumhurbaskani-erdogan-liderliginde-toplanti-basladi-p364566) — 29 Eyl 2026 13:20
 
 ---
 
-### [34] Borsa İstanbul bir hisseyi işleme kapattı  (4 farklı kaynakta, 4 makale)
+### [52] Borsa İstanbul bir hisseyi işleme kapattı  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -1806,7 +2639,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [35] IMEI kayıt harcında yeni yılda rekor zam: Telefon fiyatını aşacak  (4 farklı kaynakta, 4 makale)
+### [53] IMEI kayıt harcında yeni yılda rekor zam: Telefon fiyatını aşacak  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Güncel
 
@@ -1837,7 +2670,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [36] AKOM’dan İstanbul için kuvvetli sağanak uyarısı  (4 farklı kaynakta, 4 makale)
+### [54] AKOM’dan İstanbul için kuvvetli sağanak uyarısı  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Güncel
 
@@ -1868,38 +2701,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [37] AMD'den yapay zeka hamlesi : World Labs'i 8,2 milyar dolara satın alacak  (4 farklı kaynakta, 4 makale)
-
-**Kategori:** Kamu / Resmi
-
-**Açıklama:**
-
-> AMD, yapay zeka alanında faaliyet gösteren World Labs'i yaklaşık 8,2 milyar dolar değerindeki anlaşmayla satın alacak. Şirket, satın almayla yapay zeka donanımı, yazılımı ve sistemleri geliştirme kapasitesini güçlendirmeyi hedefliyor.
-
-**Farklı kaynak sayısı:** 4
-**Toplam makale sayısı:** 4
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
-
-   - 1. [AMD'den yapay zeka hamlesi : World Labs'i 8,2 milyar dolara satın alacak](https://www.iscihaber.net/teknoloji/amdden-yapay-zeka-hamlesi-world-labsi-82-milyar-dolara-satin-alacak/267042) — 28 Eyl 2026 21:17
-
-2. **Foreks** (`foreks.com`) — 1 makale
-
-   - 1. [AMD, World Labs'i 8,2 milyar dolara satın alıyor](https://www.foreks.com/haber/detay/6abb2ac495016b5817e61a41/PICNEWS/tr/amd-world-labs-i-8-2-milyar-dolara-satin-aliyor-29-09-26/) — 29 Eyl 2026 03:04
-
-3. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
-
-   - 1. [Teknoloji devi, yapay zeka devini satın aldı](https://www.sozcu.com.tr/teknoloji-devi-yapay-zeka-devini-satin-aldi-p364411) — 29 Eyl 2026 05:33
-
-4. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
-
-   - 1. [AMD'den 8.2 milyar dolarlık satın alma](https://www.haberturk.com/ekonomi/amd-yapay-zeka-sirketi-world-labs-i-8-2-milyar-dolara-satin-alacak-3915831) — 29 Eyl 2026 07:39
-
----
-
-### [38] Süresi dolan banka kartlarını kesip atmayın: Hem sağlığı hem geri dönüşümü etkiliyor  (4 farklı kaynakta, 4 makale)
+### [55] Süresi dolan banka kartlarını kesip atmayın: Hem sağlığı hem geri dönüşümü etkiliyor  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Güncel
 
@@ -1930,38 +2732,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [39] Ak Parti Genel Başkan Yardımcısı Fatma Betül Sayan Kaya görevlerinden affını istedi: Özata hisseleri iddiası gündemde  (4 farklı kaynakta, 4 makale)
-
-**Kategori:** Ekonomi / Finans
-
-**Açıklama:**
-
-> AK Parti Genel Başkan Yardımcısı ve Sosyal Politikalar Başkanı Fatma Betül Sayan Kaya, kendisi hakkında gündeme getirilen iddiaların ardından yürüttüğü tüm görevlerden affını Cumhurbaşkanı ve AK Parti...
-
-**Farklı kaynak sayısı:** 4
-**Toplam makale sayısı:** 4
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Foreks** (`foreks.com`) — 1 makale
-
-   - 1. [Ak Parti Genel Başkan Yardımcısı Fatma Betül Sayan Kaya görevlerinden affını istedi: Öz…](https://www.foreks.com/haber/detay/6ab8aa3595016b5817e60c1c/PICNEWS/tr/ak-parti-genel-baskan-yardimcisi-fatma-betul-sayan-kaya-gorevlerinden-affini-istedi-ozata-hisseleri-iddiasi-gundemde-27-09-26/) — 27 Eyl 2026 05:31
-
-2. **Nehaberkibris · Genel 0** (`nehaberkibris.com`) — 1 makale
-
-   - 1. [Fatma Betül Sayan Kaya: Tüm görevlerimden affımı istedim](https://www.nehaberkibris.com/fatma-betul-sayan-kaya-tum-gorevlerimden-affimi-istedim-46454) — 28 Eyl 2026 04:57
-
-3. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
-
-   - 1. [Gökhan Günaydın yarına işaret etti: 'Fon' krizinde yeni AKP dosyası geliyor!](https://www.cumhuriyet.com.tr/turkiye/gokhan-gunaydin-yarina-isaret-etti-fon-krizinde-yeni-akp-dosyasi-geliyor-2541851) — 28 Eyl 2026 14:27
-
-4. **Sozcu** (`sozcu.com.tr`) — 1 makale
-
-   - 1. [Fatma Betül Sayan Kaya günler süren sessizliğini bozdu](https://www.sozcu.com.tr/fatma-betul-sayan-kaya-gunler-suren-sessizligini-bozdu-onlarca-iddiadan-yalnizca-suna-yanit-verdi-p364457) — 29 Eyl 2026 07:21
-
----
-
-### [40] Barbara Palvin ve Dylan Sprouse İlk Kez Anne Baba Oldu: Bebeklerine Taktıkları Takma Ad Şaşırttı  (4 farklı kaynakta, 4 makale)
+### [56] Barbara Palvin ve Dylan Sprouse İlk Kez Anne Baba Oldu: Bebeklerine Taktıkları Takma Ad Şaşırttı  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -1992,7 +2763,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [41] Fenerbahçe'nin yıldızı baba oluyor  (4 farklı kaynakta, 4 makale)
+### [57] Fenerbahçe'nin yıldızı baba oluyor  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -2023,38 +2794,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [42] Uzay yarışında kritik eşik aşıldı: SpaceX'in Starship roketi ilk kez yörüngeye ulaştı  (4 farklı kaynakta, 4 makale)
-
-**Kategori:** Güncel
-
-**Açıklama:**
-
-> SpaceX'in geliştirme süreci yaklaşık 10 yıldır süren dev roketi Starship, 14’üncü test uçuşunda ilk kez Dünya yörüngesine ulaşmayı başardı. TSK ile 15.46'da fırlatılan roket, ilk operasyonel yükü kapsamında 26 adet Starlink V3 uydusunu başarıyla yörüngeye konuşlandırdı.
-
-**Farklı kaynak sayısı:** 4
-**Toplam makale sayısı:** 4
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Cnbce** (`cnbce.com`) — 1 makale
-
-   - 1. [SpaceX’in Starship roketi 14. testinde ilk kez yörüngeye ulaştı](https://www.cnbce.com/teknoloji/spacexin-starship-roketi-14-testinde-ilk-kez-yorungeye-ulasti-h38215) — 28 Eyl 2026 13:54
-
-2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
-
-   - 1. [Uzay yarışında kritik eşik aşıldı: SpaceX'in Starship roketi ilk kez yörüngeye ulaştı](https://www.cumhuriyet.com.tr/bilim-teknoloji/uzay-yarisinda-kritik-esik-asildi-spacex-in-starship-roketi-ilk-kez-yorungeye-ulasti-2541857) — 28 Eyl 2026 14:44
-
-3. **Karar** (`karar.com`) — 1 makale
-
-   - 1. [SpaceX tarih yazdı: Starship ilk kez Dünya yörüngesine ulaştı](https://www.karar.com/teknoloji-haberleri/spacex-tarih-yazdi-starship-ilk-kez-dunya-yorungesine-ulasti-2074896) — 28 Eyl 2026 15:17
-
-4. **Chip** (`chip.com.tr`) — 1 makale
-
-   - 1. [Starship ilk kez yörüngede: 10 saatlik görev neden erken bitti?](https://www.chip.com.tr/guncel/starship-ilk-kez-yorungede-10-saatlik-gorev-neden-erken-bitti_184166.html) — 29 Eyl 2026 06:37
-
----
-
-### [43] HÜRKUŞ-II’nin ilk iki uçağı Hava Kuvvetlerine teslim edildi  (4 farklı kaynakta, 4 makale)
+### [58] HÜRKUŞ-II’nin ilk iki uçağı Hava Kuvvetlerine teslim edildi  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Bilim / Teknoloji
 
@@ -2085,7 +2825,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [44] Takipçisi 28 Milyona Çıkan Vozinha Şöhretten Yakındı: &quot;Eski Hayatımı Seçerdim&quot;  (4 farklı kaynakta, 4 makale)
+### [59] Takipçisi 28 Milyona Çıkan Vozinha Şöhretten Yakındı: &quot;Eski Hayatımı Seçerdim&quot;  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -2116,7 +2856,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [45] Nihat Doğan'dan dikkat çeken açıklama: 'Pandemi döneminde 8 daire sattım'  (4 farklı kaynakta, 4 makale)
+### [60] Nihat Doğan'dan dikkat çeken açıklama: 'Pandemi döneminde 8 daire sattım'  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Güncel
 
@@ -2147,7 +2887,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [46] Türk Müziğinin Usta İsmi Cengiz Coşkuner Yoğun Bakıma Alındı: Entübe Edildi  (4 farklı kaynakta, 4 makale)
+### [61] Türk Müziğinin Usta İsmi Cengiz Coşkuner Yoğun Bakıma Alındı: Entübe Edildi  (4 farklı kaynakta, 4 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -2178,38 +2918,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [47] Tasfiye sürecindeki fonların talimatlarıyla ilgili açıklama  (4 farklı kaynakta, 4 makale)
-
-**Kategori:** Ekonomi / Finans
-
-**Açıklama:**
-
-> SPK açıklamasında, "17 Eylül'de tasfiyeye konu fonların TEFAS üzerinden alım ve satım işlemlerine kapatılması nedeniyle bu tarihte TEFAS'a iletilen ve platform tarafından iptal edilen talimatların sahiplerine, tasfiye bakiyesinden, fondaki katılma payı sahipliği oranında ödeme yapılacaktır. 16 Eylül ve öncesinde TEFAS’a iletilmekle birlikte ilgili fonun temerrüdü veya fiyat açıklamaması nedeniyle gerçekleştirilemeyen talimatlar da tasfiye kapsamındadır." denildi.
-
-**Farklı kaynak sayısı:** 4
-**Toplam makale sayısı:** 4
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Cnbce** (`cnbce.com`) — 1 makale
-
-   - 1. [SPK'dan tasfiye edilen fonların işlemlerine ilişkin yeni açıklama](https://www.cnbce.com/haberler/spkdan-tasfiye-edilen-fonlarin-islemlerine-iliskin-yeni-aciklama-h38146) — 27 Eyl 2026 22:47
-
-2. **Onedio · Daily** (`onedio.com`) — 1 makale
-
-   - 1. [SPK&apos;dan Tasfiyedeki Fonlarla İlgili Ödeme Açıklaması: 17 Eylül&apos;de İptal Edile…](https://onedio.com/haber/spk-dan-tasfiyedeki-fonlarla-ilgili-odeme-aciklamasi-17-eylul-de-iptal-edilen-talimatlara-odeme-yapilacak-1384286) — 28 Eyl 2026 04:33
-
-3. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
-
-   - 1. [SPK’dan tasfiye edilen fonlar için ödeme açıklaması](https://www.haberturk.com/ekonomi/spkdan-tasfiye-edilen-fonlar-icin-odeme-aciklamasi-3915507) — 28 Eyl 2026 09:17
-
-4. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 1 makale
-
-   - 1. [Tasfiye sürecindeki fonların talimatlarıyla ilgili açıklama](https://www.ekonomigazetesi.com/ekonomi/tasfiye-surecindeki-fonlarin-talimatlariyla-ilgili-aciklama-88492) — 28 Eyl 2026 10:00
-
----
-
-### [48] 28 Eylül Pazartesi İkizler Burcu Günlük Burç Yorumu  (3 farklı kaynakta, 33 makale)
+### [62] 28 Eylül Pazartesi İkizler Burcu Günlük Burç Yorumu  (3 farklı kaynakta, 47 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -2218,11 +2927,11 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 > Bugün gökyüzünde neler oluyor, dikkatle inceledik! İkizler ve yükselen İkizler burçlarının bugünkü aşk, para, sağlık ve kariyer fırsatlarını yorumladık. Peki günlük burç yorumlarına göre 28 Eylül Pazartesi gününüz nasıl geçecek? 28 Eylül Pazartesi günü İkizler ve yükselen İkizler burçlarını neler bekliyor? Bugün günün nasıl geçecek? İşte, İkizler ve yükselen İkizler burcuna ait günlük burç yorumları...
 
 **Farklı kaynak sayısı:** 3
-**Toplam makale sayısı:** 33
+**Toplam makale sayısı:** 47
 
 **Geçtiği farklı kaynaklar:**
 
-1. **Elele** (`elele.com.tr`) — 6 makale
+1. **Elele** (`elele.com.tr`) — 7 makale
 
    - 1. [24 Eylül burç yorumları: Hangi burcu neler bekliyor?](https://www.elele.com.tr/astroloji/24-eylul-burc-yorumlari-hangi-burcu-neler-bekliyor) — 24 Eyl 2026 06:20
    - 2. [25 Eylül burç yorumları: Hangi burcu neler bekliyor?](https://www.elele.com.tr/astroloji/25-eylul-burc-yorumlari-hangi-burcu-neler-bekliyor) — 25 Eyl 2026 06:29
@@ -2230,8 +2939,9 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 4. [27 Eylül burç yorumları: Hangi burcu neler bekliyor?](https://www.elele.com.tr/astroloji/27-eylul-burc-yorumlari-hangi-burcu-neler-bekliyor) — 26 Eyl 2026 09:16
    - 5. [Haftalık burç yorumları (28 Eylül -4 Ekim 2026): Bu hafta burçları neler bekliyor?](https://www.elele.com.tr/astroloji/haftalik-burc-yorumlari-28-eylul-4-ekim-2026-bu-hafta-burclari-neler-bekliyor) — 28 Eyl 2026 08:31
    - 6. [29 Eylül burç yorumları: Hangi burcu neler bekliyor?](https://www.elele.com.tr/astroloji/29-eylul-burc-yorumlari-hangi-burcu-neler-bekliyor) — 28 Eyl 2026 13:55
+   - 7. [30 Eylül burç yorumları: Hangi burcu neler bekliyor?](https://www.elele.com.tr/astroloji/30-eylul-burc-yorumlari-hangi-burcu-neler-bekliyor) — 29 Eyl 2026 10:58
 
-2. **Onedio · Daily** (`onedio.com`) — 26 makale
+2. **Onedio · Daily** (`onedio.com`) — 39 makale
 
    - 1. [28 Eylül Pazartesi Aslan Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/aslan/28-eylul-2026-gunluk-burc-yorumu) — 27 Eyl 2026 17:31
    - 2. [28 Eylül Pazartesi Yengeç Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/yengec/28-eylul-2026-gunluk-burc-yorumu) — 27 Eyl 2026 17:31
@@ -2259,6 +2969,19 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
    - 24. [29 Eylül Salı Kova Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/kova/29-eylul-2026-gunluk-burc-yorumu) — 28 Eyl 2026 15:31
    - 25. [29 Eylül Salı Oğlak Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/oglak/29-eylul-2026-gunluk-burc-yorumu) — 28 Eyl 2026 15:31
    - 26. [Günlük Burç Yorumuna Göre 29 Eylül Salı Günün Nasıl Geçecek?](https://onedio.com/astroloji/gunluk-burc-yorumuna-gore-29-eylul-2026-gunun-nasil-gececek) — 28 Eyl 2026 15:31
+   - 27. [30 Eylül Çarşamba İkizler Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/ikizler/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 28. [30 Eylül Çarşamba Boğa Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/boga/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 29. [30 Eylül Çarşamba Koç Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/koc/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 30. [30 Eylül Çarşamba Oğlak Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/oglak/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 31. [30 Eylül Çarşamba Yay Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/yay/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 32. [30 Eylül Çarşamba Akrep Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/akrep/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 33. [30 Eylül Çarşamba Terazi Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/terazi/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 34. [30 Eylül Çarşamba Başak Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/basak/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 35. [30 Eylül Çarşamba Aslan Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/aslan/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 36. [30 Eylül Çarşamba Yengeç Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/yengec/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 37. [Günlük Burç Yorumuna Göre 30 Eylül Çarşamba Günün Nasıl Geçecek?](https://onedio.com/astroloji/gunluk-burc-yorumuna-gore-30-eylul-2026-gunun-nasil-gececek) — 29 Eyl 2026 15:01
+   - 38. [30 Eylül Çarşamba Balık Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/balik/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
+   - 39. [30 Eylül Çarşamba Kova Burcu Günlük Burç Yorumu](https://onedio.com/astroloji/kova/30-eylul-2026-gunluk-burc-yorumu) — 29 Eyl 2026 15:01
 
 3. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
 
@@ -2266,7 +2989,38 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [49] Çanakkale'de yolcu otobüsü otomobile çarptı : 2 kişi hayatını kaybetti  (3 farklı kaynakta, 6 makale)
+### [63] Özgür Özel'den Erdoğan'a jet 'fon skandalı' yanıtı: 'Hiç lafı eveleyip geveleme... Yakalandınız!'  (3 farklı kaynakta, 7 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> YENİ Parti Genel Başkanı Özel, sosyal medya hesabından yaptığı paylaşımla AKP'li Cumhurbaşkanı Erdoğan'a yanıt verdi. Özel "Haberin varsa istifa edeceksin, haberin yoksa sandığı getirip emaneti ehline teslim edeceksin" diye yazdı.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 7
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 2 makale
+
+   - 1. [Son Dakika | Özgür Özel fon skandalında kriz masasını topluyor](https://halktv.com.tr/gundem/son-dakika-ozgur-ozel-fon-skandalinda-kriz-masasini-topluyor-1058104h) — 28 Eyl 2026 17:00
+   - 2. [Son Dakika | Özgür Özel'den muhalefeti hedef alan Erdoğan'a fon skandalı yanıtı](https://halktv.com.tr/siyaset/son-dakika-ozgur-ozelden-muhalefeti-hedef-alan-erdogana-fon-skandali-yaniti-1058115h) — 28 Eyl 2026 18:10
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 2 makale
+
+   - 1. [Son Dakika... YENİ Parti'den 'fon' hamlesi: Kriz masası toplanacak!](https://www.cumhuriyet.com.tr/siyaset/son-dakika-yeni-parti-den-fon-hamlesi-kriz-masasi-toplanacak-2541899) — 28 Eyl 2026 17:04
+   - 2. [Özgür Özel'den Erdoğan'a jet 'fon skandalı' yanıtı: 'Hiç lafı eveleyip geveleme... Yaka…](https://www.cumhuriyet.com.tr/siyaset/ozgur-ozel-nden-erdogan-a-jet-fon-skandali-yaniti-hic-lafi-eveleyip-geveleme-yakalandiniz-2541913) — 28 Eyl 2026 18:07
+
+3. **Artigercek** (`artigercek.com`) — 3 makale
+
+   - 1. [Özgür Özel fon krizi için kriz masasını topluyor](https://artigercek.com/politika/ozgur-ozel-fon-krizi-icin-kriz-masasini-topluyor-350990h) — 28 Eyl 2026 18:13
+   - 2. [Özel'den Erdoğan'a fon krizi yanıtı: Yakalandınız](https://artigercek.com/politika/ozelden-erdogana-fon-krizi-yaniti-yakalandiniz-350993h) — 28 Eyl 2026 19:00
+   - 3. [AKP'li Çelik'ten Özel'in fon soruşturması açıklamasına tepki](https://artigercek.com/politika/akpli-celikten-ozelin-fon-sorusturmasi-aciklamasina-tepki-351013h) — 29 Eyl 2026 09:33
+
+---
+
+### [64] Çanakkale'de yolcu otobüsü otomobile çarptı : 2 kişi hayatını kaybetti  (3 farklı kaynakta, 6 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -2296,7 +3050,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [50] Birevim'de pay devri süreci başladı: Emlak Katılım için resmi başvurular yapıldı  (3 farklı kaynakta, 6 makale)
+### [65] Birevim'de pay devri süreci başladı: Emlak Katılım için resmi başvurular yapıldı  (3 farklı kaynakta, 6 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -2326,7 +3080,35 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [51] İran Dışişleri Bakanı Arakçi: Teklifimizi ilettik, yanıt bekliyoruz  (3 farklı kaynakta, 4 makale)
+### [66] Altın Fiyatları Belli Oldu! Borsa İstanbul&apos;da En Çok Alım Yapan 5 Kurum Belli Oldu  (3 farklı kaynakta, 4 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Borsa İstanbul Kıymetli Madenler ve Kıymetli Taşlar Piyasası'nda (KMKTP) standart altının kilogram fiyatı günü yüzde 0,2 yükselişle 6 milyon 548 bin liradan tamamladı. Dün 6 milyon 538 bin liradan kapanan altın, böylece bir günde kilogram başına 10 bin lira değer kazandı. Piyasadaki toplam işlem hacmi ise 6 milyar lirayı aştı.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 4
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Karar** (`karar.com`) — 2 makale
+
+   - 1. [Borsa İstanbul'da altın fiyatlarında sert düşüş](https://www.karar.com/ekonomi-haberleri/borsa-istanbulda-altin-fiyatlarinda-sert-dusus-2074892) — 28 Eyl 2026 14:52
+   - 2. [Altının kilogram fiyatı yükselişle kapandı](https://www.karar.com/ekonomi-haberleri/altinin-kilogram-fiyati-yukselisle-kapandi-2075126) — 29 Eyl 2026 14:26
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Borsada günün tablosu: Bir hisse yüzde 22,5 yükseldi, 10 hisse taban oldu](https://www.cnbce.com/borsa/borsa-istanbulda-gunun-ozeti-hangi-hisseler-yukseldi-hangileri-dustu-g38223) — 28 Eyl 2026 15:52
+
+3. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [Altın Fiyatları Belli Oldu! Borsa İstanbul&apos;da En Çok Alım Yapan 5 Kurum Belli Oldu](https://onedio.com/haber/altin-fiyatlari-belli-oldu-borsa-istanbul-da-en-cok-alim-yapan-5-kurum-belli-oldu-1384714) — 29 Eyl 2026 14:27
+
+---
+
+### [67] İran Dışişleri Bakanı Arakçi: Teklifimizi ilettik, yanıt bekliyoruz  (3 farklı kaynakta, 4 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -2354,7 +3136,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [52] Kadıköy'de facianın eşiğinden dönüldü: İnşaat kaplaması yayaların üzerine devrildi  (3 farklı kaynakta, 4 makale)
+### [68] Kadıköy'de facianın eşiğinden dönüldü: İnşaat kaplaması yayaların üzerine devrildi  (3 farklı kaynakta, 4 makale)
 
 **Kategori:** Güncel
 
@@ -2382,7 +3164,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [53] Fenerbahçe yönetimine tam yetki verildi! İşte o maddeler  (3 farklı kaynakta, 4 makale)
+### [69] Fenerbahçe yönetimine tam yetki verildi! İşte o maddeler  (3 farklı kaynakta, 4 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -2410,7 +3192,304 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [54] Kağıthane’de dehşet evi: 2 kişi elleri ve ayakları bağlı halde kurtarıldı  (3 farklı kaynakta, 3 makale)
+### [70] Son dakika | Ataşehir’de 6 CHP’li AKP’ye katıldı: Biri İBB Meclis Üyesi  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Ataşehir Belediye Meclisi’nde CHP’li 6 meclis üyesi AK Parti’ye katıldı. Oğuz Sarul, Sinan Emrah Yıldırım, Fatih Evliyaoğlu, Abdullah Aslan, Cengiz Kayayurt ve Mehmet Alver AKP’ye geçti.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Son dakika | Ataşehir’de 6 CHP’li AKP’ye katıldı: Biri İBB Meclis Üyesi](https://halktv.com.tr/siyaset/atasehirde-6-chpli-akpye-katildi-biri-ibb-meclis-uyesi-1058380h) — 29 Eyl 2026 18:53
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Ataşehir'de transfer mesaisi: 6 CHP'li üye AKP'ye geçti, biri İBB'de de görevli!](https://www.cumhuriyet.com.tr/siyaset/atasehir-de-transfer-mesaisi-6-chp-li-uye-akp-ye-gecti-biri-ibb-de-de-gorevli-2542268) — 29 Eyl 2026 19:01
+
+3. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Ataşehir’de siyasi dengeleri değiştiren geçiş: 6 CHP’li meclis üyesi AK Parti’ye katıldı](https://www.karar.com/guncel-haberler/atasehirde-siyasi-dengeleri-degistiren-gecis-6-chpli-meclis-uyesi-ak-2075163) — 29 Eyl 2026 19:03
+
+---
+
+### [71] Mahkeme komiser heyeti atadı: Türkiye'nin seramik devi konkordato ilan etti  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Borsa İstanbul’da işlem gören ve Türkiye’nin en köklü sanayi kuruluşları arasında yer alan Uşak Seramik, borçların yeniden yapılandırılması amacıyla konkordato talebinde bulundu. Şirketin başvurusu üzerine Banaz 2. Asliye Hukuk Mahkemesi geçici mühlet kararı vererek 3 kişilik komiser heyeti görevlendirdi.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Borsada da işlem görüyordu: 54 yıllık seramik devi konkordato başvurusu yaptı](https://www.sozcu.com.tr/borsada-da-islem-goruyordu-54-yillik-seramik-devi-konkordato-basvurusu-yapti-p364621) — 29 Eyl 2026 17:14
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Mahkeme komiser heyeti atadı: Türkiye'nin seramik devi konkordato ilan etti](https://www.karar.com/ekonomi-haberleri/mahkeme-komiser-heyeti-atadi-turkiyenin-seramik-devi-konkordato-ilan-2075156) — 29 Eyl 2026 17:58
+
+3. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [54 yıllık seramik devi konkordato ilan etti](https://www.cumhuriyet.com.tr/turkiye/54-yillik-seramik-devi-konkordato-ilan-etti-2542264) — 29 Eyl 2026 18:37
+
+---
+
+### [72] Çin'de yapay zeka devrimi: Kullanıcı sayısı 700 milyonu geride bıraktı  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Bilim / Teknoloji
+
+**Açıklama:**
+
+> Çin'de üretken yapay zeka teknolojilerine olan ilgi hızla artıyor. Haziran 2026 verilerine göre kullanıcı sayısı 700 milyonu aşarak ülkede yeni bir dönemin kapılarını araladı.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Megabayt · News** (`megabayt.com`) — 1 makale
+
+   - 1. [Çin'de yapay zeka devrimi: Kullanıcı sayısı 700 milyonu geride bıraktı](https://www.megabayt.com/teknoloji/cinde-yapay-zeka-devrimi-kullanici-sayisi-700-milyonu-geride-birakti/103420) — 29 Eyl 2026 16:55
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Çin'de üretken yapay zeka kullanıcı sayısı 700 milyonu aştı](https://www.cumhuriyet.com.tr/bilim-teknoloji/cin-de-uretken-yapay-zeka-kullanici-sayisi-700-milyonu-asti-2542251) — 29 Eyl 2026 17:42
+
+3. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [Çin’de üretken yapay zekaya yoğun ilgi : Kullanıcı sayısı 700 milyonu aştı](https://www.iscihaber.net/teknoloji/cinde-uretken-yapay-zekaya-yogun-ilgi-kullanici-sayisi-700-milyonu-asti/267255) — 29 Eyl 2026 18:27
+
+---
+
+### [73] Bordo-mavili renkler, Trabzon'da buluşuyor  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Trabzonspor, milli maçlar nedeniyle lige verilen arada 1 Ekim Perşembe günü sahasında İrlanda'nın Drogheda United takımı ile dostluk maçında karşı karşıya gelecek.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Fenerbahçe milli arada hazırlıklarını sürdürdü](https://www.sozcu.com.tr/fenerbahce-milli-arada-hazirliklarini-surdurdu-p363955) — 27 Eyl 2026 12:53
+
+2. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Bordo-mavili renkler, Trabzon'da buluşuyor](https://www.aa.com.tr/tr/spor/bordo-mavili-renkler-trabzonda-bulusuyor/4071296) — 28 Eyl 2026 08:09
+
+3. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
+
+   - 1. [Fenerbahçe, günü çift antrenmanla tamamladı](https://www.fotomac.com.tr/fenerbahce/2026/09/29/fenerbahce-gunu-cift-antrenmanla-tamamladi) — 29 Eyl 2026 17:23
+
+---
+
+### [74] ABD&apos;nin Ankara Büyükelçiliği&apos;nden 4,5 Milyon TL Maaşlı İş İlanı: Aranan Pozisyon İçin Son Gün 6 Ekim  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> ABD'nin Ankara Büyükelçiliği, Sağlık Birimi'nde görev yapacak tam zamanlı bir doktor arıyor. Pozisyon için belirlenen yıllık maaş 83 bin 45 ile 91 bin 972 dolar arasında; bu da güncel kurla yaklaşık 4,1 ila 4,5 milyon liraya karşılık geliyor. Başvurular 6 Ekim 2026'da kapanacak.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [ABD Büyükelçiliği'nden dikkat çeken iş ilanı: Yıllık maaş 4,5 milyon TL](https://www.cnbce.com/haberler/abd-buyukelciliginden-dikkat-ceken-is-ilani-yillik-maas-45-milyon-tl-h38302) — 29 Eyl 2026 11:06
+
+2. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [ABD Büyükelçiliği Türkiye'de iş ilanı açtı: Yıllık maaş 4,5 milyon TL](https://www.sozcu.com.tr/abd-buyukelciligi-ankarada-is-ilani-acti-yillik-maas-45-milyon-tl-p364549) — 29 Eyl 2026 12:36
+
+3. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [ABD&apos;nin Ankara Büyükelçiliği&apos;nden 4,5 Milyon TL Maaşlı İş İlanı: Aranan Pozis…](https://onedio.com/haber/abd-nin-ankara-buyukelciligi-nden-4-5-milyon-tl-maasli-is-ilani-aranan-doktor-icin-son-gun-6-ekim-1384791) — 29 Eyl 2026 17:18
+
+---
+
+### [75] Bankacılık sektörünün net kârı ağustosta 79,9 milyar TL oldu  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> BDDK verilerine göre bankacılık sektörünün ağustos ayı net kârı 79,9 milyar TL'ye yükseldi. Sektörün ocak-ağustos dönemindeki toplam net kârı 676,3 milyar TL olurken, takipteki alacak oranı yüzde 2,92'ye çıktı.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Bankacılık sektörünün net kârı ağustosta 79,9 milyar TL oldu](https://www.cnbce.com/veriler/bankacilik-sektorunun-net-kari-agustosta-799-milyar-tl-oldu-h38303) — 29 Eyl 2026 11:08
+
+2. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 1 makale
+
+   - 1. [Bankacılık sektörünün net kârı ağustosta 676,3 milyar lira](https://www.ekonomigazetesi.com/finans/bankalarin-net-kari-agustosta-6763-milyar-lira-88575) — 29 Eyl 2026 12:37
+
+3. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [Türk bankacılık sektörünün net karı 676 milyar lirayı aştı](https://www.cnnturk.com/ekonomi/turk-bankacilik-sektorunun-net-kari-676-milyar-lirayi-asti-3472852) — 29 Eyl 2026 14:48
+
+---
+
+### [76] Ankara’da sokak hayvanlarını besleme yasağına mahkemeden iptal  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Ankara’da kamusal alanlarda sahipsiz köpeklerin “kontrolsüz beslenmesini” yasaklayan Ankara Valiliği İl Hayvanları Koruma Kurulu kararı yargıdan döndü. Ankara 23. İdare Mahkemesi, doğrudan yasaklama yerine besleme alanlarının belirlenmesi ve hijyen koşullarının sağlanması gibi daha sınırlı tedbirlerin uygulanabileceğine işaret ederek düzenlemeyi iptal etti.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Mahkeme, sahipsiz köpeklerin beslenmesine yönelik yasağı iptal etti](https://www.aydinlik.com.tr/haber/ankarada-sahipsiz-kopekleri-besleme-yasagi-iptal-edildi-592160) — 29 Eyl 2026 13:02
+
+2. **Artigercek** (`artigercek.com`) — 1 makale
+
+   - 1. [Ankara'da sokak hayvanlarını besleme yasağı mahkeme kararıyla iptal edildi](https://artigercek.com/guncel/ankarada-sokak-hayvanlarini-besleme-yasagi-mahkeme-karariyla-iptal-edildi-351033h) — 29 Eyl 2026 14:19
+
+3. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Ankara’da sokak hayvanlarını besleme yasağına mahkemeden iptal](https://www.karar.com/guncel-haberler/ankarada-sokak-hayvanlarini-besleme-yasagina-mahkemeden-iptal-2075130) — 29 Eyl 2026 14:36
+
+---
+
+### [77] JPMorgan'dan Türkiye için faiz ve enflasyon tahmini: Ekim ve Aralık'ta üst üste gelecek  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> JPMorgan, TCMB'nin ekim ve aralık toplantılarında 100'er baz puan faiz indirimi yapmasını bekliyor. Banka, politika faizinin yıl sonunda yüzde 35'e, enflasyonun ise yüzde 29,5'e gerileyeceğini öngörüyor.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [JPMorgan TCMB'den 2 faiz indirimi daha bekliyor](https://www.foreks.com/haber/detay/6ab67a8f0bcd0a2b431f2e95/PICNEWS/tr/jpmorgan-tcmb-den-2-faiz-indirimi-daha-bekliyor-25-09-26/) — 25 Eyl 2026 13:43
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [JPMorgan'dan Türkiye için faiz ve enflasyon tahmini: Ekim ve Aralık'ta üst üste gelecek](https://www.cnbce.com/faiz/jpmorgandan-turkiye-icin-faiz-ve-enflasyon-tahmini-ekim-ve-aralikta-ust-uste-gelecek-h38057) — 25 Eyl 2026 13:55
+
+3. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [HSBC'den Türkiye analizi: Asıl kritik süreç 2027](https://www.sozcu.com.tr/hsbc-den-turkiye-analizi-asil-kritik-surec-2027-p364525) — 29 Eyl 2026 10:36
+
+---
+
+### [78] 12 yılda 10 milyona yakın kredi notu sorgulandı  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Kredi Kayıt Bürosu’nun (KKB) bireylerin ve reel sektörün finansal veriye erişimini kolaylaştırmak amacıyla hayata geçirdiği Findeks, 12’nci yılında marka kimliğini ve kullanıcı deneyimini yeniledi. Findeks'in bugüne kadar 10 milyona yakın Findeks Kredi Notu sorgusuna ulaştığı belirtildi
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Finansal verilerde rehberlik dönemi başladı](https://www.sozcu.com.tr/finansal-verilerde-rehberlik-donemi-basladi-p364451) — 29 Eyl 2026 07:00
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [10 milyona yakın sorguya ulaşan Findeks’te yeni dönem: Veriden rehberliğe](https://www.cnbce.com/sirket-haberleri/10-milyona-yakin-sorguya-ulasan-findekste-yeni-donem-veriden-rehberlige-h38280) — 29 Eyl 2026 09:00
+
+3. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [12 yılda 10 milyona yakın kredi notu sorgulandı](https://www.haberturk.com/ekonomi/12-yilda-10-milyona-yakin-kredi-notu-sorgulandi-3915866) — 29 Eyl 2026 09:16
+
+---
+
+### [79] Koç Holding’den otomotiv yatırımı mesajı: Çinli devler Türkiye’ye geliyor  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Koç Holding Otomotiv Grubu Başkanı Haydar Yenigün, Çinli otomotiv üreticilerinin Türkiye’de yatırım yapmasına ilişkin açıklamalarda bulundu. AB’nin “Made in Europe” düzenlemesindeki belirsizliğin bazı Çinli markaların Türkiye yatırım planlarını ertelemesine yol açtığını söyleyen Yenigün, buna rağmen Çinli üreticilerin Türkiye’ye geleceğini belirtti. Yenigün, "Bunun içinde Çinliler kesinlikle olacak. Made in Europe’a girdiğimiz durumda da, giremediğimiz durumda da planlar hazır" dedi.
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Koç Holding'den "Made in Europe" uyarısı: Türkiye işin dışında kalabilir](https://www.cnbce.com/otomotiv/koc-holdingden-made-in-europe-uyarisi-turkiye-isin-disinda-kalabilir-h38210) — 28 Eyl 2026 13:23
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Koç Holding’den otomotiv yatırımı mesajı: Çinli devler Türkiye’ye geliyor](https://www.karar.com/ekonomi-haberleri/koc-holdingden-otomotiv-yatirimi-mesaji-cinli-devler-turkiyeye-geliyor-2074880) — 28 Eyl 2026 14:07
+
+3. **Sozcu · Ekonomi** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Koç Holding'den kritik uyarı: Avrupa'nın o hamlesi Türkiye'yi sistem dışında bırakabilir](https://www.sozcu.com.tr/koc-holding-den-kritik-uyari-avrupa-nin-o-hamlesi-turkiye-yi-sistem-disinda-birakabilir-p364501) — 29 Eyl 2026 09:12
+
+---
+
+### [80] Karaelmas Ekspresi raylara iniyor  (3 farklı kaynakta, 3 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Ulaştırma ve Altyapı Bakanı Abdulkadir Uraloğlu, Ankara-Zonguldak arasında işletilen Turistik Karaelmas Ekspresi’nin Ekim ayında yeniden raylara ineceğini bildirdi. Bakan Uraloğlu, “Turistik Karaelmas Ekspresi, 4 gidiş ve 4 dönüş olmak üzere toplam 8 sefer gerçekleştirecek. Batı Karadeniz’in doğal, kültürel ve tarihi değerlerini demiryoluyla keşfetme imkânı sunacağız.” dedi
+
+**Farklı kaynak sayısı:** 3
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [Karaelmas Ekspresi raylara iniyor](https://www.haberturk.com/ekonomi/foto/karaelmas-ekspresi-raylara-iniyor-iste-sefer-tarihleri-3915846) — 29 Eyl 2026 08:21
+
+2. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Turistik Karaelmas Ekspresi yeniden raylara iniyor! Bakan Uraloğlu açılış gününü duyurdu](https://www.aydinlik.com.tr/haber/turistik-karaelmas-ekspresi-yeniden-raylara-iniyor-bakan-uraloglu-acilis-gununu-duyurdu-592119) — 29 Eyl 2026 08:40
+
+3. **Ekonomigazetesi** (`ekonomigazetesi.com`) — 1 makale
+
+   - 1. [Turistik Karaelmas Ekspresi seferleri ekimde başlayacak](https://www.ekonomigazetesi.com/sektor-haberleri/turistik-karaelmas-ekspresi-seferleri-2-ekimde-baslayacak-88561) — 29 Eyl 2026 09:00
+
+---
+
+### [81] Kağıthane’de dehşet evi: 2 kişi elleri ve ayakları bağlı halde kurtarıldı  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2437,7 +3516,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [55] Türkiye’ye 8 ayda 34,8 milyon yabancı ziyaretçi geldi  (3 farklı kaynakta, 3 makale)
+### [82] Türkiye’ye 8 ayda 34,8 milyon yabancı ziyaretçi geldi  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2464,7 +3543,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [56] Uzmanlar uyardı: Grip vakaları artacak, aşı için en uygun dönem  (3 farklı kaynakta, 3 makale)
+### [83] Uzmanlar uyardı: Grip vakaları artacak, aşı için en uygun dönem  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2491,7 +3570,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [57] HONOR Magic 9 Pro Max sahneye çıktı: 8.800 mAh batarya ve çift 200 MP kamera ile dengeleri değiştirecek  (3 farklı kaynakta, 3 makale)
+### [84] HONOR Magic 9 Pro Max sahneye çıktı: 8.800 mAh batarya ve çift 200 MP kamera ile dengeleri değiştirecek  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Bilim / Teknoloji
 
@@ -2520,7 +3599,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [58] HUAWEI’den Türkiye’ye iki yeni ürün: MatePad Air ve FreeBuds Neo  (3 farklı kaynakta, 3 makale)
+### [85] HUAWEI’den Türkiye’ye iki yeni ürün: MatePad Air ve FreeBuds Neo  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Bilim / Teknoloji
 
@@ -2549,7 +3628,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [59] Şanlıurfa'da yolcu otobüsünde 39 kilo 700 gram uyuşturucu ele geçirildi  (3 farklı kaynakta, 3 makale)
+### [86] Şanlıurfa'da yolcu otobüsünde 39 kilo 700 gram uyuşturucu ele geçirildi  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2576,7 +3655,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [60] Beşiktaş 18'lik genç yıldızı kadrosuna kattı  (3 farklı kaynakta, 3 makale)
+### [87] Beşiktaş 18'lik genç yıldızı kadrosuna kattı  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -2603,7 +3682,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [61] Nvidia'dan yapay zeka ajanları için yeni güvenlik platformu: "Kontrolden çıkmalarını önleyecek"  (3 farklı kaynakta, 3 makale)
+### [88] Nvidia'dan yapay zeka ajanları için yeni güvenlik platformu: "Kontrolden çıkmalarını önleyecek"  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -2630,7 +3709,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [62] Altın 7 haftanın dibinde! Kısa vadeli yön tahmini geldi  (3 farklı kaynakta, 3 makale)
+### [89] Altın 7 haftanın dibinde! Kısa vadeli yön tahmini geldi  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -2657,34 +3736,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [63] Serdar Ali Çelikler milli formayı giymesi gereken yabancı golcüyü açıkladı  (3 farklı kaynakta, 3 makale)
-
-**Kategori:** Güncel
-
-**Açıklama:**
-
-> A Milli Futbol Takımımız'ın UEFA Uluslar Ligi'nde üst üste kötü sonuçlar almasının ardından yorumcu Serdar Ali Çelikler'den bomba bir öneri geldi.
-
-**Farklı kaynak sayısı:** 3
-**Toplam makale sayısı:** 3
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
-
-   - 1. [Serdar Ali Çelikler'den olay öneri: Milli formayı giymeli](https://www.sozcu.com.tr/serdar-ali-celiklerden-dikkat-ceken-oneri-p364436) — 29 Eyl 2026 06:25
-
-2. **Sozcu** (`sozcu.com.tr`) — 1 makale
-
-   - 1. [Serdar Ali Çelikler'den olay öneri: Milli formayı giymeli](https://www.sozcu.com.tr/serdar-ali-celiklerden-dikkat-ceken-oneri-p364436) — 29 Eyl 2026 06:25
-
-3. **Halktv** (`halktv.com.tr`) — 1 makale
-
-   - 1. [Serdar Ali Çelikler milli formayı giymesi gereken yabancı golcüyü açıkladı](https://halktv.com.tr/spor/serdar-ali-celikler-milli-formayi-giymesi-gereken-yabanci-golcuyu-acikladi-1058192h) — 29 Eyl 2026 06:47
-
----
-
-### [64] Ordu'da balıkçının kayığı kıyıya vurdu: Cesedi denizde bulundu  (3 farklı kaynakta, 3 makale)
+### [90] Ordu'da balıkçının kayığı kıyıya vurdu: Cesedi denizde bulundu  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2711,7 +3763,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [65] Altın fiyatlarında düşüş sürüyor: Gram, çeyrek ve Cumhuriyet altını bugün ne kadar oldu? Güncel altın fiyatları 29 Eylül 2026 Salı...  (3 farklı kaynakta, 3 makale)
+### [91] Altın fiyatlarında düşüş sürüyor: Gram, çeyrek ve Cumhuriyet altını bugün ne kadar oldu? Güncel altın fiyatları 29 Eylül 2026 Salı...  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2738,34 +3790,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [66] Özgür Özel'den Erdoğan'a jet 'fon skandalı' yanıtı: 'Hiç lafı eveleyip geveleme... Yakalandınız!'  (3 farklı kaynakta, 3 makale)
-
-**Kategori:** Güncel
-
-**Açıklama:**
-
-> YENİ Parti Genel Başkanı Özel, sosyal medya hesabından yaptığı paylaşımla AKP'li Cumhurbaşkanı Erdoğan'a yanıt verdi. Özel "Haberin varsa istifa edeceksin, haberin yoksa sandığı getirip emaneti ehline teslim edeceksin" diye yazdı.
-
-**Farklı kaynak sayısı:** 3
-**Toplam makale sayısı:** 3
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
-
-   - 1. [Özgür Özel'den Erdoğan'a jet 'fon skandalı' yanıtı: 'Hiç lafı eveleyip geveleme... Yaka…](https://www.cumhuriyet.com.tr/siyaset/ozgur-ozel-nden-erdogan-a-jet-fon-skandali-yaniti-hic-lafi-eveleyip-geveleme-yakalandiniz-2541913) — 28 Eyl 2026 18:07
-
-2. **Halktv** (`halktv.com.tr`) — 1 makale
-
-   - 1. [Son Dakika | Özgür Özel'den muhalefeti hedef alan Erdoğan'a fon skandalı yanıtı](https://halktv.com.tr/siyaset/son-dakika-ozgur-ozelden-muhalefeti-hedef-alan-erdogana-fon-skandali-yaniti-1058115h) — 28 Eyl 2026 18:10
-
-3. **Artigercek** (`artigercek.com`) — 1 makale
-
-   - 1. [Özel'den Erdoğan'a fon krizi yanıtı: Yakalandınız](https://artigercek.com/politika/ozelden-erdogana-fon-krizi-yaniti-yakalandiniz-350993h) — 28 Eyl 2026 19:00
-
----
-
-### [67] Kaşif Kozinoğlu soruşturmasında gözaltına alınan adli tıp uzmanı evinde ölü bulundu  (3 farklı kaynakta, 3 makale)
+### [92] Kaşif Kozinoğlu soruşturmasında gözaltına alınan adli tıp uzmanı evinde ölü bulundu  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2792,34 +3817,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [68] Son Dakika | Özgür Özel fon skandalında kriz masasını topluyor  (3 farklı kaynakta, 3 makale)
-
-**Kategori:** Güncel
-
-**Açıklama:**
-
-> YENİ Parti Genel Başkanı Özgür Özel, fon skandalına ilişkin oluşturulan kriz masasının yarın saat 10.00’da Genel Merkez’de yapılacak toplantısına başkanlık edecek. Toplantıya 14 isim katılacak.
-
-**Farklı kaynak sayısı:** 3
-**Toplam makale sayısı:** 3
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Halktv** (`halktv.com.tr`) — 1 makale
-
-   - 1. [Son Dakika | Özgür Özel fon skandalında kriz masasını topluyor](https://halktv.com.tr/gundem/son-dakika-ozgur-ozel-fon-skandalinda-kriz-masasini-topluyor-1058104h) — 28 Eyl 2026 17:00
-
-2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
-
-   - 1. [Son Dakika... YENİ Parti'den 'fon' hamlesi: Kriz masası toplanacak!](https://www.cumhuriyet.com.tr/siyaset/son-dakika-yeni-parti-den-fon-hamlesi-kriz-masasi-toplanacak-2541899) — 28 Eyl 2026 17:04
-
-3. **Artigercek** (`artigercek.com`) — 1 makale
-
-   - 1. [Özgür Özel fon krizi için kriz masasını topluyor](https://artigercek.com/politika/ozgur-ozel-fon-krizi-icin-kriz-masasini-topluyor-350990h) — 28 Eyl 2026 18:13
-
----
-
-### [69] Bursaspor’dan dünya yıldızı için sürpriz hamle  (3 farklı kaynakta, 3 makale)
+### [93] Bursaspor’dan dünya yıldızı için sürpriz hamle  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2846,7 +3844,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [70] Eczacıbaşı Spor Kulübü'nün 60. yılı törenle kutlandı!  (3 farklı kaynakta, 3 makale)
+### [94] Eczacıbaşı Spor Kulübü'nün 60. yılı törenle kutlandı!  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2873,7 +3871,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [71] Yüksel Yıldırım: 'Ben taraftarlarla kavga eden bir başkan olarak anılmak istemiyorum'  (3 farklı kaynakta, 3 makale)
+### [95] Yüksel Yıldırım: 'Ben taraftarlarla kavga eden bir başkan olarak anılmak istemiyorum'  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -2900,7 +3898,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [72] Torreira'lı Uruguay, Oh'lu Güney Kore'yi 4 golle geçti  (3 farklı kaynakta, 3 makale)
+### [96] Torreira'lı Uruguay, Oh'lu Güney Kore'yi 4 golle geçti  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -2927,7 +3925,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [73] Süper Lig'in eski gol kralı Vagner Love 42 yaşında futbola veda etti  (3 farklı kaynakta, 3 makale)
+### [97] Süper Lig'in eski gol kralı Vagner Love 42 yaşında futbola veda etti  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -2954,7 +3952,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [74] Sakarya'da şiddetli sağanak yağış: Akyazı ve Ferizli'de heyelan ile su baskınları meydana geldi  (3 farklı kaynakta, 3 makale)
+### [98] Sakarya'da şiddetli sağanak yağış: Akyazı ve Ferizli'de heyelan ile su baskınları meydana geldi  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -2981,7 +3979,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [75] Gebze’de 4 kişinin öldüğü binayı haberleştirmişti: Alican Uludağ’a hapis istemi  (3 farklı kaynakta, 3 makale)
+### [99] Gebze’de 4 kişinin öldüğü binayı haberleştirmişti: Alican Uludağ’a hapis istemi  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -3008,7 +4006,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [76] Araştırma: Yüksek radyasyon Alzheimer sürecini tetikleyebilir  (3 farklı kaynakta, 3 makale)
+### [100] Araştırma: Yüksek radyasyon Alzheimer sürecini tetikleyebilir  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -3035,7 +4033,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [77] Kıvanç Tatlıtuğ nerede görüntülendi ? Kıvanç Tatlıtuğ neler yapıyor ?  (3 farklı kaynakta, 3 makale)
+### [101] Kıvanç Tatlıtuğ nerede görüntülendi ? Kıvanç Tatlıtuğ neler yapıyor ?  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -3062,7 +4060,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [78] "Senden hâlâ nefret ediyorum!"  (3 farklı kaynakta, 3 makale)
+### [102] "Senden hâlâ nefret ediyorum!"  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -3089,7 +4087,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [79] Melike Şahin doğuma gün sayıyor: Karnı burnunda pozlarını paylaştı  (3 farklı kaynakta, 3 makale)
+### [103] Melike Şahin doğuma gün sayıyor: Karnı burnunda pozlarını paylaştı  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -3116,7 +4114,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [80] Bakan yardımcısının damadı İskender Balcı gözaltına alındı  (3 farklı kaynakta, 3 makale)
+### [104] Bakan yardımcısının damadı İskender Balcı gözaltına alındı  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -3143,7 +4141,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [81] Ferhat Arıcan, Dünya Challenge Kupası'nda altın madalya kazandı!  (3 farklı kaynakta, 3 makale)
+### [105] Ferhat Arıcan, Dünya Challenge Kupası'nda altın madalya kazandı!  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -3170,34 +4168,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [82] Fon Skandalında &apos;Balıkçı İsmet&apos; İddiası: İsmet Öğüt Adına 3 Milyar 92 Milyon 75 Bin 513 TL Para Çıkışı Oldu!  (3 farklı kaynakta, 3 makale)
-
-**Kategori:** Spor / Magazin
-
-**Açıklama:**
-
-> İstanbul Cumhuriyet Başsavcılığı tarafından yürütülen milyarlık fon soruşturmasının mali ve siber suç deşifreleri ayağında, yeni bir bir para trafiğinin gün yüzüne çıktığı iddia edildi. A Haber’de yer alan iddiaya göre; Kamuoyunda “Balıkçı İsmet” olarak bilinen İsmet Öğüt adına, kritik süreçte tam 3 milyar 92 milyon 75 bin 513 TL tutarında şüpheli fon çıkışı yapıldığı iddia edildi. Adli makamlar, bu devasa para hareketleri ile şahsın ağabeyi olan 22, 23 ve 24. dönem CHP Ardahan Milletvekili Ensar Öğüt arasında organik bir ekonomik menfaat ilişkisi bulunup bulunmadığını araştırmaya başladı.Kayn
-
-**Farklı kaynak sayısı:** 3
-**Toplam makale sayısı:** 3
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
-
-   - 1. [Balıkçı İsmet’in hesabından 3 milyar TL’lik çıkış oldu](https://www.haberturk.com/ekonomi/balikci-ismetin-hesabindan-3-milyar-tllik-cikis-oldu-3915623) — 28 Eyl 2026 10:57
-
-2. **Onedio · Daily** (`onedio.com`) — 1 makale
-
-   - 1. [Fon Skandalında &apos;Balıkçı İsmet&apos; İddiası: İsmet Öğüt Adına 3 Milyar 92 Milyon …](https://onedio.com/haber/fon-skandalinda-balikci-ismet-iddiasi-ismet-ogut-adina-3-milyar-92-milyon-75-bin-513-tl-para-cikisi-oldu-1384386) — 28 Eyl 2026 11:02
-
-3. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
-
-   - 1. [Fon soruşturmasında Balıkçı İsmet'in hesap hareketleri mercek altında](https://www.aydinlik.com.tr/haber/fon-sorusturmasinda-balikci-ismetin-hesap-hareketleri-mercek-altinda-591989) — 28 Eyl 2026 11:15
-
----
-
-### [83] Döviz dönüşümünde yeni dönem  (3 farklı kaynakta, 3 makale)
+### [106] Döviz dönüşümünde yeni dönem  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -3224,7 +4195,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [84] Trump’ın avukatı Mildonlara gelin geldi  (3 farklı kaynakta, 3 makale)
+### [107] Trump’ın avukatı Mildonlara gelin geldi  (3 farklı kaynakta, 3 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -3251,7 +4222,33 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [85] Ankara'da jandarmadan aranan şahıslara operasyon : 134 kişi yakalandı  (2 farklı kaynakta, 4 makale)
+### [108] Ekim Ayında Çok Sayıda Müdür ve Müdür Yardımcısı Norm Fazlası Olacak  (2 farklı kaynakta, 5 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> Milli Eğitim Bakanlığı kadrolarında görev yapan çok sayıda müdür ve müdür yardımcısı Ekim ayında norm fazlası olacak. İşte detaylar...
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 5
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Ajanskamu** (`ajanskamu.net`) — 2 makale
+
+   - 1. [6 İlçe Milli Eğitim Müdürü Ataması Yapıldı](https://www.ajanskamu.net/meb/6-ilce-milli-egitim-muduru-atamasi-yapildi-h225644.html) — 26 Eyl 2026 16:01
+   - 2. [Ekim Ayında Çok Sayıda Müdür ve Müdür Yardımcısı Norm Fazlası Olacak](https://www.ajanskamu.net/meb/ekim-ayinda-cok-sayida-mudur-ve-mudur-yardimcisi-norm-fazlasi-olacak-h225646.html) — 26 Eyl 2026 21:03
+
+2. **Kamudanhaber** (`kamudanhaber.net`) — 3 makale
+
+   - 1. [MEB’de Gözler Ekim Ayı Norm Kadro Güncellemesine Çevrildi](https://www.kamudanhaber.net/mebde-gozler-ekim-ayi-norm-kadro-guncellemesine-cevrildi) — 28 Eyl 2026 15:15
+   - 2. [Okul Müdürü, İl Milli Eğitim Müdür Yardımcılığı Görevine Getirildi](https://www.kamudanhaber.net/okul-muduru-il-milli-egitim-mudur-yardimciligi-gorevine-getirildi) — 29 Eyl 2026 17:40
+   - 3. [Bir İlçe Milli Eğitim Müdürlüğünde Flaş Değişim](https://www.kamudanhaber.net/bir-ilce-milli-egitim-mudurlugunde-flas-degisim) — 29 Eyl 2026 17:55
+
+---
+
+### [109] Ankara'da jandarmadan aranan şahıslara operasyon : 134 kişi yakalandı  (2 farklı kaynakta, 4 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -3276,7 +4273,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [86] Meteoroloji uyardı: Beş gün boyunca sağanak yağış bekleniyor  (2 farklı kaynakta, 4 makale)
+### [110] Meteoroloji uyardı: Beş gün boyunca sağanak yağış bekleniyor  (2 farklı kaynakta, 4 makale)
 
 **Kategori:** Güncel
 
@@ -3301,7 +4298,79 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [87] Trump, yapay zekanın devlerini Beyaz Saray'da topluyor: İşte masadaki konular  (2 farklı kaynakta, 3 makale)
+### [111] Kocaelispor'dan Massadio Haidara ve Anfernee Dijksteel açıklaması!  (2 farklı kaynakta, 3 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Süper Lig ekibi Kocaelispor, 33 yaşındaki Malili sol bek Massadio Haidara ve 29 yaşındaki Surinamlı sağ bek Anfernee Dijksteel'in sağlık durumları hakkında bir açıklama yayımladı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 2 makale
+
+   - 1. [Kocaelispor'dan 2 futbolcunun sağlık durumuna ilişkin açıklama](https://www.cumhuriyet.com.tr/spor/kocaelispor-dan-2-futbolcunun-saglik-durumuna-iliskin-aciklama-2542159) — 29 Eyl 2026 13:17
+   - 2. [Kocaelispor'dan Massadio Haidara ve Anfernee Dijksteel açıklaması!](https://www.cumhuriyet.com.tr/spor/kocaelispor-dan-massadio-haidara-ve-anfernee-dijksteel-aciklamasi-2542221) — 29 Eyl 2026 15:32
+
+2. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Kocaelispor'da çifte şok! Ameliyat oldu](https://www.sozcu.com.tr/kocaelispor-da-cifte-sok-ameliyat-oldu-p364569) — 29 Eyl 2026 13:34
+
+---
+
+### [112] İncirli “Bürokratlara çağrım, hukuka aykırı herhangi bir karara imza atmayın”  (2 farklı kaynakta, 3 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Cumhuriyetçi Türk Partisi (CTP) Genel Başkanı Sıla Usar İncirli, hükümete seslenerek “Siz iktidara gelmek için değil, yeniden seçilebilme telaşıyla seçime 68 gün kala bu değişikliği yapmak için genel kurulu olağanüstü topladınız. İster karma kalksın ister kalkmasın, bu seçimin sonucu değişmeyecektir” dedi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Nehaberkibris · Genel 0** (`nehaberkibris.com`) — 2 makale
+
+   - 1. [İncirli “Yolsuzlukla mücadelede hedef, halkın geleceğini çalandır”](https://www.nehaberkibris.com/incirli-yolsuzlukla-mucadelede-hedef-halkin-gelecegini-calandir-46453) — 28 Eyl 2026 04:54
+   - 2. [İncirli “Bürokratlara çağrım, hukuka aykırı herhangi bir karara imza atmayın”](https://www.nehaberkibris.com/incirli-burokratlara-cagrim-hukuka-aykiri-herhangi-bir-karara-imza-atmayin-46471) — 29 Eyl 2026 13:37
+
+2. **Gundemkibris** (`gundemkibris.com`) — 1 makale
+
+   - 1. [İncirli: Toplumun tüm kesimleriyle yakın istişare ve iş birliği içerisinde hareket edec…](https://www.gundemkibris.com/incirli-toplumun-tum-kesimleriyle-yakin-istisare-ve-is-birligi-icerisinde-hareket-edecegiz) — 28 Eyl 2026 14:52
+
+---
+
+### [113] Sandal ve eşinden 'fon' açıklaması  (2 farklı kaynakta, 3 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Mustafa Sandal, eşi Melis Sandal'ın fon soruşturmasında adının geçmesinin ardından açıklama yaptı. Ünlü şarkıcı, "Benim alnım ak!" derken, eşi Melis Sandal da kendisinin mağdurlardan biri olduğunu söyledi
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 3
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Elele** (`elele.com.tr`) — 1 makale
+
+   - 1. [Mustafa Sandal ve eşi Melis Sandal'dan 'fon' açıklaması](https://www.elele.com.tr/magazin/mustafa-sandal-ve-esi-melis-sandaldan-fon-aciklamasi) — 28 Eyl 2026 06:24
+
+2. **Haberturk · Magazin** (`haberturk.com`) — 2 makale
+
+   - 1. [Sandal ve eşinden 'fon' açıklaması](https://www.haberturk.com/magazin/foto/mustafa-sandal-dan-fon-aciklamasi-3915518) — 28 Eyl 2026 09:42
+   - 2. ["Param nerede?"](https://www.haberturk.com/magazin/yesim-salkim-500-bin-dolarim-nerede-3915881) — 29 Eyl 2026 10:40
+
+---
+
+### [114] Trump, yapay zekanın devlerini Beyaz Saray'da topluyor: İşte masadaki konular  (2 farklı kaynakta, 3 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -3325,7 +4394,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [88] Gürcistan ile Ukrayna berabere kaldı!  (2 farklı kaynakta, 3 makale)
+### [115] Gürcistan ile Ukrayna berabere kaldı!  (2 farklı kaynakta, 3 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -3349,7 +4418,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [89] Turgutlu İnci Üzmez Mesleki Teknik ve Anadolu Lisesi'nde eğitim yeniden başladı  (2 farklı kaynakta, 3 makale)
+### [116] Turgutlu İnci Üzmez Mesleki Teknik ve Anadolu Lisesi'nde eğitim yeniden başladı  (2 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -3373,7 +4442,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [90] Bill Gates'ten yapay zeka alarmı: Nükleer silah kontrolünden daha karmaşık bir süreç  (2 farklı kaynakta, 3 makale)
+### [117] Bill Gates'ten yapay zeka alarmı: Nükleer silah kontrolünden daha karmaşık bir süreç  (2 farklı kaynakta, 3 makale)
 
 **Kategori:** Bilim / Teknoloji
 
@@ -3399,7 +4468,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [91] AKP Sözcüsü Çelik'ten fon krizi açıklaması: Karanlıkta hiçbir şey kalmayacak, gereği yapılacak  (2 farklı kaynakta, 3 makale)
+### [118] AKP Sözcüsü Çelik'ten fon krizi açıklaması: Karanlıkta hiçbir şey kalmayacak, gereği yapılacak  (2 farklı kaynakta, 3 makale)
 
 **Kategori:** Güncel
 
@@ -3423,7 +4492,1393 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [92] SPK TARAFINDAN TASFİYESİNE KARAR VERİLEN YATIRIM FONLARINDA CEZA SORUŞTURMASININ MAĞDURLARIN ZARARLARININ GİDERİLMESİNE ETKİSİ  (2 farklı kaynakta, 2 makale)
+### [119] �lkay G�ndo�an'a b�y�k onur  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Galatasaray'�n T�rk as�ll� Alman futbolcusu �lkay G�ndo�an'a, 2025 Mevl�de Gen� Madalyas� verildi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Galatasaraylı futbolcu İlkay Gündoğan'a büyük onur](https://www.aa.com.tr/tr/spor/galatasarayli-futbolcu-ilkay-gundogana-buyuk-onur/4073075) — 29 Eyl 2026 19:28
+
+2. **Fotospor · Sondakika** (`fotospor.com`) — 1 makale
+
+   - 1. [�lkay G�ndo�an'a b�y�k onur](https://www.fotospor.com.tr/galatasaray/ilkay-gundogana-buyuk-onur-713820) — 29 Eyl 2026 19:31
+
+---
+
+### [120] God of War Laufey Ön Siparişe Açıldı: İşte Türkiye Fiyatı!  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Bilim / Teknoloji
+
+**Açıklama:**
+
+> 2027'nin merakla beklenen oyunlarından God of War Laufey, PlayStation Store'da ön siparişe açıldı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Webtekno** (`webtekno.com`) — 1 makale
+
+   - 1. [God of War Laufey Ön Siparişe Açıldı: İşte Türkiye Fiyatı!](
+                    https://www.webtekno.com/god-of-war-laufey-turkiye-fiyati-h225892.html
+                    ) — 29 Eyl 2026 08:52
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [God of War Laufey ön siparişe açıldı](https://www.cumhuriyet.com.tr/bilim-teknoloji/god-of-war-laufey-on-siparise-acildi-2542277) — 29 Eyl 2026 19:27
+
+---
+
+### [121] Ekim kira zammı ne kadar olacak? Yeni kira artış oranı ne zaman açıklanacak?  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> Ekim 2026'da kira artış oranı, TÜİK'in Eylül enflasyon verileriyle belirlenecek. Milyonlarca kiracı ve ev sahibi bu oranı bekliyor.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
+
+   - 1. [Kiracılar ve ev sahipleri dikkat: Kira zammı ne kadar olacak?](https://www.kamudanhaber.net/kiracilar-ve-ev-sahipleri-dikkat-kira-zammi-ne-kadar-olacak) — 28 Eyl 2026 08:46
+
+2. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [Ekim kira zammı ne kadar olacak? Yeni kira artış oranı ne zaman açıklanacak?](https://www.iscihaber.net/gundem/ekim-kira-zammi-ne-kadar-olacak-yeni-kira-artis-orani-ne-zaman-aciklanacak/267275) — 29 Eyl 2026 19:15
+
+---
+
+### [122] Fernando Alonso bir yıl daha Formula 1'de  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Formula 1’in en tecrübeli pilotu Fernando Alonso, Aston Martin ile sözleşmesini bir yıl daha uzattı. 45 yaşındaki İspanyol pilot, 2027 sezonunda da gridde yer alarak F1’de en uzun süre yarışan pilot unvanını geliştirecek.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [F1'de Alonso'dan rekor sözleşme](https://www.sozcu.com.tr/f1de-alonsodan-rekor-sozlesme-p364552) — 29 Eyl 2026 12:38
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Fernando Alonso bir yıl daha Formula 1'de](https://www.karar.com/spor-haberleri/fernando-alonso-bir-yil-daha-formula-1de-2075165) — 29 Eyl 2026 19:12
+
+---
+
+### [123] New York metrosunda çantası tren kapısına sıkışan yolcu rayların altında kalarak öldü  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> New York metrosunda trenden inmeye çalışırken çantası kapıya sıkışan 57 yaşındaki Yaw Boahene, hareket eden trenin altında kalarak feci şekilde hayatını kaybetti.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [New York metrosunda çantası tren kapısına sıkışan yolcu rayların altında kalarak öldü](https://www.iscihaber.net/dunya/new-york-metrosunda-cantasi-tren-kapisina-sikisan-yolcu-raylarin-altinda-kalarak-oldu/267263) — 29 Eyl 2026 18:44
+
+2. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Çantası kapıya sıkışınca raylara düştü: 57 yaşındaki adam feci şekilde can verdi](https://halktv.com.tr/dunya/cantasi-kapiya-sikisinca-raylara-dustu-57-yasindaki-adam-feci-sekilde-can-verdi-1058382h) — 29 Eyl 2026 19:02
+
+---
+
+### [124] Kütahya'da Nalan Temelkıran'ın öldürülmesiyle ilgili iki kişi gözaltında  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Kütahya'nın Pirler Mahallesi'nde işlettiği hediyelik eşya dükkânında bıçaklanan Nalan Temelkıran (51) hayatını kaybetti. Cinayet şüphelisi olduğu belirlenen Salih Topsakal (68) ile Temelkıran'ın eski eşi T.Y. gözaltına alındı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [İki çocuk annesi iş yerinde katledildi: Eski eş dahil 2 gözaltı](https://halktv.com.tr/turkiye/iki-cocuk-annesi-is-yerinde-katledildi-eski-es-dahil-2-gozalti-1058378h) — 29 Eyl 2026 18:33
+
+2. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Kütahya'da Nalan Temelkıran'ın öldürülmesiyle ilgili iki kişi gözaltında](https://www.aydinlik.com.tr/haber/kutahyada-nalan-temelkiran-is-yerinde-olduruldu-592222) — 29 Eyl 2026 19:01
+
+---
+
+### [125] Deniz Göktaş'ın cezaevi çıkışındaki sözlerine Sinem Dedetaş'tan yanıt  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> 88 günün ardından cezaevinden çıkan Deniz Göktaş'ın Sinem Dedetaş ve Mehmet Pehlivan'la ilgili sözlerine, tutuklu bulunan Üsküdar Belediye Başkanı Sinem Dedetaş'tan duygusal bir yanıt geldi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Deniz Göktaş'ın cezaevi çıkışındaki sözlerine Sinem Dedetaş'tan yanıt geldi: Sevinçten …](https://halktv.com.tr/turkiye/deniz-goktasin-cezaevi-cikisindaki-sozlerine-sinem-dedetastan-yanit-geldi-sevincten-aglatti-1058374h) — 29 Eyl 2026 18:12
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Deniz Göktaş'ın cezaevi çıkışındaki sözlerine Sinem Dedetaş'tan yanıt](https://www.cumhuriyet.com.tr/turkiye/deniz-goktas-in-cezaevi-cikisindaki-sozlerine-sinem-dedetas-tan-yanit-2542265) — 29 Eyl 2026 18:48
+
+---
+
+### [126] Kayseri'de 74 yaşındaki adam, evinin tuvaletinde ölü bulundu  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> Kayseri’nin Kocasinan ilçesinde yalnız yaşayan 74 yaşındaki Ahmet Ö., evinin tuvaletinde ölü bulundu. Olay yerindeki incelemelerin tamamlanmasının ardından yaşlı adamın cenazesi otopsi için morga kaldırıldı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [Kayseri'de 74 yaşındaki adam, evinin tuvaletinde ölü bulundu](https://www.iscihaber.net/kayseri/kayseride-74-yasindaki-adam-evinin-tuvaletinde-olu-bulundu/267258) — 29 Eyl 2026 18:32
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [74 yaşındaki erkek evinin tuvaletinde ölü bulundu](https://www.cumhuriyet.com.tr/turkiye/74-yasindaki-erkek-evinin-tuvaletinde-olu-bulundu-2542263) — 29 Eyl 2026 18:35
+
+---
+
+### [127] O da geleneğe uydu! AKP'ye geçen belediye başkanından yoruma kapalı açıklama  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Çiğli Belediye Başkanı Onur Emrah Yıldız, AKP’ye geçişini duyurduğu paylaşımını yoruma kapattı. Yıldız’ın hamlesi, daha önce AKP’ye geçen Eren Ali Bingöl, Orhan Çerkez ve Saniye Bora Fıçı’nın benzer adımlarını akıllara getirdi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [O da geleneğe uydu! AKP'ye geçen belediye başkanından yoruma kapalı açıklama](https://halktv.com.tr/siyaset/o-da-gelenege-uydu-akpye-gecen-belediye-baskanindan-yoruma-kapali-aciklama-1058359h) — 29 Eyl 2026 16:22
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [AKP'ye transfer oldu: 'Geleneği' bozmadı](https://www.cumhuriyet.com.tr/siyaset/akp-ye-transfer-oldu-gelenegi-bozmadi-2542261) — 29 Eyl 2026 18:28
+
+---
+
+### [128] Sahte timsah görüntüsü oluşturan kişiye hapis şoku  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> Singapur'da yapay zeka ile sahte timsah görüntüsü oluşturan bir kişi, hapis cezasıyla karşı karşıya kaldı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Sahte timsah görüntüsü oluşturan kişi hapis cezasıyla karşı karşıya](https://www.cumhuriyet.com.tr/bilim-teknoloji/sahte-timsah-goruntusu-olusturan-kisi-hapis-cezasiyla-karsi-karsiya-2542253) — 29 Eyl 2026 17:51
+
+2. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [Sahte timsah görüntüsü oluşturan kişiye hapis şoku](https://www.iscihaber.net/teknoloji/sahte-timsah-goruntusu-olusturan-kisiye-hapis-soku/267253) — 29 Eyl 2026 18:24
+
+---
+
+### [129] Usulsüz reçete skandalı: Kamu 30 milyon lira zarara uğradı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Gaziantep’te 2022-2024 yılları arasında doktor onayına tabi ilaçlara ait reçeteleri usulsüz şekilde düzenleyerek ilaçları üçüncü kişilere para karşılığında sattıkları belirlenen 8 şüpheli yakalandı. Şüphelilerin kamuya yaklaşık 30 milyon lira zarar verdiği tespit edildi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [İlaçları usulsüz reçetelerle sattılar: Kamu 30 milyon lira zarara uğradı!](https://www.cumhuriyet.com.tr/turkiye/ilaclari-usulsuz-recetelerle-sattilar-kamu-30-milyon-lira-zarara-ugradi-2542245) — 29 Eyl 2026 17:09
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Usulsüz reçete skandalı: Kamu 30 milyon lira zarara uğradı](https://www.karar.com/guncel-haberler/usulsuz-recete-skandali-kamu-30-milyon-lira-zarara-ugradi-2075157) — 29 Eyl 2026 18:19
+
+---
+
+### [130] GPT-6.1 Sol Tanıtıldı: Astra Seviyesinde Zekâ Beşte Bir Fiyata  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Bilim / Teknoloji
+
+**Açıklama:**
+
+> OpenAI, GPT-6.1 Sol modelini duyurdu. GPT-6 Astra'ya yakın performans sunan model, beşte bir maliyetle geliştiricilere yeni imkanlar sağlıyor.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Shiftdelete** (`shiftdelete.net`) — 1 makale
+
+   - 1. [GPT-6.1 Sol Tanıtıldı: Astra Seviyesinde Zekâ Beşte Bir Fiyata](https://shiftdelete.net/gpt-6-1-sol-tanitildi) — 29 Eyl 2026 17:50
+
+2. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [GPT-6.1 Sol modeli nedir ve ne gibi yenilikler sunuyor?](https://www.iscihaber.net/gundem/gpt-61-sol-modeli-nedir-ve-ne-gibi-yenilikler-sunuyor/267240) — 29 Eyl 2026 17:56
+
+---
+
+### [131] Trabzonspor'da Samsunspor mesaisi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Thomas Reis y�netimindeki Trabzonspor, Trendyol S�per Lig'in 7. haftas�nda 10 Ekim Cumartesi g�n� deplasmanda Samsunspor ile yapaca�� ma��n haz�rl�klar�n� s�rd�rd�.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Fotospor · Sondakika** (`fotospor.com`) — 1 makale
+
+   - 1. [Trabzonspor'da Samsunspor mesaisi](https://www.fotospor.com.tr/trabzonspor/trabzonsporda-samsunspor-mesaisi-713812) — 29 Eyl 2026 17:49
+
+2. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
+
+   - 1. [Trabzonspor, Samsunspor maçı hazırlıklarına devam etti](https://www.fotomac.com.tr/trabzonspor/2026/09/29/trabzonspor-samsunspor-maci-hazirliklarina-devam-etti) — 29 Eyl 2026 17:51
+
+---
+
+### [132] İran : Trump bataklığa saplandı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> İran Ulusal Güvenlik Yüksek Konseyi Genel Sekreteri Muhsin Rezai, ABD Başkanı Donald Trump’ı hedef alarak, “Trump ne müzakere yapabiliyor ne de savaşabiliyor” dedi. Rezai, ABD ve İsrail’in İran’a yönelik saldırılarını eleştirerek, ülkesinin ABD karşısında ayakta durduğunu savundu.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [İran'dan sert açıklama: "Trump ne müzakere yapmayı becerebiliyor ne de savaşabiliyor”](https://www.cnbce.com/haberler/irandan-sert-aciklama-trump-ne-muzakere-yapmayi-becerebiliyor-ne-de-savasabiliyor-h38337) — 29 Eyl 2026 17:42
+
+2. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [İran : Trump bataklığa saplandı](https://www.iscihaber.net/dunya/iran-trump-batakliga-saplandi/267234) — 29 Eyl 2026 17:46
+
+---
+
+### [133] Fitch Direktörü Winslow CNBC-e'ye açıkladı: Fon krizi için sistemik risk beklenmiyor  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Fitch Kıdemli Direktörü Dougles Winslow, CNBC-e'ye yaptığı değerlendirmede fon krizinin ekonomi ve kredi notu üzerinde doğrudan etki yapılmasını beklemediklerini söyledi. Winslow, gelişmenin sistemik risk oluşturmadığını ve Türkiye'nin dış şoklara karşı dirençli olduğunu belirtti.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Fitch Direktörü Winslow CNBC-e'ye açıkladı: Fon krizi için sistemik risk beklenmiyor](https://www.cnbce.com/haberler/fitch-direktoru-winslow-cnbc-eye-acikladi-fon-krizi-icin-sistemik-risk-beklenmiyor-h38319) — 29 Eyl 2026 13:46
+
+2. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [Fitch'ten 'fon' açıklaması](https://www.haberturk.com/ekonomi/fitch-ten-fon-krizi-aciklamasi-3915982) — 29 Eyl 2026 17:39
+
+---
+
+### [134] Ankara Metrosu’nda intihar girişimi: Seferler durduruldu  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Ankara Metrosu’nun Ümitköy istasyonunda yaşanan intihar girişiminin ardından Koru-Bilkent istasyonları arasındaki metro seferleri durduruldu.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Metroda intihar girişimi yaşandı: Seferler durduruldu](https://halktv.com.tr/turkiye/metroda-intihar-girisimi-yasandi-seferler-durduruldu-1058367h) — 29 Eyl 2026 17:19
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Ankara Metrosu’nda intihar girişimi: Seferler durduruldu](https://www.cumhuriyet.com.tr/turkiye/ankara-metrosu-nda-intihar-girisimi-seferler-durduruldu-2542249) — 29 Eyl 2026 17:30
+
+---
+
+### [135] 4 gün önce tahliye edilmişti: Ekrem Baki, partisinden ve İBB ile Üsküdar meclis üyeliklerinden istifa etti  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Bu yılın başında CHP'ye katılan Ekrem Baki, CHP'den de istifa ettiğini açıkladı. Üsküdar Belediye Meclisi'nde yapılan başkanvekili seçiminden kısa süre önce tutuklanan ve 4 gün önce ev hapsiyle tahliye edilen Baki, Üsküdar Belediye Meclisi ve İstanbul Büyükşehir Belediye Meclisi üyeliklerinden de istifa etti.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Artigercek** (`artigercek.com`) — 1 makale
+
+   - 1. [Ekrem Baki, CHP'den ve meclis üyeliğinden istifa etti](https://artigercek.com/politika/ekrem-baki-chpden-ve-meclis-uyeliginden-istifa-etti-351031h) — 29 Eyl 2026 13:47
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [4 gün önce tahliye edilmişti: Ekrem Baki, partisinden ve İBB ile Üsküdar meclis üyelikl…](https://www.cumhuriyet.com.tr/siyaset/4-gun-once-tahliye-edilmisti-ekrem-baki-partisinden-ve-ibb-ve-uskudar-meclis-uyeliklerinden-istifa-etti-2542248) — 29 Eyl 2026 17:26
+
+---
+
+### [136] Trabzonspor, Galatasaray’ı hezimete uğrattı: Salah 3 gol 1 asistle yıldızlaştı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Trendyol Süper Lig’in 6. haftasında Trabzonspor, sahasında Galatasaray’ı 4-0 mağlup etti. Salah 3 gol ve 1 asistle yıldızlaşırken, sarı-kırmızılılarda Ugochukwu ve Okan Buruk kırmızı kart gördü.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Nehaberkibris · Genel 0** (`nehaberkibris.com`) — 1 makale
+
+   - 1. [Trabzonspor, Galatasaray’ı hezimete uğrattı: Salah 3 gol 1 asistle yıldızlaştı](https://www.nehaberkibris.com/trabzonspor-galatasarayi-hezimete-ugratti-salah-3-gol-1-asistle-yildizlasti-46399) — 19 Eyl 2026 20:34
+
+2. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
+
+   - 1. [Galatasaray, Kasımpaşa maçının hazırlıklarını sürdürdü](https://www.fotomac.com.tr/galatasaray/2026/09/29/galatasaray-kasimpasa-macinin-hazirliklarini-surdurdu) — 29 Eyl 2026 17:25
+
+---
+
+### [137] YouTube&apos;daki Kamp Videolarıyla Tanınan Atik Ailesi 2024&apos;ten Sonra 2025&apos;te de Bolu&apos;nun Vergi Rekortmeni Oldu  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Sosyal medyada 'Atik Ailesi' adıyla kamp ve doğa videoları paylaşan Burcu Atik, 2025 vergilendirme döneminde Bolu'da en çok gelir vergisi ödeyen isim oldu. Atik'e tahakkuk eden gelir vergisi 12 milyon 648 bin 219 lira 20 kuruş olarak açıklandı. Aile, bir yıl önceki listede de zirvedeydi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [YouTube&apos;daki Kamp Videolarıyla Tanınan Atik Ailesi 2024&apos;ten Sonra 2025&apos;t…](https://onedio.com/haber/youtube-daki-kamp-videolariyla-taninan-atik-ailesi-2024-ten-sonra-2025-te-de-bolu-nun-vergi-rekortmeni-oldu-1384637) — 29 Eyl 2026 11:26
+
+2. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [Sosyal medya fenomeni aile vergi rekortmeni oldu](https://www.haberturk.com/ekonomi/bolu-da-zirve-degismedi-youtube-fenomeni-aile-vergi-rekortmeni-oldu-3915885) — 29 Eyl 2026 17:19
+
+---
+
+### [138] Motokuryelerin trafiğe çıkması yasaklandı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Kocaeli Valiliği, kuvvetli sağanak yağış nedeniyle motosiklet, scooter, elektrikli scooter ve motokuryelerin 30 Eylül Çarşamba günü 00.01 ile 12.00 saatleri arasında trafiğe çıkmasının tedbiren yasaklandığını duyurdu.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Motokuryelerin trafiğe çıkması yasaklandı](https://www.karar.com/guncel-haberler/motokuryelerin-trafige-cikmasi-yasaklandi-2075139) — 29 Eyl 2026 15:28
+
+2. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Valilik açıkladı! Gece yarısı başlıyor: Motosiklet ve motokuryelere yasak](https://halktv.com.tr/turkiye/valilik-acikladi-gece-yarisi-basliyor-motosiklet-ve-motokuryelere-yasak-1058366h) — 29 Eyl 2026 17:11
+
+---
+
+### [139] Cumhurbaşkanı Erdoğan'dan fon krizi mesajı! "Türkiye bu meseleden temizlenerek çıkacak" deyip net konuştu: "Yanlış yapanla vedalaşırız"  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Cumhurbaşkanı Recep Tayyip Erdoğan fon kriziyle ilgili "Türkiye bu meseleden temizlenerek çıkacak." dedi. Erdoğan, "Biz yanlış yapanla nefsine yenik düşenle vedalaşır yolumuza güçlenerek devam ederiz." ifadelerini kullandı. Erdoğan krizi yönetmedeki yol haritasını da belirlediklerini söyledi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Cumhurbaşkanı Erdoğan'dan fon krizi mesajı! "Türkiye bu meseleden temizlenerek çıkacak"…](https://www.aydinlik.com.tr/haber/cumhurbaskani-erdogandan-fon-krizi-mesaji-turkiye-bu-meseleden-temizlenerek-cikacak-deyip-net-konustu-yanlis-yapanla-vedalasiriz-592182) — 29 Eyl 2026 15:37
+
+2. **Artigercek** (`artigercek.com`) — 1 makale
+
+   - 1. [9 belediye başkanı AKP’ye katıldı... Erdoğan: ‘Kimileri şeytana uydu, nefsinin kurbanı …](https://artigercek.com/politika/9-belediye-baskani-akpye-katildi-erdogan-kimileri-seytana-uydu-nefsinin-kurbani-oldu-351036h) — 29 Eyl 2026 17:06
+
+---
+
+### [140] Mudanya'da sağanak nedeniyle mahsur kalanlar kurtarıldı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Bursa'nın Mudanya ilçesinde iki gündür etkili olan sağanak nedeniyle Esence ve Yalıçiftlik mahallelerinde mahsur kalanlar kurtarıldı. Kent genelinde yağışın aralıklarla sürmesi bekleniyor.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Mudanya'da sağanak sonrası su baskını: Mahsur kalanlar kurtarıldı](https://www.cumhuriyet.com.tr/turkiye/mudanya-da-saganak-sonrasi-su-baskini-mahsur-kalanlar-kurtarildi-2542157) — 29 Eyl 2026 13:13
+
+2. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Mudanya'da sağanak nedeniyle mahsur kalanlar kurtarıldı](https://www.aydinlik.com.tr/haber/mudanyada-saganak-mahsur-kalanlar-kurtarildi-592192) — 29 Eyl 2026 17:01
+
+---
+
+### [141] Selçuk İnan Milli Takım tehlikesini açıkladı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> İtalya'ya 4-1 kaybeden A Milli Takım'ı bekleyen tehlikeyi Selçuk İnan açıkladı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Selçuk İnan'dan Milli Takım'a destek](https://www.sozcu.com.tr/selcuk-inan-dan-milli-takim-a-destek-p364521) — 29 Eyl 2026 10:17
+
+2. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Selçuk İnan Milli Takım tehlikesini açıkladı](https://halktv.com.tr/spor/selcuk-inan-milli-takim-tehlikesini-acikladi-1058365h) — 29 Eyl 2026 16:48
+
+---
+
+### [142] MAKTEK Avrasya 2026 fuarı başladı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Tüyap Tüm Fuarcılık Yapım A.Ş. tarafından, Takım Tezgahları Sanayici ve İş İnsanları Derneği (TİAD) iş birliğiyle, Türkiye Cumhuriyeti Ticaret Bakanlığı ve Makina İmalatçıları Birliği (MİB) destekleriyle düzenlenen MAKTEK Avrasya 2026, 9. Uluslararası Takım Tezgahları, Metal - Sac İşleme Makineleri, Tutucular - Kesici Takımlar, Kalite Kontrol Ölçüm Sistemleri, CAD/CAM, PLM Yazılımları ve Üretim Teknolojileri Fuarı, sektörün oyuncularını İstanbul’da buluşturuyor.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Shiftdelete** (`shiftdelete.net`) — 1 makale
+
+   - 1. [Üretim Teknolojilerinin Geleceği MAKTEK Avrasya 2026’da Buluşuyor](https://shiftdelete.net/uretim-teknolojilerinin-gelecegi-maktek-avrasya-2026da-bulusuyor) — 29 Eyl 2026 14:06
+
+2. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [MAKTEK Avrasya 2026 fuarı başladı](https://www.cnnturk.com/ekonomi/maktek-avrasya-2026-fuari-basladi-3472918) — 29 Eyl 2026 16:35
+
+---
+
+### [143] Bahçeli'den fon krizi çıkışı: Cumhur ittifakına yönelik bir saldırıya dönüşmemeli  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> MHP lideri Bahçeli yaşanan fon krizine ilişkin yaptığı açıklamada "Alınan kararları destekliyoruz." dedi. Cumhurbaşkanı Erdoğan'ı ve hükümeti desteklediklerini belirten Bahçeli, krizin Cumhur ittifakına yönelik bir saldırı ve iftiraya dönüşmemesi gerektiği konusunda uyardı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Bahçeli'den 'fon krizi' çıkışı: 'Cumhurbaşkanımızın ve hükümetimizin arkasındayız'](https://www.cumhuriyet.com.tr/siyaset/bahceli-den-fon-krizi-cikisi-cumhurbaskanimizin-ve-hukumetimizin-arkasindayiz-2542235) — 29 Eyl 2026 16:15
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Bahçeli'den fon krizi çıkışı: Cumhur ittifakına yönelik bir saldırıya dönüşmemeli](https://www.karar.com/guncel-haberler/bahceliden-fon-krizi-cikisi-cumhur-ittifakina-yonelik-bir-saldiriya-2075144) — 29 Eyl 2026 16:31
+
+---
+
+### [144] TEKNOFEST Güneydoğu yarın Şanlıurfa'da başlıyor: 1,6 milyon yarışmacı başvurdu  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Dünyanın en büyük havacılık, uzay ve teknoloji festivali TEKNOFEST, bu yıl 15. kez düzenlenecek. TEKNOFEST Güneydoğu adıyla gerçekleştirilecek festival, 30 Eylül-4 Ekim tarihleri arasında Şanlıurfa GAP Havalimanı'nda ziyaretçilerini ağırlayacak.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Megabayt · News** (`megabayt.com`) — 1 makale
+
+   - 1. [Şanlıurfa TEKNOFEST için geri sayımda: 1 milyon ziyaretçi bekleniyor](https://www.megabayt.com/teknoloji/sanliurfa-teknofest-icin-geri-sayimda-1-milyon-ziyaretci-bekleniyor/103363) — 26 Eyl 2026 13:19
+
+2. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [TEKNOFEST Güneydoğu yarın Şanlıurfa'da başlıyor: 1,6 milyon yarışmacı başvurdu](https://www.cnnturk.com/ekonomi/teknofest-guneydogu-yarin-sanliurfada-basliyor-1-6-milyon-yarismaci-basvurdu-3472910) — 29 Eyl 2026 16:27
+
+---
+
+### [145] Son Dakika | Bahçeli'den fon skandalı çıkışı: Hesap sorulmalı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Son dakika haberi... MHP Genel Başkanı Devlet Bahçeli, AKP'li isimlerin de adının karıştığı fon skandalına ilişkin açıklama yaptı. Bahçeli sorumlulardan hukuk önünde hesap sorulması gerektiğini belirtti.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Bahçeli'den fon krizi açıklaması: "Sorumlular hukuk önünde hesap vermeli"](https://www.aydinlik.com.tr/haber/bahceliden-fon-krizi-aciklamasi-sorumlular-hukuk-onunde-hesap-vermeli-592189) — 29 Eyl 2026 16:17
+
+2. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Son Dakika | Bahçeli'den fon skandalı çıkışı: Hesap sorulmalı](https://halktv.com.tr/siyaset/son-dakika-bahceliden-fon-skandali-cikisi-hesap-sorulmali-1058358h) — 29 Eyl 2026 16:19
+
+---
+
+### [146] iPhone'lardan Android'e geçiyor: Yeni batarya teknolojisi geliyor  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Apple'ın yıllardır kullandığı metal muhafazalı batarya teknolojisinin silikon-karbon hücrelerle birleştirilmesi, Android amiral gemilerinde 10.000 mAh ve üzeri kapasitelere ulaşılmasının önünü açabilir.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Webtekno** (`webtekno.com`) — 1 makale
+
+   - 1. [iPhone'larda Yıllardır Kullanılan Batarya Teknolojisi, Gelecek Android Telefonları Uçur…](
+                    https://www.webtekno.com/iphone-yillardir-kullanilan-batarya-teknolojisi-android-telefonlari-ucurabilir-h225931.html
+                    ) — 29 Eyl 2026 14:18
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [iPhone'lardan Android'e geçiyor: Yeni batarya teknolojisi geliyor](https://www.cnbce.com/teknoloji/iphonelardan-androide-geciyor-yeni-batarya-teknolojisi-geliyor-h38329) — 29 Eyl 2026 16:05
+
+---
+
+### [147] 9 ilçenin belediye başkanı AK Parti'ye katıldı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Parti değiştireceği öne sürülen 9 belediye başkanı bugünkü grup toplantısında AK Parti'ye katıldı. Rozetlerini Cumhurbaşkanı Erdoğan taktı. Böylece CHP'den 5, YRP'den 3, İYİ Parti'den 1 belediye başkanı, AK Parti'ye katılmış oldu.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Son Dakika | 9 belediye başkanı AKP'ye geçti: Rozetleri Erdoğan taktı](https://halktv.com.tr/siyaset/son-dakika-9-belediye-baskani-akpye-gecti-rozetleri-erdogan-takti-1058347h) — 29 Eyl 2026 15:16
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [9 ilçenin belediye başkanı AK Parti'ye katıldı](https://www.karar.com/guncel-haberler/9-ilcenin-belediye-baskani-ak-partiye-katildi-2075142) — 29 Eyl 2026 15:46
+
+---
+
+### [148] YENİ Parti'den '1 Ekim' kararı: TBMM açılış resepsiyonuna katılacaklar mı?  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> YENİ Parti milletvekilleri, yarın YENİ Parti Genel Merkezi’nde, Genel Başkan Özgür Özel başkanlığında toplanacak. Toplantıda, partinin TBMM’nin 1 Ekim’de açılacak 28’nci Dönem Beşinci Yasama Yılı’ndaki yol haritası tartışılacak. Öte yandan YENİ Parti, 1 Ekim akşamı düzenlenecek olan TBMM açılış resepsiyonuna ise katılmayacak.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [YENİ Parti'den '1 Ekim' kararı: TBMM açılış resepsiyonuna katılacaklar mı?](https://www.cumhuriyet.com.tr/siyaset/yeni-parti-den-1-ekim-karari-tbmm-acilis-resepsiyonuna-katilacaklar-mi-2542035) — 29 Eyl 2026 08:28
+
+2. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Meclis açılışı öncesi dikkat çeken karar! YENİ Parti tavrını belirledi](https://halktv.com.tr/siyaset/meclis-acilisi-oncesi-dikkat-ceken-karar-yeni-parti-tavrini-belirledi-1058349h) — 29 Eyl 2026 15:29
+
+---
+
+### [149] Yasa Dışı Bahis ve Sanal Kumarla Mücadeleye Yönelik Hukuk Politikaları Çalıştayı yapıldı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Cumhurbaşkanlığı Hukuk Politikaları Kurulunca "Yasa Dışı Bahis ve Sanal Kumarla Mücadeleye Yönelik Hukuk Politikaları Kurulu Toplantısı" yapıldı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Fotospor · Sondakika** (`fotospor.com`) — 1 makale
+
+   - 1. [Yasa d��� bahisle topyek�n m�cadele](https://www.fotospor.com.tr/guncel/yasa-disi-bahisle-topyekun-mucadele-713786) — 29 Eyl 2026 14:12
+
+2. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Yasa Dışı Bahis ve Sanal Kumarla Mücadeleye Yönelik Hukuk Politikaları Çalıştayı yapıldı](https://www.aa.com.tr/tr/spor/yasa-disi-bahis-ve-sanal-kumarla-mucadeleye-yonelik-hukuk-politikalari-calistayi-yapildi/4072847) — 29 Eyl 2026 15:16
+
+---
+
+### [150] İran: 'Basra Körfezi’nde ABD’ye ait savaş gemisi kalmadı'  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> İran Devrim Muhafızları Ordusu Sözcüsü Hüseyin Muhibbi, Basra Körfezi'nde ABD'ye ait herhangi bir savaş gemisinin bulunmadığını iddia ederek, Amerikan donanmasına ait gemilerin Hürmüz Boğazı'nın yaklaşık 500 kilometre güneyine çekildiğini öne sürdü.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [İran: Basra Körfezi’nde ABD’ye ait savaş gemisi kalmadı](https://www.karar.com/dunya-haberleri/iran-basra-korfezinde-abdye-ait-savas-gemisi-kalmadi-2075131) — 29 Eyl 2026 14:40
+
+2. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [İran: 'Basra Körfezi’nde ABD’ye ait savaş gemisi kalmadı'](https://www.aydinlik.com.tr/haber/iran-basra-korfezinde-abdye-ait-savas-gemisi-kalmadi-592175) — 29 Eyl 2026 15:10
+
+---
+
+### [151] Çin'de gözaltına alınmıştı: CHP'li belediye meclis üyesi partiden ihraç edildi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> CHP Muğla İl Başkanlığı, Çin'de yürütülen bir adli soruşturma kapsamında yaklaşık 2 aydır gözaltında tutulduğu belirtilen Fethiye Belediye Meclis Üyesi R.B.'nin partiden kesin olarak ihraç edildiğini açıkladı. Parti tarafından yapılan açıklamada, R.B. hakkındaki suçlamanın “18 yaşından küçük kız alıkoyma” olduğu belirtildi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Çin'de gözaltına alınmıştı: CHP'li belediye meclis üyesi partiden ihraç edildi](https://www.cumhuriyet.com.tr/turkiye/cin-de-gozaltina-alinmisti-chp-li-belediye-meclis-uyesi-partiden-ihrac-edildi-2542190) — 29 Eyl 2026 14:31
+
+2. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Çin'de 2 aydır gözaltında tutuluyordu: Fethiye Belediye Meclis Üyesi CHP'den ihraç edildi](https://halktv.com.tr/siyaset/cinde-2-aydir-gozaltinda-tutuluyordu-fethiye-belediye-meclis-uyesi-chpden-ihrac-edildi-1058346h) — 29 Eyl 2026 15:08
+
+---
+
+### [152] ABD'de tüketici güveni dört ayın dibine indi, enflasyon beklentisi yükseldi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> ABD'de Michigan Üniversitesi tüketici güven endeksi eylülde nihai olarak 48,1 seviyesine gerileyerek son dört ayın en düşük düzeyini gördü. Endeks ağustosta 51,7, geçen yılın aynı döneminde ise 55,1 s...
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [ABD'de tüketici güveni dört ayın dibine indi, enflasyon beklentisi yükseldi](https://www.foreks.com/haber/detay/6ab67ed824008d7d43737427/PICNEWS/tr/abd-de-tuketici-guveni-dort-ayin-dibine-indi-enflasyon-beklentisi-yukseldi-25-09-26/) — 25 Eyl 2026 14:02
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [ABD'de tüketici güveni 11 yılın en düşük seviyesine geriledi](https://www.cnbce.com/veriler/abdde-tuketici-guveni-11-yilin-en-dusuk-seviyesine-geriledi-h38323) — 29 Eyl 2026 14:55
+
+---
+
+### [153] Sezen Aksu'dan Merdan Yanardağ hamlesi: Açtığı davayı geri çekti  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Gazeteci Merdan Yanardağ, "casusluk" davasındaki savunması sırasında, ünlü sanatçı Sezen Aksu'nun kendisine açtığı tazminat davasını geri çektiğini açıkladı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Sezen Aksu, gazeteci Merdan Yanardağ'a açtığı davayı geri çekti](https://halktv.com.tr/turkiye/sezen-aksu-gazeteci-merdan-yanardaga-actigi-davayi-geri-cekti-1058343h) — 29 Eyl 2026 14:40
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Sezen Aksu'dan Merdan Yanardağ hamlesi: Açtığı davayı geri çekti](https://www.cumhuriyet.com.tr/turkiye/sezen-aksu-dan-merdan-yanardag-hamlesi-actigi-davayi-geri-cekti-2542207) — 29 Eyl 2026 14:52
+
+---
+
+### [154] Muhammed Salah için dikkat çeken karar: Maçta forma giymeyecek  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Mısır Futbol Federasyonu, Trabzonspor'da forma giyen Muhammed Salah'ın Güney Sudan karşılaşmasında dinlendirileceğini açıkladı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnnturk · News** (`cnnturk.com`) — 1 makale
+
+   - 1. [Muhammed Salah için dikkat çeken karar: Maçta forma giymeyecek](https://www.cnnturk.com/spor/futbol/muhammed-salah-icin-dikkat-ceken-karar-macta-forma-giymeyecek-3471734) — 26 Eyl 2026 16:25
+
+2. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Salah gerçeği ortaya çıktı! Virüs yüzünden o ülkeye gitmedi](https://www.sozcu.com.tr/salah-gercegi-ortaya-cikti-virus-yuzunden-o-ulkeye-gitmedi-p364589) — 29 Eyl 2026 14:42
+
+---
+
+### [155] Eşini 'Sürprizim var' diyerek köye götürdü, kupayla öldürdü: Bir anlık öfke ile oldu  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Samsun’da 4 çocuk annesi eşi Fatma Günegül’ü öldürdüğü iddiasıyla ağırlaştırılmış müebbet hapsi istenen Yücel Günegül hakim karşısına çıktı. Eşine “Sürprizim var” diyerek köy evine götürdüğü belirtilen sanığın, burada eşinin başını duvara vurduğu, boğazını sıktığı ve yüzüne kupa ile defalarca vurduğu iddia edildi. Günegül ise “Eşimi bayıldı sandım. Bir anlık öfke ile olay meydana geldi” diyerek tahliyesini istedi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Fatma Günegül'ün ölümünde sanık hakim karşısında: 'Bir anlık öfke ile oldu!'](https://www.cumhuriyet.com.tr/turkiye/fatma-gunegul-un-olumunde-sanik-hakim-karsisinda-bir-anlik-ofke-ile-oldu-2542185) — 29 Eyl 2026 14:28
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Eşini 'Sürprizim var' diyerek köye götürdü, kupayla öldürdü: Bir anlık öfke ile oldu](https://www.karar.com/guncel-haberler/esini-surprizim-var-diyerek-koye-goturdu-kupayla-oldurdu-bir-anlik-ofke-2075129) — 29 Eyl 2026 14:34
+
+---
+
+### [156] Adliyenin duvar kaplaması avukatın üzerine düştü!  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> İstanbul Adliyesi’nin B Blok 5’inci katında mesleki faaliyeti için bulunan avukat H.E., duvar kaplamalarının yerinden koparak üzerine düşmesi sonucu başından yaralandı. İstanbul Barosu, ilk tomografi incelemesinde hayati tehlike oluşturabilecek bir bulguya rastlanmadığını, avukatın müşahede altında tutulduğunu açıkladı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [İstanbul Adliyesi'nde duvar kaplaması avukatın üzerine düştü! Barodan 'güvenlik' çağrıs…](https://www.cumhuriyet.com.tr/turkiye/istanbul-adliyesi-nde-duvar-kaplamasi-avukatin-uzerine-dustu-barodan-guvenlik-cagrisi-geldi-2542165) — 29 Eyl 2026 13:29
+
+2. **Hukukihaber** (`hukukihaber.net`) — 1 makale
+
+   - 1. [Adliyenin duvar kaplaması avukatın üzerine düştü!](https://www.hukukihaber.net/adliyenin-duvar-kaplamasi-avukatin-uzerine-dustu) — 29 Eyl 2026 14:30
+
+---
+
+### [157] Sylvester Stallone yıllar sonra ilk kez konuştu: Oğlunun ölüm haberini aldığı anı ve yaşadığı acıyı anlattı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Hollywood'un dünyaca ünlü aktörü Sylvester Stallone, 2012 yılında henüz 36 yaşındayken hayatını kaybeden oğlu Sage'in ölüm haberini aldığı anı ve sonrasında yaşadığı derin acıyı yıllar sonra anlattı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Haberturk · Magazin** (`haberturk.com`) — 1 makale
+
+   - 1. ["Bir feryat koptu ağzımdan"](https://www.haberturk.com/magazin/sylvester-stallone-evlat-acisini-anlatti-olumunden-bir-hafta-sonra-bir-feryat-koptu-agzimdan-3915928) — 29 Eyl 2026 12:47
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Sylvester Stallone yıllar sonra ilk kez konuştu: Oğlunun ölüm haberini aldığı anı ve ya…](https://www.cumhuriyet.com.tr/yasam/sylvester-stallone-yillar-sonra-ilk-kez-konustu-oglunun-olum-haberini-aldigi-ani-ve-yasadigi-aciyi-anlatti-2542189) — 29 Eyl 2026 14:30
+
+---
+
+### [158] Katar'dan ara buluculuk mesajı: ABD ve İran arasında zemin arıyoruz  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Katar Dışişleri Bakanlığı Sözcüsü el-Ensari, Hürmüz Boğazı'nda seyrüsefer serbestisinin yeniden sağlanması ve gerilimin düşürülmesi amacıyla ABD ile İran arasında yürüttükleri ara buluculuk rolünü sürdürdüklerini belirterek, “ABD ve İran'ın tutumlarını yakınlaştıracak ortak bir zemin oluşturmak ve barışçıl bir çözüme ulaşmak için taraflar arasındaki temaslarımıza devam ediyoruz” dedi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Katar'dan ABD-İran mesajı: Görüşmeler devam ediyor, hedef ortak zemin](https://www.cnbce.com/dunya/katardan-abd-iran-mesaji-gorusmeler-devam-ediyor-hedef-ortak-zemin-h38315) — 29 Eyl 2026 13:12
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Katar'dan ara buluculuk mesajı: ABD ve İran arasında zemin arıyoruz](https://www.karar.com/dunya-haberleri/katardan-ara-buluculuk-mesaji-abd-ve-iran-arasinda-zemin-ariyoruz-2075127) — 29 Eyl 2026 14:28
+
+---
+
+### [159] Galatasaray basketbol takımına yeni sponsor  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Galatasaray Kulübü ile 1905 Galatasaraylı Yönetici ve İş İnsanları Derneği (1905 GSYİAD) arasında sarı-kırmızılı erkek basketbol takımı forma sırt sponsorluğu anlaşması imzalandı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Galatasaray basketbol takımına yeni sponsor](https://www.cnbce.com/spor-ekonomisi/galatasaray-basketbol-takimina-yeni-sponsor-h38311) — 29 Eyl 2026 12:25
+
+2. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Galatasaray erkek basketbol takımına yeni sponsor](https://www.sozcu.com.tr/galatasaray-erkek-basketbol-takimina-yeni-sponsor-p364585) — 29 Eyl 2026 14:27
+
+---
+
+### [160] Zeynel Emre'den fon soruşturmasında yeni isim: "Hayrettin Koç’a dikkat edilmeli"  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> YENİ Parti Sözcüsü Zeynel Emre, fon soruşturmasına ilişkin açıklamasında Hayrettin Koç adına yaklaşık 200 milyon euroluk işlemler yapıldığı yönünde iddialar bulunduğunu bu isme dikkat edilmesi gerektiğini söyledi. Emre, “İsimler var elimizde ancak bunlardan yüzde 100 emin olmadan, birkaç yerden teyit almadan açıklamama temel prensip kararımızdır" dedi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Artigercek** (`artigercek.com`) — 1 makale
+
+   - 1. [Zeynel Emre fon skandalında yeni bir isme işaret etti](https://artigercek.com/politika/zeynel-emre-fon-skandalinda-yeni-bir-isme-isaret-etti-351026h) — 29 Eyl 2026 13:14
+
+2. **Karar** (`karar.com`) — 1 makale
+
+   - 1. [Zeynel Emre'den fon soruşturmasında yeni isim: "Hayrettin Koç’a dikkat edilmeli"](https://www.karar.com/guncel-haberler/zeynel-emreden-fon-sorusturmasinda-yeni-isim-hayrettin-koca-dikkat-2075123) — 29 Eyl 2026 14:18
+
+---
+
+### [161] İstanbul için kritik uyarı: Kuvvetli yağış ve fırtına geliyor  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> İstanbul Valiliği, kentte bugün ve yarın etkili olması beklenen kuvvetli yağış ve fırtınaya karşı vatandaşları uyardı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [İstanbul için kritik uyarı: Kuvvetli yağış ve fırtına geliyor](https://www.cnbce.com/haberler/istanbul-icin-kritik-uyari-kuvvetli-yagis-ve-firtina-geliyor-h38314) — 29 Eyl 2026 12:59
+
+2. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [İstanbul Valiliği saat 15.20'de vatandaşları uyardı: Megakent genelinde fırtına ve şidd…](https://www.sozcu.com.tr/istanbul-valiligi-saat-15-20-de-vatandaslari-uyardi-megakent-genelinde-firtina-ve-siddetli-yagis-p364561) — 29 Eyl 2026 14:17
+
+---
+
+### [162] Apple'dan iPhone 18 Pro için hata düzeltmesi: Yeni iOS sürümü yayınlandı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Apple, iPhone kullanıcıları için iOS 27.0.1 güncellemesini yayınladı. Yeni sürümle birlikte iPhone 18 Pro ve iPhone 18 Pro Max modellerinde görülen Face ID kaynaklı yeniden başlatma sorununun yanı sıra fotoğraf ve dokunmatik ekranla ilgili hatalar giderildi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Shiftdelete** (`shiftdelete.net`) — 1 makale
+
+   - 1. [Apple iOS 27.0.1 Yayınlandı: iPhone 18 Pro Hataları Düzeltildi](https://shiftdelete.net/apple-ios-27-0-1-yayinlandi-iphone-18-pro-hatalari-duzeltildi) — 28 Eyl 2026 18:05
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Apple'dan iPhone 18 Pro için hata düzeltmesi: Yeni iOS sürümü yayınlandı](https://www.cumhuriyet.com.tr/bilim-teknoloji/apple-dan-iphone-18-pro-icin-hata-duzeltmesi-yeni-ios-surumu-yayinlandi-2542182) — 29 Eyl 2026 14:09
+
+---
+
+### [163] Brad Pitt ve Angelina Jolie cephesinde soyadı krizi büyüyor: Zahara da yasal olarak Pitt soyadını bıraktı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Hollywood'un ünlü eski çifti Angelina Jolie ve Brad Pitt'in kızları Zahara Marley Jolie, mahkeme kararıyla yasal olarak babasının soyadını bıraktı. Kardeşleri Shiloh ve Maddox'un ardından benzer adımı atan Zahara, Pitt soyadını sildiren üçüncü çocuk oldu.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Haberturk · Magazin** (`haberturk.com`) — 1 makale
+
+   - 1. [Babasını resmen sildi](https://www.haberturk.com/magazin/angelina-jolie-ve-brad-pitt-in-kizi-zahara-babasinin-soyadini-birakan-ucuncu-cocuk-oldu-3915945) — 29 Eyl 2026 13:48
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Brad Pitt ve Angelina Jolie cephesinde soyadı krizi büyüyor: Zahara da yasal olarak Pit…](https://www.cumhuriyet.com.tr/magazin/brad-pitt-ve-angelina-jolie-cephesinde-soyadi-krizi-buyuyor-zahara-da-yasal-olarak-pitt-soyadini-birakti-2542180) — 29 Eyl 2026 14:06
+
+---
+
+### [164] Wells Fargo'dan 2027 altın tahmini: Hedef aşağı çekildi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Wells Fargo Investment Institute, 2027 yılına ilişkin altın ve ABD 10 yıllık Hazine tahvili faizi beklentilerini güncelledi. Kurum, altın hedefini aşağı çekerken tahvil faizi tahminini yükseltti.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [Wells Fargo altın hedefini düşürdü, ABD tahvil faizi beklentisini yükseltti](https://www.foreks.com/haber/detay/6abbb8fb24008d7d43738e52/PICNEWS/tr/wells-fargo-altin-hedefini-dusurdu-abd-tahvil-faizi-beklentisini-yukseltti-29-09-26/) — 29 Eyl 2026 13:11
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Wells Fargo'dan 2027 altın tahmini: Hedef aşağı çekildi](https://www.cnbce.com/altin/wells-fargodan-2027-altin-tahmini-hedef-asagi-cekildi-h38321) — 29 Eyl 2026 14:03
+
+---
+
+### [165] Borsa İstanbul, SPK ve BDDK başkanları da masadaydı... Fon krizinde kritik toplantı: Erdoğan Saray'da ekonomi kurmaylarıyla görüştü  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> AKP'li Cumhurbaşkanı Erdoğan, fon skandalıyla ilgili ekonomi kurmaylarıyla Saray'da bir araya geldi. Toplantıya, Cumhurbaşkanı Yardımcısı Cevdet Yılmaz, Hazine ve Maliye Bakanı Mehmet Şimşek, Borsa İstanbul, SPK ve BDDK başkanları da katıldı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Artigercek** (`artigercek.com`) — 1 makale
+
+   - 1. [Erdoğan fon kriziyle ilgili ekonomi kurmaylarını topladı](https://artigercek.com/politika/erdogan-fon-kriziyle-ilgili-ekonomi-kurmaylarini-topladi-351029h) — 29 Eyl 2026 13:37
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Borsa İstanbul, SPK ve BDDK başkanları da masadaydı... Fon krizinde kritik toplantı: Er…](https://www.cumhuriyet.com.tr/ekonomi/borsa-istanbul-spk-ve-bddk-baskanlari-da-masadaydi-fon-krizinde-kritik-toplanti-erdogan-saray-da-ekonomi-kurmaylariyla-gorustu-2542169) — 29 Eyl 2026 13:41
+
+---
+
+### [166] Meteoroloji uyardı: Gök gürültülü sağanak bekleniyor  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Meteoroloji Dairesi, bugün 06.00-17.00 saatleri arasında yer yer kuvvetli gök gürültülü sağanak beklendiğini açıkladı. Daire, sel, taşkın, dolu, yıldırım ve kuvvetli rüzgar gibi olumsuzluklara karşı tedbirli olunması çağrısında bulundu.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Nehaberkibris · Genel 0** (`nehaberkibris.com`) — 1 makale
+
+   - 1. [Meteoroloji uyardı: Gök gürültülü sağanak bekleniyor](https://www.nehaberkibris.com/meteoroloji-uyardi-gok-gurultulu-saganak-bekleniyor-46388) — 18 Eyl 2026 08:30
+
+2. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Marmara'nın güney ve doğusuna kuvvetli yağış uyarısı! İşte Yağışların etkili olacağı il…](https://www.aydinlik.com.tr/haber/marmaranin-guney-ve-dogusuna-kuvvetli-yagis-uyarisi-iste-yagislarin-etkili-olacagi-iller-ve-ilceler-592166) — 29 Eyl 2026 13:40
+
+---
+
+### [167] Sarı kod nedir? Meteoroloji hangi durumlarda sarı kodlu uyarı veriyor?  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> İstanbul'da pazar gününden beri etkili olan yağmur, etkisini artırarak devam edecek. Meteoroloji Genel Müdürlüğü bugün için İstanbul dahil 14 il için sarı kodlu uyarıda bulundu. Peki, Sarı kod nedir? Meteoroloji hangi durumlarda sarı kodlu uyarı veriyor?
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Meteoroloji, AKOM, İstanbul Valiliği'nden peş peşe hava durumu uyarısı! Saat verildi: K…](https://halktv.com.tr/turkiye/meteoroloji-akom-istanbul-valiliginden-pes-pese-hava-durumu-uyarisi-saat-verildi-kuvvetli-geliyor-1058074h) — 28 Eyl 2026 14:13
+
+2. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Sarı kod nedir? Meteoroloji hangi durumlarda sarı kodlu uyarı veriyor?](https://www.cumhuriyet.com.tr/yasam/sari-kod-nedir-meteoroloji-hangi-durumlarda-sari-kodlu-uyari-veriyor-2542164) — 29 Eyl 2026 13:27
+
+---
+
+### [168] CNBC-e enflasyon anketi: Ekonomistlerin eylül için beklentisi belli oldu  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Haftaya bugün açıklanacak eylül ayı enflasyonu için CNBC-e'nin 21 ekonomistle gerçekleştirdiği ankette aylık TÜFE beklentisi medyanda yüzde 2,14, yıllık enflasyon beklentisi yüzde 30,15 oldu. Yıl sonu beklentisi ise yüzde 29,7'ye yükseldi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [CNBC-e enflasyon anketi: Ekonomistlerin eylül için beklentisi belli oldu](https://www.cnbce.com/haberler/cnbc-e-enflasyon-anketi-ekonomistlerin-eylul-icin-beklentisi-belli-oldu-h38194) — 28 Eyl 2026 11:23
+
+2. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
+
+   - 1. [Enflasyon beklentisi şaşırttı: Eylül tahmini belli oldu](https://www.kamudanhaber.net/enflasyon-beklentisi-sasirtti-eylul-tahmini-belli-oldu) — 29 Eyl 2026 13:02
+
+---
+
+### [169] Mustafa Sandal'dan açıklama: Melis Sandal ile ortak işimiz yok  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kültür / Sanat
+
+**Açıklama:**
+
+> Sermaye piyasalarına yönelik yürütülen fon soruşturmasında adı geçen Melis Sandal ve eşi Mustafa Sandal hakkında çeşitli iddialar gündeme geldi. Ünlü şarkıcı, "Melis ile karı-koca olmak dışında maddi anlamda hiçbir ortak işimiz olmamıştır" dedi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Haberturk · Magazin** (`haberturk.com`) — 1 makale
+
+   - 1. ["Eşim iş ortağım değil"](https://www.haberturk.com/magazin/foto/mustafa-sandal-dan-aciklama-melis-esim-ama-ortagim-degil-3915894) — 29 Eyl 2026 11:12
+
+2. **Elele** (`elele.com.tr`) — 1 makale
+
+   - 1. [Mustafa Sandal'dan açıklama: Melis Sandal ile ortak işimiz yok](https://www.elele.com.tr/magazin/mustafa-sandaldan-aciklama-melis-sandal-ile-ortak-isimiz-yok) — 29 Eyl 2026 12:52
+
+---
+
+### [170] Gülistan Doku soruşturmasında dikkat çeken ifade : Japonya tatili ve iki bavul detayı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> Gülistan Doku'nun kaybolmasına ilişkin soruşturma kapsamında tutuklanan Burçin Kahraman'ın savcılık ifadesinde 2024 yılında gerçekleştirilen Japonya seyahatine ilişkin ayrıntılar yer aldı. Kahraman, eski Tunceli Valisi Tuncay Sonel ve kızıyla yapılan seyahatte iki büyük bavulla otelden ayrıldıklarını gördüğünü söyledi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [Gülistan Doku soruşturmasında dikkat çeken ifade : Japonya tatili ve iki bavul detayı](https://www.iscihaber.net/gundem/gulistan-doku-sorusturmasinda-dikkat-ceken-ifade-japonya-tatili-ve-iki-bavul-detayi/267079) — 29 Eyl 2026 08:32
+
+2. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [Gülistan Doku soruşturmasında "iki büyük bavul" detayı: Komutanın eşi anlattı](https://www.aydinlik.com.tr/haber/gulistan-doku-sorusturmasinda-iki-buyuk-bavul-detayi-komutanin-esi-anlatti-592159) — 29 Eyl 2026 12:44
+
+---
+
+### [171] ASELSAN’dan Dron Tehditlerine Karşı İkili Kalkan: KANGAL ve EJDERHA Sahada Gövde Gösterisi Yaptı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Bilim / Teknoloji
+
+**Açıklama:**
+
+> Modern muharebe alanlarının ve sınır güvenliğinin en büyük tehditlerinden biri haline gelen FPV ve kamikaze dronlara karşı yerli savunma sanayiinden kritik bir hamle geldi. ASELSAN, Gölbek Atış ve Test Merkezinde düzenlediği kapsamlı demo faaliyetinde, mini/mikro İHA ve yeni nesil FPV dron tehditlerini bertaraf etmek amacıyla geliştirdiği KANGAL FPV 100 ve EJDERHA AD 210 sistemlerini sahaya […]
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Shiftdelete** (`shiftdelete.net`) — 1 makale
+
+   - 1. [ASELSAN’dan Dron Tehditlerine Karşı İkili Kalkan: KANGAL ve EJDERHA Sahada Gövde Göster…](https://shiftdelete.net/aselsandan-dron-tehditlerine-karsi-ikili-kalkan-kangal-ve-ejderha-sahada-govde-gosterisi-yapti) — 29 Eyl 2026 11:55
+
+2. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+
+   - 1. [KANGAL FPV 100 ve EJDERHA AD 210’un yetenekleri demoda gösterildi](https://www.aydinlik.com.tr/haber/aselsanin-iha-karsi-tedbir-sistemleri-sahada-sinandi-592153) — 29 Eyl 2026 12:30
+
+---
+
+### [172] Sadece 1 adet üretildi: Alfa Romeo 33 Stradale "Perla Nera" görücüye çıktı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Alfa Romeo, sadece 33 adetle sınırlı 33 Stradale modelinin "Perla Nera" adlı tekli özel versiyonunu tanıttı. Tamamen siyah karbon fiber gövdesi, 630 beygirlik V6 motoru ve koleksiyoncuya özel iç tasarımıyla dikkat çeken araç, 18 Ekim'e kadar Alfa Romeo Müzesi'nde sergilenecek.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Sadece 1 adet üretildi: Alfa Romeo 33 Stradale "Perla Nera" görücüye çıktı](https://www.cnbce.com/otomotiv/sadece-1-adet-uretildi-alfa-romeo-33-stradale-perla-nera-gorucuye-cikti-g38276) — 29 Eyl 2026 08:47
+
+2. **Webtekno** (`webtekno.com`) — 1 makale
+
+   - 1. [Görünce Kendine Aşık Eden Alfa Romeo 33 Stradale Perla Nera Tanıtıldı](
+                    https://www.webtekno.com/alfa-romeo-33-stradale-perla-nera-tanitildi-h225916.html
+                    ) — 29 Eyl 2026 12:26
+
+---
+
+### [173] iOS 27.0.1 yayınlandı: Şarj, ekran ve kamera sorunlarına çözüm getirildi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Kamu / Resmi
+
+**Açıklama:**
+
+> Apple, iOS 27 sürümünün ardından ilk ara güncellemesi olan iOS 27.0.1’i kullanıma sundu. Güncelleme, iPhone 18 Pro modellerinde yaşanan Face ID kilitlenmelerine ve kamera renk bozulmalarına çözüm getiriyor.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [iOS 27.0.1 yayınlandı: Şarj, ekran ve kamera sorunlarına çözüm getirildi](https://www.iscihaber.net/teknoloji/ios-2701-yayinlandi-sarj-ekran-ve-kamera-sorunlarina-cozum-getirildi/266968) — 28 Eyl 2026 18:02
+
+2. **Megabayt · News** (`megabayt.com`) — 1 makale
+
+   - 1. [iPhone 18 Pro kullanıcılarının beklediği güncelleme geldi: Face ID sorunları tarih oluyor](https://www.megabayt.com/teknoloji/iphone-18-pro-kullanicilarinin-bekledigi-guncelleme-geldi-face-id-sorunlari-tarih-oluyor/103410) — 29 Eyl 2026 12:09
+
+---
+
+### [174] Google Assistant dönemi Android’de resmen bitti  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Bilim / Teknoloji
+
+**Açıklama:**
+
+> Google, Android'de Google Assistant'tan Gemini'a geçişi hızlandırdı. Geri dönüş seçeneği kalkarken değişiklik Wear OS ve Android Auto'yu da kapsıyor.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Shiftdelete** (`shiftdelete.net`) — 1 makale
+
+   - 1. [Android’de Google Asistan Dönemi Resmen Sona Erdi](https://shiftdelete.net/google-asistan-gemini-gecisi-android) — 29 Eyl 2026 08:30
+
+2. **Chip** (`chip.com.tr`) — 1 makale
+
+   - 1. [Google Assistant dönemi Android’de resmen bitti](https://www.chip.com.tr/guncel/google-assistant-donemi-androidde-resmen-bitti_184173.html) — 29 Eyl 2026 12:02
+
+---
+
+### [175] Bakan Işıkhan, DİSK Genel Başkanı Çerkezoğlu ile görüştü  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Güncel
+
+**Açıklama:**
+
+> Çalışma ve Sosyal Güvenlik Bakanı Vedat Işıkhan, DİSK Genel Başkanı Arzu Çerkezoğlu ile bir araya geldi. Işıkhan, çalışma hayatını güçlendirmek için istişare içinde adımlar atmaya devam edeceklerini belirtti
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Isindetayi · Gundem** (`isindetayi.com`) — 1 makale
+
+   - 1. [Bakan Işıkhan, Türkiye Kamu-Sen Genel Başkanı Kahveci’yi ağırladı](https://www.isindetayi.com/bakan-isikhan-turkiye-kamu-sen-genel-baskani-kahveciyi-agirladi) — 15 Eyl 2026 18:48
+
+2. **Artigercek** (`artigercek.com`) — 1 makale
+
+   - 1. [Bakan Işıkhan, DİSK Genel Başkanı Çerkezoğlu ile görüştü](https://artigercek.com/emek/bakan-isikhan-disk-genel-baskani-cerkezoglu-ile-gorustu-351021h) — 29 Eyl 2026 11:52
+
+---
+
+### [176] 62 yaşındaki Kaya Çilingiroğlu, 26 yaş küçük sevgilisinin doğum gününde aşka geldi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Kaya Çilingiroğlu, kendisinden 26 yaş küçük sevgilisi Aslım Kan'ın doğum gününde romantik anlarıyla dikkat çekti. İstanb...
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Sozcu · Magazin** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [62 yaşındaki Kaya Çilingiroğlu, 26 yaş küçük sevgilisinin doğum gününde aşka geldi](https://www.sozcu.com.tr/62-yasindaki-kaya-cilingiroglu-26-yas-kucuk-sevgilisinin-dogum-gununde-aska-geldi-p364540) — 29 Eyl 2026 11:47
+
+2. **Sozcu** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [62 yaşındaki Kaya Çilingiroğlu, 26 yaş küçük sevgilisinin doğum gününde aşka geldi](https://www.sozcu.com.tr/62-yasindaki-kaya-cilingiroglu-26-yas-kucuk-sevgilisinin-dogum-gununde-aska-geldi-p364540) — 29 Eyl 2026 11:47
+
+---
+
+### [177] Bakan Bak, Avrupa Okul Sporları Federasyonu heyetini kabul etti  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Gençlik ve Spor Bakanı Osman Aşkın Bak, Avrupa Okul Sporları Federasyonu Başkanı Ivan Dujic ve Genel Sekreteri Stylianos Daskalakis'i kabul etti.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Nehaberkibris · Genel 0** (`nehaberkibris.com`) — 1 makale
+
+   - 1. [Türkiye Gençlik ve Spor Bakanı Osman Aşkın Bak, KKTC’ye geldi](https://www.nehaberkibris.com/turkiye-genclik-ve-spor-bakani-osman-askin-bak-kktcye-geldi-46394) — 19 Eyl 2026 07:57
+
+2. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Bakan Bak, Avrupa Okul Sporları Federasyonu heyetini kabul etti](https://www.aa.com.tr/tr/spor/bakan-bak-avrupa-okul-sporlari-federasyonu-heyetini-kabul-etti/4072540) — 29 Eyl 2026 11:23
+
+---
+
+### [178] SPK kapatılan, tasfiyesine karar verilen fonlara 17 Eylül'de verilen satış emirlerinin durumuna açıklık getirdi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Sermaye Piyasası Kurulu (SPK), kapatılmalarına karar verilerek tasfiye sürecine alınan yatırım fonlarına ilişkin önemli bir basın duyurusu yayımladı. Duyuruda özellikle 17 Eylül 2026 tarihinde Türkiye...
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [SPK kapatılan, tasfiyesine karar verilen fonlara 17 Eylül'de verilen satış emirlerinin …](https://www.foreks.com/haber/detay/6ab9c94a24008d7d43737d9e/PICNEWS/tr/spk-kapatilan-tasfiyesine-karar-verilen-fonlara-17-eylul-de-verilen-satis-emirlerinin-durumuna-aciklik-getirdi-28-09-26/) — 28 Eyl 2026 01:56
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Ulusoy Un'dan tasfiye sürecindeki fon açıklaması](https://www.cnbce.com/borsa/ulusoy-undan-tasfiye-surecindeki-fon-aciklamasi-h38301) — 29 Eyl 2026 10:57
+
+---
+
+### [179] SPK TARAFINDAN TASFİYESİNE KARAR VERİLEN YATIRIM FONLARINDA CEZA SORUŞTURMASININ MAĞDURLARIN ZARARLARININ GİDERİLMESİNE ETKİSİ  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -3446,53 +5901,285 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [93] Karaelmas Ekspresi raylara iniyor  (2 farklı kaynakta, 2 makale)
+### [180] Oura, Nasdaq halka arzını erteledi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
 **Açıklama:**
 
-> Ulaştırma ve Altyapı Bakanı Abdulkadir Uraloğlu, Ankara-Zonguldak arasında işletilen Turistik Karaelmas Ekspresi’nin Ekim ayında yeniden raylara ineceğini bildirdi. Bakan Uraloğlu, “Turistik Karaelmas Ekspresi, 4 gidiş ve 4 dönüş olmak üzere toplam 8 sefer gerçekleştirecek. Batı Karadeniz’in doğal, kültürel ve tarihi değerlerini demiryoluyla keşfetme imkânı sunacağız.” dedi
+> Sağlık teknolojileri platformu ve akıllı yüzük üreticisi Oura, halka arz piyasasındaki belirsizlik nedeniyle daha önce duyurduğu Nasdaq halka arzını ertelediğini açıkladı. Şirket, halka arza yönelik t...
 
 **Farklı kaynak sayısı:** 2
 **Toplam makale sayısı:** 2
 
 **Geçtiği farklı kaynaklar:**
 
-1. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+1. **Foreks** (`foreks.com`) — 1 makale
 
-   - 1. [Karaelmas Ekspresi raylara iniyor](https://www.haberturk.com/ekonomi/foto/karaelmas-ekspresi-raylara-iniyor-iste-sefer-tarihleri-3915846) — 29 Eyl 2026 08:21
+   - 1. [Oura, Nasdaq halka arzını erteledi](https://www.foreks.com/haber/detay/6abb8f6395016b5817e61d28/PICNEWS/tr/oura-nasdaq-halka-arzini-erteledi-29-09-26/) — 29 Eyl 2026 10:13
 
-2. **Aydinlik** (`aydinlik.com.tr`) — 1 makale
+2. **Cnbce** (`cnbce.com`) — 1 makale
 
-   - 1. [Turistik Karaelmas Ekspresi yeniden raylara iniyor! Bakan Uraloğlu açılış gününü duyurdu](https://www.aydinlik.com.tr/haber/turistik-karaelmas-ekspresi-yeniden-raylara-iniyor-bakan-uraloglu-acilis-gununu-duyurdu-592119) — 29 Eyl 2026 08:40
+   - 1. [Oura halka arzını erteledi: Nasdaq planı belirsizliğe takıldı](https://www.cnbce.com/teknoloji/oura-halka-arzini-erteledi-nasdaq-plani-belirsizlige-takildi-h38298) — 29 Eyl 2026 10:46
 
 ---
 
-### [94] ASELSAN ve Türk Telekom İmzalı Yerli Telefonun Çıkış Tarihi ve Üretim Yeri Belli Oldu  (2 farklı kaynakta, 2 makale)
+### [181] Bitcoin ve Ethereum ETF'lerinde güçlü para girişi: Pozitif seride 6. gün  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Bitcoin ve Ethereum ETF’lerinde pozitif seyir devam ediyor. ABD’de işlem gören spot Bitcoin ETF’leri 24 Eylül’de 190,65 milyon dolar net girişle seriyi altıncı güne taşırken, Ethereum ETF’leri de 66,01 milyon dolarlık girişle beşinci günde de yeşil kapattı.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Bitcoin ve Ethereum ETF'lerinde güçlü para girişi: Pozitif seride 6. gün](https://www.cnbce.com/kripto/bitcoin-ve-ethereum-etflerinde-guclu-para-girisi-pozitif-seride-6-gun-g38019) — 25 Eyl 2026 06:38
+
+2. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [ABD spot Bitcoin ETF'lerinde pozitif seyir sürüyor](https://www.foreks.com/haber/detay/6abb945d24008d7d43738cb9/PICNEWS/tr/abd-spot-bitcoin-etf-lerinde-pozitif-seyir-suruyor-29-09-26/) — 29 Eyl 2026 10:35
+
+---
+
+### [182] Selçuk İnan'dan Milli Takım'a destek  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Kocaelispor Teknik Direktörü Selçuk İnan: "Dün kötü zamanlarımızdan biriydi ama benim ülkemizden beklentim, isteğim bu o...
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Halktv** (`halktv.com.tr`) — 1 makale
+
+   - 1. [Selçuk İnan Galatasaray'a telefon açtı](https://halktv.com.tr/spor/selcuk-inan-galatasaraya-telefon-acti-1058210h) — 29 Eyl 2026 07:30
+
+2. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Selçuk İnan'dan Milli Takım'a destek](https://www.sozcu.com.tr/selcuk-inan-dan-milli-takim-a-destek-p364521) — 29 Eyl 2026 10:17
+
+---
+
+### [183] Avrupa'nın enerji faturası büyüyor: Ek ödeme 100 milyar euroyu aştı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> AB Komisyonu Enerjiden Sorumlu Üyesi Dan Jorgensen, Avrupa Birliği'nin bu yıl aynı miktarda petrol ve doğal gaz için 100 milyar avrodan fazla ek ödeme yaptığını belirterek, ithal fosil yakıtlara bağımlılığın azaltılması gerektiğini söyledi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Avrupa'nın enerji faturası büyüyor: Ek ödeme 100 milyar euroyu aştı](https://www.cnbce.com/enerji/avrupanin-enerji-faturasi-buyuyor-ek-odeme-100-milyar-euroyu-asti-h38290) — 29 Eyl 2026 09:50
+
+2. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [AB'nin enerji faturası 100 milyar Euro arttı](https://www.haberturk.com/ekonomi/ab-nin-enerji-faturasi-100-milyar-euro-artti-3915879) — 29 Eyl 2026 10:03
+
+---
+
+### [184] Yasemin Ergene&apos;nin Eski Eşi Kazadan Sonra İlk Kez Görüntülendi: İzzet Özilhan&apos;ın Son Hali Ortaya Çıktı!  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Yasemin Ergene'nin eski eşi İzzet Özilhan'dan sosyal medyayı hareketlendiren bir görüntü geldi. Motosiklet kazasından bu yana ortalıkta görünmeyen iş insanı, yakın dostunun ziyareti sırasında yürüteç desteğiyle ayakta poz verdi ve son hali ortaya çıktı.Kaynak: Sabah
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Cumhuriyet · Son dakika** (`cumhuriyet.com.tr`) — 1 makale
+
+   - 1. [Motosiklet kazası geçiren İzzet Özilhan'dan ilk görüntü: Yürüteç desteğiyle ayakta](https://www.cumhuriyet.com.tr/magazin/motosiklet-kazasi-geciren-izzet-ozilhan-dan-ilk-goruntu-yurutec-destegiyle-ayakta-2542024) — 29 Eyl 2026 08:04
+
+2. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [Yasemin Ergene&apos;nin Eski Eşi Kazadan Sonra İlk Kez Görüntülendi: İzzet Özilhan&apos…](https://onedio.com/haber/yasemin-ergene-nin-eski-esi-kazadan-sonra-ilk-kez-goruntulendi-izzet-ozilhan-in-son-hali-ortaya-cikti-1384616) — 29 Eyl 2026 09:52
+
+---
+
+### [185] Euro Bölgesi'nde ekonomik güven endeksi eylülde düştü  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> Euro Bölgesi’nde ekonomik güven endeksi eylülde 0,5 puan gerileyerek 97,9’a indi. AB Komisyonu verilerine göre endeksteki düşüş piyasa beklentisinin altında kalırken, gerilemede tüketici güvenindeki zayıflama etkili oldu.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [Euro Bölgesi'nde ekonomik güven beklentileri karşılamadı](https://www.foreks.com/haber/detay/6abb806924008d7d43738c46/PICNEWS/tr/euro-bolgesi-nde-ekonomik-guven-beklentileri-karsilamadi-29-09-26/) — 29 Eyl 2026 09:10
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Euro Bölgesi'nde ekonomik güven endeksi eylülde düştü](https://www.cnbce.com/veriler/euro-bolgesinde-ekonomik-guven-endeksi-eylulde-dustu-h38289) — 29 Eyl 2026 09:43
+
+---
+
+### [186] Orkinos Sandılar: Saros&apos;ta Tekneye 65 Kiloluk Köpek Balığı Çıktı  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Ağlar her zamankinden çok daha ağırdı. Edirne'nin Enez açıklarında avlanan balıkçılar, ağları çekerken büyük bir orkinos yakaladıklarını düşündü. Ama tekneye çıkardıkları şey hiç beklemedikleri bir sürpriz oldu! Saros Körfezi'nde ağlara 1 metre 70 santimetre boyunda, 65 kilo ağırlığında bir köpek balığı takıldı.İşte detaylar.Kaynak
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
+
+   - 1. [Saros Körfezi'nde balıkçı ağına 65 kiloluk kum kaplanı köpek balığı takıldı](https://www.iscihaber.net/edirne/saros-korfezinde-balikci-agina-65-kiloluk-kum-kaplani-kopek-baligi-takildi/267030) — 28 Eyl 2026 20:38
+
+2. **Onedio · Daily** (`onedio.com`) — 1 makale
+
+   - 1. [Orkinos Sandılar: Saros&apos;ta Tekneye 65 Kiloluk Köpek Balığı Çıktı](https://onedio.com/haber/orkinos-sandilar-saros-ta-tekneye-65-kiloluk-kopek-baligi-cikti-1384599) — 29 Eyl 2026 09:29
+
+---
+
+### [187] SPK düzenlemesi sonrası 247 şirketin halka açıklığı geriledi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> SPK'nın fiili dolaşımdaki pay oranlarının hesaplanmasına ilişkin düzenlemesinin ardından Borsa İstanbul'da işlem gören 247 şirketin halka açıklık oranı bir günde geriledi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Bloomberght** (`bloomberght.com`) — 1 makale
+
+   - 1. [SPK düzenlemesi sonrası 247 şirketin halka açıklığı geriledi](https://www.bloomberght.com/spk-duzenlemesi-sonrasi-247-sirketin-halka-acikligi-geriledi-3788156) — 14 Eyl 2026 07:46
+
+2. **Cnbce** (`cnbce.com`) — 1 makale
+
+   - 1. [Borsa İstanbul'daki 9 şirketin fiili dolaşımdaki pay oranı değişti](https://www.cnbce.com/borsa/borsa-istanbuldaki-9-sirketin-fiili-dolasimdaki-pay-orani-degisti-h38286) — 29 Eyl 2026 09:28
+
+---
+
+### [188] Robot teknolojisinde devrim: İnsan elini aratmayan Dex5-S görücüye çıktı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Bilim / Teknoloji
 
 **Açıklama:**
 
-> Türkiye teknoloji ekosisteminde uzun süredir beklenen yerli akıllı telefon hamlesi somut adımlarla hayata geçiyor. Savunma sanayisinin öncü gücü ASELSAN ile iletişim devi Türk Telekom, yerli akıllı telefon projesi için güçlerini birleştirdi. Üretim üssü Malatya olarak belirlenen ve Ar-Ge süreci TTT İnovasyon çatısı altında yürütülen yerli cihazın 2027 yılının ilk yarısında raflardaki yerini alması planlanıyor. ASELSAN […]
+> Çinli teknoloji devi Unitree, fabrikalarda insan gücüne ihtiyaç duyan hassas işleri yapabilen yeni nesil robot eli Dex5-S modelini tanıttı.
 
 **Farklı kaynak sayısı:** 2
 **Toplam makale sayısı:** 2
 
 **Geçtiği farklı kaynaklar:**
 
-1. **Karar** (`karar.com`) — 1 makale
+1. **Megabayt · News** (`megabayt.com`) — 1 makale
 
-   - 1. [Türkiye'nin yeni yerli telefonu geliyor: Üretim yeri Malatya, çıkış tarihi belli oldu](https://www.karar.com/teknoloji-haberleri/turkiyenin-yeni-yerli-telefonu-geliyor-uretim-yeri-malatya-cikis-2074990) — 29 Eyl 2026 07:23
+   - 1. [Robot teknolojisinde devrim: İnsan elini aratmayan Dex5-S görücüye çıktı](https://www.megabayt.com/teknoloji/robot-teknolojisinde-devrim-insan-elini-aratmayan-dex5-s-gorucuye-cikti/103401) — 29 Eyl 2026 09:09
 
-2. **Shiftdelete** (`shiftdelete.net`) — 1 makale
+2. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
 
-   - 1. [ASELSAN ve Türk Telekom İmzalı Yerli Telefonun Çıkış Tarihi ve Üretim Yeri Belli Oldu](https://shiftdelete.net/aselsan-ve-turk-telekom-imzali-yerli-telefonun-cikis-tarihi-ve-uretim-yeri-belli-oldu) — 29 Eyl 2026 08:29
+   - 1. [Çinli Üreticiden İnsansı Robot Eli](https://www.kamudanhaber.net/foto-galeri/cinli-ureticiden-insansi-robot-eli) — 29 Eyl 2026 09:11
 
 ---
 
-### [95] AKP'li Fatma Betül Sayan Kaya fon vurgununun merkezinde: Muhalefetten 'İfadesi ne zaman alınacak?' tepkisi  (2 farklı kaynakta, 2 makale)
+### [189] OpenAI'dan güvenlik ertelemesi  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Ekonomi / Finans
+
+**Açıklama:**
+
+> OpenAI, araştırmacıların güvenlik endişeleri nedeniyle yeni GPT-6.1 Astra modelinin çıkışının ertelendiğini açıkladı. Modelin otonom görevleri yerine getirme kapasitesinin güvenlik riskleriyle dengelenmesi gerektiği belirtildi
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Foreks** (`foreks.com`) — 1 makale
+
+   - 1. [OpenAI, güvenlik endişeleri nedeniyle GPT-6.1 Astra'yı yayımlamayacak](https://www.foreks.com/haber/detay/6abb208895016b5817e61a24/PICNEWS/tr/openai-guvenlik-endiseleri-nedeniyle-gpt-61-astra-yi-yayimlamayacak-29-09-26/) — 29 Eyl 2026 02:20
+
+2. **Haberturk · Ekonomi** (`haberturk.com`) — 1 makale
+
+   - 1. [OpenAI'dan güvenlik ertelemesi](https://www.haberturk.com/ekonomi/gpt-61-astra-nin-cikisi-ertelendi-3915860) — 29 Eyl 2026 08:55
+
+---
+
+### [190] iPhone Duo için Beş Yeni StandBy Arayüzü Geliyor  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Bilim / Teknoloji
+
+**Açıklama:**
+
+> iPhone Duo'nun iOS 27 ile gelen yeni iPhone Duo StandBy modu, şarj gerektirmeden çalışan beş yeni arayüz seçeneği sunuyor. Detaylar haberimizde.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Shiftdelete** (`shiftdelete.net`) — 1 makale
+
+   - 1. [iPhone Duo için Beş Yeni StandBy Arayüzü Geliyor](https://shiftdelete.net/iphone-duo-standby-modu-yeni-arayuzler) — 29 Eyl 2026 06:00
+
+2. **Webtekno** (`webtekno.com`) — 1 makale
+
+   - 1. [iPhone Duo'nun Henüz Tanıtılmayan Bekleme Modu Ekranları Ortaya Çıktı](
+                    https://www.webtekno.com/iphone-duo-henuz-tanitilmayan-bekleme-modu-ekranlari-ortaya-cikti-h225868.html
+                    ) — 29 Eyl 2026 08:44
+
+---
+
+### [191] Milli basketbolcu Gökşen Fitik'in hedefi Galatasaray Çağdaş Faktoring'de kupalar kazanmak  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Galatasaray Çağdaş Faktoring Kadın Basketbol Takımı'nın kaptanı Gökşen Fitik, sarı-kırmızılı ekiple bu sezon kupalar kazanmak istediğini söyledi.
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Aa · Spor** (`aa.com.tr`) — 1 makale
+
+   - 1. [Milli basketbolcu Gökşen Fitik'in hedefi Galatasaray Çağdaş Faktoring'de kupalar kazanmak](https://www.aa.com.tr/tr/spor/milli-basketbolcu-goksen-fitikin-hedefi-galatasaray-cagdas-faktoringde-kupalar-kazanmak/4072267) — 29 Eyl 2026 08:01
+
+2. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [Gökşen Fitik Galatasaray'da hedefi belirledi](https://www.sozcu.com.tr/goksen-fitik-galatasaray-da-hedefi-belirledi-p364480) — 29 Eyl 2026 08:18
+
+---
+
+### [192] AKP'li Fatma Betül Sayan Kaya fon vurgununun merkezinde: Muhalefetten 'İfadesi ne zaman alınacak?' tepkisi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3515,7 +6202,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [96] Putin enerji verilerine erişimi kısıtladı: Petrol ihracatında yeni dönem  (2 farklı kaynakta, 2 makale)
+### [193] Putin enerji verilerine erişimi kısıtladı: Petrol ihracatında yeni dönem  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -3538,7 +6225,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [97] Trump: Bu savaşı çok yakında kazanacağız ve her şey sona erecek  (2 farklı kaynakta, 2 makale)
+### [194] Trump: Bu savaşı çok yakında kazanacağız ve her şey sona erecek  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3561,7 +6248,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [98] Türkiye&apos;nin En Ünlü Boya Markalarından Polisan Japonlara Satıldı: 93 Milyon Dolarlık Devre Onay Çıktı  (2 farklı kaynakta, 2 makale)
+### [195] Türkiye&apos;nin En Ünlü Boya Markalarından Polisan Japonlara Satıldı: 93 Milyon Dolarlık Devre Onay Çıktı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -3584,7 +6271,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [99] Uludağ yolunda heyelan! Ulaşım kilitlendi  (2 farklı kaynakta, 2 makale)
+### [196] Uludağ yolunda heyelan! Ulaşım kilitlendi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3607,30 +6294,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [100] Fon soruşturmasında adı geçen Sandal çiftiyle ilgili yeni iddia: Dubai'de oturum başvurusu  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Güncel
-
-**Açıklama:**
-
-> Mustafa Sandal'ın eşi Melis Sütşurup Sandal'ın adının geçtiği fon soruşturmasıyla ilgili Dubai bağlantılı yeni iddialar gündeme geldi. Gazeteci Ömer Karahan, Sandal çiftine ilişkin çeşitli iddiaları aktarırken, tarafların soruşturmayla ilgili daha önce yaptıkları açıklamalar da yeniden gündeme taşındı.
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
-
-   - 1. [Mustafa Sandal ve Melis Sütşurup hakkında yeni iddia: Dubai'den oturum izni başvurusu](https://www.kamudanhaber.net/mustafa-sandal-ve-melis-sutsurup-hakkinda-yeni-iddia-dubaiden-oturum-izni-basvurusu) — 29 Eyl 2026 06:29
-
-2. **Karar** (`karar.com`) — 1 makale
-
-   - 1. [Fon soruşturmasında adı geçen Sandal çiftiyle ilgili yeni iddia: Dubai'de oturum başvurusu](https://www.karar.com/guncel-haberler/fon-sorusturmasinda-adi-gecen-sandal-ciftiyle-ilgili-yeni-iddia-dubaide-2075004) — 29 Eyl 2026 07:59
-
----
-
-### [101] Yağış gece boyunca durmadı dere taştı! Mahalle sular altında kaldı  (2 farklı kaynakta, 2 makale)
+### [197] Yağış gece boyunca durmadı dere taştı! Mahalle sular altında kaldı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3653,7 +6317,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [102] Uzun süre oturmak kalbe zarar verir mi? Uzmanı açıkladı: Spor yapmak tek başına yeterli değil  (2 farklı kaynakta, 2 makale)
+### [198] Uzun süre oturmak kalbe zarar verir mi? Uzmanı açıkladı: Spor yapmak tek başına yeterli değil  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3676,7 +6340,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [103] Ekonomi yönetimiyle fon toplantısı  (2 farklı kaynakta, 2 makale)
+### [199] Ekonomi yönetimiyle fon toplantısı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -3699,7 +6363,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [104] Gaziantep’te 9 günlük kültür, sanat ve lezzet şöleni: 4. GastroAntep Kültür Yolu Festivali başlıyor  (2 farklı kaynakta, 2 makale)
+### [200] Gaziantep’te 9 günlük kültür, sanat ve lezzet şöleni: 4. GastroAntep Kültür Yolu Festivali başlıyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3722,7 +6386,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [105] İstanbul&apos;da Yağış ve Mesai Çıkışı Trafiği Kilitledi, Yoğunluk Yüzde 80&apos;e Ulaştı  (2 farklı kaynakta, 2 makale)
+### [201] İstanbul&apos;da Yağış ve Mesai Çıkışı Trafiği Kilitledi, Yoğunluk Yüzde 80&apos;e Ulaştı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -3745,7 +6409,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [106] Ebebek&apos;ten Sürpriz Karar: Tuna Çocuk Gereçleri&apos;ni 55,4 Milyon Liraya 6 Kişiye Sattı  (2 farklı kaynakta, 2 makale)
+### [202] Ebebek&apos;ten Sürpriz Karar: Tuna Çocuk Gereçleri&apos;ni 55,4 Milyon Liraya 6 Kişiye Sattı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -3768,7 +6432,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [107] Sarıyer’de otomobil ile motosiklet çarpıştı: 1 ölü, 1 ağır yaralı  (2 farklı kaynakta, 2 makale)
+### [203] Sarıyer’de otomobil ile motosiklet çarpıştı: 1 ölü, 1 ağır yaralı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3791,7 +6455,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [108] Torbacıdan el bombası alıp polise atmaya çalıştı! Adana'da film gibi olay  (2 farklı kaynakta, 2 makale)
+### [204] Torbacıdan el bombası alıp polise atmaya çalıştı! Adana'da film gibi olay  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3814,7 +6478,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [109] New York Times yöneticisi otoparkta öldürüldü: Şüpheliler aileden çıktı  (2 farklı kaynakta, 2 makale)
+### [205] New York Times yöneticisi otoparkta öldürüldü: Şüpheliler aileden çıktı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3837,7 +6501,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [110] İzmir’de dört günlük edebiyat buluşması sona erdi  (2 farklı kaynakta, 2 makale)
+### [206] İzmir’de dört günlük edebiyat buluşması sona erdi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3860,7 +6524,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [111] Denizli'de uyuşturucu operasyonu : 10 şüpheli gözaltında  (2 farklı kaynakta, 2 makale)
+### [207] Denizli'de uyuşturucu operasyonu : 10 şüpheli gözaltında  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -3883,7 +6547,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [112] Dolar/TL'de yeni tarihi seviye: 49 TL görüldü  (2 farklı kaynakta, 2 makale)
+### [208] Dolar/TL'de yeni tarihi seviye: 49 TL görüldü  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3906,30 +6570,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [113] Yahşihan'da İki Eski Başkan Tutuklandı  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Kamu / Resmi
-
-**Açıklama:**
-
-> Kırıkkale merkezli 4 ilde Yahşihan Belediyesi'ne yönelik rüşvet ve ihaleye fesat operasyonunda, aralarında 2 eski başkanın da olduğu 15 kişi tutuklandı.
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Artigercek** (`artigercek.com`) — 1 makale
-
-   - 1. [Yahşihan Belediyesi soruşturması: Eski AKP ve MHP'li başkanlar dahil 15 tutuklama](https://artigercek.com/politika/yahsihan-belediyesi-sorusturmasi-eski-akp-ve-mhpli-baskanlar-dahil-15-tutuklama-351001h) — 29 Eyl 2026 06:41
-
-2. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
-
-   - 1. [Yahşihan'da İki Eski Başkan Tutuklandı](https://www.kamudanhaber.net/yahsiyanda-iki-eski-baskan-tutuklandi) — 29 Eyl 2026 06:45
-
----
-
-### [114] Onur Emrah Yıldız kimdir, kaç yaşında Çiğli Belediye Başkanı Yıldız hangi partiden?  (2 farklı kaynakta, 2 makale)
+### [209] Onur Emrah Yıldız kimdir, kaç yaşında Çiğli Belediye Başkanı Yıldız hangi partiden?  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3952,7 +6593,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [115] YKS ek tercih üniversite kayıtları ne zaman başlayacak? YKS ek tercih nasıl ve nereden yapılır, gerekli belgeler neler?  (2 farklı kaynakta, 2 makale)
+### [210] YKS ek tercih üniversite kayıtları ne zaman başlayacak? YKS ek tercih nasıl ve nereden yapılır, gerekli belgeler neler?  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3975,7 +6616,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [116] Yalnız kalmak sağlığınızdan 6 seneyi götürebilir  (2 farklı kaynakta, 2 makale)
+### [211] Yalnız kalmak sağlığınızdan 6 seneyi götürebilir  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -3998,7 +6639,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [117] Petrolde soluksuz yükseliş! Piyasaya yeniden arz endişesi hakim oldu  (2 farklı kaynakta, 2 makale)
+### [212] Petrolde soluksuz yükseliş! Piyasaya yeniden arz endişesi hakim oldu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -4021,7 +6662,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [118] Mustafa Sandal ve eşinin 11 milyar liralık vurgun sonrası planı ortaya çıktı! "Benim alnım ak" demişti  (2 farklı kaynakta, 2 makale)
+### [213] Mustafa Sandal ve eşinin 11 milyar liralık vurgun sonrası planı ortaya çıktı! "Benim alnım ak" demişti  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4044,30 +6685,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [119] Eyüpsultan Camii'nde namaz sırasında silahlı kavga: 2 kişi gözaltına alındı  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Kamu / Resmi
-
-**Açıklama:**
-
-> İstanbul Eyüpsultan Camii'nde vakit namazı kılındığı sırada çıkan tartışmada A.M.Ç. isimli şahıs silahıyla 3 el havaya ateş etti. Olayda yaralanan olmazken 2 kişi polis tarafından gözaltına alındı.
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Iscihaber · News** (`iscihaber.net`) — 1 makale
-
-   - 1. [Eyüpsultan Camii'nde namaz sırasında silahlı kavga: 2 kişi gözaltına alındı](https://www.iscihaber.net/istanbul/eyupsultan-camiinde-namaz-sirasinda-silahli-kavga-2-kisi-gozaltina-alindi/267005) — 28 Eyl 2026 19:39
-
-2. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
-
-   - 1. [Eyüpsultan Camii'nde Silahlı Kavga: 2 Şüpheli Gözaltında](https://www.kamudanhaber.net/eyupsultan-camiinde-silahli-kavga-2-supheli-gozaltinda) — 29 Eyl 2026 06:00
-
----
-
-### [120] Herkes bu 2 veriyi bekliyor: Altın fiyatlarında cuma gününe dikkat  (2 farklı kaynakta, 2 makale)
+### [214] Herkes bu 2 veriyi bekliyor: Altın fiyatlarında cuma gününe dikkat  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -4090,7 +6708,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [121] Fed/Cook: Yapay zeka ve yüksek petrol fiyatları enflasyon baskısını sürdürecek  (2 farklı kaynakta, 2 makale)
+### [215] Fed/Cook: Yapay zeka ve yüksek petrol fiyatları enflasyon baskısını sürdürecek  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -4113,7 +6731,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [122] Toyota Corolla&apos;da Büyük Devrim! Elektrikli Motor Geliyor: İşte 2028 Model Corolla  (2 farklı kaynakta, 2 makale)
+### [216] Toyota Corolla&apos;da Büyük Devrim! Elektrikli Motor Geliyor: İşte 2028 Model Corolla  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -4136,7 +6754,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [123] Microsoft Copilot'ı "süper uygulama"ya dönüştürüyor: Kodlama ve yapay zeka ajanları tek yerde  (2 farklı kaynakta, 2 makale)
+### [217] Microsoft Copilot'ı "süper uygulama"ya dönüştürüyor: Kodlama ve yapay zeka ajanları tek yerde  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -4159,7 +6777,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [124] Hamaney’den ABD’ye Hürmüz resti: Ağır darbeler aldılar  (2 farklı kaynakta, 2 makale)
+### [218] Hamaney’den ABD’ye Hürmüz resti: Ağır darbeler aldılar  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4182,7 +6800,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [125] BM'den Gazze uyarısı: Kritik malzemelerin girişine onay verilmeli  (2 farklı kaynakta, 2 makale)
+### [219] BM'den Gazze uyarısı: Kritik malzemelerin girişine onay verilmeli  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4205,7 +6823,30 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [126] Zonguldak'ta maden ocağında kömür silosuna düşen maden işçisi ağır yaralandı  (2 farklı kaynakta, 2 makale)
+### [220] TRANSFER HABERLERİ | Zenit'ten Ognjen Mimovic açıklaması!  (2 farklı kaynakta, 2 makale)
+
+**Kategori:** Spor / Magazin
+
+**Açıklama:**
+
+> Süper Lig devlerinden Fenerbahçe'den Zenit'e kiralık olarak giden Ognjen Mimovic için resmi açıklama geldi. İşte detaylar...Devamı için tıklayınız
+
+**Farklı kaynak sayısı:** 2
+**Toplam makale sayısı:** 2
+
+**Geçtiği farklı kaynaklar:**
+
+1. **Fotomac · Anasayfa** (`fotomac.com.tr`) — 1 makale
+
+   - 1. [TRANSFER HABERLERİ | Zenit'ten Ognjen Mimovic açıklaması!](https://www.fotomac.com.tr/fenerbahce/2025/05/30/transfer-haberleri-zenitten-ognjen-mimovic-aciklamasi) — 31 May 2025 03:51
+
+2. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
+
+   - 1. [İki yıl önce gelmişti, F.Bahçe'de hiç maça çıkmadan gidiyor](https://www.sozcu.com.tr/fenerbahcede-ayrilik-ruzgari-roma-macinda-ilk-kez-kadroya-girmisti-p364385) — 29 Eyl 2026 03:49
+
+---
+
+### [221] Zonguldak'ta maden ocağında kömür silosuna düşen maden işçisi ağır yaralandı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4228,7 +6869,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [127] Ankara'da makas atıp kazaya neden olan ehliyetsiz sürücüye 176 bin TL ceza kesildi  (2 farklı kaynakta, 2 makale)
+### [222] Ankara'da makas atıp kazaya neden olan ehliyetsiz sürücüye 176 bin TL ceza kesildi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4251,7 +6892,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [128] Zeki �elik: 4-1'lik yenilgi kabul edilemez  (2 farklı kaynakta, 2 makale)
+### [223] Zeki �elik: 4-1'lik yenilgi kabul edilemez  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -4274,7 +6915,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [129] Karadeniz Ereğli Belediyesi'ndeki cinsel taciz soruşturmasında zabıta müdürü tutuklandı  (2 farklı kaynakta, 2 makale)
+### [224] Karadeniz Ereğli Belediyesi'ndeki cinsel taciz soruşturmasında zabıta müdürü tutuklandı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4297,7 +6938,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [130] İzmir Konak'ta köpeğe acımasız şiddet: Tekme atıp tasmayla sürüklediği anlar kamerada  (2 farklı kaynakta, 2 makale)
+### [225] İzmir Konak'ta köpeğe acımasız şiddet: Tekme atıp tasmayla sürüklediği anlar kamerada  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4320,7 +6961,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [131] Kuzey Kıbrıs gayrimenkulünde yeni rekabet alanı: Dijital görünürlük ve CRM  (2 farklı kaynakta, 2 makale)
+### [226] Kuzey Kıbrıs gayrimenkulünde yeni rekabet alanı: Dijital görünürlük ve CRM  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4343,7 +6984,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [132] Sırp Listesi oylamaya katılmadı: Kosova'da Lahey kararlarına karşı ortak bildiri  (2 farklı kaynakta, 2 makale)
+### [227] Sırp Listesi oylamaya katılmadı: Kosova'da Lahey kararlarına karşı ortak bildiri  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4366,7 +7007,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [133] Bağlantılı akıllı cihazların sayısı 2030’a kadar 39 milyara ulaşacak  (2 farklı kaynakta, 2 makale)
+### [228] Bağlantılı akıllı cihazların sayısı 2030’a kadar 39 milyara ulaşacak  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4389,7 +7030,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [134] 2027 Ortadoğu ve Kuzey Afrika Stevie Ödülleri’nde başvurular başladı  (2 farklı kaynakta, 2 makale)
+### [229] 2027 Ortadoğu ve Kuzey Afrika Stevie Ödülleri’nde başvurular başladı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4412,7 +7053,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [135] Cumhurbaşkanı Erdoğan: "Kim milletin hakkına el uzatırsa karşısında devleti bulur"  (2 farklı kaynakta, 2 makale)
+### [230] Cumhurbaşkanı Erdoğan: "Kim milletin hakkına el uzatırsa karşısında devleti bulur"  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -4435,7 +7076,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [136] Yılda 4 milyona yakın meme cerrahisi işlemi yapılıyor  (2 farklı kaynakta, 2 makale)
+### [231] Yılda 4 milyona yakın meme cerrahisi işlemi yapılıyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4458,7 +7099,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [137] Waternet, Caddebostan'da 44 kg atık ve 4.450 sigara izmariti topladı  (2 farklı kaynakta, 2 makale)
+### [232] Waternet, Caddebostan'da 44 kg atık ve 4.450 sigara izmariti topladı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4481,7 +7122,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [138] VitrA’nın renkli dönüşüm kampanyası, farklı ürünleri ortak tasarım dilinde buluşturuyor  (2 farklı kaynakta, 2 makale)
+### [233] VitrA’nın renkli dönüşüm kampanyası, farklı ürünleri ortak tasarım dilinde buluşturuyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4504,7 +7145,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [139] Yemen'de Husiler ile hükümet güçleri arasında çatışmalar şiddetlendi  (2 farklı kaynakta, 2 makale)
+### [234] Yemen'de Husiler ile hükümet güçleri arasında çatışmalar şiddetlendi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4527,7 +7168,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [140] TBMM Başkanı Numan Kurtulmuş'tan 'dokunulmazlık dosyaları' açıklaması  (2 farklı kaynakta, 2 makale)
+### [235] TBMM Başkanı Numan Kurtulmuş'tan 'dokunulmazlık dosyaları' açıklaması  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4550,7 +7191,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [141] Bolat ile Kos, Türkiye-AB ticaret gündemini ele aldı  (2 farklı kaynakta, 2 makale)
+### [236] Bolat ile Kos, Türkiye-AB ticaret gündemini ele aldı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4573,7 +7214,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [142] Ankara’da sanal devriye : 417 internet sitesine erişim engeli getirildi  (2 farklı kaynakta, 2 makale)
+### [237] Ankara’da sanal devriye : 417 internet sitesine erişim engeli getirildi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4596,7 +7237,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [143] Şırnak'ta arazi kavgası can aldı : 23 yaşındaki genç öldü  (2 farklı kaynakta, 2 makale)
+### [238] Şırnak'ta arazi kavgası can aldı : 23 yaşındaki genç öldü  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4619,7 +7260,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [144] Diyarbakır'da patates depremi: Kaymakam ve başsavcı koltuğundan oldu  (2 farklı kaynakta, 2 makale)
+### [239] Diyarbakır'da patates depremi: Kaymakam ve başsavcı koltuğundan oldu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4642,30 +7283,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [145] Borsada günün tablosu: Bir hisse yüzde 22,5 yükseldi, 10 hisse taban oldu  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Ekonomi / Finans
-
-**Açıklama:**
-
-> Borsa İstanbul’da 28 Eylül 2026 gününde BIST Tüm işlem hacmi 146 milyar 125 milyon TL oldu. Günün yükselenlerinde yüzde 22,5’lik artışla ZGYOT öne çıkarken, 10 hisse günü yüzde 10 düşüşle tamamladı.
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Karar** (`karar.com`) — 1 makale
-
-   - 1. [Borsa İstanbul'da altın fiyatlarında sert düşüş](https://www.karar.com/ekonomi-haberleri/borsa-istanbulda-altin-fiyatlarinda-sert-dusus-2074892) — 28 Eyl 2026 14:52
-
-2. **Cnbce** (`cnbce.com`) — 1 makale
-
-   - 1. [Borsada günün tablosu: Bir hisse yüzde 22,5 yükseldi, 10 hisse taban oldu](https://www.cnbce.com/borsa/borsa-istanbulda-gunun-ozeti-hangi-hisseler-yukseldi-hangileri-dustu-g38223) — 28 Eyl 2026 15:52
-
----
-
-### [146] BioNTech üretim tesislerini kapatıyor!  (2 farklı kaynakta, 2 makale)
+### [240] BioNTech üretim tesislerini kapatıyor!  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -4688,7 +7306,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [147] Türk Hava Yolları, Manisa Büyükşehir Belediyespor'a set vermedi!  (2 farklı kaynakta, 2 makale)
+### [241] Türk Hava Yolları, Manisa Büyükşehir Belediyespor'a set vermedi!  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4711,7 +7329,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [148] Helin Kandemir'e 'Aldatılıyorsun' dedi: Ortalık karıştı  (2 farklı kaynakta, 2 makale)
+### [242] Helin Kandemir'e 'Aldatılıyorsun' dedi: Ortalık karıştı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -4734,7 +7352,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [149] Serdal Adalı Beşiktaş'ın yeni transferini açıkladı! 'Ocak ayında imzayı atacak'  (2 farklı kaynakta, 2 makale)
+### [243] Serdal Adalı Beşiktaş'ın yeni transferini açıkladı! 'Ocak ayında imzayı atacak'  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -4757,30 +7375,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [150] Ekim Ayında Çok Sayıda Müdür ve Müdür Yardımcısı Norm Fazlası Olacak  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Kamu / Resmi
-
-**Açıklama:**
-
-> Milli Eğitim Bakanlığı kadrolarında görev yapan çok sayıda müdür ve müdür yardımcısı Ekim ayında norm fazlası olacak. İşte detaylar...
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Ajanskamu** (`ajanskamu.net`) — 1 makale
-
-   - 1. [Ekim Ayında Çok Sayıda Müdür ve Müdür Yardımcısı Norm Fazlası Olacak](https://www.ajanskamu.net/meb/ekim-ayinda-cok-sayida-mudur-ve-mudur-yardimcisi-norm-fazlasi-olacak-h225646.html) — 26 Eyl 2026 21:03
-
-2. **Kamudanhaber** (`kamudanhaber.net`) — 1 makale
-
-   - 1. [MEB’de Gözler Ekim Ayı Norm Kadro Güncellemesine Çevrildi](https://www.kamudanhaber.net/mebde-gozler-ekim-ayi-norm-kadro-guncellemesine-cevrildi) — 28 Eyl 2026 15:15
-
----
-
-### [151] Salonlar Doldu Taştı: Türkiye Sinema Festivali İki Günde 777 Bin Seyirciyle Rekor Kırdı  (2 farklı kaynakta, 2 makale)
+### [244] Salonlar Doldu Taştı: Türkiye Sinema Festivali İki Günde 777 Bin Seyirciyle Rekor Kırdı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -4803,7 +7398,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [152] Eğitim-İş davayı kazandı: Afet bölgesindeki kamu emekçileri için kritik karar  (2 farklı kaynakta, 2 makale)
+### [245] Eğitim-İş davayı kazandı: Afet bölgesindeki kamu emekçileri için kritik karar  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4826,7 +7421,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [153] Claude'un keşfettiği açıklanan enzim sistemin arkasındaki gerçek! Enzimi yıllardır çalışan biyolog açıkladı  (2 farklı kaynakta, 2 makale)
+### [246] Claude'un keşfettiği açıklanan enzim sistemin arkasındaki gerçek! Enzimi yıllardır çalışan biyolog açıkladı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4849,7 +7444,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [154] Okula Oyuncak Silah Doğrultan Şahıs Zihinsel Engelli Çıktı  (2 farklı kaynakta, 2 makale)
+### [247] Okula Oyuncak Silah Doğrultan Şahıs Zihinsel Engelli Çıktı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -4872,30 +7467,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [155] İncirli “Yolsuzlukla mücadelede hedef, halkın geleceğini çalandır”  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Güncel
-
-**Açıklama:**
-
-> Cumhuriyetçi Türk Partisi (CTP) Genel Başkanı Sıla Usar İncirli, “Yolsuzlukla mücadelenin hedefi dürüst insanlar değildir. Hedef; mali ve idari yetkisini kötüye kullanarak kamu kaynaklarını israf eden, sahtekarlık yapan, halkın geleceğini çalan seçilmişler ve atanmışlardır” dedi.
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Nehaberkibris · Genel 0** (`nehaberkibris.com`) — 1 makale
-
-   - 1. [İncirli “Yolsuzlukla mücadelede hedef, halkın geleceğini çalandır”](https://www.nehaberkibris.com/incirli-yolsuzlukla-mucadelede-hedef-halkin-gelecegini-calandir-46453) — 28 Eyl 2026 04:54
-
-2. **Gundemkibris** (`gundemkibris.com`) — 1 makale
-
-   - 1. [İncirli: Toplumun tüm kesimleriyle yakın istişare ve iş birliği içerisinde hareket edec…](https://www.gundemkibris.com/incirli-toplumun-tum-kesimleriyle-yakin-istisare-ve-is-birligi-icerisinde-hareket-edecegiz) — 28 Eyl 2026 14:52
-
----
-
-### [156] YKS ek yerleştirme sonuçları açıklandı! Kayıt tarihleri belli oldu  (2 farklı kaynakta, 2 makale)
+### [248] YKS ek yerleştirme sonuçları açıklandı! Kayıt tarihleri belli oldu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -4918,7 +7490,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [157] Türkiye’nin EURO 2032’ye aday göstereceği statlar belli oluyor! Final için o stat aday oldu  (2 farklı kaynakta, 2 makale)
+### [249] Türkiye’nin EURO 2032’ye aday göstereceği statlar belli oluyor! Final için o stat aday oldu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -4941,7 +7513,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [158] Spot piyasada doğal gaz fiyatları -27 Eylül 2026  (2 farklı kaynakta, 2 makale)
+### [250] Spot piyasada doğal gaz fiyatları -27 Eylül 2026  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -4964,7 +7536,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [159] Ulusoy Un'dan soruşturma açıklaması: "Faaliyetlerimiz olağan şekilde sürüyor"  (2 farklı kaynakta, 2 makale)
+### [251] Ulusoy Un'dan soruşturma açıklaması: "Faaliyetlerimiz olağan şekilde sürüyor"  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -4987,7 +7559,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [160] TFF açıkladı: Milli takımda sakatlık  (2 farklı kaynakta, 2 makale)
+### [252] TFF açıkladı: Milli takımda sakatlık  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5010,7 +7582,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [161] Meteoroloji Uzmanından İstanbul&apos;a Saat 19.00 Uyarısı  (2 farklı kaynakta, 2 makale)
+### [253] Meteoroloji Uzmanından İstanbul&apos;a Saat 19.00 Uyarısı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -5033,7 +7605,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [162] Ma�a saatler kala Fatih Terim'den �talya uyar�s�  (2 farklı kaynakta, 2 makale)
+### [254] Ma�a saatler kala Fatih Terim'den �talya uyar�s�  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -5056,7 +7628,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [163] Çip devinden 150 milyar dolarlık geri alım yetkisi  (2 farklı kaynakta, 2 makale)
+### [255] Çip devinden 150 milyar dolarlık geri alım yetkisi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5079,7 +7651,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [164] Telefon bile kullanmadığı günler oluyor: Koray Avcı teknede hayatını yaşıyor  (2 farklı kaynakta, 2 makale)
+### [256] Telefon bile kullanmadığı günler oluyor: Koray Avcı teknede hayatını yaşıyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -5102,7 +7674,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [165] Volkswagen'den Avrupa batarya zincirine 3,2 milyar euroluk yatırım  (2 farklı kaynakta, 2 makale)
+### [257] Volkswagen'den Avrupa batarya zincirine 3,2 milyar euroluk yatırım  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5125,7 +7697,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [166] Inter'den Hakan Çalhanoğlu'na Yeni Sözleşme Teklifi  (2 farklı kaynakta, 2 makale)
+### [258] Inter'den Hakan Çalhanoğlu'na Yeni Sözleşme Teklifi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -5148,30 +7720,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [167] Koç Holding’den otomotiv yatırımı mesajı: Çinli devler Türkiye’ye geliyor  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Güncel
-
-**Açıklama:**
-
-> Koç Holding Otomotiv Grubu Başkanı Haydar Yenigün, Çinli otomotiv üreticilerinin Türkiye’de yatırım yapmasına ilişkin açıklamalarda bulundu. AB’nin “Made in Europe” düzenlemesindeki belirsizliğin bazı Çinli markaların Türkiye yatırım planlarını ertelemesine yol açtığını söyleyen Yenigün, buna rağmen Çinli üreticilerin Türkiye’ye geleceğini belirtti. Yenigün, "Bunun içinde Çinliler kesinlikle olacak. Made in Europe’a girdiğimiz durumda da, giremediğimiz durumda da planlar hazır" dedi.
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Cnbce** (`cnbce.com`) — 1 makale
-
-   - 1. [Koç Holding'den "Made in Europe" uyarısı: Türkiye işin dışında kalabilir](https://www.cnbce.com/otomotiv/koc-holdingden-made-in-europe-uyarisi-turkiye-isin-disinda-kalabilir-h38210) — 28 Eyl 2026 13:23
-
-2. **Karar** (`karar.com`) — 1 makale
-
-   - 1. [Koç Holding’den otomotiv yatırımı mesajı: Çinli devler Türkiye’ye geliyor](https://www.karar.com/ekonomi-haberleri/koc-holdingden-otomotiv-yatirimi-mesaji-cinli-devler-turkiyeye-geliyor-2074880) — 28 Eyl 2026 14:07
-
----
-
-### [168] DSÖ: Yemen’de çatışmalarda can kaybı 838’e yükseldi  (2 farklı kaynakta, 2 makale)
+### [259] DSÖ: Yemen’de çatışmalarda can kaybı 838’e yükseldi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5194,7 +7743,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [169] Uzak Şehir’de Alya hamile mi? Yeni bölüm tanıtımında dikkat çeken ayrıntı  (2 farklı kaynakta, 2 makale)
+### [260] Uzak Şehir’de Alya hamile mi? Yeni bölüm tanıtımında dikkat çeken ayrıntı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5217,7 +7766,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [170] Marmara Denizi'nde sürüklenen yelkenli karaya oturdu: Kayalıklarda mahsur kalan 2 kişi helikopterle kurtarıldı  (2 farklı kaynakta, 2 makale)
+### [261] Marmara Denizi'nde sürüklenen yelkenli karaya oturdu: Kayalıklarda mahsur kalan 2 kişi helikopterle kurtarıldı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5240,7 +7789,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [171] Korkunç olay! Diyarbakır'da kız kardeşlere yıldırım isabet etti: 1 ölü, 1 yaralı  (2 farklı kaynakta, 2 makale)
+### [262] Korkunç olay! Diyarbakır'da kız kardeşlere yıldırım isabet etti: 1 ölü, 1 yaralı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5263,7 +7812,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [172] Rober Hatemo kuyumculuğa dönüyor  (2 farklı kaynakta, 2 makale)
+### [263] Rober Hatemo kuyumculuğa dönüyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5286,7 +7835,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [173] Osmaniye’de öğretmenin öldürüldüğü saldırıya yayın yasağı  (2 farklı kaynakta, 2 makale)
+### [264] Osmaniye’de öğretmenin öldürüldüğü saldırıya yayın yasağı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5309,7 +7858,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [174] Yıldızlardan ilhamla: Pandora Tılsım Charm’ları Koleksiyonu, Alex Consani ile burçların gücünü mücevhere taşıyor  (2 farklı kaynakta, 2 makale)
+### [265] Yıldızlardan ilhamla: Pandora Tılsım Charm’ları Koleksiyonu, Alex Consani ile burçların gücünü mücevhere taşıyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kültür / Sanat
 
@@ -5332,7 +7881,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [175] Yeşim Salkım’dan fon soruşturmasıyla sarsılan Mustafa Sandal Ailesine zehir zemberek çıkış: "Param nerede?"  (2 farklı kaynakta, 2 makale)
+### [266] Yeşim Salkım’dan fon soruşturmasıyla sarsılan Mustafa Sandal Ailesine zehir zemberek çıkış: "Param nerede?"  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5355,7 +7904,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [176] Okul saldırısı sonrası 2 müfettiş görevlendirildi, eğitime 2 gün ara verildi  (2 farklı kaynakta, 2 makale)
+### [267] Okul saldırısı sonrası 2 müfettiş görevlendirildi, eğitime 2 gün ara verildi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5378,7 +7927,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [177] AB'den ilaç fiyatlarını etkileyebilecek adım: Yeni kurallar kabul edildi  (2 farklı kaynakta, 2 makale)
+### [268] AB'den ilaç fiyatlarını etkileyebilecek adım: Yeni kurallar kabul edildi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5401,7 +7950,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [178] Beşiktaş’ta Kocaelispor maçı hazırlıkları başladı  (2 farklı kaynakta, 2 makale)
+### [269] Beşiktaş’ta Kocaelispor maçı hazırlıkları başladı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5424,7 +7973,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [179] Fatih Terim, İtalyan gazetesine demeç verdi  (2 farklı kaynakta, 2 makale)
+### [270] Fatih Terim, İtalyan gazetesine demeç verdi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -5447,7 +7996,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [180] Bitcoin ve altcoinlerde makroekonomik baskı: Fiyatlar geriliyor  (2 farklı kaynakta, 2 makale)
+### [271] Bitcoin ve altcoinlerde makroekonomik baskı: Fiyatlar geriliyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5470,7 +8019,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [181] Elon Musk'tan yapay zeka yarışı iddiası: "SpaceX 6 ayda zirveye çıkabilir"  (2 farklı kaynakta, 2 makale)
+### [272] Elon Musk'tan yapay zeka yarışı iddiası: "SpaceX 6 ayda zirveye çıkabilir"  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5493,7 +8042,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [182] Tesla için kritik revizyon: JPMorgan kâr beklentisini indirdi  (2 farklı kaynakta, 2 makale)
+### [273] Tesla için kritik revizyon: JPMorgan kâr beklentisini indirdi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5516,7 +8065,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [183] Van'da okula pompalı tüfekle gelen öğrenciye öğretmen ve veliler müdahale etti  (2 farklı kaynakta, 2 makale)
+### [274] Van'da okula pompalı tüfekle gelen öğrenciye öğretmen ve veliler müdahale etti  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Güncel
 
@@ -5539,7 +8088,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [184] Malatya Havalimanı'nda yeni terminal açıldı  (2 farklı kaynakta, 2 makale)
+### [275] Malatya Havalimanı'nda yeni terminal açıldı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5562,7 +8111,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [185] ING: Eurodaki düşüş aşırı, parite 1,14 seviyesinde dengelenebilir  (2 farklı kaynakta, 2 makale)
+### [276] ING: Eurodaki düşüş aşırı, parite 1,14 seviyesinde dengelenebilir  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5585,7 +8134,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [186] Bill Gates'ten yapay zeka için korkutan uyarı: 1 milyar insanı yok edebilir  (2 farklı kaynakta, 2 makale)
+### [277] Bill Gates'ten yapay zeka için korkutan uyarı: 1 milyar insanı yok edebilir  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Bilim / Teknoloji
 
@@ -5610,30 +8159,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [187] Sandal ve eşinden 'fon' açıklaması  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Spor / Magazin
-
-**Açıklama:**
-
-> Mustafa Sandal, eşi Melis Sandal'ın fon soruşturmasında adının geçmesinin ardından açıklama yaptı. Ünlü şarkıcı, "Benim alnım ak!" derken, eşi Melis Sandal da kendisinin mağdurlardan biri olduğunu söyledi
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Elele** (`elele.com.tr`) — 1 makale
-
-   - 1. [Mustafa Sandal ve eşi Melis Sandal'dan 'fon' açıklaması](https://www.elele.com.tr/magazin/mustafa-sandal-ve-esi-melis-sandaldan-fon-aciklamasi) — 28 Eyl 2026 06:24
-
-2. **Haberturk · Magazin** (`haberturk.com`) — 1 makale
-
-   - 1. [Sandal ve eşinden 'fon' açıklaması](https://www.haberturk.com/magazin/foto/mustafa-sandal-dan-fon-aciklamasi-3915518) — 28 Eyl 2026 09:42
-
----
-
-### [188] Beşiktaş'tan geleceğe yatırım hamlesi! Transfer resmen açıklandı  (2 farklı kaynakta, 2 makale)
+### [278] Beşiktaş'tan geleceğe yatırım hamlesi! Transfer resmen açıklandı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -5656,7 +8182,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [189] Garanti BBVA’dan 125 milyon dolarlık tahvil ihracı  (2 farklı kaynakta, 2 makale)
+### [279] Garanti BBVA’dan 125 milyon dolarlık tahvil ihracı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5679,7 +8205,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [190] Neden sert düştü? Altını zorlayan ikili: Petrol ve faiz  (2 farklı kaynakta, 2 makale)
+### [280] Neden sert düştü? Altını zorlayan ikili: Petrol ve faiz  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5702,7 +8228,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [191] Emlak Konut'tan Bursa'daki 20 milyar TL'lik arsa iddiasına açıklama  (2 farklı kaynakta, 2 makale)
+### [281] Emlak Konut'tan Bursa'daki 20 milyar TL'lik arsa iddiasına açıklama  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5725,7 +8251,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [192] Apple'a 5,72 milyar dolarlık patent şoku: Mahkeme kararını verdi  (2 farklı kaynakta, 2 makale)
+### [282] Apple'a 5,72 milyar dolarlık patent şoku: Mahkeme kararını verdi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5748,30 +8274,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [193] Bordo-mavili renkler, Trabzon'da buluşuyor  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Spor / Magazin
-
-**Açıklama:**
-
-> Trabzonspor, milli maçlar nedeniyle lige verilen arada 1 Ekim Perşembe günü sahasında İrlanda'nın Drogheda United takımı ile dostluk maçında karşı karşıya gelecek.
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Sozcu · Spor** (`sozcu.com.tr`) — 1 makale
-
-   - 1. [Fenerbahçe milli arada hazırlıklarını sürdürdü](https://www.sozcu.com.tr/fenerbahce-milli-arada-hazirliklarini-surdurdu-p363955) — 27 Eyl 2026 12:53
-
-2. **Aa · Spor** (`aa.com.tr`) — 1 makale
-
-   - 1. [Bordo-mavili renkler, Trabzon'da buluşuyor](https://www.aa.com.tr/tr/spor/bordo-mavili-renkler-trabzonda-bulusuyor/4071296) — 28 Eyl 2026 08:09
-
----
-
-### [194] Altında sert düşüş  (2 farklı kaynakta, 2 makale)
+### [283] Altında sert düşüş  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5794,7 +8297,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [195] Yapay zeka ajanları kontrolden mi çıkıyor? OpenAI yeni modellerini durdurdu  (2 farklı kaynakta, 2 makale)
+### [284] Yapay zeka ajanları kontrolden mi çıkıyor? OpenAI yeni modellerini durdurdu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5817,7 +8320,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [196] BBVA Research: Türkiye Avrupa savunma sanayisindeki kapasite açıklarını tamamlayabilir  (2 farklı kaynakta, 2 makale)
+### [285] BBVA Research: Türkiye Avrupa savunma sanayisindeki kapasite açıklarını tamamlayabilir  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5840,7 +8343,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [197] Fenerbahçe Olağan Genel Kurul Toplantısı'nda gerginlik! Aziz Yıldırım...  (2 farklı kaynakta, 2 makale)
+### [286] Fenerbahçe Olağan Genel Kurul Toplantısı'nda gerginlik! Aziz Yıldırım...  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -5863,7 +8366,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [198] Fon krizinde kritik haftaya giriliyor: 1 milyon lira eşiği ve 66 fon için yeni formül masada  (2 farklı kaynakta, 2 makale)
+### [287] Fon krizinde kritik haftaya giriliyor: 1 milyon lira eşiği ve 66 fon için yeni formül masada  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kamu / Resmi
 
@@ -5886,7 +8389,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [199] Zelenskiy'den Rusya'ya yeni yaptırım hazırlığı: Hedefte füze üretimi var  (2 farklı kaynakta, 2 makale)
+### [288] Zelenskiy'den Rusya'ya yeni yaptırım hazırlığı: Hedefte füze üretimi var  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5909,7 +8412,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [200] Bill Gates'ten yapay zeka alarmı: "Bir milyar kişinin ölümüne yol açabilir"  (2 farklı kaynakta, 2 makale)
+### [289] Bill Gates'ten yapay zeka alarmı: "Bir milyar kişinin ölümüne yol açabilir"  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5932,7 +8435,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [201] Karadağ'a seyahat edecek Türkler dikkat! Vize dönemi başlıyor  (2 farklı kaynakta, 2 makale)
+### [290] Karadağ'a seyahat edecek Türkler dikkat! Vize dönemi başlıyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -5955,7 +8458,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [202] Milli bilardocu Tayfun Ta�demir, d�nya ���nc�s� oldu  (2 farklı kaynakta, 2 makale)
+### [291] Milli bilardocu Tayfun Ta�demir, d�nya ���nc�s� oldu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -5978,7 +8481,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [203] SON DAKİKA | Bakan Gürlek: Fon soruşturmasında şüphelilerin mal varlıklarına el konuldu  (2 farklı kaynakta, 2 makale)
+### [292] SON DAKİKA | Bakan Gürlek: Fon soruşturmasında şüphelilerin mal varlıklarına el konuldu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6001,7 +8504,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [204] Milli satranççı Yağız Kaan Erdoğmuş'tan tarihe geçen rekor puan  (2 farklı kaynakta, 2 makale)
+### [293] Milli satranççı Yağız Kaan Erdoğmuş'tan tarihe geçen rekor puan  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -6024,7 +8527,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [205] Rus turistlerin tercihi değişmedi: Türkiye yine zirvede  (2 farklı kaynakta, 2 makale)
+### [294] Rus turistlerin tercihi değişmedi: Türkiye yine zirvede  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6047,7 +8550,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [206] Kripto yatırımcısı nefesini tuttu: Bitcoin 9 yıl sonra ilk kez tarihi kapanışa hazır  (2 farklı kaynakta, 2 makale)
+### [295] Kripto yatırımcısı nefesini tuttu: Bitcoin 9 yıl sonra ilk kez tarihi kapanışa hazır  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6070,7 +8573,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [207] Simit zamları mercek altında  (2 farklı kaynakta, 2 makale)
+### [296] Simit zamları mercek altında  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6093,7 +8596,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [208] Meryem Uzerli'den otel odasında Muhteşem Yüzyıl sürprizi: Sesi duyunca dayanamadı  (2 farklı kaynakta, 2 makale)
+### [297] Meryem Uzerli'den otel odasında Muhteşem Yüzyıl sürprizi: Sesi duyunca dayanamadı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Spor / Magazin
 
@@ -6116,7 +8619,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [209] Fon soruşturması: 46 tüzel kişi, 18 fon ve 42 kişinin malvarlıkları donduruldu  (2 farklı kaynakta, 2 makale)
+### [298] Fon soruşturması: 46 tüzel kişi, 18 fon ve 42 kişinin malvarlıkları donduruldu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6139,7 +8642,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [210] Deniz Baysal ile Barış Yurtçu boşandı  (2 farklı kaynakta, 2 makale)
+### [299] Deniz Baysal ile Barış Yurtçu boşandı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Kültür / Sanat
 
@@ -6162,7 +8665,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [211] İstanbul'da konut tercihlerinde yeni tablo: Küçük metrekareli evlere ilgi artıyor  (2 farklı kaynakta, 2 makale)
+### [300] İstanbul'da konut tercihlerinde yeni tablo: Küçük metrekareli evlere ilgi artıyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6185,7 +8688,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [212] Altında Fed korkusu: Piyasada enflasyon endişeleri ve tahvil faizleri baskısı hakim  (2 farklı kaynakta, 2 makale)
+### [301] Altında Fed korkusu: Piyasada enflasyon endişeleri ve tahvil faizleri baskısı hakim  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6208,7 +8711,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [213] DMM'den fon tasfiyesi açıklaması: “Vatandaşlardan ücret alınacak” iddiası doğru değil  (2 farklı kaynakta, 2 makale)
+### [302] DMM'den fon tasfiyesi açıklaması: “Vatandaşlardan ücret alınacak” iddiası doğru değil  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6231,7 +8734,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [214] Tesla Optimus üretimini hızlandırdı: Robotun elleri darboğaz oldu  (2 farklı kaynakta, 2 makale)
+### [303] Tesla Optimus üretimini hızlandırdı: Robotun elleri darboğaz oldu  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6254,30 +8757,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [215] JPMorgan'dan Türkiye için faiz ve enflasyon tahmini: Ekim ve Aralık'ta üst üste gelecek  (2 farklı kaynakta, 2 makale)
-
-**Kategori:** Ekonomi / Finans
-
-**Açıklama:**
-
-> JPMorgan, TCMB'nin ekim ve aralık toplantılarında 100'er baz puan faiz indirimi yapmasını bekliyor. Banka, politika faizinin yıl sonunda yüzde 35'e, enflasyonun ise yüzde 29,5'e gerileyeceğini öngörüyor.
-
-**Farklı kaynak sayısı:** 2
-**Toplam makale sayısı:** 2
-
-**Geçtiği farklı kaynaklar:**
-
-1. **Foreks** (`foreks.com`) — 1 makale
-
-   - 1. [JPMorgan TCMB'den 2 faiz indirimi daha bekliyor](https://www.foreks.com/haber/detay/6ab67a8f0bcd0a2b431f2e95/PICNEWS/tr/jpmorgan-tcmb-den-2-faiz-indirimi-daha-bekliyor-25-09-26/) — 25 Eyl 2026 13:43
-
-2. **Cnbce** (`cnbce.com`) — 1 makale
-
-   - 1. [JPMorgan'dan Türkiye için faiz ve enflasyon tahmini: Ekim ve Aralık'ta üst üste gelecek](https://www.cnbce.com/faiz/jpmorgandan-turkiye-icin-faiz-ve-enflasyon-tahmini-ekim-ve-aralikta-ust-uste-gelecek-h38057) — 25 Eyl 2026 13:55
-
----
-
-### [216] Fitch: Türkiye'de yüksek enflasyon ve dış şoklar dengelenme sürecini zorluyor  (2 farklı kaynakta, 2 makale)
+### [304] Fitch: Türkiye'de yüksek enflasyon ve dış şoklar dengelenme sürecini zorluyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6300,7 +8780,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [217] Türkiye'nin tarımsal gıda dönüşümüne 750 milyon dolarlık kaynak  (2 farklı kaynakta, 2 makale)
+### [305] Türkiye'nin tarımsal gıda dönüşümüne 750 milyon dolarlık kaynak  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6323,7 +8803,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [218] Bitcoin'in fiyatı 67 bin doları geçti  (2 farklı kaynakta, 2 makale)
+### [306] Bitcoin'in fiyatı 67 bin doları geçti  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6346,7 +8826,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [219] İşte fon soruşturmasını başlatan o yazı! İstanbul Cumhuriyet Başsavcılığı 19 Ağustos’ta SPK’ya ‘gizli’ müzekkere gönderdi: 5 hisse ve fonlar merceğe alındı  (2 farklı kaynakta, 2 makale)
+### [307] İşte fon soruşturmasını başlatan o yazı! İstanbul Cumhuriyet Başsavcılığı 19 Ağustos’ta SPK’ya ‘gizli’ müzekkere gönderdi: 5 hisse ve fonlar merceğe alındı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6369,7 +8849,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [220] ABD'den İran'a kripto para yaptırımı  (2 farklı kaynakta, 2 makale)
+### [308] ABD'den İran'a kripto para yaptırımı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6392,7 +8872,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [221] SPK duyurdu: Pusula Portföy'e iki yıllık işlem yasağı  (2 farklı kaynakta, 2 makale)
+### [309] SPK duyurdu: Pusula Portföy'e iki yıllık işlem yasağı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6415,7 +8895,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [222] Bazı fonların ödeme güçlüğü sıkıntısı kusursuz fırtınaya dönüşüyor  (2 farklı kaynakta, 2 makale)
+### [310] Bazı fonların ödeme güçlüğü sıkıntısı kusursuz fırtınaya dönüşüyor  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6438,7 +8918,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [223] Borsa çakıldı: BIST 100 endeksinde kayıp yüzde 6'ya ulaştı, devre kesici uygulandı  (2 farklı kaynakta, 2 makale)
+### [311] Borsa çakıldı: BIST 100 endeksinde kayıp yüzde 6'ya ulaştı, devre kesici uygulandı  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6461,7 +8941,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [224] Dolar geriledi, altın yükselişe geçti: Piyasaların gözü kritik veride  (2 farklı kaynakta, 2 makale)
+### [312] Dolar geriledi, altın yükselişe geçti: Piyasaların gözü kritik veride  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6484,7 +8964,7 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 
 ---
 
-### [225] SPK 1 şirketin daha halka arzına onay verdi  (2 farklı kaynakta, 2 makale)
+### [313] SPK 1 şirketin daha halka arzına onay verdi  (2 farklı kaynakta, 2 makale)
 
 **Kategori:** Ekonomi / Finans
 
@@ -6510,6 +8990,6 @@ Aynı kaynağın kendi içindeki varyasyonları (örn. Onedio'nun 24 burç varya
 ## Üretim Bilgisi
 
 - **Oluşturan:** find-duplicate-news.py
-- **Tarih:** 2026-09-29T08:46:03.229701
+- **Tarih:** 2026-09-29T19:42:04.068463
 - **Algoritma:** HİBRİT — 2-gram shingle Jaccard ≥ %20 VEYA 1-gram (kelime kümesi) Jaccard ≥ %22 + Union-Find (aynı kaynak dahil değil)
-- **Çalışma süresi:** 0.7 saniye
+- **Çalışma süresi:** 1.2 saniye

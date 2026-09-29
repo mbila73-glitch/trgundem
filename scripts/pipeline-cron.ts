@@ -1,11 +1,11 @@
 // Cron-like pipeline scheduler.
 //
 // Timeline (her 30 dakikalık cycle):
-//   :15 — cycle başlangıcı: archive-stale (eski published'ları stale yap) +
+//   :00 — cycle başlangıcı: archive-stale (eski published'ları stale yap) +
 //         refresh RSS + build rss_icerik + find-duplicates + AI summarize
 //         (incremental — sadece yeni grupları özetler, her 3 hazırda bir publish)
-//   :45 — yeni cycle başlar (aynı işlem)
-//   :15 (sonraki saat) — yeni cycle
+//   :30 — yeni cycle başlar (aynı işlem)
+//   :00 (sonraki saat) — yeni cycle
 //
 // Cycle içinde:
 //   - AI özetleme en yüksek kaynak sayısından başlar (sourceCount DESC)
@@ -117,9 +117,7 @@ async function runCycle(): Promise<void> {
     log(`  ✗ Restore hatası: ${(e as Error).message}`);
   }
 
-  // 8. Max 30 per category: her kategoride 30'dan fazla published varsa
-  //    en eskilerden başlayarak sil, 30'a düşür.
-  //    (AI özetleme limitleri farklıdır — bu YAYINLANAN haber limiti)
+  // 8. Max 30 per category
   const MAX_PER_CATEGORY = 30;
   const ALL_CATEGORIES = [
     'Güncel', 'Kamu / Resmi', 'Ekonomi / Finans',
@@ -150,8 +148,7 @@ async function runCycle(): Promise<void> {
     }
   }
 
-  // 9. Max 50 total published: tüm kategorilerdeki published toplamı 50'yi
-  //    aşarsa, en eskilerden başlayarak sil
+  // 9. Max 50 total published
   try {
     const publishedCount = await db.publishedArticle.count({ where: { status: 'published' } });
     if (publishedCount > 50) {
@@ -177,12 +174,17 @@ async function runCycle(): Promise<void> {
   log(`=== Cycle tamam ===`);
 }
 
+// Export ediyoruz ki API routeundan da çağrılabilsin.
+// Bu sayede pipeline daemon'a gerek kalmadan Next.js dev server üzerinden
+// "POST /api/pipeline/run" çağrısı ile cycle tetiklenebilir.
+export { runCycle };
+
 async function tick(): Promise<void> {
   const now = new Date();
   const minute = now.getMinutes();
 
-  // Cycle starts at minute 15 and 45
-  if (minute === 15 || minute === 45) {
+  // Cycle saat başı (:00) ve yarım (:30) başlar
+  if (minute === 0 || minute === 30) {
     if (currentStage !== 'idle') {
       log(`Tick skipped (stage: ${currentStage}) — önceki cycle hala çalışıyor`);
       return;
@@ -204,8 +206,8 @@ async function main() {
   log(`Pipeline cron başlatıldı. PID: ${process.pid}`);
   log(`Saat dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   log(`Tetikleme saatleri:`);
-  log(`  • :15 — cycle başlat (RSS refresh + pipeline + her 3 draft'ta bir publish)`);
-  log(`  • :45 — yeni cycle`);
+  log(`  • :00 — cycle başlat (RSS refresh + pipeline + her 3 draft'ta bir publish)`);
+  log(`  • :30 — yeni cycle`);
   log(`Kurallar:`);
   log(`  - En yüksek kaynak sayısından başla özetlemeye`);
   log(`  - Her 3 hazır draft'ta bir publish yap (draft → published)`);
@@ -233,7 +235,16 @@ async function main() {
   });
 }
 
-main().catch((e) => {
-  console.error('Cron hatası:', e);
-  process.exit(1);
-});
+// Sadece bu dosya doğrudan çalıştırıldığında (bun run scripts/pipeline-cron.ts)
+// main() çağrılsın. Import edildiğinde (örn. API route) main otomatik çağrılmasın.
+const isMain = (() => {
+  const arg0 = process.argv[1] ?? '';
+  return arg0.endsWith('pipeline-cron.ts') || arg0.endsWith('pipeline-cron');
+})();
+
+if (isMain) {
+  main().catch((e) => {
+    console.error('Cron hatası:', e);
+    process.exit(1);
+  });
+}
