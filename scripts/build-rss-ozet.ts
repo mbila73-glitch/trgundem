@@ -178,21 +178,28 @@ function buildUserPrompt(
     const parts = [
       `[Kaynak ${i + 1}: ${a.source.name}]`,
       `Başlık: ${a.title}`,
-      a.description ? `Açıklama: ${a.description.slice(0, 600)}` : '',
-      a.content ? `İçerik: ${a.content.slice(0, 2000)}` : '',
+      a.description ? `Açıklama: ${a.description.slice(0, 800)}` : '',
+      a.content ? `İçerik: ${a.content.slice(0, 4000)}` : '',
     ].filter(Boolean);
     return parts.join('\n');
   });
   return `Aşağıda aynı haberi farklı kaynaklardan alınmış ${articleSources.length} ayrı RSS metni var. Bunları okuyarak:
 
 1. Haberin başlığını ~6-10 kelimelik Türkçe bir başlık olarak YENİ yaz (kaynak başlıklarını birebir kopyalama).
-2. Haberin özetini ${MIN_SUMMARY_WORDS}-${MAX_SUMMARY_WORDS} kelimelik kendi cümlelerinle yaz.
-3. Cümlelerin kaynaklardaki cümlelerle BİREBİR AYNI OLMAMALIDIR — telif cezası almamak için paraphrase yap, yeniden ifade et.
-4. Sadece haberde geçen bilgileri kullan, dış bilgi ekleme, yargılama yapma.
-5. Markdown formatı kullanma, başlık ve liste ekleme — düz metin ver.
-6. Çıktı formatı:
-   BAŞLIK: <yeni başlığın>
-   ÖZET: <${MIN_SUMMARY_WORDS}-${MAX_SUMMARY_WORDS} kelimelik özet>
+2. Haberin özetini EN AZ 150, EN FAZLA 200 KELİME olarak kendi cümlelerinle yaz.
+
+ÖNEMLİ KURALLAR:
+- 150 kelimeden AZ yazma. 200 kelimeden FAZLA yazma.
+- Kelime sayısı 150-200 arasında OLSUN.
+- Cümlelerin kaynaklardaki cümlelerle BİREBİR AYNI OLMAMALIDIR — telif cezası almamak için paraphrase yap, yeniden ifade et.
+- Sadece haberde geçen bilgileri kullan, dış bilgi ekleme, yargılama yapma.
+- Haberin tüm önemli detaylarını ver: kim, ne, nerede, ne zaman, nasıl, neden sorularına cevap.
+- İçeriği zenginleştir:haberin arka planı, sonuçları, etkileri, ilgili kişilerin açıklamaları.
+- Markdown formatı kullanma, başlık ve liste ekleme — düz metin ver.
+
+Çıktı formatı (BAŞLIK ve ÖZET satırlarını dahil et):
+BAŞLIK: <yeni başlığın>
+ÖZET: <150-200 kelimelik özet>
 
 Kaynak metinler:
 ${blocks.join('\n\n---\n\n')}`;
@@ -233,27 +240,46 @@ async function summarizeGroup(
   if (chosen.length === 0) return null;
 
   const prompt = buildUserPrompt(chosen);
-  const MAX_RETRIES = 3;
-  const BASE_DELAY_MS = 5000; // 5s pause between calls to avoid 429
+  const MAX_RETRIES = 2; // reduce retries to avoid 429 cascades
+  const BASE_DELAY_MS = 8000; // 8s pause between calls to avoid 429
+  const WORD_COUNT_MIN = 120; // tolerate slightly under MIN_SUMMARY_WORDS
+  let lastParsed: { title: string; summary: string } | null = null;
+  let lastWordCount = 0;
+
   for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
     try {
       const zai = await getZAI();
+      const retryHint = attempt > 0
+        ? `\n\nÖNCEKİ YANITIN SADECE ${lastWordCount} KELİME İÇERİYORDU. Bu sefer MUTLAKA EN AZ 150 KELİME yaz.`
+        : '';
       const completion = await zai.chat.completions.create({
         messages: [
           {
             role: 'system',
             content:
-              'Sen profesyonel bir Türkçe haber editörüsün. Verilen kaynakları okuyarak telif cezası almayacak şekilde özgün bir haber başlığı ve özet üretirsin.',
+              'Sen profesyonel bir Türkçe haber editörüsün. Verilen kaynakları okuyarak telif cezası almayacak şekilde özgün bir haber başlığı ve özet üretirsin. ' +
+              'ÖZET HER ZAMAN EN AZ 150, EN FAZLA 200 KELİME OLMALIDIR — bu kurala kesinlikle uy. ' +
+              'Kaynak cümlelerini birebir kopyalama; paraphrase yap. Haberin tüm önemli detaylarını (kim, ne, ne zaman, nerede, nasıl, neden) ver. ' +
+              'Haberin arka planı, etkileri ve ilgili kişilerin açıklamalarını da ekle.',
           },
-          { role: 'user', content: prompt },
+          { role: 'user', content: prompt + retryHint },
         ],
         thinking: { type: 'disabled' },
-        temperature: 0.4,
+        temperature: 0.6,
       });
       const text: string = completion?.choices?.[0]?.message?.content ?? '';
       const parsed = parseAIResponse(text);
       if (!parsed) {
         return { title: '', summary: '', error: 'AI yanıtı parse edilemedi' };
+      }
+      lastParsed = parsed;
+      lastWordCount = countWords(parsed.summary);
+
+      // Word count control — if too short, retry with stronger hint
+      if (lastWordCount < WORD_COUNT_MIN && attempt < MAX_RETRIES - 1) {
+        console.log(`  ⚠️ ${lastWordCount} kelime — kısa, retry ${attempt + 2}/${MAX_RETRIES}`);
+        await new Promise((r) => setTimeout(r, 3000)); // brief pause before retry
+        continue;
       }
       // Pause before next call to avoid rate limit
       await new Promise((r) => setTimeout(r, BASE_DELAY_MS));
@@ -269,6 +295,10 @@ async function summarizeGroup(
       }
       return { title: '', summary: '', error: msg };
     }
+  }
+  // Return last attempt even if too short — better than nothing
+  if (lastParsed) {
+    return lastParsed;
   }
   return { title: '', summary: '', error: 'Maksimum deneme aşıldı' };
 }
@@ -422,6 +452,19 @@ async function main() {
   console.log(`Toplam AI özetlenecek: ${selectedGroups.length}\n`);
 
   // 7. For each SELECTED group, generate AI summary
+  //    INCREMENTAL: write each PublishedArticle to DB immediately after AI
+  //    success, so a crash mid-run doesn't lose completed work. On rerun,
+  //    skip groups whose sourceArticleIds hash already exists in DB.
+  const existingHashes = new Set<string>();
+  const existingDrafts = await db.publishedArticle.findMany({
+    where: { status: 'draft' },
+    select: { sourceArticleIds: true },
+  });
+  for (const d of existingDrafts) {
+    existingHashes.add(d.sourceArticleIds);
+  }
+  console.log(`Mevcut draft özet: ${existingHashes.size} (atlanacak)`);
+
   const published: Array<{
     aiTitle: string;
     aiSummary: string;
@@ -437,9 +480,46 @@ async function main() {
 
   let successCount = 0;
   let errorCount = 0;
+  let skippedCount = 0;
 
   for (let gi = 0; gi < selectedGroups.length; gi += 1) {
     const gm = selectedGroups[gi];
+    // Compute a stable hash from sorted source article IDs
+    const sortedIds = [...gm.allSources.map((a) => a.id)].sort();
+    const hash = JSON.stringify(sortedIds);
+
+    // Skip if this group is already drafted
+    if (existingHashes.has(hash)) {
+      skippedCount += 1;
+      console.log(
+        `[${gi + 1}/${selectedGroups.length}] ⏭️ Atlandı (zaten draft'ta var)`,
+      );
+      // Still load it into "published" so it ends up in the final file
+      const existing = await db.publishedArticle.findFirst({
+        where: { sourceArticleIds: hash, status: 'draft' },
+      });
+      if (existing) {
+        published.push({
+          aiTitle: existing.aiTitle,
+          aiSummary: existing.aiSummary,
+          imageUrl: existing.imageUrl,
+          category: existing.category,
+          wordCount: existing.wordCount,
+          sourceArticleIds: sortedIds,
+          sourceArticleLinks: gm.allSources.map((a) => ({
+            title: a.title,
+            link: a.link,
+            source: a.source.name,
+            publishedAt: a.publishedAt,
+          })),
+          earliestPublishedAt: gm.earliestPublishedAt,
+          latestPublishedAt: gm.latestPublishedAt,
+          sourceCount: gm.sourceCount,
+        });
+      }
+      continue;
+    }
+
     const result = await summarizeGroup(gm.allSources);
     if (!result || result.error || !result.title || !result.summary) {
       errorCount += 1;
@@ -464,13 +544,35 @@ async function main() {
       publishedAt: a.publishedAt,
     }));
 
+    // IMMEDIATELY write to DB as draft (so a crash doesn't lose this work)
+    try {
+      await db.publishedArticle.create({
+        data: {
+          aiTitle: result.title,
+          aiSummary: result.summary,
+          imageUrl,
+          category: gm.category,
+          wordCount,
+          sourceArticleIds: hash,
+          sourceCount: gm.sourceCount,
+          earliestPublishedAt: gm.earliestPublishedAt,
+          latestPublishedAt: gm.latestPublishedAt,
+          status: 'draft',
+        },
+      });
+    } catch (e) {
+      console.log(
+        `[${gi + 1}/${selectedGroups.length}] DB yazma hatası: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+
     published.push({
       aiTitle: result.title,
       aiSummary: result.summary,
       imageUrl,
       category: gm.category,
       wordCount,
-      sourceArticleIds: gm.allSources.map((a) => a.id),
+      sourceArticleIds: sortedIds,
       sourceArticleLinks,
       earliestPublishedAt: gm.earliestPublishedAt,
       latestPublishedAt: gm.latestPublishedAt,
@@ -483,28 +585,16 @@ async function main() {
   }
 
   console.log(
-    `\nÖzetleme tamam: ${successCount} başarılı, ${errorCount} hata, ${((Date.now() - started) / 1000).toFixed(1)}s`,
+    `\nÖzetleme tamam: ${successCount} yeni, ${skippedCount} atlandı, ${errorCount} hata, ${((Date.now() - started) / 1000).toFixed(1)}s`,
   );
 
   const finalSelection = published;
 
-  // Clear previous drafts, insert new
-  await db.publishedArticle.deleteMany({ where: { status: 'draft' } });
+  // (drafts were already written to DB during the loop above — incremental save)
   for (const p of finalSelection) {
-    await db.publishedArticle.create({
-      data: {
-        aiTitle: p.aiTitle,
-        aiSummary: p.aiSummary,
-        imageUrl: p.imageUrl,
-        category: p.category,
-        wordCount: p.wordCount,
-        sourceArticleIds: JSON.stringify(p.sourceArticleIds),
-        sourceCount: p.sourceCount,
-        earliestPublishedAt: p.earliestPublishedAt,
-        latestPublishedAt: p.latestPublishedAt,
-        status: 'draft',
-      },
-    });
+    if (!existingHashes.has(JSON.stringify(p.sourceArticleIds))) {
+      // already inserted above; skip
+    }
   }
 
   // 8. Write rss_ozet.md
