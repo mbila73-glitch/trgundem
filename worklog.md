@@ -230,3 +230,62 @@ Stage Summary:
 - Yönetim panelinde yeni Arşiv sekmesi: silinen/yayından kalkan tüm haberler, sadece görüntüleme, yayın+arşiv tarihleri.
 - "Sil" butonu artık hard delete değil — haberi arşive alıyor (status='archived', archivedAt=now).
 - TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.
+
+---
+Task ID: panel-restart-and-pipeline-status-8
+Agent: main
+Task: Yönetim paneli sekmeler arası boyut değişmesin (sabit 50vw/66vh), Restart sekmesi ekle + canlı pipeline ilerleme, AI alıntı istisnası ekle.
+
+Work Log:
+- `scripts/build-rss-ozet.ts` (AI alıntı istisnası):
+  - User prompt'a: "İSTİSNA: Kaynaklarda tırnak içinde verilen doğrudan alıntılar (kişilerin sözleri, açıklamaları) olduğu gibi korunabilir" eklendi.
+  - System prompt'a: "ANCak tırnak içindeki doğrudan alıntıları (kişilerin sözleri) tırnak içinde aynen koru" eklendi.
+  - Örnek: "Sinem Dedetaş, 'Deniz Göktaş için iyi çocuktur üzüldüm' dedi" → bu cümle tırnak içinde aynen korunabilir.
+- `src/components/news/admin-panel.tsx` (sabit panel boyutu):
+  - `DialogContent` className: `max-w-3xl p-0` → `flex max-h-[66vh] min-h-[66vh] w-[50vw] max-w-[50vw] flex-col p-0`.
+  - İçerik wrapper: `max-h-[72vh] overflow-y-auto` → `flex-1 overflow-y-auto`. Böylece panel genişlik 50vw, yükseklik 66vh sabit, içeride scroll. Sekmeler arası geçişte boyut artık değişmiyor.
+- `scripts/pipeline-cron.ts` (status dosyası yazma):
+  - Yeni `STATUS_FILE = pipeline-status.json` sabiti.
+  - Yeni `CycleStatus` type: stage, startedAt, finishedAt, rssRead, duplicatesFound, summariesDone, publishedCount, error.
+  - Yeni `writeStatus()` fonksiyonu: mevcut status'u okur, merge eder, tekrar yazar.
+  - `runCycle()` her aşamada `writeStatus()` çağırır:
+    - Başlangıç: status sıfırla (stage='archive-stale', tüm sayaçlar 0/null)
+    - RSS refresh: stdout'tan "İşlenen kaynak: X" parse et, rssRead yaz
+    - build-kaynak-sayi: stdout'tan "X grup" veya rss_kaynak_sayi.md ## sayısı, duplicatesFound yaz
+    - build-ozet: stdout'tan "X yeni AI özet" parse et, summariesDone yaz
+    - Max limit sonrası: published count → publishedCount yaz
+    - Bitiş: stage='done', finishedAt=now
+- `src/app/api/pipeline/status/route.ts` (yeni endpoint):
+  - GET: pipeline-status.json dosyasını okur, frontend'e döner. Dosya yoksa boş status döner.
+- `src/app/api/pipeline/run/route.ts` (fire-and-forget mod):
+  - Eski: inline exec (15 dk request açık kalırdı).
+  - Yeni: spawn detached subprocess → hemen 202 döner. cycle arka planda çalışır, pipeline-cron.ts kendi içinde writeStatus çağırır.
+  - Status dosyasını başlangıçta sıfırlar.
+- `src/components/news/admin-panel.tsx` (Restart sekmesi + polling):
+  - `AdminTab` type'a `'restart'` eklendi.
+  - Yeni state: `pipelineStatus`, `restartConfirmOpen`, `restarting`, `polling`.
+  - Yeni `fetchPipelineStatus()` → GET /api/pipeline/status.
+  - Yeni `handleRestart()` → onay dialoğunu kapat, restarting=true, POST /api/pipeline/run, polling=true.
+  - Polling useEffect: restarting iken her 2 saniyede bir status çek, stage='done' veya 'error' ise durur.
+  - Sub-tabs'a 5. sekme "Restart" eklendi (RefreshCw icon).
+  - Restart sekmesi UI:
+    - Restart butonu + onay dialoğu ("Pipeline restart?" basit onay).
+    - 4 satır canlı ilerleme `PipelineStepRow` component'i:
+      1. RSS güncellendi — yanına "X kaynak okundu"
+      2. Tekrarlanan haberler sayıldı — yanına "X farklı haber bulundu"
+      3. Haber özeti tamamlandı — yanına "X özet tamamlandı"
+      4. Haberler yayınlandı — yanına "X haber yayınlandı"
+    - Her satır stage'e göre bekleme (grayscale dot) / çalışıyor (news renkte spinner) / tamamlandı (emerald Check) durumu gösterir.
+    - Rölatif süre (sn/dk) her satırda.
+    - Vertical connector ile satırlar arasında renkli çizgi.
+    - Hata kartı (XCircle, kırmızı) veya tamamlandı kartı (Check, yeşil) en altta.
+  - Yeni `PipelineStepRow` component: dosyanın sonunda, props {label, detail, stage, startedStages, doneStages, startedAt, isLast}. Adım stage'e göre bekleme/çalışıyor/tamamlandı durumunu render eder.
+
+Stage Summary:
+- AI özet artık tırnak içindeki doğrudan alıntıları koruyabilir (kişilerin sözleri).
+- Yönetim paneli sabit boyutlu: 50vw genişlik, 66vh yükseklik. Sekmeler arası geçişte boyut değişmiyor.
+- Yönetim panelinde 5. sekme "Restart" eklendi.
+- Restart butonu: basit onay dialoğu ile pipeline'ı hemen tetikler (fire-and-forget, 5-10 dk arka planda çalışır).
+- 4 satır canlı ilerleme: RSS okunan kaynak sayısı, 2+ kaynaklı farklı haber sayısı, tamamlanan özet sayısı, yayınlanan haber sayısı. Her 2 saniyede polling ile güncellenir.
+- pipeline-cron.ts her aşamada status dosyasına yazar, Restart sekmesi bunu polling ile okur.
+- TypeScript ve ESLint temiz, dev server HTTP 200 dönüyor.

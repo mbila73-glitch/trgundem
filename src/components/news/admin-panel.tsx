@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
-  Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive
+  Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -26,7 +26,7 @@ import {
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; status: string; createdAt: string };
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; };
-type AdminTab = 'messages' | 'custom' | 'published' | 'archived';
+type AdminTab = 'messages' | 'custom' | 'published' | 'archived' | 'restart';
 
 const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
 
@@ -64,6 +64,23 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [archivedArticles, setArchivedArticles] = useState<PubArticle[]>([]);
   const [loadingArchived, setLoadingArchived] = useState(false);
   const [loadingPub, setLoadingPub] = useState(false);
+
+  // Restart tab state
+  type PipelineStatus = {
+    stage: string;
+    startedAt: string | null;
+    finishedAt: string | null;
+    rssRead: number | null;
+    duplicatesFound: number | null;
+    summariesDone: number | null;
+    publishedCount: number | null;
+    error: string | null;
+  };
+  const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
+  const [restartConfirmOpen, setRestartConfirmOpen] = useState(false);
+  const [restarting, setRestarting] = useState(false);
+  const [polling, setPolling] = useState(false);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSummary, setEditSummary] = useState('');
@@ -133,13 +150,67 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setLoadingArchived(false); }
   }, [token]);
 
+  // Restart: pipeline status çek + (restarting iken polling)
+  const fetchPipelineStatus = useCallback(async () => {
+    try {
+      const r = await fetch('/api/pipeline/status', { cache: 'no-store' });
+      if (!r.ok) return;
+      const json = (await r.json()) as PipelineStatus & { ok: boolean };
+      setPipelineStatus({
+        stage: json.stage,
+        startedAt: json.startedAt,
+        finishedAt: json.finishedAt,
+        rssRead: json.rssRead,
+        duplicatesFound: json.duplicatesFound,
+        summariesDone: json.summariesDone,
+        publishedCount: json.publishedCount,
+        error: json.error,
+      });
+    } catch { /* ignore */ }
+  }, []);
+
+  const handleRestart = useCallback(async () => {
+    setRestartConfirmOpen(false);
+    setRestarting(true);
+    setPipelineStatus(null);
+    try {
+      // Pipeline'ı başlat — exec ile arka planda çalışır
+      const r = await fetch('/api/pipeline/run', { method: 'POST' });
+      const json = (await r.json()) as { ok: boolean; message?: string; error?: string };
+      if (!r.ok || !json.ok) {
+        throw new Error(json.error || 'Pipeline başlatılamadı');
+      }
+      toast.success('Pipeline başlatıldı — canlı ilerleme aşağıda');
+      setPolling(true);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Restart hatası');
+      setRestarting(false);
+      setPolling(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (open && token) {
       if (adminTab === 'messages') void loadMessages();
       if (adminTab === 'published') void loadPublished();
       if (adminTab === 'archived') void loadArchived();
+      if (adminTab === 'restart') void fetchPipelineStatus();
     }
-  }, [open, token, adminTab, loadMessages, loadPublished, loadArchived]);
+  }, [open, token, adminTab, loadMessages, loadPublished, loadArchived, fetchPipelineStatus]);
+
+  // Restart polling — restarting iken her 2 saniyede bir status çek
+  useEffect(() => {
+    if (!polling) return;
+    const interval = setInterval(() => {
+      void fetchPipelineStatus();
+      // Eğer stage 'done' veya 'error' ise polling durur
+      if (pipelineStatus?.stage === 'done' || pipelineStatus?.stage === 'error') {
+        setPolling(false);
+        setRestarting(false);
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [polling, pipelineStatus?.stage, fetchPipelineStatus]);
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -299,7 +370,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-        <DialogContent className="max-w-3xl p-0">
+        <DialogContent className="flex max-h-[66vh] min-h-[66vh] w-[50vw] max-w-[50vw] flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-0">
             <DialogTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2"><Lock className="h-5 w-5" /> Yönetici Paneli</span>
@@ -314,7 +385,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
             </DialogTitle>
           </DialogHeader>
 
-          <div className="max-h-[72vh] overflow-y-auto news-scroll px-6 pb-6 pt-2">
+          <div className="flex-1 overflow-y-auto news-scroll px-6 pb-6 pt-2">
             {!token ? (
               <form onSubmit={handleLogin} className="mx-auto max-w-sm space-y-4 py-8">
                 <div className="text-center">
@@ -336,7 +407,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <>
                 {/* Sub-tabs */}
                 <div className="mb-4 flex gap-1 rounded-lg border border-border bg-muted/30 p-1">
-                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper], ['archived', 'Arşiv', Archive]] as const).map(([id, label, Icon]) => (
+                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper], ['archived', 'Arşiv', Archive], ['restart', 'Restart', RefreshCw]] as const).map(([id, label, Icon]) => (
                     <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Icon className="h-3.5 w-3.5" /> {label}
                     </button>
@@ -568,6 +639,128 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                     )}
                   </div>
                 )}
+
+                {/* Restart tab — pipeline'ı hemen tetikler + canlı ilerleme */}
+                {adminTab === 'restart' && (
+                  <div className="space-y-4">
+                    {/* Restart butonu */}
+                    <Card className="border-2 border-news/30 bg-news/[0.03] p-5">
+                      <div className="flex items-start gap-3">
+                        <RefreshCw className={`h-8 w-8 flex-shrink-0 text-news ${restarting ? 'animate-spin' : ''}`} />
+                        <div className="flex-1">
+                          <h3 className="text-base font-bold text-foreground">Pipeline Restart</h3>
+                          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                            RSS kaynaklarını hemen okur, tekrarlayan haberleri gruplar, AI ile özetler ve yayınlarar. Sıralı çalışır:
+                            <span className="font-medium text-foreground"> RSS okuma → tekrar tespiti → AI özetleme → yayınlama</span>.
+                            Canlı ilerleme aşağıda görünür.
+                          </p>
+                          <div className="mt-3 flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => setRestartConfirmOpen(true)}
+                              disabled={restarting}
+                              className="gap-2"
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                              {restarting ? 'Çalışıyor...' : 'Pipeline Restart'}
+                            </Button>
+                            {restarting && (
+                              <Button size="sm" variant="outline" onClick={() => { setRestarting(false); setPolling(false); }} className="gap-1.5">
+                                <XCircle className="h-4 w-4" /> İzlemeyi Durdur
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* Restart onay dialoğu */}
+                    <AlertDialog open={restartConfirmOpen} onOpenChange={setRestartConfirmOpen}>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Pipeline restart?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Mevcut tüm published haberler 'stale' yapılacak, RSS kaynakları yeniden okunacak ve AI özet pipeline'ı hemen başlayacak. Bu işlem 5-10 dakika sürebilir. Onaylıyor musunuz?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleRestart} className="bg-news text-news-foreground hover:bg-news/90 gap-2">
+                            <RefreshCw className="h-4 w-4" /> Restart
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    {/* Canlı ilerleme — 4 satır */}
+                    <div className="space-y-2">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Canlı İlerleme</h3>
+                      <PipelineStepRow
+                        label="RSS güncellendi"
+                        detail={pipelineStatus?.rssRead != null ? `${pipelineStatus.rssRead} kaynak okundu` : null}
+                        stage={pipelineStatus?.stage ?? null}
+                        startedStages={['refresh', 'build-icerik', 'build-kaynak-sayi', 'build-ozet', 'done']}
+                        doneStages={['build-icerik', 'build-kaynak-sayi', 'build-ozet', 'done']}
+                        startedAt={pipelineStatus?.startedAt ?? null}
+                      />
+                      <PipelineStepRow
+                        label="Tekrarlanan haberler sayıldı"
+                        detail={pipelineStatus?.duplicatesFound != null ? `${pipelineStatus.duplicatesFound} farklı haber bulundu` : null}
+                        stage={pipelineStatus?.stage ?? null}
+                        startedStages={['build-kaynak-sayi', 'build-ozet', 'done']}
+                        doneStages={['build-ozet', 'done']}
+                        startedAt={pipelineStatus?.startedAt ?? null}
+                      />
+                      <PipelineStepRow
+                        label="Haber özeti tamamlandı"
+                        detail={pipelineStatus?.summariesDone != null ? `${pipelineStatus.summariesDone} özet tamamlandı` : null}
+                        stage={pipelineStatus?.stage ?? null}
+                        startedStages={['build-ozet', 'done']}
+                        doneStages={['done']}
+                        startedAt={pipelineStatus?.startedAt ?? null}
+                      />
+                      <PipelineStepRow
+                        label="Haberler yayınlandı"
+                        detail={pipelineStatus?.publishedCount != null ? `${pipelineStatus.publishedCount} haber yayınlandı` : null}
+                        stage={pipelineStatus?.stage ?? null}
+                        startedStages={['done']}
+                        doneStages={['done']}
+                        startedAt={pipelineStatus?.startedAt ?? null}
+                        isLast
+                      />
+                    </div>
+
+                    {/* Hata varsa */}
+                    {pipelineStatus?.error && (
+                      <Card className="border-destructive/50 bg-destructive/[0.04] p-4">
+                        <div className="flex items-start gap-2">
+                          <XCircle className="h-5 w-5 flex-shrink-0 text-destructive" />
+                          <div>
+                            <p className="text-sm font-semibold text-destructive">Hata oluştu</p>
+                            <p className="mt-1 text-xs text-muted-foreground">{pipelineStatus.error}</p>
+                          </div>
+                        </div>
+                      </Card>
+                    )}
+
+                    {/* Tamamlandı mesajı */}
+                    {pipelineStatus?.stage === 'done' && (
+                      <Card className="border-emerald-500/40 bg-emerald-500/[0.04] p-4">
+                        <div className="flex items-start gap-2">
+                          <Check className="h-5 w-5 flex-shrink-0 text-emerald-600" />
+                          <div>
+                            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Pipeline tamamlandı</p>
+                            {pipelineStatus.finishedAt && (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                Bitiş: {new Date(pipelineStatus.finishedAt).toLocaleTimeString('tr-TR')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -594,5 +787,65 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+// Pipeline adım satırı — Restart sekmesinde 4 adımı gösterir.
+// stage'e göre "beklemede", "çalışıyor", "tamamlandı" durumlarını işler.
+type PipelineStepRowProps = {
+  label: string;
+  detail: string | null;            // "X kaynak okundu" gibi
+  stage: string | null;             // pipeline-cron.ts'in yazdığı stage
+  startedStages: string[];          // bu adım hangi stage'lerde "çalışıyor"/"tamamlandı" sayılır
+  doneStages: string[];             // bu adım hangi stage'lerde "tamamlandı" sayılır (startedStages'ın alt kümesi)
+  startedAt: string | null;         // cycle başlangıç zamanı (rölatif süre göstermek için)
+  isLast?: boolean;                 // son adım için connector çizmesin
+};
+
+function PipelineStepRow({ label, detail, stage, startedStages, doneStages, startedAt, isLast }: PipelineStepRowProps) {
+  const isDone = stage != null && doneStages.includes(stage);
+  const isStarted = stage != null && startedStages.includes(stage);
+  const isWaiting = !isStarted;
+
+  // Durum ikonu
+  const icon = isDone
+    ? <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600"><Check className="h-4 w-4" /></span>
+    : isStarted
+      ? <span className="flex h-7 w-7 items-center justify-center rounded-full bg-news/15 text-news"><Loader2 className="h-4 w-4 animate-spin" /></span>
+      : <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground"><span className="h-2 w-2 rounded-full bg-muted-foreground/50" /></span>;
+
+  // Rölatif süre (basit)
+  let elapsed = '';
+  if (startedAt && (isStarted || isDone)) {
+    const ms = Date.now() - new Date(startedAt).getTime();
+    const sec = Math.round(ms / 1000);
+    if (sec < 60) elapsed = `${sec}sn`;
+    else elapsed = `${Math.floor(sec / 60)}dk ${sec % 60}sn`;
+  }
+
+  return (
+    <div className="relative flex items-start gap-3 pb-3">
+      {/* Vertical connector */}
+      {!isLast && (
+        <div
+          className={`absolute left-[14px] top-7 h-full w-0.5 ${isDone ? 'bg-emerald-500/30' : isStarted ? 'bg-news/30' : 'bg-muted'}`}
+          style={{ minHeight: '16px' }}
+        />
+      )}
+      <div className="relative z-10 flex-shrink-0">{icon}</div>
+      <div className="flex-1 pt-0.5">
+        <div className="flex items-center justify-between gap-2">
+          <p className={`text-sm font-medium ${isDone ? 'text-emerald-700 dark:text-emerald-400' : isStarted ? 'text-foreground' : 'text-muted-foreground'}`}>
+            {label}
+          </p>
+          {elapsed && (
+            <span className="text-[10px] tabular-nums text-muted-foreground">{elapsed}</span>
+          )}
+        </div>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {isDone && detail ? detail : isStarted ? (detail ?? 'Çalışıyor...') : 'Beklemede'}
+        </p>
+      </div>
+    </div>
   );
 }

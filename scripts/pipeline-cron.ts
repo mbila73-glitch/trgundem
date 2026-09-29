@@ -20,13 +20,52 @@
 
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
+import { writeFile, readFile } from 'node:fs/promises';
 import { db } from '../src/lib/db';
 
 const execAsync = promisify(exec);
 const ONE_MINUTE_MS = 60_000;
+const STATUS_FILE = `${process.cwd()}/pipeline-status.json`;
 
-type Stage = 'idle' | 'archive-stale' | 'refresh' | 'build-icerik' | 'build-kaynak-sayi' | 'build-ozet';
+type Stage = 'idle' | 'archive-stale' | 'refresh' | 'build-icerik' | 'build-kaynak-sayi' | 'build-ozet' | 'done' | 'error';
 let currentStage: Stage = 'idle';
+
+type CycleStatus = {
+  stage: Stage;
+  startedAt: string;
+  finishedAt: string | null;
+  rssRead: number | null;          // kaç RSS kaynağı okundu (RSS refresh)
+  duplicatesFound: number | null;  // 2+ kaynaklı farklı haber sayısı
+  summariesDone: number | null;    // tamamlanan AI özet sayısı
+  publishedCount: number | null;   // yayınlanan haber sayısı (publish sonrası)
+  error: string | null;
+};
+
+async function writeStatus(s: Partial<CycleStatus>): Promise<void> {
+  try {
+    // Önce mevcut status'u oku, sonra merge et
+    let current: CycleStatus | null = null;
+    try {
+      const raw = await readFile(STATUS_FILE, 'utf8');
+      current = JSON.parse(raw) as CycleStatus;
+    } catch {
+      // Dosya yok veya parse edilemiyor — boş current ile devam et
+    }
+    const merged: CycleStatus = {
+      stage: s.stage ?? current?.stage ?? 'idle',
+      startedAt: s.startedAt ?? current?.startedAt ?? new Date().toISOString(),
+      finishedAt: s.finishedAt ?? current?.finishedAt ?? null,
+      rssRead: s.rssRead !== undefined ? s.rssRead : (current?.rssRead ?? null),
+      duplicatesFound: s.duplicatesFound !== undefined ? s.duplicatesFound : (current?.duplicatesFound ?? null),
+      summariesDone: s.summariesDone !== undefined ? s.summariesDone : (current?.summariesDone ?? null),
+      publishedCount: s.publishedCount !== undefined ? s.publishedCount : (current?.publishedCount ?? null),
+      error: s.error ?? current?.error ?? null,
+    };
+    await writeFile(STATUS_FILE, JSON.stringify(merged, null, 2), 'utf8');
+  } catch {
+    // Status yazma başarısız olsa da pipeline'a devam et
+  }
+}
 
 function log(msg: string) {
   const ts = new Date().toISOString();
@@ -60,9 +99,19 @@ async function runStep(name: string, cmd: string): Promise<{ ok: boolean; stdout
 async function runCycle(): Promise<void> {
   log(`=== Cycle başlatıldı (saat ${new Date().toLocaleTimeString('tr-TR')}) ===`);
 
-  // 1. Stale: tüm published'ları 'stale' yap — bu cycle'da yeniden gelirlerse
-  //    published'a restore edilecekler. Gelmezlerse son adımda tekrar published
-  //    yapılıp sayfada kalacaklar.
+  // Cycle başlamadan önce status dosyasını sıfırla
+  await writeStatus({
+    stage: 'archive-stale',
+    startedAt: new Date().toISOString(),
+    finishedAt: null,
+    rssRead: 0,
+    duplicatesFound: 0,
+    summariesDone: 0,
+    publishedCount: null,
+    error: null,
+  });
+
+  // 1. Stale: tüm published'ları 'stale' yap
   currentStage = 'archive-stale';
   try {
     const r = await db.publishedArticle.updateMany({
@@ -72,10 +121,10 @@ async function runCycle(): Promise<void> {
     log(`  ✓ Stale: ${r.count} published haber 'stale' olarak işaretlendi`);
   } catch (e) {
     log(`  ✗ Stale hatası: ${(e as Error).message}`);
+    await writeStatus({ error: `Stale: ${(e as Error).message}` });
   }
 
-  // 2. Cancel drafts: önceki cycle'dan kalan, yetişmeyen draft'ları sil
-  //    (yeni cycle başlıyor, eski yarı kalmış özetler iptal)
+  // 2. Cancel drafts
   try {
     const r = await db.publishedArticle.deleteMany({
       where: { status: 'draft' },
@@ -87,24 +136,57 @@ async function runCycle(): Promise<void> {
     log(`  ✗ Cancel hatası: ${(e as Error).message}`);
   }
 
-  // 3. RSS refresh
+  // 3. RSS refresh — kaç kaynak okundu sayısını stdout'tan parse et
   currentStage = 'refresh';
-  await runStep('RSS refresh', 'bun run scripts/trigger-refresh.ts');
+  await writeStatus({ stage: 'refresh' });
+  {
+    const r = await runStep('RSS refresh', 'bun run scripts/trigger-refresh.ts');
+    // trigger-refresh.ts output: "İşlenen kaynak: 23"
+    const m = r.stdout.match(/İşlenen kaynak:\s*(\d+)/);
+    const rssRead = m ? parseInt(m[1], 10) : 0;
+    await writeStatus({ rssRead });
+  }
 
   // 4. build rss_icerik.md
   currentStage = 'build-icerik';
+  await writeStatus({ stage: 'build-icerik' });
   await runStep('rss_icerik.md', 'bun run scripts/build-rss-icerik.ts');
 
-  // 5. find-duplicate-news (rss_kaynak_sayi.md)
+  // 5. find-duplicate-news — kaç farklı haber grubu olduğunu stdout'tan parse et
   currentStage = 'build-kaynak-sayi';
-  await runStep('rss_kaynak_sayi.md', 'python3 scripts/find-duplicate-news.py');
+  await writeStatus({ stage: 'build-kaynak-sayi' });
+  {
+    const r = await runStep('rss_kaynak_sayi.md', 'python3 scripts/find-duplicate-news.py');
+    // find-duplicate-news.py output'u muhtemelen farklı formatlarda olabilir;
+    // "X farklı haber grubu bulundu" gibi satırı arayalım, olmazsa
+    // rss_kaynak_sayi.md dosyasından grup sayısını sayalım.
+    let dupCount = 0;
+    const m = r.stdout.match(/(\d+)\s*(?:farklı\s*)?(?:haber\s*)?(?:grup|kayıt)/i);
+    if (m) dupCount = parseInt(m[1], 10);
+    else {
+      // rss_kaynak_sayi.md dosyasından "##" başlıklarını say
+      try {
+        const content = await readFile(`${process.cwd()}/download/rss_kaynak_sayi.md`, 'utf8');
+        dupCount = (content.match(/^##\s/gm) ?? []).length;
+      } catch { /* ignore */ }
+    }
+    await writeStatus({ duplicatesFound: dupCount });
+  }
 
   // 6. build-rss-ozet (incremental + auto-publish her 3 draft'ta bir)
+  //    — kaç özet tamamlandı + kaç yayınlandı sayısını stdout'tan parse et
   currentStage = 'build-ozet';
-  await runStep('rss_ozet.md (AI paraphrase + auto-publish)', 'bun run scripts/build-rss-ozet.ts');
+  await writeStatus({ stage: 'build-ozet' });
+  {
+    const r = await runStep('rss_ozet.md (AI paraphrase + auto-publish)', 'bun run scripts/build-rss-ozet.ts');
+    // build-rss-ozet.ts output: "X yeni AI özet, Y stale→published, Z atlandı, ..."
+    // "Özetleme tamam: 8 yeni AI özet, ..."
+    const summaryMatch = r.stdout.match(/(\d+)\s*yeni\s*AI\s*özet/i);
+    const summariesDone = summaryMatch ? parseInt(summaryMatch[1], 10) : 0;
+    await writeStatus({ summariesDone });
+  }
 
-  // 7. Restore: hala 'stale' olanları (bu cycle'da yeniden gelmeyenler) → published
-  //    (kullanıcının kuralı: güncellenmeyen haberler sayfada kalsın)
+  // 7. Restore: stale olanları tekrar published yap
   try {
     const restored = await db.publishedArticle.updateMany({
       where: { status: 'stale' },
@@ -166,17 +248,19 @@ async function runCycle(): Promise<void> {
         log(`  ✓ Max 50 (total): ${r.count} en eski haber silindi (${publishedCount} → ${publishedCount - r.count})`);
       }
     }
+    // Final published count
+    const finalPublished = await db.publishedArticle.count({ where: { status: 'published' } });
+    await writeStatus({ publishedCount: finalPublished });
   } catch (e) {
     log(`  ✗ Max 50 (total) hatası: ${(e as Error).message}`);
   }
 
   currentStage = 'idle';
+  await writeStatus({ stage: 'done', finishedAt: new Date().toISOString() });
   log(`=== Cycle tamam ===`);
 }
 
 // Export ediyoruz ki API routeundan da çağrılabilsin.
-// Bu sayede pipeline daemon'a gerek kalmadan Next.js dev server üzerinden
-// "POST /api/pipeline/run" çağrısı ile cycle tetiklenebilir.
 export { runCycle };
 
 async function tick(): Promise<void> {

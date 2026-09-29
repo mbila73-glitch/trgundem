@@ -210,6 +210,7 @@ function buildUserPrompt(
   * Yabancı dillerden gelen kelimelerde düzeltme işareti (â, î, û) kullan
   * Sayıların yazımı: 150 kelime değil yüz elli kelime gibi
 - Cümlelerin kaynaklardaki cümlelerle BİREBİR AYNI OLMAMALIDIR — telif cezası almamak için paraphrase yap.
+  * İSTİSNA: Kaynaklarda tırnak içinde verilen doğrudan alıntılar (kişilerin sözleri, açıklamaları) olduğu gibi korunabilir. Örnek: kaynakta "Sinem Dedetaş, 'Deniz Göktaş için iyi çocuktur üzüldüm' dedi" şeklinde geçiyorsa, bu alıntı cümlesi tırnak içinde aynen kullanılabilir. Sadece tırnak dışındaki anlatım paraphrase edilmeli.
 - Sadece haberde geçen bilgileri kullan, dış bilgi ekleme, yargılama yapma.
 - Haberin tüm önemli detaylarını ver: kim, ne, nerede, ne zaman, nasıl, neden sorularına cevap.
 - Haberin arka planı, etkileri ve ilgili kişilerin açıklamalarını da ekle.
@@ -310,7 +311,8 @@ async function summarizeGroup(
               'ÖZET HER ZAMAN EN AZ 150 KELİME, EN FAZLA 300 KELİME OLMALIDIR — bu kurala kesinlikle uy. ' +
               'KATEGORİ satırına 6 kategoriden birini yaz: Güncel, Kamu / Resmi, Ekonomi / Finans, Spor / Magazin, Bilim / Teknoloji, Kültür / Sanat. ' +
               'TÜRKÇE İMLA KURALLARINA DİKKAT ET: "kaza" (oluşan olay) ile "kazı" (arkeolojik) karıştırmamak, ekleri doğru kullanmak (kazada, kazıda), "ki" bağlacını doğru yazmak. ' +
-              'Kaynak cümlelerini birebir kopyalama; paraphrase yap. Haberin tüm önemli detaylarını (kim, ne, ne zaman, nerede, nasıl, neden) ver. ' +
+              'Kaynak cümlelerini birebir kopyalama; paraphrase yap. ANCAK tırnak içindeki doğrudan alıntıları (kişilerin sözleri) tırnak içinde aynen koru. ' +
+              'Haberin tüm önemli detaylarını (kim, ne, ne zaman, nerede, nasıl, neden) ver. ' +
               'Haberin arka planı, etkileri ve ilgili kişilerin açıklamalarını da ekle.',
           },
           { role: 'user', content: prompt + retryHint },
