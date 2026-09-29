@@ -18,7 +18,14 @@ export async function GET(req: NextRequest) {
     const offset = Number(sp.get('offset') ?? 0);
 
     if (offset === 0) {
-      // İlk batch: kategori kotalı 30 haber
+      // İlk batch: Özel haberler en üstte, sonra kategori kotalı haberler
+      // Önce Özel kategoriyi al (limit 5)
+      const ozelItems = await db.publishedArticle.findMany({
+        where: { category: 'Özel', status },
+        orderBy: { latestPublishedAt: 'desc' },
+        take: 5,
+      });
+
       const quotas: Record<string, number> = {
         'Güncel': 10,
         'Kamu / Resmi': 5,
@@ -37,11 +44,11 @@ export async function GET(req: NextRequest) {
           return items;
         }),
       );
-      const all = result.flat();
-      all.sort(
-        (a, b) =>
-          b.latestPublishedAt.getTime() - a.latestPublishedAt.getTime(),
+      // Özel haberler en başa, sonra diğer kategoriler latestPublishedAt DESC sıralı
+      const otherArticles = result.flat().sort(
+        (a, b) => b.latestPublishedAt.getTime() - a.latestPublishedAt.getTime(),
       );
+      const all = [...ozelItems, ...otherArticles];
       const totalPublished = await db.publishedArticle.count({ where: { status } });
       return NextResponse.json({
         articles: all,
