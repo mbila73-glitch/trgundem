@@ -1,11 +1,19 @@
 // Cron-like pipeline scheduler.
 //
 // Runs continuously. Every minute it checks the wall-clock minute and triggers:
-//   minute 25 (and 55): refresh RSS feeds → build rss_icerik → run duplicate
-//     detection (rss_kaynak_sayi) → build rss_ozet (with AI paraphrase) → drafts ready
+//   minute 20 (and 50): refresh RSS feeds → build rss_icerik → run duplicate
+//     detection (rss_kaynak_sayi) → build rss_ozet (with AI paraphrase).
+//     This whole pipeline takes ~10 minutes (mostly AI summarization with
+//     rate-limit pacing), so it should finish before minute 30/60.
 //   minute 30 (and 60=00): publish-drafts (drafts → published, previously
 //     published → archived). The UI will then poll /api/published-articles and
 //     show the new batch.
+//
+// Timeline:
+//   :20 ─ refresh RSS ─ build rss_icerik ─ find-duplicates ─ AI summarize (10 dk)
+//   :30 ─ publish (UI yenilenir)
+//   :50 ─ refresh RSS ─ build rss_icerik ─ find-duplicates ─ AI summarize (10 dk)
+//   :60 (=00) ─ publish (UI yenilenir)
 //
 // The refresh + build steps run sequentially because each step depends on the
 // previous one. publish-drafts is fire-and-forget on the API endpoint, but we
@@ -102,15 +110,17 @@ async function tick(): Promise<void> {
   const now = new Date();
   const minute = now.getMinutes();
 
-  if (minute === 25 || minute === 55) {
+  // Refresh pipeline starts at minute 20 and 50 (10 minutes before publish)
+  if (minute === 20 || minute === 50) {
     if (currentStage !== 'idle') {
       log(`Tick skipped (stage: ${currentStage})`);
       return;
     }
     await runRefreshPipeline();
   } else if (minute === 30 || minute === 0) {
+    // Publish at minute 30 and 60(=00), 10 minutes after refresh started
     if (currentStage !== 'idle') {
-      log(`Tick skipped (stage: ${currentStage})`);
+      log(`Tick skipped (stage: ${currentStage}) — refresh pipeline hala çalışıyor`);
       return;
     }
     await runPublishStep();
@@ -120,7 +130,9 @@ async function tick(): Promise<void> {
 async function main() {
   log(`Pipeline cron başlatıldı. PID: ${process.pid}`);
   log(`Saat dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
-  log(`Tetikleme saatleri: 25. ve 55. dakika (refresh), 30. ve 60.(00) dakika (publish)`);
+  log(`Tetikleme saatleri:`);
+  log(`  • :20 ve :50 — refresh RSS + build rss_icerik + find-duplicates + AI summarize (~10 dk sürer)`);
+  log(`  • :30 ve :00 — publish (draft → published, UI yenilenir)`);
   log(`Bekleniyor…`);
 
   // Check every minute
