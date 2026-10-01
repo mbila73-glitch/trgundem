@@ -103,10 +103,6 @@ async function main() {
   ws({ stage: 'build-icerik' });
   await runScript(path.join(__dirname, 'build-rss-icerik.js'), 'icerik');
 
-  // Step 3: kaynak sayi
-  ws({ stage: 'build-kaynak-sayi' });
-  await runScript(path.join(__dirname, 'build-rss-icerik.js'), 'kaynak-sayi');
-
   ws({ duplicatesFound: 0 });
 
   // Step 4: AI ozet
