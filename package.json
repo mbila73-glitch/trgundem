@@ -11,7 +11,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "pipeline-all": "node --max-old-space-size=128 scripts/pipeline-all.js --once"
+    "pipeline-all": "node scripts/pipeline-all.js --once"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

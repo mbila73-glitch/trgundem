@@ -16,8 +16,12 @@ try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
 
 function log(m) {
   var ts = new Date().toISOString();
-  console.log('[' + ts + '] ' + m);
-  try { fs.appendFileSync(LF, '[' + ts + '] ' + m + '\n'); } catch (e) {}
+  // bellek kullanımını da yaz
+  var mem = process.memoryUsage();
+  var mb = Math.round(mem.heapUsed / 1024 / 1024) + 'MB/' + Math.round(mem.heapTotal / 1024 / 1024) + 'MB';
+  var line = '[' + ts + '] [mem:' + mb + '] ' + m;
+  console.log(line);
+  try { fs.appendFileSync(LF, line + '\n'); } catch (e) {}
 }
 
 function ws(s) {
