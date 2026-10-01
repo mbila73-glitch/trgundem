@@ -1,64 +1,79 @@
-// Prisma bellek testi
+// RSS + Prisma bellek testi — tek kaynak
 var fs = require('fs');
-var LF = require('path').join(__dirname, '..', 'pipeline-test.log');
+var path = require('path');
+var LF = path.join(__dirname, '..', 'pipeline-test.log');
 try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
 
 function log(m) {
   var ts = new Date().toISOString();
   var mem = process.memoryUsage();
-  var mb = 'rss=' + Math.round(mem.rss / 1024 / 1024) + 'MB heap=' + Math.round(mem.heapUsed / 1024 / 1024) + 'MB/' + Math.round(mem.heapTotal / 1024 / 1024) + 'MB ext=' + Math.round(mem.external / 1024 / 1024) + 'MB';
+  var mb = 'rss=' + Math.round(mem.rss / 1024 / 1024) + 'MB heap=' + Math.round(mem.heapUsed / 1024 / 1024) + 'MB ext=' + Math.round(mem.external / 1024 / 1024) + 'MB';
   var line = '[' + ts + '] [' + mb + '] ' + m;
   console.log(line);
   try { fs.appendFileSync(LF, line + '\n'); } catch (e) {}
 }
 
 async function main() {
-  log('=== TEST BASLADI ===');
-  log('1. Bos durumda bellek');
+  log('=== TEST 2 BASLADI ===');
 
-  log('2. require("@prisma/client") once...');
+  // Prisma aç
   var pc = require('@prisma/client');
-  log('   require tamam. keys: ' + Object.keys(pc).slice(0, 5).join(','));
+  var db = new pc.PrismaClient({ log: ['error', 'warn'] });
+  log('Prisma acildi');
 
-  log('3. new PrismaClient()...');
-  var db;
-  try {
-    db = new pc.PrismaClient({ log: ['error', 'warn'] });
-    log('   client acildi');
-  } catch (e) {
-    log('   HATA: ' + e.message);
-    process.exit(1);
-  }
+  // 1 aktif kaynak çek
+  var sources = await db.source.findMany({ where: { active: true }, take: 1 });
+  log('Test kaynagi: ' + sources[0].name + ' - ' + sources[0].url);
 
-  log('4. db.source.count()...');
-  try {
-    var cnt = await db.source.count();
-    log('   source count = ' + cnt);
-  } catch (e) {
-    log('   QUERY HATA: ' + e.message);
-  }
+  // RSS fetch
+  log('RSS fetch basliyor...');
+  var resp = await fetch(sources[0].url, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (trgundem-pipeline)' },
+    timeout: 30000
+  });
+  log('fetch tamam, status=' + resp.status);
 
-  log('5. db.source.findMany() (active=true)...');
-  try {
-    var sources = await db.source.findMany({ where: { active: true } });
-    log('   sources = ' + sources.length + ' adet');
-    if (sources.length > 0) {
-      log('   ilk kaynak: ' + sources[0].name + ' - ' + sources[0].url);
+  var xml = await resp.text();
+  log('RSS body alindi, uzunluk=' + xml.length + ' byte');
+
+  // xml2js parse
+  var xml2js = require('xml2js');
+  var parser = new xml2js.Parser({ explicitArray: false, trim: true });
+  log('parser olustu, parse basliyor...');
+  var result = await parser.parseStringPromise(xml);
+  log('parse tamam, items=' + (result.rss && result.rss.channel && result.rss.channel.item ? (Array.isArray(result.rss.channel.item) ? result.rss.channel.item.length : 1) : 0));
+
+  // İlk 3 item'ı DB'ye yaz
+  var items = result.rss.channel.item;
+  if (!Array.isArray(items)) items = items ? [items] : [];
+  log('Itemleri DB yazma basliyor...');
+  for (var i = 0; i < Math.min(3, items.length); i++) {
+    var item = items[i];
+    log('  [' + (i + 1) + '] ' + (item.title || 'no-title').slice(0, 60));
+    try {
+      await db.article.upsert({
+        where: { sourceId_guid: { sourceId: sources[0].id, guid: item.guid || item.link } },
+        create: {
+          sourceId: sources[0].id,
+          guid: item.guid || item.link,
+          title: (item.title || '').slice(0, 500),
+          link: item.link || '',
+          description: (item.description || '').slice(0, 2000),
+          content: (item.content || item['content:encoded'] || '').slice(0, 50000),
+          author: item.author || null,
+          category: item.category || null,
+          publishedAt: item.pubDate ? new Date(item.pubDate) : new Date()
+        },
+        update: {}
+      });
+      log('    yazildi');
+    } catch (e) {
+      log('    HATA: ' + e.message);
     }
-  } catch (e) {
-    log('   FINDMANY HATA: ' + e.message);
   }
 
-  log('6. db.article.count()...');
-  try {
-    var ac = await db.article.count();
-    log('   article count = ' + ac);
-  } catch (e) {
-    log('   HATA: ' + e.message);
-  }
-
-  try { await db.$disconnect(); } catch (e) {}
-  log('=== TEST TAMAM ===');
+  log('=== TEST 2 TAMAM ===');
+  await db.$disconnect();
 }
 
 main().catch(function (e) { log('FATAL: ' + e.message); process.exit(1); });
