@@ -6776,7 +6776,7 @@ var refreshStatus = {
   failedSources: 0,
   errors: []
 };
-var REFRESH_CONCURRENCY = 8;
+var REFRESH_CONCURRENCY = 2;
 async function refreshAllActiveSources() {
   const sources = await db.source.findMany({ where: { active: true } });
   if (sources.length === 0)
