@@ -108,9 +108,10 @@ async function main() {
   } catch (e) {}
   ws({ rssRead: rssCount });
 
-  // Step 2: icerik insa et
-  ws({ stage: 'build-icerik' });
-  await runScript(path.join(__dirname, 'build-rss-icerik.js'), 'icerik');
+  // Step 2: icerik dosyasi — ZATEN ÖNCEKI CALIŞTIRMADAN VAR, atla
+  // (515 makale findMany yapınca bellek şişiriyor)
+  ws({ stage: 'build-icerik', skipped: true });
+  log('icerik adimi atlandi (rss_icerik.md zaten var)');
 
   ws({ duplicatesFound: 0 });
 
