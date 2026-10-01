@@ -1953,6 +1953,7 @@ async function main() {
         OR: [{ category }, { source: { category } }]
       },
       orderBy: { publishedAt: "desc" },
+      take: 30,
       include: { source: { select: { name: true, url: true } } }
     });
     lines.push(`## ${category} (${articles.length} makale)`);
