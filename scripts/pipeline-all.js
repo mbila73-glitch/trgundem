@@ -1,5 +1,5 @@
 // Tek process pipeline — exec/spawn yok, process limit dolmaz
-// Prisma client'i BIZ ACMIYORUZ — script'ler kendi global'larini kullaniyor
+// Prisma client'i BIZ ACIYORUZ — global'e yaziyoruz, tüm script'ler bunu kullanir
 // Böylece tek native engine = az bellek
 
 var path = require('path');
@@ -13,6 +13,15 @@ var LF = path.join(ROOT, 'pipeline-once.log');
 
 // Log dosyasini her calismada sifirla
 try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
+
+// TEK Prisma client aç — global'e yaz ki tüm script'ler bunu kullansın
+// (trigger-refresh, build-rss-icerik, build-rss-ozet kendi client'larını açmasın)
+try {
+  var PrismaClient = require('@prisma/client').PrismaClient;
+  globalThis.prisma = new PrismaClient({ log: ['error', 'warn'] });
+} catch (e) {
+  console.error('Prisma acilamadi: ' + e.message);
+}
 
 function log(m) {
   var ts = new Date().toISOString();
