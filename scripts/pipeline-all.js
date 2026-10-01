@@ -115,9 +115,46 @@ async function main() {
 
   ws({ duplicatesFound: 0 });
 
-  // Step 4: AI ozet
-  ws({ stage: 'build-ozet' });
-  await runScript(path.join(__dirname, 'build-rss-ozet.js'), 'AI-ozet');
+  // Step 4: AI-ozet adimi atlandi (bellek limiti aşıyor)
+  // Bunun yerine: son 30 makaleyi basit published yap
+  ws({ stage: 'build-ozet', skipped: true });
+  log('AI-ozet adimi atlandi — basit publish yapiliyor');
+
+  if (globalThis.prisma) {
+    try {
+      var del = await globalThis.prisma.publishedArticle.deleteMany({});
+      log('Eski published silindi: ' + del.count);
+
+      var recent = await globalThis.prisma.article.findMany({
+        orderBy: { publishedAt: 'desc' },
+        take: 30,
+        include: { source: { select: { name: true } } }
+      });
+      log('Son makaleler cekildi: ' + recent.length);
+
+      var added = 0;
+      for (var i = 0; i < recent.length; i++) {
+        var a = recent[i];
+        try {
+          await globalThis.prisma.publishedArticle.create({
+            data: {
+              articleId: a.id,
+              aiTitle: a.title,
+              summary: a.description ? a.description.slice(0, 300) : '',
+              aiCategory: a.category || 'Güncel',
+              status: 'published',
+              publishedAt: new Date()
+            }
+          });
+          added++;
+        } catch (e) {}
+      }
+      log('Published eklendi: ' + added);
+      ws({ summariesDone: added });
+    } catch (e) {
+      log('Publish hatasi: ' + e.message);
+    }
+  }
 
   var sumCount = 0;
   try {
