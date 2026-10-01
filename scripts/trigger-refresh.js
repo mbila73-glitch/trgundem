@@ -6829,7 +6829,18 @@ async function refreshInternal(source) {
   let fetched = 0;
   let added = 0;
   try {
-    const feed = await parser.parseURL(source.url);
+    // Native http ile RSS çek (fetch/Wasm sorunu yok)
+    const xml = await new Promise(function(resolve, reject) {
+      var lib = source.url.indexOf('https') === 0 ? https : http;
+      var req = lib.get(source.url, { headers: { 'User-Agent': 'Mozilla/5.0 (trgundem-pipeline)' }, timeout: 30000 }, function(resp) {
+        var chunks = [];
+        resp.on('data', function(c) { chunks.push(c); });
+        resp.on('end', function() { resolve(Buffer.concat(chunks).toString('utf8')); });
+      });
+      req.on('error', reject);
+      req.on('timeout', function() { req.destroy(); reject(new Error('timeout')); });
+    });
+    const feed = await parser.parseString(xml);
     const items = (feed.items ?? []).slice(0, 30);
     fetched = items.length;
     for (const item of items) {
