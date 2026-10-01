@@ -8,8 +8,11 @@ var PrismaClient = require('@prisma/client').PrismaClient;
 var db = null;
 try { db = new PrismaClient(); } catch (e) { console.error('Prisma acilamadi: ' + e.message); }
 
-var SF = path.join(process.cwd(), 'pipeline-status.json');
-var LF = path.join(process.cwd(), 'pipeline-once.log');
+// __dirname = pipeline-all.js'in bulunduğu dizin (/home/metinqty/trgundem/scripts)
+// Üst dizin = proje kök (/home/metinqty/trgundem) — SF ve LF oraya yazılır
+var ROOT = path.resolve(__dirname, '..');
+var SF = path.join(ROOT, 'pipeline-status.json');
+var LF = path.join(ROOT, 'pipeline-once.log');
 
 function log(m) {
   var ts = new Date().toISOString();
@@ -105,7 +108,7 @@ async function main() {
 
   // Step 2: RSS cek
   ws({ stage: 'refresh' });
-  await runScript('scripts/trigger-refresh.js', 'RSS');
+  await runScript(path.join(__dirname, 'trigger-refresh.js'), 'RSS');
 
   var rssCount = 0;
   try {
@@ -117,17 +120,17 @@ async function main() {
 
   // Step 3: icerik insa et
   ws({ stage: 'build-icerik' });
-  await runScript('scripts/build-rss-icerik.js', 'icerik');
+  await runScript(path.join(__dirname, 'build-rss-icerik.js'), 'icerik');
 
   // Step 4: kaynak sayi
   ws({ stage: 'build-kaynak-sayi' });
-  await runScript('scripts/build-rss-icerik.js', 'kaynak-sayi');
+  await runScript(path.join(__dirname, 'build-rss-icerik.js'), 'kaynak-sayi');
 
   ws({ duplicatesFound: 0 });
 
   // Step 5: AI ozet
   ws({ stage: 'build-ozet' });
-  await runScript('scripts/build-rss-ozet.js', 'AI-ozet');
+  await runScript(path.join(__dirname, 'build-rss-ozet.js'), 'AI-ozet');
 
   var sumCount = 0;
   try {
