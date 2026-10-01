@@ -193,12 +193,15 @@ async function main() {
         try {
           await globalThis.prisma.publishedArticle.create({
             data: {
-              articleId: a.id,
               aiTitle: a.title,
-              summary: a.description ? a.description.slice(0, 300) : '',
               aiSummary: a.description ? a.description.slice(0, 500) : (a.title || ''),
-              aiCategory: a.category || 'Güncel',
               category: a.category || 'Güncel',
+              imageUrl: a.imageUrl || null,
+              sourceArticleIds: a.id,
+              sourceCount: 1,
+              earliestPublishedAt: a.publishedAt || new Date(),
+              latestPublishedAt: a.publishedAt || new Date(),
+              wordCount: (a.description || a.title || '').split(' ').length,
               status: 'published',
               publishedAt: new Date()
             }
