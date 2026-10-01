@@ -16,10 +16,9 @@ try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
 
 function log(m) {
   var ts = new Date().toISOString();
-  // bellek kullanımını da yaz
   var mem = process.memoryUsage();
-  var mb = Math.round(mem.heapUsed / 1024 / 1024) + 'MB/' + Math.round(mem.heapTotal / 1024 / 1024) + 'MB';
-  var line = '[' + ts + '] [mem:' + mb + '] ' + m;
+  var mb = 'rss=' + Math.round(mem.rss / 1024 / 1024) + 'MB heap=' + Math.round(mem.heapUsed / 1024 / 1024) + 'MB/' + Math.round(mem.heapTotal / 1024 / 1024) + 'MB ext=' + Math.round(mem.external / 1024 / 1024) + 'MB';
+  var line = '[' + ts + '] [' + mb + '] ' + m;
   console.log(line);
   try { fs.appendFileSync(LF, line + '\n'); } catch (e) {}
 }
@@ -44,7 +43,7 @@ process.exit = function (code) {
 
 // Her script'i calistir, bitmesini bekle
 function runScript(scriptPath, name) {
-  log('> ' + name + ' basliyor');
+  log('> ' + name + ' basliyor (path: ' + scriptPath + ')');
   return new Promise(function (resolve) {
     var done = false;
     function finish(reason) {
@@ -57,14 +56,15 @@ function runScript(scriptPath, name) {
     try {
       var full = path.resolve(scriptPath);
       delete require.cache[full];
+      log('  require oncesi');
       var result = require(scriptPath);
+      log('  require sonrasi');
       if (result && typeof result.then === 'function') {
         result.then(function () { finish('promise'); }).catch(function (e) {
           log('✗ ' + name + ' hata: ' + (e && e.message || e));
           finish('promise-error');
         });
       } else {
-        // sync bitti — 30 sn bekle, exit cagrilirsa finish tetiklenir
         setTimeout(function () { finish('timeout'); }, 30000);
       }
     } catch (e) {
