@@ -196,6 +196,7 @@ async function main() {
               articleId: a.id,
               aiTitle: a.title,
               summary: a.description ? a.description.slice(0, 300) : '',
+              aiSummary: a.description ? a.description.slice(0, 500) : (a.title || ''),
               aiCategory: a.category || 'Güncel',
               status: 'published',
               publishedAt: new Date()
