@@ -1,6 +1,8 @@
-// RSS + Prisma bellek testi — tek kaynak
+// RSS + Prisma bellek testi — native http (Wasm yok)
 var fs = require('fs');
 var path = require('path');
+var http = require('http');
+var https = require('https');
 var LF = path.join(__dirname, '..', 'pipeline-test.log');
 try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
 
@@ -13,37 +15,47 @@ function log(m) {
   try { fs.appendFileSync(LF, line + '\n'); } catch (e) {}
 }
 
-async function main() {
-  log('=== TEST 2 BASLADI ===');
+// fetch yerine native http — Wasm yok
+function nativeGet(url) {
+  return new Promise(function (resolve, reject) {
+    var lib = url.indexOf('https') === 0 ? https : http;
+    var req = lib.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (trgundem-pipeline)' }, timeout: 30000 }, function (resp) {
+      var chunks = [];
+      resp.on('data', function (c) { chunks.push(c); });
+      resp.on('end', function () {
+        resolve({ status: resp.statusCode, text: Buffer.concat(chunks).toString('utf8') });
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', function () { req.destroy(); reject(new Error('timeout')); });
+  });
+}
 
-  // Prisma aç
+async function main() {
+  log('=== TEST 3 BASLADI (native http) ===');
+
   var pc = require('@prisma/client');
   var db = new pc.PrismaClient({ log: ['error', 'warn'] });
   log('Prisma acildi');
 
-  // 1 aktif kaynak çek
   var sources = await db.source.findMany({ where: { active: true }, take: 1 });
   log('Test kaynagi: ' + sources[0].name + ' - ' + sources[0].url);
 
-  // RSS fetch
-  log('RSS fetch basliyor...');
-  var resp = await fetch(sources[0].url, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (trgundem-pipeline)' },
-    timeout: 30000
-  });
+  log('native http.get basliyor...');
+  var resp = await nativeGet(sources[0].url);
   log('fetch tamam, status=' + resp.status);
 
-  var xml = await resp.text();
-  log('RSS body alindi, uzunluk=' + xml.length + ' byte');
+  log('RSS body alindi, uzunluk=' + resp.text.length + ' byte');
 
-  // xml2js parse
   var xml2js = require('xml2js');
   var parser = new xml2js.Parser({ explicitArray: false, trim: true });
   log('parser olustu, parse basliyor...');
-  var result = await parser.parseStringPromise(xml);
-  log('parse tamam, items=' + (result.rss && result.rss.channel && result.rss.channel.item ? (Array.isArray(result.rss.channel.item) ? result.rss.channel.item.length : 1) : 0));
+  var result = await parser.parseStringPromise(resp.text);
+  var itemCount = result.rss && result.rss.channel && result.rss.channel.item
+    ? (Array.isArray(result.rss.channel.item) ? result.rss.channel.item.length : 1)
+    : 0;
+  log('parse tamam, items=' + itemCount);
 
-  // İlk 3 item'ı DB'ye yaz
   var items = result.rss.channel.item;
   if (!Array.isArray(items)) items = items ? [items] : [];
   log('Itemleri DB yazma basliyor...');
@@ -72,7 +84,7 @@ async function main() {
     }
   }
 
-  log('=== TEST 2 TAMAM ===');
+  log('=== TEST 3 TAMAM ===');
   await db.$disconnect();
 }
 
