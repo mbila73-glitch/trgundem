@@ -11,7 +11,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "pipeline-all": "node scripts/pipeline-all.js --once",
+    "pipeline-all": "node --expose-gc scripts/pipeline-all.js --once",
     "prisma-test": "node scripts/prisma-test.js"
   },
   "dependencies": {

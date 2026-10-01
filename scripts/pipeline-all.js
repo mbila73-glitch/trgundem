@@ -1,27 +1,62 @@
 // Tek process pipeline — exec/spawn yok, process limit dolmaz
-// Prisma client'i BIZ ACIYORUZ — global'e yaziyoruz, tüm script'ler bunu kullanir
-// Böylece tek native engine = az bellek
+// Prisma + fetch + GC kontrolü
 
 var path = require('path');
 var fs = require('fs');
 
-// __dirname = pipeline-all.js'in bulunduğu dizin
-// Üst dizin = proje kök — SF ve LF oraya yazılır
+// fetch'i native http ile değiştir (Wasm/undici sorunu yok)
+globalThis.fetch = function(url, options) {
+  options = options || {};
+  return new Promise(function(resolve, reject) {
+    var lib = url.indexOf('https') === 0 ? require('https') : require('http');
+    var urlObj = new URL(url);
+    var reqOptions = {
+      hostname: urlObj.hostname,
+      port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+      path: urlObj.pathname + urlObj.search,
+      method: options.method || 'GET',
+      headers: options.headers || {}
+    };
+    var req = lib.request(reqOptions, function(resp) {
+      var chunks = [];
+      resp.on('data', function(c) { chunks.push(c); });
+      resp.on('end', function() {
+        var buf = Buffer.concat(chunks);
+        var text = buf.toString('utf8');
+        resolve({
+          status: resp.statusCode,
+          ok: resp.statusCode >= 200 && resp.statusCode < 300,
+          statusText: resp.statusMessage || '',
+          headers: resp.headers,
+          json: function() { return Promise.resolve(JSON.parse(text)); },
+          text: function() { return Promise.resolve(text); },
+          arrayBuffer: function() { return Promise.resolve(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)); }
+        });
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', function() { req.destroy(); reject(new Error('timeout')); });
+    if (options.body) req.write(options.body);
+    req.end();
+  });
+};
+
+// TEK Prisma client aç — global'e yaz
+// $disconnect'i engelle ki trigger-refresh.js finally'de çağırsın, connection kapanmasın
+try {
+  var PrismaClient = require('@prisma/client').PrismaClient;
+  var _prisma = new PrismaClient({ log: ['error', 'warn'] });
+  _prisma.$disconnect = function() { return Promise.resolve(); };
+  globalThis.prisma = _prisma;
+} catch (e) {
+  console.error('Prisma acilamadi: ' + e.message);
+}
+
 var ROOT = path.resolve(__dirname, '..');
 var SF = path.join(ROOT, 'pipeline-status.json');
 var LF = path.join(ROOT, 'pipeline-once.log');
 
-// Log dosyasini her calismada sifirla
 try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
-
-// TEK Prisma client aç — global'e yaz ki tüm script'ler bunu kullansın
-// (trigger-refresh, build-rss-icerik, build-rss-ozet kendi client'larını açmasın)
-try {
-  var PrismaClient = require('@prisma/client').PrismaClient;
-  globalThis.prisma = new PrismaClient({ log: ['error', 'warn'] });
-} catch (e) {
-  console.error('Prisma acilamadi: ' + e.message);
-}
 
 function log(m) {
   var ts = new Date().toISOString();
@@ -41,7 +76,26 @@ function ws(s) {
   } catch (e) {}
 }
 
-// process.exit'i gecici olarak engelle
+// Bellek temizleme — require.cache + GC
+function cleanupMemory() {
+  // trigger-refresh ve bağımlılıklarını cache'ten sil
+  Object.keys(require.cache).forEach(function(k) {
+    if (k.indexOf('trigger-refresh') !== -1 ||
+        k.indexOf('rss-parser') !== -1 ||
+        k.indexOf('xml2js') !== -1) {
+      delete require.cache[k];
+    }
+  });
+  // GC çağır (eğer --expose-gc ile çalıştırıldıysa)
+  if (global.gc) {
+    global.gc();
+    global.gc();
+    log('GC cagrildi');
+  } else {
+    log('GC yok (--expose-gc gerekir)');
+  }
+}
+
 var exitListeners = [];
 var origExit = process.exit;
 process.exit = function (code) {
@@ -50,7 +104,6 @@ process.exit = function (code) {
   exitListeners = [];
 };
 
-// Her script'i calistir, bitmesini bekle
 function runScript(scriptPath, name) {
   log('> ' + name + ' basliyor (path: ' + scriptPath + ')');
   return new Promise(function (resolve) {
@@ -96,7 +149,7 @@ async function main() {
     error: null
   });
 
-  // Step 1: RSS cek — trigger-refresh.js kendi Prisma'sini aciyor
+  // RSS
   ws({ stage: 'refresh' });
   await runScript(path.join(__dirname, 'trigger-refresh.js'), 'RSS');
 
@@ -108,17 +161,19 @@ async function main() {
   } catch (e) {}
   ws({ rssRead: rssCount });
 
-  // Step 2: icerik dosyasi — ZATEN ÖNCEKI CALIŞTIRMADAN VAR, atla
-  // (515 makale findMany yapınca bellek şişiriyor)
+  // BELLEK TEMİZLE — RSS'ten sonra
+  log('--- bellek temizleme ---');
+  cleanupMemory();
+
+  // icerik atlandı
   ws({ stage: 'build-icerik', skipped: true });
-  log('icerik adimi atlandi (rss_icerik.md zaten var)');
+  log('icerik adimi atlandi');
 
   ws({ duplicatesFound: 0 });
 
-  // Step 4: AI-ozet adimi atlandi (bellek limiti aşıyor)
-  // Bunun yerine: son 30 makaleyi basit published yap
+  // Basit publish — 10 makale
   ws({ stage: 'build-ozet', skipped: true });
-  log('AI-ozet adimi atlandi — basit publish yapiliyor');
+  log('AI-ozet atlandi — basit publish yapiliyor');
 
   if (globalThis.prisma) {
     try {
@@ -127,7 +182,7 @@ async function main() {
 
       var recent = await globalThis.prisma.article.findMany({
         orderBy: { publishedAt: 'desc' },
-        take: 30,
+        take: 10,
         include: { source: { select: { name: true } } }
       });
       log('Son makaleler cekildi: ' + recent.length);
@@ -155,14 +210,6 @@ async function main() {
       log('Publish hatasi: ' + e.message);
     }
   }
-
-  var sumCount = 0;
-  try {
-    var lf2 = fs.readFileSync(LF, 'utf8');
-    var m2 = lf2.match(/(\d+)\s*yeni\s*AI\s*özet/i);
-    if (m2) sumCount = parseInt(m2[1]);
-  } catch (e) {}
-  ws({ summariesDone: sumCount });
 
   ws({ stage: 'done', finishedAt: new Date().toISOString() });
   log('=== Cycle tamam ===');
