@@ -6830,7 +6830,7 @@ async function refreshInternal(source) {
   let added = 0;
   try {
     const feed = await parser.parseURL(source.url);
-    const items = feed.items ?? [];
+    const items = (feed.items ?? []).slice(0, 30);
     fetched = items.length;
     for (const item of items) {
       const guid = item.guid || item.link || `${source.id}:${item.title}` || crypto.randomUUID();
