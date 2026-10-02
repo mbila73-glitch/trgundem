@@ -1,0 +1,1083 @@
+[2026-10-01T20:30:03.226Z] [rss=64MB heap=7MB/9MB ext=2MB] === Cycle basladi ===
+[2026-10-01T20:30:03.230Z] [rss=64MB heap=7MB/9MB ext=2MB] > RSS basliyor (path: /home/metinqty/trgundem/scripts/trigger-refresh.js)
+[2026-10-01T20:30:03.231Z] [rss=64MB heap=7MB/9MB ext=2MB]   require oncesi
+=== Arka plan RSS yenilemesi başlatıldı ===
+[2026-10-01T20:30:03.281Z] [rss=68MB heap=8MB/11MB ext=2MB]   require sonrasi
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 522 makale.
+[2026-10-01T20:30:04.241Z] [rss=97MB heap=11MB/18MB ext=2MB] ✓ RSS bitti (promise)
+[2026-10-01T20:30:04.242Z] [rss=97MB heap=11MB/18MB ext=2MB] --- bellek temizleme ---
+[2026-10-01T20:30:04.259Z] [rss=90MB heap=8MB/18MB ext=2MB] GC cagrildi
+[2026-10-01T20:30:04.260Z] [rss=90MB heap=9MB/18MB ext=2MB] icerik adimi atlandi
+[2026-10-01T20:30:04.261Z] [rss=90MB heap=9MB/18MB ext=2MB] AI-ozet atlandi — basit publish yapiliyor
+[2026-10-01T20:30:04.263Z] [rss=90MB heap=9MB/18MB ext=2MB] Eski published silindi: 10
+[2026-10-01T20:30:04.265Z] [rss=90MB heap=9MB/18MB ext=2MB] Son makaleler cekildi: 10
+[2026-10-01T20:30:04.283Z] [rss=90MB heap=9MB/18MB ext=2MB] Published eklendi: 10
+[2026-10-01T20:30:04.284Z] [rss=90MB heap=9MB/18MB ext=2MB] === Cycle tamam ===
+[2026-10-01T20:45:02.540Z] [rss=63MB heap=7MB/9MB ext=2MB] === Cycle basladi ===
+[2026-10-01T20:45:02.544Z] [rss=65MB heap=7MB/9MB ext=2MB] > RSS basliyor (path: /home/metinqty/trgundem/scripts/trigger-refresh.js)
+[2026-10-01T20:45:02.544Z] [rss=65MB heap=7MB/9MB ext=2MB]   require oncesi
+=== Arka plan RSS yenilemesi başlatıldı ===
+[2026-10-01T20:45:02.594Z] [rss=67MB heap=8MB/11MB ext=2MB]   require sonrasi
+[2026-10-01T21:30:03.420Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-01T21:30:03.424Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 27
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 549 makale.
+[2026-10-01T21:30:04.104Z] [rss=91MB heap=9MB] ✓ RSS bitti (promise)
+[2026-10-01T21:30:04.104Z] [rss=91MB heap=9MB] --- bellek temizleme ---
+[2026-10-01T21:30:04.115Z] [rss=91MB heap=8MB] GC cagrildi
+[2026-10-01T21:30:04.116Z] [rss=91MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T21:30:04.119Z] [rss=91MB heap=8MB] Eski published silindi: 10
+[2026-10-01T21:30:04.121Z] [rss=91MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T21:30:04.121Z] [rss=91MB heap=9MB]   [1/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T21:30:04.298Z] [rss=91MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T21:30:04.301Z] [rss=91MB heap=9MB]   [2/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T21:30:04.465Z] [rss=91MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T21:30:04.468Z] [rss=91MB heap=9MB]   [3/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T21:30:04.531Z] [rss=91MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T21:30:04.534Z] [rss=91MB heap=9MB]   [4/5] AI ozet: MHK soruşturmasında taşları yerinden oynatacak ifa
+[2026-10-01T21:30:04.690Z] [rss=91MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T21:30:04.693Z] [rss=91MB heap=9MB]   [5/5] AI ozet: Lionel Messi, İspanyol kulübü satın aldı
+[2026-10-01T21:30:04.695Z] [rss=91MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T21:30:04.696Z] [rss=91MB heap=9MB] === Cycle tamam ===
+[2026-10-01T21:45:03.207Z] [rss=65MB heap=7MB] === Cycle basladi ===
+[2026-10-01T21:45:03.211Z] [rss=65MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 2
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 551 makale.
+[2026-10-01T21:45:03.853Z] [rss=98MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-01T21:45:03.854Z] [rss=98MB heap=10MB] --- bellek temizleme ---
+[2026-10-01T21:45:03.873Z] [rss=90MB heap=8MB] GC cagrildi
+[2026-10-01T21:45:03.874Z] [rss=90MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T21:45:03.877Z] [rss=90MB heap=9MB] Eski published silindi: 5
+[2026-10-01T21:45:03.880Z] [rss=90MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T21:45:03.880Z] [rss=90MB heap=9MB]   [1/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T21:45:04.052Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T21:45:04.055Z] [rss=90MB heap=9MB]   [2/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T21:45:04.213Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T21:45:04.216Z] [rss=90MB heap=9MB]   [3/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T21:45:04.275Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T21:45:04.278Z] [rss=90MB heap=9MB]   [4/5] AI ozet: Bekçi alımı başvuruları ne zaman, kimler başvurabi
+[2026-10-01T21:45:04.438Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T21:45:04.441Z] [rss=90MB heap=9MB]   [5/5] AI ozet: Soğuk Savaş'tan beri bir ilk: Nükleer silahlanmada
+[2026-10-01T21:45:04.443Z] [rss=90MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T21:45:04.444Z] [rss=90MB heap=9MB] === Cycle tamam ===
+[2026-10-01T22:00:03.461Z] [rss=65MB heap=7MB] === Cycle basladi ===
+[2026-10-01T22:00:03.466Z] [rss=65MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 3
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 554 makale.
+[2026-10-01T22:00:04.069Z] [rss=98MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-01T22:00:04.070Z] [rss=98MB heap=11MB] --- bellek temizleme ---
+[2026-10-01T22:00:04.081Z] [rss=98MB heap=8MB] GC cagrildi
+[2026-10-01T22:00:04.082Z] [rss=98MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T22:00:04.085Z] [rss=98MB heap=8MB] Eski published silindi: 5
+[2026-10-01T22:00:04.087Z] [rss=99MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T22:00:04.087Z] [rss=99MB heap=9MB]   [1/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T22:00:06.731Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":404,"message":"models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models a
+[2026-10-01T22:00:06.734Z] [rss=99MB heap=9MB]   [2/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T22:00:07.607Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:00:07.610Z] [rss=99MB heap=9MB]   [3/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T22:00:09.383Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":404,"message":"models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models a
+[2026-10-01T22:00:09.386Z] [rss=99MB heap=9MB]   [4/5] AI ozet: Almanya'nın galibiyet hasreti Sırbistan karşısında
+[2026-10-01T22:00:09.388Z] [rss=99MB heap=9MB]   [5/5] AI ozet: LGY'ye dev zam: Fiyatlar 40 TL'yi aştı
+[2026-10-01T22:00:09.391Z] [rss=99MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T22:00:09.392Z] [rss=99MB heap=9MB] === Cycle tamam ===
+[2026-10-01T22:15:03.105Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-01T22:15:03.109Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 555 makale.
+[2026-10-01T22:15:03.809Z] [rss=98MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-01T22:15:03.809Z] [rss=98MB heap=10MB] --- bellek temizleme ---
+[2026-10-01T22:15:03.824Z] [rss=91MB heap=8MB] GC cagrildi
+[2026-10-01T22:15:03.825Z] [rss=91MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T22:15:03.828Z] [rss=91MB heap=9MB] Eski published silindi: 5
+[2026-10-01T22:15:03.830Z] [rss=92MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T22:15:03.830Z] [rss=92MB heap=9MB]   [1/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T22:15:04.013Z] [rss=92MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:15:04.023Z] [rss=92MB heap=9MB]   [2/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T22:15:04.080Z] [rss=92MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:15:04.084Z] [rss=92MB heap=9MB]   [3/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-01T22:15:04.247Z] [rss=92MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:15:04.249Z] [rss=92MB heap=9MB]   [4/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T22:15:04.305Z] [rss=92MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:15:04.307Z] [rss=92MB heap=9MB]   [5/5] AI ozet: Almanya'nın galibiyet hasreti Sırbistan karşısında
+[2026-10-01T22:15:04.310Z] [rss=92MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T22:15:04.310Z] [rss=92MB heap=9MB] === Cycle tamam ===
+[2026-10-01T22:30:02.632Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-01T22:30:02.637Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 555 makale.
+[2026-10-01T22:30:03.365Z] [rss=93MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-01T22:30:03.365Z] [rss=93MB heap=10MB] --- bellek temizleme ---
+[2026-10-01T22:30:03.379Z] [rss=93MB heap=8MB] GC cagrildi
+[2026-10-01T22:30:03.381Z] [rss=94MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T22:30:03.383Z] [rss=94MB heap=8MB] Eski published silindi: 5
+[2026-10-01T22:30:03.385Z] [rss=95MB heap=8MB] Son makaleler cekildi: 5
+[2026-10-01T22:30:03.385Z] [rss=95MB heap=8MB]   [1/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T22:30:03.572Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:30:03.575Z] [rss=90MB heap=9MB]   [2/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T22:30:03.735Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:30:03.737Z] [rss=90MB heap=9MB]   [3/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-01T22:30:03.801Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:30:03.804Z] [rss=90MB heap=9MB]   [4/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T22:30:03.963Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:30:03.966Z] [rss=90MB heap=9MB]   [5/5] AI ozet: Almanya'nın galibiyet hasreti Sırbistan karşısında
+[2026-10-01T22:30:03.968Z] [rss=90MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T22:30:03.969Z] [rss=90MB heap=9MB] === Cycle tamam ===
+[2026-10-01T22:45:02.607Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-01T22:45:02.611Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 555 makale.
+[2026-10-01T22:45:03.925Z] [rss=97MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-01T22:45:03.925Z] [rss=97MB heap=10MB] --- bellek temizleme ---
+[2026-10-01T22:45:03.946Z] [rss=97MB heap=8MB] GC cagrildi
+[2026-10-01T22:45:03.947Z] [rss=97MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T22:45:03.950Z] [rss=97MB heap=8MB] Eski published silindi: 5
+[2026-10-01T22:45:03.952Z] [rss=98MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T22:45:03.953Z] [rss=98MB heap=9MB]   [1/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T22:45:04.163Z] [rss=98MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:45:04.166Z] [rss=99MB heap=9MB]   [2/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T22:45:04.330Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:45:04.334Z] [rss=99MB heap=9MB]   [3/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-01T22:45:04.391Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:45:04.395Z] [rss=99MB heap=9MB]   [4/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T22:45:04.552Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T22:45:04.555Z] [rss=99MB heap=9MB]   [5/5] AI ozet: Almanya'nın galibiyet hasreti Sırbistan karşısında
+[2026-10-01T22:45:04.557Z] [rss=99MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T22:45:04.567Z] [rss=99MB heap=9MB] === Cycle tamam ===
+[2026-10-01T23:00:02.639Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-01T23:00:02.644Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 555 makale.
+[2026-10-01T23:00:03.251Z] [rss=99MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-01T23:00:03.251Z] [rss=99MB heap=11MB] --- bellek temizleme ---
+[2026-10-01T23:00:03.267Z] [rss=91MB heap=8MB] GC cagrildi
+[2026-10-01T23:00:03.268Z] [rss=91MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T23:00:03.270Z] [rss=91MB heap=9MB] Eski published silindi: 5
+[2026-10-01T23:00:03.273Z] [rss=91MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T23:00:03.273Z] [rss=91MB heap=9MB]   [1/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T23:00:03.450Z] [rss=91MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:00:03.454Z] [rss=91MB heap=9MB]   [2/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T23:00:03.612Z] [rss=91MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:00:03.615Z] [rss=91MB heap=9MB]   [3/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-01T23:00:03.672Z] [rss=91MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:00:03.675Z] [rss=91MB heap=9MB]   [4/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T23:00:03.835Z] [rss=91MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:00:03.838Z] [rss=91MB heap=9MB]   [5/5] AI ozet: Almanya'nın galibiyet hasreti Sırbistan karşısında
+[2026-10-01T23:00:03.849Z] [rss=91MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T23:00:03.859Z] [rss=91MB heap=9MB] === Cycle tamam ===
+[2026-10-01T23:15:02.881Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-01T23:15:02.886Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 555 makale.
+[2026-10-01T23:15:03.566Z] [rss=98MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-01T23:15:03.567Z] [rss=99MB heap=10MB] --- bellek temizleme ---
+[2026-10-01T23:15:03.586Z] [rss=94MB heap=8MB] GC cagrildi
+[2026-10-01T23:15:03.587Z] [rss=94MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T23:15:03.589Z] [rss=94MB heap=9MB] Eski published silindi: 5
+[2026-10-01T23:15:03.592Z] [rss=95MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T23:15:03.592Z] [rss=95MB heap=9MB]   [1/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T23:15:03.768Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:15:03.771Z] [rss=95MB heap=9MB]   [2/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T23:15:03.936Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:15:03.939Z] [rss=95MB heap=9MB]   [3/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-01T23:15:03.993Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:15:03.997Z] [rss=95MB heap=9MB]   [4/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T23:15:04.160Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:15:04.164Z] [rss=95MB heap=9MB]   [5/5] AI ozet: Almanya'nın galibiyet hasreti Sırbistan karşısında
+[2026-10-01T23:15:04.166Z] [rss=95MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T23:15:04.167Z] [rss=95MB heap=9MB] === Cycle tamam ===
+[2026-10-01T23:30:03.006Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-01T23:30:03.010Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 556 makale.
+[2026-10-01T23:30:03.831Z] [rss=94MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-01T23:30:03.831Z] [rss=94MB heap=10MB] --- bellek temizleme ---
+[2026-10-01T23:30:03.847Z] [rss=94MB heap=8MB] GC cagrildi
+[2026-10-01T23:30:03.848Z] [rss=94MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T23:30:03.851Z] [rss=94MB heap=8MB] Eski published silindi: 5
+[2026-10-01T23:30:03.853Z] [rss=95MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T23:30:03.853Z] [rss=95MB heap=9MB]   [1/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-01T23:30:04.032Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:30:04.036Z] [rss=95MB heap=9MB]   [2/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T23:30:04.195Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:30:04.199Z] [rss=95MB heap=9MB]   [3/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T23:30:04.256Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:30:04.259Z] [rss=95MB heap=9MB]   [4/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-01T23:30:04.419Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:30:04.422Z] [rss=95MB heap=9MB]   [5/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T23:30:04.479Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:30:04.482Z] [rss=95MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T23:30:04.483Z] [rss=95MB heap=9MB] === Cycle tamam ===
+[2026-10-01T23:45:03.380Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-01T23:45:03.385Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 556 makale.
+[2026-10-01T23:45:03.972Z] [rss=95MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-01T23:45:03.973Z] [rss=95MB heap=11MB] --- bellek temizleme ---
+[2026-10-01T23:45:03.990Z] [rss=93MB heap=8MB] GC cagrildi
+[2026-10-01T23:45:03.992Z] [rss=89MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-01T23:45:03.994Z] [rss=89MB heap=9MB] Eski published silindi: 5
+[2026-10-01T23:45:03.996Z] [rss=89MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-01T23:45:03.997Z] [rss=89MB heap=9MB]   [1/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-01T23:45:04.173Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:45:04.176Z] [rss=89MB heap=9MB]   [2/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-01T23:45:04.339Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:45:04.341Z] [rss=89MB heap=9MB]   [3/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-01T23:45:04.394Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:45:04.397Z] [rss=89MB heap=9MB]   [4/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-01T23:45:04.559Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:45:04.562Z] [rss=89MB heap=9MB]   [5/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-01T23:45:04.615Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-01T23:45:04.617Z] [rss=89MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-01T23:45:04.618Z] [rss=89MB heap=9MB] === Cycle tamam ===
+[2026-10-02T00:00:02.648Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-02T00:00:02.654Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (2s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 556 makale.
+[2026-10-02T00:00:04.373Z] [rss=95MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-02T00:00:04.373Z] [rss=95MB heap=10MB] --- bellek temizleme ---
+[2026-10-02T00:00:04.392Z] [rss=89MB heap=8MB] GC cagrildi
+[2026-10-02T00:00:04.393Z] [rss=89MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T00:00:04.396Z] [rss=89MB heap=8MB] Eski published silindi: 5
+[2026-10-02T00:00:04.398Z] [rss=89MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T00:00:04.398Z] [rss=89MB heap=9MB]   [1/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T00:00:04.568Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:00:04.571Z] [rss=89MB heap=9MB]   [2/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T00:00:04.733Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:00:04.736Z] [rss=89MB heap=9MB]   [3/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T00:00:04.789Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:00:04.792Z] [rss=89MB heap=9MB]   [4/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-02T00:00:04.952Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:00:04.955Z] [rss=89MB heap=9MB]   [5/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-02T00:00:05.009Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:00:05.012Z] [rss=89MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T00:00:05.013Z] [rss=89MB heap=9MB] === Cycle tamam ===
+[2026-10-02T00:15:03.265Z] [rss=62MB heap=7MB] === Cycle basladi ===
+[2026-10-02T00:15:03.271Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 556 makale.
+[2026-10-02T00:15:04.341Z] [rss=96MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T00:15:04.341Z] [rss=96MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T00:15:04.359Z] [rss=89MB heap=8MB] GC cagrildi
+[2026-10-02T00:15:04.360Z] [rss=89MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T00:15:04.363Z] [rss=89MB heap=9MB] Eski published silindi: 5
+[2026-10-02T00:15:04.365Z] [rss=89MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T00:15:04.366Z] [rss=89MB heap=9MB]   [1/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T00:15:04.542Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:15:04.546Z] [rss=89MB heap=9MB]   [2/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T00:15:04.706Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:15:04.709Z] [rss=89MB heap=9MB]   [3/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T00:15:04.766Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:15:04.769Z] [rss=89MB heap=9MB]   [4/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-02T00:15:04.928Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:15:04.930Z] [rss=89MB heap=9MB]   [5/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-02T00:15:04.988Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:15:04.991Z] [rss=89MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T00:15:04.992Z] [rss=89MB heap=9MB] === Cycle tamam ===
+[2026-10-02T00:30:02.710Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-02T00:30:02.715Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 556 makale.
+[2026-10-02T00:30:03.823Z] [rss=96MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-02T00:30:03.824Z] [rss=96MB heap=10MB] --- bellek temizleme ---
+[2026-10-02T00:30:03.839Z] [rss=97MB heap=8MB] GC cagrildi
+[2026-10-02T00:30:03.841Z] [rss=93MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T00:30:03.844Z] [rss=93MB heap=9MB] Eski published silindi: 5
+[2026-10-02T00:30:03.846Z] [rss=93MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T00:30:03.847Z] [rss=93MB heap=9MB]   [1/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T00:30:04.016Z] [rss=93MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:30:04.020Z] [rss=93MB heap=9MB]   [2/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T00:30:04.182Z] [rss=93MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:30:04.185Z] [rss=93MB heap=9MB]   [3/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T00:30:04.238Z] [rss=93MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:30:04.241Z] [rss=93MB heap=9MB]   [4/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-02T00:30:04.405Z] [rss=93MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:30:04.408Z] [rss=93MB heap=9MB]   [5/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-02T00:30:04.463Z] [rss=93MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:30:04.467Z] [rss=93MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T00:30:04.468Z] [rss=93MB heap=9MB] === Cycle tamam ===
+[2026-10-02T00:45:02.785Z] [rss=62MB heap=7MB] === Cycle basladi ===
+[2026-10-02T00:45:02.790Z] [rss=62MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 556 makale.
+[2026-10-02T00:45:03.690Z] [rss=97MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-02T00:45:03.691Z] [rss=97MB heap=10MB] --- bellek temizleme ---
+[2026-10-02T00:45:03.710Z] [rss=98MB heap=8MB] GC cagrildi
+[2026-10-02T00:45:03.711Z] [rss=98MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T00:45:03.714Z] [rss=98MB heap=9MB] Eski published silindi: 5
+[2026-10-02T00:45:03.717Z] [rss=99MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T00:45:03.717Z] [rss=99MB heap=9MB]   [1/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T00:45:03.905Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:45:03.909Z] [rss=99MB heap=9MB]   [2/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T00:45:04.070Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:45:04.073Z] [rss=99MB heap=9MB]   [3/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T00:45:04.127Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:45:04.130Z] [rss=99MB heap=9MB]   [4/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-02T00:45:04.289Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:45:04.292Z] [rss=99MB heap=9MB]   [5/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-02T00:45:04.347Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T00:45:04.350Z] [rss=99MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T00:45:04.351Z] [rss=99MB heap=9MB] === Cycle tamam ===
+[2026-10-02T01:00:02.604Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-02T01:00:02.608Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 556 makale.
+[2026-10-02T01:00:03.252Z] [rss=95MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T01:00:03.253Z] [rss=96MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T01:00:03.270Z] [rss=88MB heap=8MB] GC cagrildi
+[2026-10-02T01:00:03.271Z] [rss=88MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T01:00:03.273Z] [rss=88MB heap=9MB] Eski published silindi: 5
+[2026-10-02T01:00:03.276Z] [rss=88MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T01:00:03.276Z] [rss=88MB heap=9MB]   [1/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T01:00:03.452Z] [rss=88MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:00:03.456Z] [rss=88MB heap=9MB]   [2/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T01:00:03.615Z] [rss=88MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:00:03.618Z] [rss=89MB heap=9MB]   [3/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T01:00:03.676Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:00:03.680Z] [rss=89MB heap=9MB]   [4/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-02T01:00:03.837Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:00:03.840Z] [rss=89MB heap=9MB]   [5/5] AI ozet: GALLER NORVEÇ MAÇI HANGİ KANALDA? Galler Norveç ma
+[2026-10-02T01:00:03.902Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:00:03.905Z] [rss=89MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T01:00:03.906Z] [rss=89MB heap=9MB] === Cycle tamam ===
+[2026-10-02T01:15:02.828Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-02T01:15:02.832Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 557 makale.
+[2026-10-02T01:15:03.449Z] [rss=94MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T01:15:03.449Z] [rss=94MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T01:15:03.465Z] [rss=91MB heap=8MB] GC cagrildi
+[2026-10-02T01:15:03.467Z] [rss=91MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T01:15:03.476Z] [rss=93MB heap=8MB] Eski published silindi: 5
+[2026-10-02T01:15:03.479Z] [rss=93MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T01:15:03.479Z] [rss=93MB heap=9MB]   [1/5] AI ozet: İslam İşbirliği Teşkilatı Mescid-i Nebevi'ye yapıl
+[2026-10-02T01:15:03.654Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:15:03.658Z] [rss=89MB heap=9MB]   [2/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T01:15:03.818Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:15:03.821Z] [rss=89MB heap=9MB]   [3/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T01:15:03.880Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:15:03.883Z] [rss=89MB heap=9MB]   [4/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T01:15:04.038Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:15:04.041Z] [rss=89MB heap=9MB]   [5/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-02T01:15:04.101Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:15:04.104Z] [rss=89MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T01:15:04.104Z] [rss=89MB heap=9MB] === Cycle tamam ===
+[2026-10-02T01:30:02.700Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-02T01:30:02.704Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 557 makale.
+[2026-10-02T01:30:03.859Z] [rss=97MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T01:30:03.859Z] [rss=97MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T01:30:03.874Z] [rss=97MB heap=8MB] GC cagrildi
+[2026-10-02T01:30:03.875Z] [rss=97MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T01:30:03.878Z] [rss=97MB heap=9MB] Eski published silindi: 5
+[2026-10-02T01:30:03.880Z] [rss=97MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T01:30:03.880Z] [rss=97MB heap=9MB]   [1/5] AI ozet: İslam İşbirliği Teşkilatı Mescid-i Nebevi'ye yapıl
+[2026-10-02T01:30:04.220Z] [rss=97MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:30:04.224Z] [rss=97MB heap=9MB]   [2/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T01:30:04.280Z] [rss=97MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:30:04.282Z] [rss=97MB heap=9MB]   [3/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T01:30:04.442Z] [rss=97MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:30:04.445Z] [rss=97MB heap=9MB]   [4/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T01:30:04.501Z] [rss=98MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:30:04.503Z] [rss=98MB heap=9MB]   [5/5] AI ozet: Dışişleri Bakanlığı’ndan Husilerin Suudi Arabistan
+[2026-10-02T01:30:04.660Z] [rss=98MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:30:04.663Z] [rss=98MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T01:30:04.664Z] [rss=98MB heap=9MB] === Cycle tamam ===
+[2026-10-02T01:45:03.090Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-02T01:45:03.094Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 558 makale.
+[2026-10-02T01:45:03.684Z] [rss=98MB heap=9MB] ✓ RSS bitti (promise)
+[2026-10-02T01:45:03.684Z] [rss=98MB heap=9MB] --- bellek temizleme ---
+[2026-10-02T01:45:03.697Z] [rss=94MB heap=8MB] GC cagrildi
+[2026-10-02T01:45:03.698Z] [rss=94MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T01:45:03.700Z] [rss=94MB heap=8MB] Eski published silindi: 5
+[2026-10-02T01:45:03.702Z] [rss=94MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T01:45:03.702Z] [rss=94MB heap=9MB]   [1/5] AI ozet: İran medyasından Flydubai iddiası: Netanyahu her ş
+[2026-10-02T01:45:03.876Z] [rss=94MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:45:03.879Z] [rss=94MB heap=9MB]   [2/5] AI ozet: İslam İşbirliği Teşkilatı Mescid-i Nebevi'ye yapıl
+[2026-10-02T01:45:04.039Z] [rss=94MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:45:04.043Z] [rss=94MB heap=9MB]   [3/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T01:45:04.096Z] [rss=94MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:45:04.099Z] [rss=94MB heap=9MB]   [4/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T01:45:04.262Z] [rss=94MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:45:04.265Z] [rss=94MB heap=9MB]   [5/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T01:45:04.318Z] [rss=94MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T01:45:04.320Z] [rss=95MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T01:45:04.321Z] [rss=95MB heap=9MB] === Cycle tamam ===
+[2026-10-02T02:00:02.899Z] [rss=62MB heap=7MB] === Cycle basladi ===
+[2026-10-02T02:00:02.903Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 558 makale.
+[2026-10-02T02:00:04.088Z] [rss=96MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T02:00:04.088Z] [rss=97MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T02:00:04.104Z] [rss=90MB heap=8MB] GC cagrildi
+[2026-10-02T02:00:04.105Z] [rss=90MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T02:00:04.108Z] [rss=90MB heap=9MB] Eski published silindi: 5
+[2026-10-02T02:00:04.110Z] [rss=90MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T02:00:04.110Z] [rss=90MB heap=9MB]   [1/5] AI ozet: İran medyasından Flydubai iddiası: Netanyahu her ş
+[2026-10-02T02:00:04.302Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:00:04.306Z] [rss=90MB heap=9MB]   [2/5] AI ozet: İslam İşbirliği Teşkilatı Mescid-i Nebevi'ye yapıl
+[2026-10-02T02:00:04.466Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:00:04.469Z] [rss=90MB heap=9MB]   [3/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T02:00:04.524Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:00:04.527Z] [rss=90MB heap=9MB]   [4/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T02:00:04.689Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:00:04.692Z] [rss=90MB heap=9MB]   [5/5] AI ozet: DANİMARKA PORTEKİZ MAÇI HANGİ KANALDA? Danimarka P
+[2026-10-02T02:00:04.748Z] [rss=90MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:00:04.750Z] [rss=90MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T02:00:04.751Z] [rss=90MB heap=9MB] === Cycle tamam ===
+[2026-10-02T02:15:02.756Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-02T02:15:02.760Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 559 makale.
+[2026-10-02T02:15:03.873Z] [rss=98MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-02T02:15:03.874Z] [rss=98MB heap=10MB] --- bellek temizleme ---
+[2026-10-02T02:15:03.891Z] [rss=95MB heap=8MB] GC cagrildi
+[2026-10-02T02:15:03.892Z] [rss=95MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T02:15:03.899Z] [rss=95MB heap=9MB] Eski published silindi: 5
+[2026-10-02T02:15:03.902Z] [rss=95MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T02:15:03.902Z] [rss=95MB heap=9MB]   [1/5] AI ozet: Sevgilisinin eski kocasından kaçarken 3'üncü katta
+[2026-10-02T02:15:03.906Z] [rss=95MB heap=9MB]   [2/5] AI ozet: İran medyasından Flydubai iddiası: Netanyahu her ş
+[2026-10-02T02:15:04.076Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:15:04.082Z] [rss=95MB heap=9MB]   [3/5] AI ozet: İslam İşbirliği Teşkilatı Mescid-i Nebevi'ye yapıl
+[2026-10-02T02:15:04.237Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:15:04.240Z] [rss=95MB heap=9MB]   [4/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T02:15:04.298Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:15:04.301Z] [rss=95MB heap=9MB]   [5/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T02:15:04.456Z] [rss=95MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:15:04.459Z] [rss=95MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T02:15:04.460Z] [rss=95MB heap=9MB] === Cycle tamam ===
+[2026-10-02T02:30:02.804Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-02T02:30:02.808Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 559 makale.
+[2026-10-02T02:30:04.032Z] [rss=97MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-02T02:30:04.032Z] [rss=97MB heap=10MB] --- bellek temizleme ---
+[2026-10-02T02:30:04.055Z] [rss=89MB heap=8MB] GC cagrildi
+[2026-10-02T02:30:04.056Z] [rss=89MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T02:30:04.058Z] [rss=89MB heap=9MB] Eski published silindi: 5
+[2026-10-02T02:30:04.060Z] [rss=89MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T02:30:04.061Z] [rss=89MB heap=9MB]   [1/5] AI ozet: Sevgilisinin eski kocasından kaçarken 3'üncü katta
+[2026-10-02T02:30:04.064Z] [rss=89MB heap=9MB]   [2/5] AI ozet: İran medyasından Flydubai iddiası: Netanyahu her ş
+[2026-10-02T02:30:04.240Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:30:04.242Z] [rss=89MB heap=9MB]   [3/5] AI ozet: İslam İşbirliği Teşkilatı Mescid-i Nebevi'ye yapıl
+[2026-10-02T02:30:04.403Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:30:04.406Z] [rss=89MB heap=9MB]   [4/5] AI ozet: Sosyal medyadaki görüntü polisi harekete geçirdi: 
+[2026-10-02T02:30:04.459Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:30:04.461Z] [rss=89MB heap=9MB]   [5/5] AI ozet: ALMANYA SIRBİSTAN MAÇI HANGİ KANALDA? Almanya Sırb
+[2026-10-02T02:30:04.622Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T02:30:04.625Z] [rss=89MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T02:30:04.626Z] [rss=89MB heap=9MB] === Cycle tamam ===
+[2026-10-02T02:45:03.041Z] [rss=62MB heap=7MB] === Cycle basladi ===
+[2026-10-02T02:45:03.045Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 14
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 573 makale.
+[2026-10-02T02:45:03.724Z] [rss=97MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T02:45:03.724Z] [rss=97MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T02:45:03.741Z] [rss=90MB heap=8MB] GC cagrildi
+[2026-10-02T02:45:03.742Z] [rss=90MB heap=9MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T02:45:03.744Z] [rss=90MB heap=9MB] Eski published silindi: 5
+[2026-10-02T02:45:03.747Z] [rss=90MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T02:45:03.747Z] [rss=90MB heap=9MB]   [1/5] AI ozet: ‘Örgütlü bir suçla karşı karşıyayız’
+[2026-10-02T02:45:03.750Z] [rss=90MB heap=9MB]   [2/5] AI ozet: Filmekimi başlıyor
+[2026-10-02T02:45:03.753Z] [rss=90MB heap=9MB]   [3/5] AI ozet: Ayağa kalkmayıp, çıktılar
+[2026-10-02T02:45:03.755Z] [rss=90MB heap=9MB]   [4/5] AI ozet: Kaşar ve beyaz peynir listeye giremedi: En sağlıkl
+[2026-10-02T02:45:03.757Z] [rss=90MB heap=9MB]   [5/5] AI ozet: ‘Bıçak kemiğe dayandı’ dedi açlık grevi başlattı
+[2026-10-02T02:45:03.759Z] [rss=90MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T02:45:03.760Z] [rss=90MB heap=9MB] === Cycle tamam ===
+[2026-10-02T03:00:03.598Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-02T03:00:03.603Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 573 makale.
+[2026-10-02T03:00:04.249Z] [rss=96MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T03:00:04.250Z] [rss=96MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T03:00:04.266Z] [rss=89MB heap=8MB] GC cagrildi
+[2026-10-02T03:00:04.267Z] [rss=89MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T03:00:04.270Z] [rss=89MB heap=9MB] Eski published silindi: 5
+[2026-10-02T03:00:04.273Z] [rss=89MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T03:00:04.273Z] [rss=89MB heap=9MB]   [1/5] AI ozet: ‘Örgütlü bir suçla karşı karşıyayız’
+[2026-10-02T03:00:04.276Z] [rss=89MB heap=9MB]   [2/5] AI ozet: Filmekimi başlıyor
+[2026-10-02T03:00:04.279Z] [rss=89MB heap=9MB]   [3/5] AI ozet: Ayağa kalkmayıp, çıktılar
+[2026-10-02T03:00:04.282Z] [rss=89MB heap=9MB]   [4/5] AI ozet: Kaşar ve beyaz peynir listeye giremedi: En sağlıkl
+[2026-10-02T03:00:04.284Z] [rss=89MB heap=9MB]   [5/5] AI ozet: ‘Bıçak kemiğe dayandı’ dedi açlık grevi başlattı
+[2026-10-02T03:00:04.286Z] [rss=89MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T03:00:04.288Z] [rss=89MB heap=9MB] === Cycle tamam ===
+[2026-10-02T03:15:03.072Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-02T03:15:03.076Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 0
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 573 makale.
+[2026-10-02T03:15:04.237Z] [rss=98MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T03:15:04.237Z] [rss=98MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T03:15:04.254Z] [rss=94MB heap=8MB] GC cagrildi
+[2026-10-02T03:15:04.255Z] [rss=94MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T03:15:04.258Z] [rss=94MB heap=9MB] Eski published silindi: 5
+[2026-10-02T03:15:04.260Z] [rss=94MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T03:15:04.260Z] [rss=94MB heap=9MB]   [1/5] AI ozet: ‘Örgütlü bir suçla karşı karşıyayız’
+[2026-10-02T03:15:04.263Z] [rss=94MB heap=9MB]   [2/5] AI ozet: Filmekimi başlıyor
+[2026-10-02T03:15:04.265Z] [rss=94MB heap=9MB]   [3/5] AI ozet: Ayağa kalkmayıp, çıktılar
+[2026-10-02T03:15:04.268Z] [rss=94MB heap=9MB]   [4/5] AI ozet: Kaşar ve beyaz peynir listeye giremedi: En sağlıkl
+[2026-10-02T03:15:04.270Z] [rss=94MB heap=9MB]   [5/5] AI ozet: ‘Bıçak kemiğe dayandı’ dedi açlık grevi başlattı
+[2026-10-02T03:15:04.272Z] [rss=94MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T03:15:04.273Z] [rss=94MB heap=9MB] === Cycle tamam ===
+[2026-10-02T03:30:02.690Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-02T03:30:02.694Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 574 makale.
+[2026-10-02T03:30:03.282Z] [rss=98MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-02T03:30:03.283Z] [rss=98MB heap=10MB] --- bellek temizleme ---
+[2026-10-02T03:30:03.303Z] [rss=99MB heap=8MB] GC cagrildi
+[2026-10-02T03:30:03.304Z] [rss=99MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T03:30:03.307Z] [rss=99MB heap=9MB] Eski published silindi: 5
+[2026-10-02T03:30:03.309Z] [rss=99MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T03:30:03.309Z] [rss=99MB heap=9MB]   [1/5] AI ozet: ‘Örgütlü bir suçla karşı karşıyayız’
+[2026-10-02T03:30:03.312Z] [rss=99MB heap=9MB]   [2/5] AI ozet: TFF’nin bahis oynayanları PFDK’ya sevk etmesinin i
+[2026-10-02T03:30:03.764Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T03:30:03.767Z] [rss=99MB heap=9MB]   [3/5] AI ozet: Filmekimi başlıyor
+[2026-10-02T03:30:03.770Z] [rss=100MB heap=9MB]   [4/5] AI ozet: Ayağa kalkmayıp, çıktılar
+[2026-10-02T03:30:03.772Z] [rss=100MB heap=9MB]   [5/5] AI ozet: Kaşar ve beyaz peynir listeye giremedi: En sağlıkl
+[2026-10-02T03:30:03.774Z] [rss=100MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T03:30:03.775Z] [rss=100MB heap=9MB] === Cycle tamam ===
+[2026-10-02T03:45:02.643Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-02T03:45:02.647Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (0s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 575 makale.
+[2026-10-02T03:45:03.184Z] [rss=98MB heap=10MB] ✓ RSS bitti (promise)
+[2026-10-02T03:45:03.184Z] [rss=98MB heap=10MB] --- bellek temizleme ---
+[2026-10-02T03:45:03.201Z] [rss=98MB heap=8MB] GC cagrildi
+[2026-10-02T03:45:03.202Z] [rss=98MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T03:45:03.204Z] [rss=98MB heap=9MB] Eski published silindi: 5
+[2026-10-02T03:45:03.206Z] [rss=98MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T03:45:03.206Z] [rss=98MB heap=9MB]   [1/5] AI ozet: Beşiktaş’ın kaptanıyla ilgili flaş iddia! Orkun’da
+[2026-10-02T03:45:03.210Z] [rss=98MB heap=9MB]   [2/5] AI ozet: ‘Örgütlü bir suçla karşı karşıyayız’
+[2026-10-02T03:45:03.212Z] [rss=99MB heap=9MB]   [3/5] AI ozet: TFF’nin bahis oynayanları PFDK’ya sevk etmesinin i
+[2026-10-02T03:45:03.544Z] [rss=99MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T03:45:03.547Z] [rss=99MB heap=9MB]   [4/5] AI ozet: Filmekimi başlıyor
+[2026-10-02T03:45:03.549Z] [rss=99MB heap=9MB]   [5/5] AI ozet: Ayağa kalkmayıp, çıktılar
+[2026-10-02T03:45:03.552Z] [rss=99MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T03:45:03.553Z] [rss=99MB heap=9MB] === Cycle tamam ===
+[2026-10-02T04:00:02.920Z] [rss=63MB heap=7MB] === Cycle basladi ===
+[2026-10-02T04:00:02.924Z] [rss=63MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
+
+=== Yenileme tamam (1s) ===
+İşlenen kaynak: 5
+Çekilen öğe:    60
+Eklenen makale: 1
+Başarısız kaynak: 3
+
+İlk 15 hata:
+  · Cumhuriyet · Son dakika: Unable to parse XML.
+  · Halktv: Unexpected close tag
+Line: 5
+Column: 7
+Char: >
+  · Artigercek: Unexpected close tag
+Line: 6
+Column: 7
+Char: >
+
+DB durumu: 64 kaynak, 576 makale.
+[2026-10-02T04:00:03.539Z] [rss=97MB heap=11MB] ✓ RSS bitti (promise)
+[2026-10-02T04:00:03.539Z] [rss=97MB heap=11MB] --- bellek temizleme ---
+[2026-10-02T04:00:03.555Z] [rss=89MB heap=8MB] GC cagrildi
+[2026-10-02T04:00:03.556Z] [rss=89MB heap=8MB] AI-ozet + publish basliyor (5 makale)
+[2026-10-02T04:00:03.559Z] [rss=89MB heap=9MB] Eski published silindi: 5
+[2026-10-02T04:00:03.561Z] [rss=89MB heap=9MB] Son makaleler cekildi: 5
+[2026-10-02T04:00:03.561Z] [rss=89MB heap=9MB]   [1/5] AI ozet: Son Dakika: Soma'dan acı haberler geliyor. Ölü say
+[2026-10-02T04:00:03.565Z] [rss=89MB heap=9MB]   [2/5] AI ozet: Beşiktaş’ın kaptanıyla ilgili flaş iddia! Orkun’da
+[2026-10-02T04:00:03.568Z] [rss=89MB heap=9MB]   [3/5] AI ozet: ‘Örgütlü bir suçla karşı karşıyayız’
+[2026-10-02T04:00:03.570Z] [rss=89MB heap=9MB]   [4/5] AI ozet: TFF’nin bahis oynayanları PFDK’ya sevk etmesinin i
+[2026-10-02T04:00:03.901Z] [rss=89MB heap=9MB] AI bos yanit: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","
+[2026-10-02T04:00:03.904Z] [rss=89MB heap=9MB]   [5/5] AI ozet: Filmekimi başlıyor
+[2026-10-02T04:00:03.906Z] [rss=89MB heap=9MB] AI basarili: 0/5, Published: 5
+[2026-10-02T04:00:03.907Z] [rss=89MB heap=9MB] === Cycle tamam ===
+[2026-10-02T04:15:02.889Z] [rss=64MB heap=7MB] === Cycle basladi ===
+[2026-10-02T04:15:02.894Z] [rss=64MB heap=7MB] > RSS basliyor
+=== Arka plan RSS yenilemesi başlatıldı ===
