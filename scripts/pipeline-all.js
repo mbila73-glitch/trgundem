@@ -197,7 +197,7 @@ async function main() {
               aiSummary: a.description ? a.description.slice(0, 500) : (a.title || ''),
               category: a.category || 'Güncel',
               imageUrl: a.imageUrl || null,
-              sourceArticleIds: a.id,
+              sourceArticleIds: JSON.stringify([a.id]),
               sourceCount: 1,
               earliestPublishedAt: a.publishedAt || new Date(),
               latestPublishedAt: a.publishedAt || new Date(),
