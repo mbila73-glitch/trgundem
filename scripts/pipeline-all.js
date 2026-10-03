@@ -2,6 +2,22 @@
 var path = require('path');
 var fs = require('fs');
 
+// .env dosyasını oku (Node.js otomatik okumaz)
+var envPath = path.join(__dirname, '..', '.env');
+try {
+  var envContent = fs.readFileSync(envPath, 'utf8');
+  envContent.split('\n').forEach(function(line) {
+    line = line.trim();
+    if (!line || line.startsWith('#')) return;
+    var idx = line.indexOf('=');
+    if (idx > 0) {
+      var key = line.substring(0, idx).trim();
+      var val = line.substring(idx + 1).trim();
+      if (!process.env[key]) process.env[key] = val;
+    }
+  });
+} catch (e) {}
+
 // GEMINI API KEY — .env'den oku
 var GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 var GEMINI_MODEL = 'gemini-3.8-flash';
