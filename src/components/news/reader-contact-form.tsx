@@ -67,8 +67,10 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
         setSubject('');
         setMessage('');
         onClose();
-        // Sonra toast ile mesaj göster
-        toast.success('Mesajınız iletilmiştir');
+        // 1 saniye sonra toast ile mesaj göster, 3 saniye kalsın
+        setTimeout(function() {
+          toast.success('Mesajınız iletilmiştir', { duration: 3000 });
+        }, 1000);
       }
     } catch (e) {
       setStatus({
