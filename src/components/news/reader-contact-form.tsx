@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Loader2, Send, Mail, CheckCircle2, XCircle, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -58,19 +59,17 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
       if (json.rejected) {
         setStatus({ type: 'rejected', text: 'Mesajınız iade edilmiştir' });
         setMessage('');
+        setTimeout(() => setStatus(null), 2000);
       } else {
-        setStatus({ type: 'success', text: 'Mesaj gönderildi, teşekkürler' });
+        // Önce pencereyi kapat, formu temizle
         setName('');
         setEmail('');
         setSubject('');
         setMessage('');
+        onClose();
+        // Sonra toast ile mesaj göster
+        toast.success('Mesajınız iletilmiştir');
       }
-
-      // 2 saniye sonra status'u temizle ve dialog'u kapat
-      setTimeout(() => {
-        setStatus(null);
-        if (!json.rejected) onClose();
-      }, 2000);
     } catch (e) {
       setStatus({
         type: 'rejected',
