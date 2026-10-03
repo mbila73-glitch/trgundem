@@ -45,16 +45,27 @@ export function initials(name: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+const CATEGORY_COLORS: Record<string, string> = {
+  'Güncel': 'bg-blue-600 text-white',
+  'Kamu / Resmi': 'bg-purple-600 text-white',
+  'Ekonomi / Finans': 'bg-green-600 text-white',
+  'Spor / Magazin': 'bg-red-500 text-white',
+  'Bilim / Teknoloji': 'bg-cyan-600 text-white',
+  'Kültür / Sanat': 'bg-orange-500 text-white',
+  'Özel': 'bg-indigo-600 text-white',
+};
+
 const FALLBACK_COLORS = [
-  'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
-  'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-  'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
-  'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300',
-  'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  'bg-blue-600 text-white',
+  'bg-purple-600 text-white',
+  'bg-green-600 text-white',
+  'bg-red-500 text-white',
+  'bg-cyan-600 text-white',
+  'bg-orange-500 text-white',
 ];
 
 export function colorForName(name: string): string {
+  if (CATEGORY_COLORS[name]) return CATEGORY_COLORS[name];
   let hash = 0;
   for (let i = 0; i < name.length; i += 1) {
     hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
