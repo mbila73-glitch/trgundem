@@ -523,7 +523,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                           {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
                                         </span>
                                       )}
-                                      {a.sourceCount > 1 && (
+                                      {a.sourceCount >= 1 && (
                                         <button type="button" onClick={() => toggleSources(a.id, a.sourceArticleIds)} className="inline-flex items-center gap-0.5 text-news hover:underline">
                                           {a.sourceCount} kaynak {expandedSources === a.id ? '▲' : '▼'}
                                         </button>
