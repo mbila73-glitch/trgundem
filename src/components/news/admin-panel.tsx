@@ -179,20 +179,15 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const handleRestart = useCallback(async () => {
     setRestartConfirmOpen(false);
     setRestarting(true);
-    setPipelineStatus(null);
     try {
-      // Pipeline'ı başlat — exec ile arka planda çalışır
       const r = await fetch('/api/pipeline/run', { method: 'POST' });
-      const json = (await r.json()) as { ok: boolean; message?: string; error?: string };
-      if (!r.ok || !json.ok) {
-        throw new Error(json.error || 'Pipeline başlatılamadı');
-      }
-      toast.success('Pipeline başlatıldı — canlı ilerleme aşağıda');
-      setPolling(true);
+      const json = await r.json();
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Pipeline başlatılamadı');
+      toast.success('Pipeline Başlatıldı — Arka Planda Çalışıyor');
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Restart hatası');
+      toast.error(e instanceof Error ? e.message : 'Hata');
+    } finally {
       setRestarting(false);
-      setPolling(false);
     }
   }, []);
 
