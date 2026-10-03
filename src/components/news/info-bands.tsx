@@ -3,15 +3,15 @@
 import { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, Cloud, Sun, CloudRain, CloudSnow } from 'lucide-react';
 
-// Hava durumu — Meteoroloji Genel Müdürlüğü (mgm.gov.tr)
-// Sabit gösterilecek iller (Ankara, İstanbul, İzmir sırasıyla)
-const HAVA_FIXED = [
+// Hava durumu — Open-Meteo (open-meteo.com)
+// İlk hardcoded değerler — API gelince değişir
+type HavaItem = { sehir: string; derece: number; ikon: 'sun' | 'cloud' | 'rain' | 'snow' };
+const HAVA_FIXED_INIT: HavaItem[] = [
   { sehir: 'Ankara', derece: 15, ikon: 'sun' },
   { sehir: 'İstanbul', derece: 18, ikon: 'cloud' },
   { sehir: 'İzmir', derece: 22, ikon: 'sun' },
 ];
-// Kayan (dönen) iller
-const HAVA_SCROLL = [
+const HAVA_SCROLL_INIT: HavaItem[] = [
   { sehir: 'Antalya', derece: 25, ikon: 'sun' },
   { sehir: 'Bursa', derece: 19, ikon: 'cloud' },
   { sehir: 'Trabzon', derece: 16, ikon: 'rain' },
@@ -20,6 +20,7 @@ const HAVA_SCROLL = [
   { sehir: 'Hatay', derece: 24, ikon: 'cloud' },
   { sehir: 'Konya', derece: 14, ikon: 'sun' },
 ];
+const HAVA_FIXED_SEHIRLER = ['Ankara', 'İstanbul', 'İzmir'];
 
 function WeatherIcon({ type, className }: { type: string; className?: string }) {
   if (type === 'sun') return <Sun className={className} />;
@@ -73,6 +74,8 @@ export function InfoBands() {
   const [sonDakika, setSonDakika] = useState<SonDakikaItem[]>([]);
   const [finans, setFinans] = useState<FinansItem[]>([]);
   const [finansSource, setFinansSource] = useState('TCMB');
+  const [havaFixed, setHavaFixed] = useState<HavaItem[]>(HAVA_FIXED_INIT);
+  const [havaScroll, setHavaScroll] = useState<HavaItem[]>(HAVA_SCROLL_INIT);
 
   useEffect(() => {
     fetch('/api/published-articles?layout=all&status=published')
@@ -82,6 +85,34 @@ export function InfoBands() {
         setSonDakika((json.articles ?? []).map(a => ({ id: a.id, title: a.aiTitle })).slice(0, 10));
       })
       .catch(() => {});
+  }, []);
+
+  // Hava durumu — 10 dakikada bir polling
+  useEffect(() => {
+    let active = true;
+    const loadHava = () => {
+      fetch('/api/hava-durumu')
+        .then(async (r) => {
+          if (!r.ok) return;
+          const json = (await r.json()) as { ok: boolean; data?: HavaItem[] };
+          if (!active) return;
+          if (json.ok && json.data && json.data.length > 0) {
+            const fixed = HAVA_FIXED_SEHIRLER
+              .map(sehir => json.data!.find(h => h.sehir === sehir))
+              .filter((h): h is HavaItem => Boolean(h));
+            const scroll = json.data.filter(h => !HAVA_FIXED_SEHIRLER.includes(h.sehir));
+            if (fixed.length > 0) setHavaFixed(fixed);
+            if (scroll.length > 0) setHavaScroll(scroll);
+          }
+        })
+        .catch(() => {});
+    };
+    loadHava();
+    const interval = setInterval(loadHava, 10 * 60 * 1000); // 10 dakika
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -135,8 +166,8 @@ export function InfoBands() {
 
           {/* Sabit iller (Ankara, İstanbul, İzmir sırasıyla) */}
           <div className="flex flex-shrink-0 items-center gap-3 mr-3">
-            {HAVA_FIXED.map((h, i) => (
-              <span key={`fixed-${i}`} className="inline-flex items-center gap-1.5 text-sm" title="Kaynak: Meteoroloji Genel Müdürlüğü (mgm.gov.tr)">
+            {havaFixed.map((h, i) => (
+              <span key={`fixed-${i}`} className="inline-flex items-center gap-1.5 text-sm" title="Kaynak: Open-Meteo (open-meteo.com)">
                 <WeatherIcon type={h.ikon} className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <span className="font-medium text-foreground/80">{h.sehir}</span>
                 <span className="font-bold text-foreground">{h.derece}°C</span>
@@ -152,8 +183,8 @@ export function InfoBands() {
               className="flex w-max flex-shrink-0 items-center gap-6 whitespace-nowrap group-hover:[animation-play-state:paused]"
               style={marqueeStyle('22s')}
             >
-              {HAVA_SCROLL.concat(HAVA_SCROLL).map((h, i) => (
-                <span key={`scroll-${i}`} className="inline-flex flex-shrink-0 items-center gap-1.5 text-sm" title="Kaynak: Meteoroloji Genel Müdürlüğü (mgm.gov.tr)">
+              {havaScroll.concat(havaScroll).map((h, i) => (
+                <span key={`scroll-${i}`} className="inline-flex flex-shrink-0 items-center gap-1.5 text-sm" title="Kaynak: Open-Meteo (open-meteo.com)">
                   <WeatherIcon type={h.ikon} className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <span className="font-medium text-foreground/80">{h.sehir}</span>
                   <span className="font-bold text-foreground">{h.derece}°C</span>
