@@ -374,8 +374,8 @@ export function NewsScreen() {
               }}
               className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
                 isActive
-                  ? 'bg-secondary text-secondary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
