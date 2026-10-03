@@ -22,6 +22,11 @@ try {
 var GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 var GEMINI_MODEL = 'gemini-flash-lite-latest';
 
+// Debug: key durumu
+log('ENV path: ' + envPath);
+log('ENV exists: ' + fs.existsSync(envPath));
+log('GEMINI key: ' + (GEMINI_API_KEY ? 'VAR (' + GEMINI_API_KEY.length + ' chars) ' + GEMINI_API_KEY.slice(0, 15) + '...' : 'YOK'));
+
 // fetch'i native http ile değiştir (Wasm yok)
 globalThis.fetch = function(url, options) {
   options = options || {};
