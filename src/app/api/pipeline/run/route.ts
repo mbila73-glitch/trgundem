@@ -3,29 +3,34 @@ import { spawn } from 'node:child_process';
 import { appendFile, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
-const LOG_FILE = `${process.cwd()}/pipeline-once.log`;
-const STATUS_FILE = `${process.cwd()}/pipeline-status.json`;
-const NODE_BIN = '/home/metinqty/nodevenv/trgundem/22/bin/node';
+const LOG_FILE = '/var/www/pipeline-once.log';
+const STATUS_FILE = '/var/www/pipeline-status.json';
+const NODE_BIN = '/usr/bin/node';
+const SCRIPT = '/var/www/scripts/pipeline-all.js';
 
 export async function POST() {
   const startedAt = new Date().toISOString();
   try {
-    await writeFile(STATUS_FILE, JSON.stringify({ stage: 'archive-stale', startedAt, finishedAt: null, rssRead: 0, duplicatesFound: 0, summariesDone: 0, publishedCount: null, error: null }, null, 2), 'utf8').catch(() => {});
-    await appendFile(LOG_FILE, `\n[${startedAt}] === Pipeline tetiklendi ===\n`, 'utf8').catch(() => {});
-    
-    // spawn node — shell:false ile bash/sh gerekmez
-    const child = spawn(NODE_BIN, ['scripts/pipeline-cron-hosting.js', '--once'], {
-      cwd: process.cwd(),
+    await writeFile(STATUS_FILE, JSON.stringify({ stage: 'triggered', startedAt, finishedAt: null, message: 'Pipeline Admin Tarafından Başlatıldı' }, null, 2), 'utf8').catch(() => {});
+    await appendFile(LOG_FILE, `\n[${startedAt}] === Pipeline Tetiklendi ===\n`, 'utf8').catch(() => {});
+
+    const child = spawn(NODE_BIN, ['--expose-gc', SCRIPT, '--once'], {
+      cwd: '/var/www',
       detached: true,
       stdio: 'ignore',
       shell: false,
+      env: { ...process.env, PIPELINE_TRIGGERED: 'admin' }
     });
     child.unref();
-    
-    return NextResponse.json({ ok: true, message: 'Pipeline başlatıldı', pid: child.pid, startedAt });
+
+    child.on('error', async (err) => {
+      await writeFile(STATUS_FILE, JSON.stringify({ stage: 'error', startedAt, error: err.message, finishedAt: new Date().toISOString() }, null, 2), 'utf8').catch(() => {});
+    });
+
+    return NextResponse.json({ ok: true, message: 'Pipeline Başlatıldı', pid: child.pid, startedAt });
   } catch (e) {
     const err = e as Error;
-    await writeFile(STATUS_FILE, JSON.stringify({ stage: 'error', startedAt, error: err.message }, null, 2), 'utf8').catch(() => {});
+    await writeFile(STATUS_FILE, JSON.stringify({ stage: 'error', startedAt, error: err.message, finishedAt: new Date().toISOString() }, null, 2), 'utf8').catch(() => {});
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }
