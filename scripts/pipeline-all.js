@@ -84,23 +84,49 @@ try {
   globalThis.prisma = _prisma;
 } catch (e) { console.error('Prisma: ' + e.message); }
 
-// AI ÖZET — telifsiz, 150+ kelime, 3 key sırayla
-async function aiSummarize(title, contents) {
+// AI ÖZET — telifsiz, kategori bazlı min kelime, 3 key sırayla
+// Kategori bazlı minimum kelime sayısı (alt sınır — AI bundan az üretmemeli)
+var CATEGORY_MIN_WORDS = {
+  'Siyaset': 200,
+  'Ekonomi / Finans': 100,
+  'Kamu / Resmi': 80,
+  'Bilim / Teknoloji': 80,
+  'Kültür / Sanat': 100,
+  'Spor / Magazin': 80,
+  'Güncel': 100,
+  'Aktüel': 100
+};
+
+function countWords(text) {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+}
+
+async function aiSummarize(title, contents, category) {
   if (!contents || contents.length === 0) return null;
   var sorted = contents.filter(function(c) { return c && c.length > 50; }).sort(function(a, b) { return b.length - a.length; });
   if (sorted.length === 0) return null;
   var combinedContent = sorted.join('\n\n---\n\n').slice(0, 8000);
-  var prompt = 'Aşağıdaki haber metinlerini oku. Asla kaynak metinle aynı cümleleri kurma. Tamamen kendi cümlelerinle, eş anlamlı kelimeler kullanarak, cümle yapısını değiştirerek yaz. Orijinal metinden hiçbir cümleyi, hiçbir ifadeyi kopyalama. Bu bir özet değil, haberin yeniden yazımıdır. Yaklaşık 200 kelime olmalı. Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\nBAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
+  var minWords = CATEGORY_MIN_WORDS[category] || 100;
+
+  function buildPrompt(minW) {
+    return 'Aşağıdaki haber metinlerini oku. Asla kaynak metinle aynı cümleleri kurma. Tamamen kendi cümlelerinle, eş anlamlı kelimeler kullanarak, cümle yapısını değiştirerek yaz. Orijinal metinden hiçbir cümleyi, hiçbir ifadeyi kopyalama. Bu bir özet değil, haberin yeniden yazımıdır. EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\nBAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
+  }
+
+  var bestText = null;
+  var bestWordCount = 0;
 
   for (var attempt = 1; attempt <= 3; attempt++) {
     var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
     keyIndex++;
     var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + currentKey;
+    // maxOutputTokens: minWords * 3 (ortalama 1.5-2 token/kelime + güvenlik payı)
+    var maxTokens = Math.max(800, minWords * 4);
     try {
       var resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 1000, temperature: 0.7 } })
+        body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
       });
       var result = await resp.json();
       if (result.error && result.error.code === 503) {
@@ -111,17 +137,29 @@ async function aiSummarize(title, contents) {
       if (result.error) { log('  AI error ' + result.error.code + ': ' + (result.error.message || '').slice(0, 80)); return null; }
       if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
         var text = result.candidates[0].content.parts[0].text;
-        return text ? text.trim() : null;
+        if (text) {
+          text = text.trim();
+          var wc = countWords(text);
+          log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ')');
+          // En iyi sonucu sakla (en çok kelimeye sahip)
+          if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
+          // Alt limiti geçtiyse hemen döndür
+          if (wc >= minWords) return text;
+          // Geçmediyse bir daha deneyebiliriz (eğer deneme hakkı varsa)
+          if (attempt < 3) { log('  AI yetersiz kelime — tekrar deneniyor...'); continue; }
+          // Son deneme ama hala yetersiz → en iyiyi dön
+          return bestText;
+        }
       }
       if (attempt < 3) { await new Promise(function(r) { setTimeout(r, 3000); }); continue; }
-      return null;
+      return bestText;
     } catch (e) {
       log('  AI hata (deneme ' + attempt + '/3): ' + e.message);
       if (attempt < 3) { await new Promise(function(r) { setTimeout(r, 5000); }); continue; }
-      return null;
+      return bestText;
     }
   }
-  return null;
+  return bestText;
 }
 
 // Başlık benzerliği — Siyasetçi isimleri tek başına yeterli değil, en az 2 anlamlı kelime
@@ -138,6 +176,8 @@ var STOP_WORDS = new Set([
 function titleSimilar(t1, t2) {
   var n1 = normalizeTitle(t1), n2 = normalizeTitle(t2);
   if (!n1 || !n2) return 0;
+  // Birebir aynı başlık → kesin eşleşme (%100)
+  if (n1 === n2) return 1.0;
   // 4+ karakter ve stop word olmayan kelimeleri al
   var w1 = n1.split(' ').filter(function(w) { return w.length > 3 && !STOP_WORDS.has(w); });
   var w2 = n2.split(' ').filter(function(w) { return w.length > 3 && !STOP_WORDS.has(w); });
@@ -303,13 +343,21 @@ async function main() {
       });
       log('Kategori limitlerine göre seçilen grup: ' + topGroups.length);
 
-      // Mevcut yayınlanan haberleri al (duplicate kontrol + eskiyi arşive)
-      var existing = await globalThis.prisma.publishedArticle.findMany({
+      // Mevcut yayınlanan VE arşivdeki haberleri al (birebir aynı başlık tekrarını kesin önle)
+      var existingPublished = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published' },
-        select: { id: true, aiTitle: true, category: true, latestPublishedAt: true },
+        select: { id: true, aiTitle: true, category: true, latestPublishedAt: true, status: true },
         orderBy: { publishedAt: 'desc' }
       });
-      var existingTitles = existing.map(function(p) { return p.aiTitle || ''; });
+      var existingArchived = await globalThis.prisma.publishedArticle.findMany({
+        where: { status: 'archived' },
+        select: { id: true, aiTitle: true, category: true, status: true },
+        orderBy: { archivedAt: 'desc' },
+        take: 200
+      });
+      // Birleşik liste (yayında + arşiv) — kategori farkı gözetmeksizin aynı başlık ara
+      var existing = existingPublished.concat(existingArchived);
+      log('Mevcut haber (yayında ' + existingPublished.length + ' + arşiv ' + existingArchived.length + ')');
 
       var added = 0, skipped = 0, aiOk = 0, archived = 0;
       for (var i = 0; i < topGroups.length; i++) {
@@ -320,14 +368,28 @@ async function main() {
         var sourceCount = group.sourceIds.size;
 
         // Aynı başlığa sahip eski publishedArticle varsa → arşive taşı, yenisini yayınla
+        // Kategori filtreleme YOK — farklı kategori de olsa aynı başlık yakalanır
         // Eşik 0.5 (daha rahat yakala — sadece "Erdoğan" değil, en az 2 anlamlı kelime)
+        // Birebir aynı başlık → titleSimilar 1.0 döner (kesin eşleşme)
         var oldArticleToArchive = null;
+        var alreadyArchived = false; // Aynı başlık zaten arşivde mi?
         for (var j = 0; j < existing.length; j++) {
-          if (existing[j].category !== cat) continue;
-          if (titleSimilar(firstArticle.title, existing[j].aiTitle || '') >= 0.5) {
-            oldArticleToArchive = existing[j];
-            break;
+          var sim = titleSimilar(firstArticle.title, existing[j].aiTitle || '');
+          if (sim >= 0.5) {
+            // Kategori farklı ama birebir değilse atla (0.85+ ise yakala)
+            if (existing[j].category !== cat && sim < 0.85) continue;
+            if (existing[j].status === 'published') {
+              oldArticleToArchive = existing[j];
+              break;
+            } else {
+              // Arşivde var — yenisini yine de yayınla (taze), eskisi arşivde kalsın
+              alreadyArchived = true;
+              break;
+            }
           }
+        }
+        if (alreadyArchived) {
+          log('  [Arşivde var, taze yayınla] (' + cat + '): ' + firstArticle.title.slice(0, 50));
         }
         if (oldArticleToArchive) {
           try {
@@ -347,7 +409,7 @@ async function main() {
         var contents = groupArticlesList.slice(0, maxSources).map(function(a) { return a.content || a.description || ''; });
 
         // AI özet
-        var aiText = await aiSummarize(firstArticle.title, contents);
+        var aiText = await aiSummarize(firstArticle.title, contents, cat);
         var summaryText = aiText || (firstArticle.description ? firstArticle.description.slice(0, 500) : firstArticle.title || '');
         if (aiText) aiOk++;
 
