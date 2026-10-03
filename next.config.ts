@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // nodemailer standalone build'de çalışması için native modül olarak işaretle
+  serverExternalPackages: ["nodemailer"],
   // Allow cross-origin dev requests from the preview-chat sandbox domain
   // (e.g. preview-chat-c48ba88b-...space-z.ai) so the preview panel can
   // load /_next/* assets without being rejected.
