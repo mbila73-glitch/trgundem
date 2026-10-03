@@ -264,8 +264,8 @@ async function main() {
       var added = 0, skipped = 0, aiOk = 0;
       for (var i = 0; i < top10.length; i++) {
         var group = top10[i];
-        var groupArticles = group.articles;
-        var firstArticle = groupArticles[0];
+        var groupArticlesList = group.articles;
+        var firstArticle = groupArticlesList[0];
 
         // Duplicate kontrol
         var dup = false;
@@ -275,13 +275,13 @@ async function main() {
         if (dup) { skipped++; continue; }
 
         // Tüm article ID'leri
-        var allIds = groupArticles.map(function(a) { return a.id; });
+        var allIds = groupArticlesList.map(function(a) { return a.id; });
         var sourceCount = group.sourceIds.size;
 
-        log('  [' + (i+1) + '/10] ' + sourceCount + ' kaynak, ' + groupArticles.length + ' makale: ' + firstArticle.title.slice(0, 50));
+        log('  [' + (i+1) + '/10] ' + sourceCount + ' kaynak, ' + groupArticlesList.length + ' makale: ' + firstArticle.title.slice(0, 50));
 
         // İçerikleri topla
-        var contents = groupArticles.map(function(a) { return a.content || a.description || ''; });
+        var contents = groupArticlesList.map(function(a) { return a.content || a.description || ''; });
 
         // AI özet
         var aiText = await aiSummarize(firstArticle.title, contents);
@@ -290,8 +290,8 @@ async function main() {
 
         // En iyi görseli al
         var bestImage = null;
-        for (var k = 0; k < groupArticles.length; k++) {
-          if (groupArticles[k].imageUrl) { bestImage = groupArticles[k].imageUrl; break; }
+        for (var k = 0; k < groupArticlesList.length; k++) {
+          if (groupArticlesList[k].imageUrl) { bestImage = groupArticlesList[k].imageUrl; break; }
         }
 
         try {
@@ -303,7 +303,7 @@ async function main() {
               imageUrl: bestImage,
               sourceArticleIds: JSON.stringify(allIds),
               sourceCount: sourceCount,
-              earliestPublishedAt: groupArticles[groupArticles.length - 1].publishedAt || new Date(),
+              earliestPublishedAt: groupArticlesList[groupArticlesList.length - 1].publishedAt || new Date(),
               latestPublishedAt: firstArticle.publishedAt || new Date(),
               wordCount: summaryText.split(/\s+/).length,
               status: 'published',
