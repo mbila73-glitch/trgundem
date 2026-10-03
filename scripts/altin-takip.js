@@ -228,6 +228,23 @@ function parseFiyat(fiyatStr) {
   }
 }
 
+// === AY BAZLI ALTIN SAHIPLERI ===
+// JS Date.getMonth() 0-11 arası döner (0=Ocak, 11=Aralık)
+const AY_SAHIPLERI = {
+  0:  { ad: 'Adem',    cinsiyet: 'Bey'   },  // Ocak
+  1:  { ad: 'İlknur',  cinsiyet: 'Hanım' },  // Şubat
+  2:  { ad: 'Büşra',   cinsiyet: 'Hanım' },  // Mart
+  3:  { ad: 'Fatma',   cinsiyet: 'Hanım' },  // Nisan
+  4:  { ad: 'Enver',   cinsiyet: 'Bey'   },  // Mayıs
+  5:  { ad: 'Metin',   cinsiyet: 'Bey'   },  // Haziran
+  6:  { ad: 'Dinçer',  cinsiyet: 'Bey'   },  // Temmuz
+  // 7 = Ağustos (yaz tatili — altın günü yok)
+  8:  { ad: 'Ercan',   cinsiyet: 'Bey'   },  // Eylül
+  9:  { ad: 'Olcay',   cinsiyet: 'Bey'   },  // Ekim
+  10: { ad: 'Öztürk',  cinsiyet: 'Bey'   },  // Kasım
+  11: { ad: 'Murat',   cinsiyet: 'Bey'   },  // Aralık
+};
+
 // Sayıyı Türk formatında yaz (5234.56 → "5.234,56")
 function formatFiyat(num) {
   if (num === null || num === undefined || isNaN(num)) return '—';
@@ -243,13 +260,20 @@ async function sendAltinMail(fiyatData, triggerDate) {
   const fiyat1Display = fiyat1 !== null ? formatFiyat(fiyat1) : fiyatData.fiyat;
   const fiyat2Display = fiyat2 !== null ? formatFiyat(fiyat2) : '—';
 
-  const subject = `Altın Günü — ${triggerDate} saat 13:00 — Harem Altın: 1gr ${fiyat1Display} TL / 2gr ${fiyat2Display} TL`;
+  // Bu ayki altın sahibi
+  const now = new Date();
+  const aySahibi = AY_SAHIPLERI[now.getMonth()];
+  const sahibiMetin = aySahibi ? `${aySahibi.ad} ${aySahibi.cinsiyet}` : '(liste dışı ay)';
+
+  const subject = `Altın Günü — ${triggerDate} saat 13:00 — Sahibi: ${sahibiMetin} — 1gr ${fiyat1Display} TL / 2gr ${fiyat2Display} TL`;
   const text = `Merhaba,
 
 Bugün ${triggerDate} saat 13:00 itibariyle Harem Altın satış fiyatları:
 
 1 GRAM ALTIN: ${fiyat1Display} TL
 2 GRAM ALTIN: ${fiyat2Display} TL
+
+Bu ayki altınların sahibi: ${sahibiMetin}
 
 Kaynak: ${fiyatData.kaynak}
 
@@ -262,7 +286,11 @@ TRGUNDEM.NET Altın Takip — otomatik bildirim`;
         <h2 style="margin: 0;">Altın Günü Bildirimi</h2>
       </div>
       <p>Tarih: <strong>${triggerDate}</strong> · Saat: <strong>13:00</strong> (Harem Altın referansı)</p>
-      <div style="margin-top:20px;padding:20px;background:#f0f9ff;border-radius:8px;border-left:4px solid #0ea5e9">
+      <div style="margin-top:12px;padding:14px;background:#fef3c7;border-radius:8px;border-left:4px solid #f59e0b">
+        <p style="margin:0;font-size:13px;color:#92400e">BU AYKİ ALTINLARIN SAHİBİ</p>
+        <p style="margin:6px 0 0;font-size:20px;font-weight:bold;color:#7c2d12">${sahibiMetin}</p>
+      </div>
+      <div style="margin-top:16px;padding:20px;background:#f0f9ff;border-radius:8px;border-left:4px solid #0ea5e9">
         <p style="margin:0;font-size:14px;color:#6b7280">HAREM ALTIN SATIŞ FİYATLARI</p>
         <div style="display:flex;gap:24px;margin-top:12px;flex-wrap:wrap">
           <div>
