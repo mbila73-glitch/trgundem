@@ -219,7 +219,7 @@ async function main() {
   if (globalThis.prisma) {
     try {
       // Son 12 saat makaleler
-      var since = new Date(Date.now() - 12 * 60 * 60 * 1000);
+      var since = new Date(Date.now() - 24 * 60 * 60 * 1000);
       var articles = await globalThis.prisma.article.findMany({
         where: { publishedAt: { gte: since } },
         orderBy: { publishedAt: 'desc' },

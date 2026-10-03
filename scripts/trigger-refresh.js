@@ -6778,7 +6778,7 @@ var refreshStatus = {
 };
 var REFRESH_CONCURRENCY = 1;
 async function refreshAllActiveSources() {
-  const sources = await db.source.findMany({ where: { active: true }, take: 5 });
+  const sources = await db.source.findMany({ where: { active: true }, take: 30 });
   if (sources.length === 0)
     return [];
   refreshStatus = {
