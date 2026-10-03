@@ -21,13 +21,16 @@ try {
 
 var GEMINI_API_KEY = '';
 var GEMINI_API_KEY_2 = '';
-// 1. .gemini-key dosyasından oku
+var GEMINI_API_KEY_3 = '';
+// .gemini-key dosyalarından oku
 try { GEMINI_API_KEY = fs.readFileSync('/var/www/.gemini-key', 'utf8').trim(); } catch (e) {}
 try { GEMINI_API_KEY_2 = fs.readFileSync('/var/www/.gemini-key2', 'utf8').trim(); } catch (e) {}
-// 2. .env'den oku
+try { GEMINI_API_KEY_3 = fs.readFileSync('/var/www/.gemini-key3', 'utf8').trim(); } catch (e) {}
+// .env'den oku
 if (!GEMINI_API_KEY) GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 if (!GEMINI_API_KEY_2) GEMINI_API_KEY_2 = process.env.GEMINI_API_KEY_2 || '';
-var GEMINI_KEYS = [GEMINI_API_KEY, GEMINI_API_KEY_2].filter(function(k) { return k; });
+if (!GEMINI_API_KEY_3) GEMINI_API_KEY_3 = process.env.GEMINI_API_KEY_3 || '';
+var GEMINI_KEYS = [GEMINI_API_KEY, GEMINI_API_KEY_2, GEMINI_API_KEY_3].filter(function(k) { return k; });
 var GEMINI_MODEL = 'gemini-flash-lite-latest';
 var keyIndex = 0;
 
@@ -248,8 +251,12 @@ async function main() {
       var groups = groupArticles(articles);
       log('Grup sayisi: ' + groups.length);
 
-      // En az 2 kaynaklı grupları filtrele
-      var multiSource = groups.filter(function(g) { return g.sourceIds.size >= 2; });
+      // Kategori bazlı minimum kaynak: Siyaset/Ekonomi 3, diğerleri 2
+      var multiSource = groups.filter(function(g) {
+        var cat = (g.articles[0].category || 'Güncel');
+        var minSources = (cat === 'Siyaset' || cat === 'Ekonomi / Finans') ? 3 : 2;
+        return g.sourceIds.size >= minSources;
+      });
       log('En az 2 kaynakli grup: ' + multiSource.length);
 
       // En çok kaynaklı 10 grubu al
