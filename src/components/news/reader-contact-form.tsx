@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Send, Mail, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Send, Mail, CheckCircle2, XCircle, Copy, Check } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,22 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<Status>(null);
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText('temsilci@trgundem.net');
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2000);
+    } catch (e) {
+      const textArea = document.createElement('textarea');
+      textArea.value = 'temsilci@trgundem.net';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try { document.execCommand('copy'); setEmailCopied(true); setTimeout(() => setEmailCopied(false), 2000); } catch (err) {}
+      document.body.removeChild(textArea);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +91,24 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
             Okuyucu Temsilcisine Ulaşın
           </DialogTitle>
           <DialogDescription>
-            Görüş, öneri ve şikayetlerinizi bize iletebilirsiniz.
+            <span>Görüş, öneri ve şikayetlerinizi bize iletebilirsiniz.</span>
+            <button
+              type="button"
+              onClick={copyEmail}
+              className="mt-2 flex items-center gap-1.5 text-news hover:underline font-medium text-sm transition"
+            >
+              {emailCopied ? (
+                <>
+                  <Check className="h-4 w-4 text-emerald-600" />
+                  <span className="text-emerald-600">E-posta adresi kopyalandı</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" />
+                  <span>temsilci@trgundem.net</span>
+                </>
+              )}
+            </button>
           </DialogDescription>
         </DialogHeader>
 
