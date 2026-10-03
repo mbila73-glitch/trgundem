@@ -1,8 +1,8 @@
-// Tek process pipeline — AI özet (Gemini) + 150+ kelime + duplicate kontrol
+// Tek process pipeline — gruplama + en az 2 kaynak + AI özet 150+ kelime
 var path = require('path');
 var fs = require('fs');
 
-// .env dosyasını oku (Node.js otomatik okumaz)
+// .env dosyasını oku
 var envPath = path.join(__dirname, '..', '.env');
 try {
   var envContent = fs.readFileSync(envPath, 'utf8');
@@ -18,14 +18,10 @@ try {
   });
 } catch (e) {}
 
-// GEMINI API KEY — .env'den oku
 var GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 var GEMINI_MODEL = 'gemini-flash-lite-latest';
 
-// Debug: key durumu
-log('ENV path: ' + envPath);
-log('ENV exists: ' + fs.existsSync(envPath));
-log('GEMINI key: ' + (GEMINI_API_KEY ? 'VAR (' + GEMINI_API_KEY.length + ' chars) ' + GEMINI_API_KEY.slice(0, 15) + '...' : 'YOK'));
+log('GEMINI key: ' + (GEMINI_API_KEY ? 'VAR' : 'YOK'));
 
 // fetch'i native http ile değiştir (Wasm yok)
 globalThis.fetch = function(url, options) {
@@ -34,10 +30,7 @@ globalThis.fetch = function(url, options) {
     var lib = url.indexOf('https') === 0 ? require('https') : require('http');
     var urlObj = new URL(url);
     var headers = Object.assign({}, options.headers || {});
-    // Content-Length ekle — yoksa API body'yi okuyamıyor!
-    if (options.body) {
-      headers['Content-Length'] = Buffer.byteLength(options.body);
-    }
+    if (options.body) headers['Content-Length'] = Buffer.byteLength(options.body);
     var req = lib.request({
       hostname: urlObj.hostname,
       port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
@@ -64,20 +57,17 @@ globalThis.fetch = function(url, options) {
   });
 };
 
-// Prisma client
+// Prisma
 try {
   var PrismaClient = require('@prisma/client').PrismaClient;
   var _prisma = new PrismaClient({ log: ['error'] });
   _prisma.$disconnect = function() { return Promise.resolve(); };
   globalThis.prisma = _prisma;
-} catch (e) {
-  console.error('Prisma acilamadi: ' + e.message);
-}
+} catch (e) { console.error('Prisma: ' + e.message); }
 
 var ROOT = path.resolve(__dirname, '..');
 var SF = path.join(ROOT, 'pipeline-status.json');
 var LF = path.join(ROOT, 'pipeline-once.log');
-
 try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
 
 function log(m) {
@@ -95,11 +85,17 @@ function ws(s) {
   } catch (e) {}
 }
 
-// AI ÖZET FONKSİYONU — 150+ kelime, telifsiz, farklı cümlelerle
-async function aiSummarize(title, content) {
-  if (!content || content.length < 50) return null;
+// AI ÖZET — 150+ kelime, farklı cümlelerle
+async function aiSummarize(title, contents) {
+  if (!contents || contents.length === 0) return null;
+  // En uzun 5 içeriği al
+  var sorted = contents.filter(function(c) { return c && c.length > 50; })
+    .sort(function(a, b) { return b.length - a.length; })
+    .slice(0, 5);
+  if (sorted.length === 0) return null;
 
-  var prompt = 'Aşağıdaki haberi en az 150 kelimelik, farklı cümlelerle, telif sorunu olmayacak şekilde özetle. Türkçe yaz. Sadece özeti yaz, başka metin ekleme.\n\nBAŞLIK: ' + title + '\n\nHABER:\n' + content.slice(0, 4000);
+  var combinedContent = sorted.join('\n\n---\n\n').slice(0, 8000);
+  var prompt = 'Aşağıdaki haberi en az 150 kelimelik, farklı cümlelerle, telif sorunu olmayacak şekilde özetle. Türkçe yaz. Sadece özeti yaz, başka metin ekleme.\n\nBAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
 
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_API_KEY;
 
@@ -110,33 +106,23 @@ async function aiSummarize(title, content) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 600, temperature: 0.7 }
+          generationConfig: { maxOutputTokens: 800, temperature: 0.7 }
         })
       });
       var result = await resp.json();
-
-      // 503: yoğunluk, tekrar dene
       if (result.error && result.error.code === 503) {
         log('  AI 503 (deneme ' + attempt + '/3)');
         if (attempt < 3) { await new Promise(function(r) { setTimeout(r, 5000); }); continue; }
         return null;
       }
-
-      // Hata varsa log'la
       if (result.error) {
-        log('  AI error ' + result.error.code + ': ' + (result.error.message || '').slice(0, 100));
+        log('  AI error ' + result.error.code + ': ' + (result.error.message || '').slice(0, 80));
         return null;
       }
-
-      // Tam yanıtı log'la (debug)
-      var resultStr = JSON.stringify(result).slice(0, 300);
-      log('  AI yanit: ' + resultStr);
-
       if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
         var text = result.candidates[0].content.parts[0].text;
         return text ? text.trim() : null;
       }
-      log('  AI candidates bos (deneme ' + attempt + '/3)');
       if (attempt < 3) { await new Promise(function(r) { setTimeout(r, 3000); }); continue; }
       return null;
     } catch (e) {
@@ -148,7 +134,7 @@ async function aiSummarize(title, content) {
   return null;
 }
 
-// Başlık benzerliği kontrolü
+// Başlık benzerliği
 function normalizeTitle(t) {
   return (t || '').toLowerCase().replace(/[''`]/g, "'").replace(/[^\w\sçğıöşü]/g, ' ').replace(/\s+/g, ' ').trim();
 }
@@ -164,6 +150,32 @@ function titleSimilar(t1, t2) {
   var common = 0;
   w1.forEach(function(w) { if (set2.has(w)) common++; });
   return common / Math.max(w1.length, w2.length);
+}
+
+// GRUPLAMA — benzer başlıklı makaleleri grupla
+function groupArticles(articles) {
+  var groups = [];
+  var used = new Set();
+
+  for (var i = 0; i < articles.length; i++) {
+    if (used.has(i)) continue;
+    var group = { articles: [articles[i]], sourceIds: new Set([articles[i].sourceId]) };
+    used.add(i);
+
+    for (var j = i + 1; j < articles.length; j++) {
+      if (used.has(j)) continue;
+      var sim = titleSimilar(articles[i].title, articles[j].title);
+      if (sim >= 0.5) {
+        group.articles.push(articles[j]);
+        group.sourceIds.add(articles[j].sourceId);
+        used.add(j);
+      }
+    }
+
+    groups.push(group);
+  }
+
+  return groups;
 }
 
 var exitListeners = [];
@@ -185,7 +197,7 @@ function runScript(scriptPath, name) {
       if (result && typeof result.then === 'function') {
         result.then(function() { finish('ok'); }).catch(function(e) { log('✗ ' + name + ': ' + e.message); finish('err'); });
       } else {
-        setTimeout(function() { finish('timeout'); }, 30000);
+        setTimeout(function() { finish('timeout'); }, 60000);
       }
     } catch (e) {
       log('✗ ' + name + ': ' + e.message);
@@ -198,24 +210,41 @@ async function main() {
   log('=== Cycle basladi ===');
   ws({ stage: 'started', startedAt: new Date().toISOString(), finishedAt: null });
 
-  // RSS
+  // RSS çek
   ws({ stage: 'rss' });
   await runScript(path.join(__dirname, 'trigger-refresh.js'), 'RSS');
-
-  // GC
   if (global.gc) { global.gc(); log('GC'); }
 
-  // AI özet + publish — 10 makale
+  // GRUPLAMA + AI ÖZET + PUBLISH
   ws({ stage: 'publish' });
-  log('AI özet + publish (10 makale, 150+ kelime)');
-
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'SENIN_GEMINI_KEY') {
-    log('UYARI: GEMINI_API_KEY yok! .env dosyasina yaz. AI özet atlandi.');
-  }
+  log('Gruplama + AI özet (en az 2 kaynak, 150+ kelime)');
 
   if (globalThis.prisma) {
     try {
-      // Duplicate kontrol — son 30 published
+      // Son 24 saatteki makaleleri çek
+      var since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      var articles = await globalThis.prisma.article.findMany({
+        where: { publishedAt: { gte: since } },
+        orderBy: { publishedAt: 'desc' },
+        take: 200,
+        select: { id: true, title: true, content: true, description: true, sourceId: true, category: true, imageUrl: true, publishedAt: true }
+      });
+      log('Son 24 saat makale: ' + articles.length);
+
+      // Grupla
+      var groups = groupArticles(articles);
+      log('Grup sayisi: ' + groups.length);
+
+      // En az 2 kaynaklı grupları filtrele
+      var multiSource = groups.filter(function(g) { return g.sourceIds.size >= 2; });
+      log('En az 2 kaynakli grup: ' + multiSource.length);
+
+      // En çok kaynaklı 10 grubu al
+      multiSource.sort(function(a, b) { return b.sourceIds.size - a.sourceIds.size; });
+      var top10 = multiSource.slice(0, 10);
+      log('En cok kaynakli 10 grup secildi');
+
+      // Duplicate kontrol
       var existing = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published' },
         select: { sourceArticleIds: true, aiTitle: true },
@@ -232,41 +261,50 @@ async function main() {
         if (p.aiTitle) existingTitles.push(p.aiTitle);
       });
 
-      // Son 10 makale
-      var recent = await globalThis.prisma.article.findMany({
-        orderBy: { publishedAt: 'desc' },
-        take: 10
-      });
-
       var added = 0, skipped = 0, aiOk = 0;
-      for (var i = 0; i < recent.length; i++) {
-        var a = recent[i];
+      for (var i = 0; i < top10.length; i++) {
+        var group = top10[i];
+        var groupArticles = group.articles;
+        var firstArticle = groupArticles[0];
 
-        // Duplicate: Article ID
-        if (existingIds.has(a.id)) { skipped++; continue; }
-        // Duplicate: başlık benzerliği
+        // Duplicate kontrol
         var dup = false;
         for (var j = 0; j < existingTitles.length; j++) {
-          if (titleSimilar(a.title, existingTitles[j]) >= 0.6) { dup = true; break; }
+          if (titleSimilar(firstArticle.title, existingTitles[j]) >= 0.6) { dup = true; break; }
         }
         if (dup) { skipped++; continue; }
 
-        log('  [' + (i+1) + '/10] AI: ' + (a.title || '').slice(0, 40));
-        var aiText = await aiSummarize(a.title, a.content || a.description);
-        var summaryText = aiText || (a.description ? a.description.slice(0, 500) : a.title || '');
+        // Tüm article ID'leri
+        var allIds = groupArticles.map(function(a) { return a.id; });
+        var sourceCount = group.sourceIds.size;
+
+        log('  [' + (i+1) + '/10] ' + sourceCount + ' kaynak, ' + groupArticles.length + ' makale: ' + firstArticle.title.slice(0, 50));
+
+        // İçerikleri topla
+        var contents = groupArticles.map(function(a) { return a.content || a.description || ''; });
+
+        // AI özet
+        var aiText = await aiSummarize(firstArticle.title, contents);
+        var summaryText = aiText || (firstArticle.description ? firstArticle.description.slice(0, 500) : firstArticle.title || '');
         if (aiText) aiOk++;
+
+        // En iyi görseli al
+        var bestImage = null;
+        for (var k = 0; k < groupArticles.length; k++) {
+          if (groupArticles[k].imageUrl) { bestImage = groupArticles[k].imageUrl; break; }
+        }
 
         try {
           await globalThis.prisma.publishedArticle.create({
             data: {
-              aiTitle: a.title,
+              aiTitle: firstArticle.title,
               aiSummary: summaryText.slice(0, 2000),
-              category: a.category || 'Güncel',
-              imageUrl: a.imageUrl || null,
-              sourceArticleIds: JSON.stringify([a.id]),
-              sourceCount: 1,
-              earliestPublishedAt: a.publishedAt || new Date(),
-              latestPublishedAt: a.publishedAt || new Date(),
+              category: firstArticle.category || 'Güncel',
+              imageUrl: bestImage,
+              sourceArticleIds: JSON.stringify(allIds),
+              sourceCount: sourceCount,
+              earliestPublishedAt: groupArticles[groupArticles.length - 1].publishedAt || new Date(),
+              latestPublishedAt: firstArticle.publishedAt || new Date(),
               wordCount: summaryText.split(/\s+/).length,
               status: 'published',
               publishedAt: new Date()
@@ -286,7 +324,6 @@ async function main() {
 
   ws({ stage: 'done', finishedAt: new Date().toISOString() });
   log('=== Cycle tamam ===');
-
   process.exit = origExit;
   origExit(0);
 }
