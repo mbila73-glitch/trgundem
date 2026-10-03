@@ -6,45 +6,17 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { PublishedArticle } from '@/lib/types';
 import { colorForName, relativeTime, initials } from '@/lib/format';
+import { useHeart } from '@/lib/use-heart';
 
 type Props = {
   article: PublishedArticle;
   onOpen: (id: string) => void;
 };
 
-// Deterministic stable hash from string so SSR and CSR produce the SAME number.
-function hashSeed(str: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0);
-}
-
-function seededInt(seed: number, min: number, max: number): number {
-  const range = max - min + 1;
-  return min + (seed % range);
-}
-
 export function PublishedArticleCard({ article, onOpen }: Props) {
   const [imgError, setImgError] = useState(false);
   const showImage = article.imageUrl && !imgError;
-
-  const seed = hashSeed(article.id || article.aiTitle);
-  const [hearts, setHearts] = useState(() => seededInt(seed, 215, 400));
-  const [userLiked, setUserLiked] = useState(false);
-
-  const handleHeart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (userLiked) {
-      setHearts((h) => Math.max(0, h - 1));
-      setUserLiked(false);
-    } else {
-      setHearts((h) => h + 1);
-      setUserLiked(true);
-    }
-  };
+  const { hearts, userLiked, toggleHeart } = useHeart(article.id);
 
   return (
     <Card
@@ -97,11 +69,11 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
           {article.aiSummary}
         </p>
 
-        {/* Heart bar */}
+        {/* Heart bar — senkron */}
         <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
           <button
             type="button"
-            onClick={handleHeart}
+            onClick={toggleHeart}
             aria-label="Beğen"
             className={`inline-flex items-center gap-1.5 text-xs font-medium transition cursor-pointer ${
               userLiked ? 'text-rose-600' : 'text-muted-foreground hover:text-rose-600'
@@ -119,6 +91,3 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
     </Card>
   );
 }
-
-// Re-export so consumers can keep using Star for featured action later
-export const _Star = Heart;

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
+import { useHeart } from '@/lib/use-heart';
 import type { PublishedArticle } from '@/lib/types';
 
 const SUB_TABS: Array<{
@@ -59,24 +60,11 @@ function seededInt(seed: number, min: number, max: number): number {
 }
 
 function HorizontalLikeBar({ articleId }: { articleId: string }) {
-  const seed = hashSeed(articleId);
-  const [hearts, setHearts] = useState(() => seededInt(seed, 215, 400));
-  const [userLiked, setUserLiked] = useState(false);
-
-  const handleHeart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (userLiked) {
-      setHearts(h => Math.max(0, h - 1));
-      setUserLiked(false);
-    } else {
-      setHearts(h => h + 1);
-      setUserLiked(true);
-    }
-  };
+  const { hearts, userLiked, toggleHeart } = useHeart(articleId);
 
   return (
     <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
-      <button type="button" onClick={handleHeart} className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${userLiked ? 'text-rose-600' : 'text-muted-foreground hover:text-rose-600'}`}>
+      <button type="button" onClick={toggleHeart} className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${userLiked ? 'text-rose-600' : 'text-muted-foreground hover:text-rose-600'}`}>
         <Heart className={`h-4 w-4 ${userLiked ? 'fill-rose-600' : ''}`} />
         <span className="tabular-nums">{hearts}</span>
       </button>
