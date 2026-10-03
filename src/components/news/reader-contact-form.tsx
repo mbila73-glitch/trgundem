@@ -67,18 +67,19 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
         setSubject('');
         setMessage('');
         onClose();
-        // 1 saniye sonra toast ile mesaj göster — form penceresi konumunda
         setTimeout(function() {
           toast.success('Mesajınız Tarafımıza Ulaşmıştır Teşekkürler', {
-            duration: 4000,
+            duration: 2000,
             position: 'top-center',
             style: {
               background: '#10b981',
               color: '#fff',
-              fontSize: '16px',
+              fontSize: '15px',
               fontWeight: '600',
-              padding: '16px 24px',
+              padding: '14px 28px',
               borderRadius: '12px',
+              textAlign: 'center',
+              whiteSpace: 'nowrap',
               boxShadow: '0 4px 24px rgba(16,185,129,0.3)',
             }
           });
