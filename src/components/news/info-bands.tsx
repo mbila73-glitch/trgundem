@@ -272,19 +272,9 @@ export function InfoBands() {
           </div>
         )}
 
-        {/* 3. SON DAKİKA — mobilde etiket yok, haberler direkt */}
+        {/* 3. SON DAKİKA — etiket yok, haberler direkt */}
         {sonDakika.length > 0 && (
           <div className="group flex items-center gap-2 overflow-hidden bg-red-600 px-3 sm:px-4" style={{ minHeight: '32px' }}>
-            <span
-              className="hidden sm:flex flex-shrink-0 whitespace-nowrap sm:mr-3 text-white font-bold uppercase tracking-wider"
-              style={{
-                fontSize: '20px',
-                lineHeight: '32px',
-                display: 'inline-block',
-              }}
-            >
-              ⚡ SON DAKİKA
-            </span>
             <div className="relative flex-1 overflow-hidden">
               <div
                 className="flex w-max flex-shrink-0 gap-10 whitespace-nowrap text-white text-sm sm:text-base tracking-wide group-hover:[animation-play-state:paused]"
