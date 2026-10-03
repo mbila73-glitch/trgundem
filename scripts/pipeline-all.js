@@ -168,6 +168,17 @@ var CATEGORY_MIN_SOURCES = {
   'Spor / Magazin': 2
 };
 
+// Kategori bazlı yayın limiti (en çok tekrar eden ilk N haber)
+var CATEGORY_PUBLISH_LIMITS = {
+  'Siyaset': 15,
+  'Ekonomi / Finans': 10,
+  'Güncel': 5,
+  'Kamu / Resmi': 5,
+  'Bilim / Teknoloji': 5,
+  'Kültür / Sanat': 5,
+  'Spor / Magazin': 5
+};
+
 // Ana sayfa sıralaması: 3 Siyaset, 2 Ekonomi, 1 Kamu, 1 Kültür, 1 Spor = 8
 var HOME_LAYOUT = [
   { category: 'Siyaset', count: 3 },
@@ -177,7 +188,7 @@ var HOME_LAYOUT = [
   { category: 'Spor / Magazin', count: 1 }
 ];
 
-// Kategori max haber sayısı
+// Kategori max haber sayısı (eskiyi arşive taşımak için)
 var CATEGORY_MAX = 15;
 var HOME_MAX_TOTAL = 50;
 var HOME_MAX_FIRST_PAGE = 25;
@@ -240,41 +251,63 @@ async function main() {
       });
       log('Min kaynakli grup: ' + multiSource.length);
 
-      // En çok kaynaklı 10 grubu al
+      // En çok kaynaklı gruptan en aza doğru sırala
       multiSource.sort(function(a, b) { return b.sourceIds.size - a.sourceIds.size; });
-      var top10 = multiSource.slice(0, 10);
 
-      // Duplicate kontrol
+      // Kategori bazlı limitlere göre grupları ayır
+      // Her kategori için en çok kaynaklı ilk N grup (Siyaset:15, Ekonomi:10, diğerleri:5)
+      var byCategory = {};
+      multiSource.forEach(function(g) {
+        var cat = g.articles[0].category || 'Güncel';
+        if (!byCategory[cat]) byCategory[cat] = [];
+        byCategory[cat].push(g);
+      });
+
+      var topGroups = [];
+      Object.keys(byCategory).forEach(function(cat) {
+        var limit = CATEGORY_PUBLISH_LIMITS[cat] || 5;
+        var catGroups = byCategory[cat].slice(0, limit);
+        topGroups = topGroups.concat(catGroups);
+      });
+      log('Kategori limitlerine göre seçilen grup: ' + topGroups.length);
+
+      // Mevcut yayınlanan haberleri al (duplicate kontrol + eskiyi arşive)
       var existing = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published' },
-        select: { sourceArticleIds: true, aiTitle: true },
-        take: 50,
+        select: { id: true, aiTitle: true, category: true, latestPublishedAt: true },
         orderBy: { publishedAt: 'desc' }
       });
-      var existingIds = new Set();
-      var existingTitles = [];
-      existing.forEach(function(p) {
-        try { var ids = JSON.parse(p.sourceArticleIds); if (Array.isArray(ids)) ids.forEach(function(id) { existingIds.add(id); }); } catch (e) {}
-        if (p.aiTitle) existingTitles.push(p.aiTitle);
-      });
+      var existingTitles = existing.map(function(p) { return p.aiTitle || ''; });
 
-      var added = 0, skipped = 0, aiOk = 0;
-      for (var i = 0; i < top10.length; i++) {
-        var group = top10[i];
+      var added = 0, skipped = 0, aiOk = 0, archived = 0;
+      for (var i = 0; i < topGroups.length; i++) {
+        var group = topGroups[i];
         var groupArticlesList = group.articles;
         var firstArticle = groupArticlesList[0];
         var cat = firstArticle.category || 'Güncel';
-
-        // Duplicate
-        var dup = false;
-        for (var j = 0; j < existingTitles.length; j++) {
-          if (titleSimilar(firstArticle.title, existingTitles[j]) >= 0.6) { dup = true; break; }
-        }
-        if (dup) { skipped++; continue; }
-
-        var allIds = groupArticlesList.map(function(a) { return a.id; });
         var sourceCount = group.sourceIds.size;
-        log('  [' + (i+1) + '/10] ' + sourceCount + ' kaynak, ' + groupArticlesList.length + ' makale (' + cat + '): ' + firstArticle.title.slice(0, 50));
+
+        // Aynı başlığa sahip eski publishedArticle varsa → arşive taşı, yenisini yayınla
+        var oldArticleToArchive = null;
+        for (var j = 0; j < existing.length; j++) {
+          if (existing[j].category !== cat) continue;
+          if (titleSimilar(firstArticle.title, existing[j].aiTitle || '') >= 0.7) {
+            oldArticleToArchive = existing[j];
+            break;
+          }
+        }
+        if (oldArticleToArchive) {
+          try {
+            await globalThis.prisma.publishedArticle.update({
+              where: { id: oldArticleToArchive.id },
+              data: { status: 'archived', archivedAt: new Date() }
+            });
+            archived++;
+            log('  [Eski arşive] (' + cat + '): ' + (oldArticleToArchive.aiTitle || '').slice(0, 50));
+          } catch (e) {}
+        }
+
+        log('  [' + (i+1) + '/' + topGroups.length + '] ' + sourceCount + ' kaynak, ' + groupArticlesList.length + ' makale (' + cat + '): ' + firstArticle.title.slice(0, 50));
 
         // İçerikleri topla — Siyaset/Ekonomi: en yeni 5 kaynak, diğerleri: en yeni 2
         var maxSources = (cat === 'Siyaset' || cat === 'Ekonomi / Finans') ? 5 : 2;
@@ -299,7 +332,7 @@ async function main() {
               aiSummary: summaryText.slice(0, 2000),
               category: cat,
               imageUrl: bestImage,
-              sourceArticleIds: JSON.stringify(allIds),
+              sourceArticleIds: JSON.stringify(groupArticlesList.map(function(a) { return a.id; })),
               sourceCount: sourceCount,
               earliestPublishedAt: groupArticlesList[groupArticlesList.length - 1].publishedAt || publishTime,
               latestPublishedAt: publishTime,
@@ -311,7 +344,7 @@ async function main() {
           added++;
         } catch (e) { log('  DB hata: ' + e.message); }
       }
-      log('Added: ' + added + ', Skip: ' + skipped + ', AI: ' + aiOk);
+      log('Added: ' + added + ', Skip: ' + skipped + ', Archived: ' + archived + ', AI: ' + aiOk);
 
       // Arşiv: kategori bazlı 15'den fazla varsa eskiyi arşive taşı
       for (var ci = 0; ci < Object.keys(CATEGORY_MIN_SOURCES).length; ci++) {

@@ -6855,6 +6855,30 @@ async function refreshInternal(source) {
       });
       if (exists)
         continue;
+      // Aynı kaynağın aynı link'le haberini tekrar ekleme (RSS guid değişse bile)
+      if (link) {
+        const existsByLink = await db.article.findFirst({
+          where: { sourceId: source.id, link: link },
+          select: { id: true }
+        });
+        if (existsByLink)
+          continue;
+      }
+      // Aynı kaynağın aynı başlık+24 saat içi haberini tekrar ekleme
+      const titleNorm = title.toLowerCase().replace(/[''`]/g, "'").replace(/[^\w\sçğıöşü]/g, ' ').replace(/\s+/g, ' ').trim();
+      if (titleNorm.length > 10) {
+        const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const existsByTitle = await db.article.findFirst({
+          where: {
+            sourceId: source.id,
+            title: { contains: title.slice(0, 40), mode: 'insensitive' },
+            publishedAt: { gte: since24 }
+          },
+          select: { id: true }
+        });
+        if (existsByTitle)
+          continue;
+      }
       const rawDescription = stripHtml(item.contentSnippet ?? item.description);
       const rawContent = stripHtml(item.contentEncoded ?? item.content);
       const descLen = rawDescription?.length ?? 0;
