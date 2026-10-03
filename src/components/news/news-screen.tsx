@@ -203,6 +203,24 @@ function ArticleDetailInline({
 
       {/* Like / Dislike bar — haberin altında */}
       <HorizontalLikeBar articleId={article.id} />
+
+      {/* Geri + Ana Sayfa — haber sonunda */}
+      <div className="mt-6 flex items-center gap-2 border-t border-border/50 pt-4">
+        <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 text-sm">
+          <ArrowLeft className="h-4 w-4" />
+          Geri
+        </Button>
+        <Button variant="ghost" size="sm" className="gap-1.5 text-sm" onClick={() => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('article');
+          window.history.pushState({}, '', url.toString());
+          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}>
+          <Home className="h-4 w-4" />
+          Ana Sayfa
+        </Button>
+      </div>
     </div>
   );
 }
