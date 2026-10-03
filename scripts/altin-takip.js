@@ -75,76 +75,72 @@ function getTransport() {
   });
 }
 
-// === HAREM ALTIN FIYAT ÇEK ===
+// === HAREM ALTIN FIYAT ÇEK (Puppeteer ile) ===
 async function fetchHaremAltin() {
-  // 1. Önce HTML fetch + regex dene
+  let browser = null;
   try {
-    console.log('Harem Altın sitesinden fiyat çekiliyor...');
-    const r = await fetch('https://www.haremaltin.com/', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TRGUNDEM-AltinTakip/1.0)' },
-      signal: AbortSignal.timeout(15000),
+    const puppeteer = require('puppeteer');
+    console.log('Puppeteer başlatılıyor (headless Chrome)...');
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+      timeout: 60000,
     });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const html = await r.text();
-    console.log(`  HTML boyutu: ${html.length} byte`);
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    await page.setViewport({ width: 1280, height: 800 });
 
-    // Harem Altın muhtemelen "gram altın" satış fiyatını bir element içinde gösterir
-    // Birkaç pattern dene:
-    const patterns = [
-      // "gram altın": "5.234,56" pattern
-      /gram\s*alt[ıi][^0-9]*([\d.,]+)/i,
-      // "satış": "5234,56" pattern
-      /sat[ıi][şs][^0-9]*([\d.,]+)/i,
-      // "alış/satış" çift
-      /"sat[ıi][şs]"\s*[:=]\s*"?([\d.,]+)/i,
-      // data-price="5234,56"
-      /data-price[^0-9]*([\d.,]+)/i,
-      // JSON içinde "gram": 5234.56
-      /"gram"?\s*[:=]\s*"?([\d.,]+)/i,
-      // "gram": "5234,56"
-      /"gram"\s*:\s*"([\d.,]+)/i,
-    ];
+    const url = 'https://www.haremaltin.com/grafik?tip=altin&birim=KULCEALTIN';
+    console.log('Harem Altın grafik sayfası açılıyor...');
+    console.log('URL:', url);
 
-    for (let i = 0; i < patterns.length; i++) {
-      const match = html.match(patterns[i]);
-      if (match && match[1]) {
-        console.log(`  ✓ Pattern ${i + 1} eşleşti: ${match[1]}`);
-        return { fiyat: match[1], kaynak: 'haremaltin.com HTML' };
-      }
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
+
+    // #priceSatis elementini bekle — socket.io fiyat yükleyene kadar
+    console.log('Fiyat elementi bekleniyor (#priceSatis)...');
+    await page.waitForSelector('#priceSatis', { timeout: 30000 });
+
+    // Socket.io'nun fiyatı doldurması için 2 saniye bekle
+    await new Promise(r => setTimeout(r, 2000));
+
+    // #priceSatis ve #priceAlis elementlerinden text çek
+    const fiyatData = await page.evaluate(() => {
+      const satisEl = document.querySelector('#priceSatis');
+      const alisEl = document.querySelector('#priceAlis');
+      return {
+        satis: satisEl ? satisEl.textContent.trim() : '',
+        alis: alisEl ? alisEl.textContent.trim() : '',
+      };
+    });
+
+    console.log(`  Alış:  ${fiyatData.alis || '(boş)'}`);
+    console.log(`  Satış: ${fiyatData.satis || '(boş)'}`);
+
+    // Satış fiyatı (kullanıcı bunu istiyor)
+    let fiyat = fiyatData.satis;
+
+    // Boşsa veya "-" ise, alış'ı dene (fallback)
+    if (!fiyat || fiyat === '-' || fiyat === '') {
+      console.log('  Satış boş, alış deneniyor...');
+      fiyat = fiyatData.alis;
     }
 
-    // HTML'de fiyat yoksa, API endpoint'lerini dene
-    console.log('  HTML içinde fiyat bulunamadı, API deneniyor...');
-
-    const apiUrls = [
-      'https://www.haremaltin.com/api/prices',
-      'https://www.haremaltin.com/api/altin',
-      'https://www.haremaltin.com/wp-json/altin/v1/price',
-    ];
-
-    for (const apiUrl of apiUrls) {
-      try {
-        const ar = await fetch(apiUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
-          signal: AbortSignal.timeout(8000),
-        });
-        if (!ar.ok) continue;
-        const data = await ar.json();
-        // JSON içinde satış/gram ara
-        const text = JSON.stringify(data);
-        const match = text.match(/"(?:sat[ıi][şs]|gram|price)"\s*:\s*"?([\d.,]+)/i);
-        if (match) {
-          console.log(`  ✓ API ${apiUrl}: ${match[1]}`);
-          return { fiyat: match[1], kaynak: apiUrl };
-        }
-      } catch (e) { /* sıradaki */ }
+    if (!fiyat || fiyat === '-' || fiyat === '') {
+      console.log('  ✗ Fiyat alınamadı (socket gelmedi)');
+      return null;
     }
 
-    console.log('  ✗ Fiyat bulunamadı (regex/API)');
-    return null;
+    // Fiyatı temizle — bazen "5.234,56 TL" gibi son ek geliyor
+    const fiyatClean = fiyat.replace(/[^0-9.,]/g, '');
+    console.log(`  ✓ Fiyat çekildi: ${fiyatClean}`);
+    return { fiyat: fiyatClean, kaynak: 'haremaltin.com (Puppeteer + Socket.io)' };
   } catch (e) {
-    console.log('  ✗ Hata:', e.message);
+    console.log('  ✗ Puppeteer hatası:', e.message);
     return null;
+  } finally {
+    if (browser) {
+      try { await browser.close(); } catch (e) {}
+    }
   }
 }
 
