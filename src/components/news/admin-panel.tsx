@@ -651,6 +651,27 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                     )}
                                   </div>
                                 </div>
+                                {/* Tekrar Yayına Al butonu */}
+                                <div className="flex flex-shrink-0 items-center gap-1">
+                                  <Button variant="ghost" size="sm" onClick={async () => {
+                                    try {
+                                      const r = await fetch(`/api/admin/published/${a.id}`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                        body: JSON.stringify({ status: 'published' }),
+                                      });
+                                      if (!r.ok) throw new Error('Geri yüklenemedi');
+                                      toast.success('Haber Tekrar Yayında');
+                                      void loadArchived();
+                                      void loadPublished();
+                                    } catch (e) {
+                                      toast.error('Geri yükleme hatası');
+                                    }
+                                  }} className="h-8 gap-1 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+                                    <RotateCcw className="h-3.5 w-3.5" />
+                                    Tekrar Yayına Al
+                                  </Button>
+                                </div>
                               </div>
                             </Card>
                           ))}

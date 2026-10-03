@@ -12,7 +12,7 @@ function checkAuth(req: NextRequest): boolean {
   } catch { return false; }
 }
 
-// PATCH /api/admin/published/[id] — edit article (title, summary, image)
+// PATCH /api/admin/published/[id] — edit article OR restore from archive
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -21,11 +21,17 @@ export async function PATCH(
   const { id } = await params;
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Geçersiz gövde' }, { status: 400 }); }
-  const data = body as { aiTitle?: string; aiSummary?: string; imageUrl?: string | null };
+  const data = body as { aiTitle?: string; aiSummary?: string; imageUrl?: string | null; status?: string };
   const update: Record<string, unknown> = {};
   if (typeof data.aiTitle === 'string') update.aiTitle = data.aiTitle.trim();
   if (typeof data.aiSummary === 'string') update.aiSummary = data.aiSummary.trim();
   if (data.imageUrl !== undefined) update.imageUrl = data.imageUrl;
+  // Arşivden yayına al: status → published
+  if (data.status === 'published') {
+    update.status = 'published';
+    update.archivedAt = null;
+    update.publishedAt = new Date();
+  }
   try {
     const r = await db.publishedArticle.update({ where: { id }, data: update });
     return NextResponse.json({ ok: true, article: r });
