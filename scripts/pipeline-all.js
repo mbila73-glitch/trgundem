@@ -20,13 +20,18 @@ try {
 } catch (e) {}
 
 var GEMINI_API_KEY = '';
-// 1. /var/www/.gemini-key dosyasından oku (en kalıcı)
+var GEMINI_API_KEY_2 = '';
+// 1. .gemini-key dosyasından oku
 try { GEMINI_API_KEY = fs.readFileSync('/var/www/.gemini-key', 'utf8').trim(); } catch (e) {}
+try { GEMINI_API_KEY_2 = fs.readFileSync('/var/www/.gemini-key2', 'utf8').trim(); } catch (e) {}
 // 2. .env'den oku
 if (!GEMINI_API_KEY) GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+if (!GEMINI_API_KEY_2) GEMINI_API_KEY_2 = process.env.GEMINI_API_KEY_2 || '';
+var GEMINI_KEYS = [GEMINI_API_KEY, GEMINI_API_KEY_2].filter(function(k) { return k; });
 var GEMINI_MODEL = 'gemini-flash-lite-latest';
+var keyIndex = 0;
 
-log('GEMINI key: ' + (GEMINI_API_KEY ? 'VAR' : 'YOK'));
+log('GEMINI keys: ' + GEMINI_KEYS.length + ' adet');
 
 // fetch'i native http ile değiştir (Wasm yok)
 globalThis.fetch = function(url, options) {
@@ -102,7 +107,10 @@ async function aiSummarize(title, contents) {
   var combinedContent = sorted.join('\n\n---\n\n').slice(0, 8000);
   var prompt = 'Aşağıdaki haber metinlerini oku. Asla kaynak metinle aynı cümlelerı kurma. Tamamen kendi cümlelerinle, eş anlamlı kelimeler kullanarak, cümle yapısını değiştirerek yaz. Orijinal metinden hiçbir cümleyi, hiçbir ifadeyi kopyalama. Bu bir özet değil, haberin yeniden yazımıdır. En az 150 kelime olmalı. Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\nBAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
 
-  var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_API_KEY;
+  // Sırayla 2 key kullan
+  var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
+  keyIndex++;
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + currentKey;
 
   for (var attempt = 1; attempt <= 3; attempt++) {
     try {
