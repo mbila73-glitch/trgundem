@@ -227,6 +227,7 @@ function ArticleDetailInline({
 
 export function NewsScreen() {
   const [active, setActive] = useState<string>('all');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [articles, setArticles] = useState<PublishedArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -374,38 +375,88 @@ export function NewsScreen() {
       <nav
         role="tablist"
         aria-label="Haber kategorileri"
-        className="sticky z-20 mb-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 shadow-sm"
+        className="sticky z-20 mb-4 rounded-lg border border-border bg-card p-1.5 shadow-sm"
         style={{ top: '160px' }}
       >
-        {SUB_TABS.map((tab) => {
-          const isActive = tab.id === active;
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => {
-                setActive(tab.id);
-                if (openArticleId) closeArticle();
-              }}
-              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
-                isActive
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {tab.label}
-              {isActive && articles.length > 0 && !openArticleId && (
-                <span className="ml-1 rounded bg-muted-foreground/20 px-1.5 text-[10px] tabular-nums">
-                  {articles.length}
-                </span>
+        {/* MOBİL: Tek buton + dropdown */}
+        <div className="sm:hidden relative">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(o => !o)}
+            className="flex w-full items-center justify-between gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm"
+          >
+            <span className="inline-flex items-center gap-2">
+              <current.icon className="h-4 w-4" />
+              {current.label}
+              {articles.length > 0 && !openArticleId && (
+                <span className="rounded bg-white/20 px-1.5 text-[10px] tabular-nums">{articles.length}</span>
               )}
-            </button>
-          );
-        })}
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${mobileMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {mobileMenuOpen && (
+            <div className="absolute left-0 right-0 top-full z-30 mt-1 rounded-md border border-border bg-card shadow-lg overflow-hidden">
+              {SUB_TABS.map((tab) => {
+                const isActive = tab.id === active;
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => {
+                      setActive(tab.id);
+                      setMobileMenuOpen(false);
+                      if (openArticleId) closeArticle();
+                    }}
+                    className={`flex w-full items-center gap-2 px-3 py-2.5 text-sm font-medium transition border-b border-border last:border-b-0 ${
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* MASAÜSTÜ: Tüm sekmeler yan yana */}
+        <div className="hidden sm:flex flex-wrap items-center gap-1.5">
+          {SUB_TABS.map((tab) => {
+            const isActive = tab.id === active;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => {
+                  setActive(tab.id);
+                  if (openArticleId) closeArticle();
+                }}
+                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {tab.label}
+                {isActive && articles.length > 0 && !openArticleId && (
+                  <span className="ml-1 rounded bg-muted-foreground/20 px-1.5 text-[10px] tabular-nums">
+                    {articles.length}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Article detail (inline, not dialog) OR news grid */}
