@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock, ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Clock, ExternalLink, Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { PublishedArticle } from '@/lib/types';
@@ -13,7 +13,6 @@ type Props = {
 };
 
 // Deterministic stable hash from string so SSR and CSR produce the SAME number.
-// This avoids the React hydration mismatch that Math.random() would cause.
 function hashSeed(str: string): number {
   let h = 2166136261;
   for (let i = 0; i < str.length; i++) {
@@ -23,7 +22,6 @@ function hashSeed(str: string): number {
   return (h >>> 0);
 }
 
-// Returns a stable pseudo-random integer in [min, max] based on a seed.
 function seededInt(seed: number, min: number, max: number): number {
   const range = max - min + 1;
   return min + (seed % range);
@@ -33,35 +31,18 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
   const [imgError, setImgError] = useState(false);
   const showImage = article.imageUrl && !imgError;
 
-  // SSR-stable initial values (deterministic from article.id).
-  // These do not change on every reload of the same article, which is fine —
-  // they're cosmetic seed values and the user can still like/dislike to update.
   const seed = hashSeed(article.id || article.aiTitle);
-  const [likes, setLikes] = useState(() => seededInt(seed, 215, 400));
-  const [dislikes, setDislikes] = useState(() => seededInt(seed >> 3, 5, 25));
-  const [userAction, setUserAction] = useState<'like' | 'dislike' | null>(null);
+  const [hearts, setHearts] = useState(() => seededInt(seed, 215, 400));
+  const [userLiked, setUserLiked] = useState(false);
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleHeart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (userAction === 'like') {
-      setLikes((l) => Math.max(0, l - 1));
-      setUserAction(null);
+    if (userLiked) {
+      setHearts((h) => Math.max(0, h - 1));
+      setUserLiked(false);
     } else {
-      setLikes((l) => l + 1);
-      if (userAction === 'dislike') setDislikes((d) => Math.max(0, d - 1));
-      setUserAction('like');
-    }
-  };
-
-  const handleDislike = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (userAction === 'dislike') {
-      setDislikes((d) => Math.max(0, d - 1));
-      setUserAction(null);
-    } else {
-      setDislikes((d) => d + 1);
-      if (userAction === 'like') setLikes((l) => Math.max(0, l - 1));
-      setUserAction('dislike');
+      setHearts((h) => h + 1);
+      setUserLiked(true);
     }
   };
 
@@ -116,29 +97,18 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
           {article.aiSummary}
         </p>
 
-        {/* Like / Dislike bar */}
+        {/* Heart bar */}
         <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
           <button
             type="button"
-            onClick={handleLike}
+            onClick={handleHeart}
             aria-label="Beğen"
             className={`inline-flex items-center gap-1.5 text-xs font-medium transition cursor-pointer ${
-              userAction === 'like' ? 'text-blue-600' : 'text-muted-foreground hover:text-blue-600'
+              userLiked ? 'text-rose-600' : 'text-muted-foreground hover:text-rose-600'
             }`}
           >
-            <ThumbsUp className={`h-4 w-4 ${userAction === 'like' ? 'fill-blue-600' : ''}`} />
-            <span className="tabular-nums">{likes}</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleDislike}
-            aria-label="Beğenme"
-            className={`inline-flex items-center gap-1.5 text-xs font-medium transition cursor-pointer ${
-              userAction === 'dislike' ? 'text-red-600' : 'text-muted-foreground hover:text-red-600'
-            }`}
-          >
-            <ThumbsDown className={`h-4 w-4 ${userAction === 'dislike' ? 'fill-red-600' : ''}`} />
-            <span className="tabular-nums">{dislikes}</span>
+            <Heart className={`h-4 w-4 ${userLiked ? 'fill-rose-600' : ''}`} />
+            <span className="tabular-nums">{hearts}</span>
           </button>
           <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] text-muted-foreground opacity-0 transition group-hover:opacity-100">
             <ExternalLink className="h-3 w-3" />
@@ -151,4 +121,4 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
 }
 
 // Re-export so consumers can keep using Star for featured action later
-export const _Star = ThumbsUp;
+export const _Star = Heart;

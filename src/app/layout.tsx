@@ -15,33 +15,34 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Haber Özet — RSS Kaynaklı AI Özet Haber Sitesi",
+  title: "TÜRKİYEDEN HABER TRGUNDEM.NET",
   description:
-    "RSS beslemelerinden haber içeriği çeken, her haberi yapay zeka ile 3 cümlede özetleyen modern bir Türkçe haber sitesi.",
+    "Türkiye'nin gündeminden haberler. RSS kaynaklarından derlenen, yapay zeka ile özetlenen güncel haber sitesi.",
   keywords: [
-    "haber",
-    "RSS",
+    "Türkiye haber",
+    "güncel haber",
+    "trgundem",
+    "Türkçe haber",
+    "son dakika",
     "AI özet",
     "yapay zeka",
-    "haber özeti",
-    "Türkçe haber",
-    "Next.js",
+    "haber sitesi",
   ],
-  authors: [{ name: "Haber Özet" }],
+  authors: [{ name: "TRGUNDEM.NET" }],
   icons: {
     icon: "/logo.svg",
   },
   openGraph: {
-    title: "Haber Özet — RSS + AI Özet",
+    title: "TÜRKİYEDEN HABER TRGUNDEM.NET",
     description:
-      "RSS beslemelerinden haber içeriği çeken, yapay zeka ile 3 cümlede özetleyen haber sitesi.",
-    siteName: "Haber Özet",
+      "Türkiye'nin gündeminden yapay zeka ile özetlenen güncel haber sitesi.",
+    siteName: "TRGUNDEM.NET",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Haber Özet",
-    description: "RSS + AI özetlenen Türkçe haber sitesi",
+    title: "TÜRKİYEDEN HABER TRGUNDEM.NET",
+    description: "Türkiye'nin gündeminden AI özetlenen haber sitesi",
   },
 };
 
