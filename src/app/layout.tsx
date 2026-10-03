@@ -66,7 +66,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster />
-          <SonnerToaster position="top-center" richColors />
+          <SonnerToaster position="top-center" richColors style={{ top: '40vh' }} />
         </ThemeProvider>
       </body>
     </html>
