@@ -120,27 +120,31 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-red-800 bg-red-600 backdrop-blur">
         <div className="mx-auto max-w-6xl px-2 sm:px-4 md:px-6">
-          <div className="flex h-14 sm:h-16 items-center justify-between py-1 gap-1 sm:gap-2">
-            {/* Sol: Saat + Tarih — mobilde gizli */}
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <button type="button" suppressHydrationWarning className="hidden sm:flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-white/10 cursor-pointer">
-                  <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-white">
-                    <Clock className="h-4 w-4 text-white/80" />
-                    {mounted && now ? formatTime(now) : '--:--:--'}
-                  </span>
-                  <span className="text-[10px] text-white/70" suppressHydrationWarning>
-                    {mounted && now ? formatDate(now) : '— — — —'}
-                  </span>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={selectedDate} onSelect={(d) => { setSelectedDate(d); setCalendarOpen(false); }} className="rounded-lg border" />
-              </PopoverContent>
-            </Popover>
+          {/* Mobil: tek satır, başlık tam ortada, + / tema sağda */}
+          {/* Masaüstü: 3 bölüm — sol saat, orta logo+başlık, sağ düğmeler */}
+          <div className="relative flex h-14 sm:h-16 items-center justify-center sm:justify-between py-1 gap-1 sm:gap-2">
+            {/* Sol: Saat + Tarih — mobilde TAMAMEN gizli (div sararak) */}
+            <div className="hidden sm:block">
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-white/10 cursor-pointer">
+                    <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-white">
+                      <Clock className="h-4 w-4 text-white/80" />
+                      {mounted && now ? formatTime(now) : '--:--:--'}
+                    </span>
+                    <span className="text-[10px] text-white/70" suppressHydrationWarning>
+                      {mounted && now ? formatDate(now) : '— — — —'}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={selectedDate} onSelect={(d) => { setSelectedDate(d); setCalendarOpen(false); }} className="rounded-lg border" />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-            {/* Orta: Logo + Başlık + Logo — mobilde tek logo + küçük başlık */}
-            <div className="flex items-center gap-1 sm:gap-4 md:gap-6 flex-1 sm:flex-initial justify-center sm:justify-start">
+            {/* Orta: Logo + Başlık + Logo — mobilde SADECE başlık, tam ortada */}
+            <div className="flex items-center justify-center gap-1 sm:gap-4 md:gap-6 sm:flex-initial">
               {/* Sol logo — mobilde gizli */}
               <button
                 type="button"
@@ -158,7 +162,7 @@ export default function Home() {
                 onClick={handleHomeClick}
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfaya dön"
-                className="flex flex-col leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
+                className="flex flex-col leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded text-center"
               >
                 <span
                   className="font-bold tracking-tight uppercase text-white whitespace-nowrap"
@@ -205,8 +209,8 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Sağ: + + Tema */}
-            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+            {/* Sağ: + + Tema — mobilde absolute sağda, masaüstünde flex item */}
+            <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
               <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
                 <span className="text-lg sm:text-xl">+</span>
               </Button>
