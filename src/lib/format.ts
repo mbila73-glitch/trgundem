@@ -46,22 +46,22 @@ export function initials(name: string): string {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'Güncel': 'bg-blue-600 text-white',
-  'Kamu / Resmi': 'bg-purple-600 text-white',
-  'Ekonomi / Finans': 'bg-green-600 text-white',
-  'Spor / Magazin': 'bg-red-500 text-white',
-  'Bilim / Teknoloji': 'bg-cyan-600 text-white',
-  'Kültür / Sanat': 'bg-orange-500 text-white',
-  'Özel': 'bg-indigo-600 text-white',
+  'Güncel': 'bg-sky-500 text-white shadow-sm',
+  'Kamu / Resmi': 'bg-blue-700 text-white shadow-sm',
+  'Ekonomi / Finans': 'bg-cyan-600 text-white shadow-sm',
+  'Spor / Magazin': 'bg-indigo-600 text-white shadow-sm',
+  'Bilim / Teknoloji': 'bg-teal-600 text-white shadow-sm',
+  'Kültür / Sanat': 'bg-sky-700 text-white shadow-sm',
+  'Özel': 'bg-blue-800 text-white shadow-sm',
 };
 
 const FALLBACK_COLORS = [
-  'bg-blue-600 text-white',
-  'bg-purple-600 text-white',
-  'bg-green-600 text-white',
-  'bg-red-500 text-white',
-  'bg-cyan-600 text-white',
-  'bg-orange-500 text-white',
+  'bg-sky-500 text-white shadow-sm',
+  'bg-blue-700 text-white shadow-sm',
+  'bg-cyan-600 text-white shadow-sm',
+  'bg-indigo-600 text-white shadow-sm',
+  'bg-teal-600 text-white shadow-sm',
+  'bg-sky-700 text-white shadow-sm',
 ];
 
 export function colorForName(name: string): string {
