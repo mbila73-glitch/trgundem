@@ -60,7 +60,8 @@ try {
 }
 
 // === MAIL LISTESI ===
-const MAIL_LIST = 'metinbila@hotmail.com, metinbila@gmail.com, mbila73@gmail.com';
+// .env'den oku, yoksa default kullan
+const MAIL_LIST = process.env.ALTIN_MAIL_LIST || 'metinbila@hotmail.com, metinbila@gmail.com, mbila73@gmail.com';
 
 // === SMTP ===
 function getTransport() {
