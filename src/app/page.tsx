@@ -119,12 +119,12 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-red-800 bg-red-600 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex h-16 items-center justify-between py-1">
-            {/* Sol: Saat + Tarih */}
+        <div className="mx-auto max-w-6xl px-2 sm:px-4 md:px-6">
+          <div className="flex h-14 sm:h-16 items-center justify-between py-1 gap-1 sm:gap-2">
+            {/* Sol: Saat + Tarih — mobilde gizli */}
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
-                <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-white/10 cursor-pointer">
+                <button type="button" suppressHydrationWarning className="hidden sm:flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-white/10 cursor-pointer">
                   <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-white">
                     <Clock className="h-4 w-4 text-white/80" />
                     {mounted && now ? formatTime(now) : '--:--:--'}
@@ -139,9 +139,20 @@ export default function Home() {
               </PopoverContent>
             </Popover>
 
-            {/* Orta: Logo + Başlık + Logo */}
-            <div className="flex items-center gap-6">
-              {logoEl}
+            {/* Orta: Logo + Başlık + Logo — mobilde tek logo + küçük başlık */}
+            <div className="flex items-center gap-1 sm:gap-4 md:gap-6 flex-1 sm:flex-initial justify-center sm:justify-start">
+              {/* Sol logo — mobilde gizli */}
+              <button
+                type="button"
+                onClick={handleHomeClick}
+                aria-label="Ana sayfaya dön"
+                title="Ana sayfaya dön"
+                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              >
+                <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
+              </button>
+
+              {/* Başlık */}
               <button
                 type="button"
                 onClick={handleHomeClick}
@@ -152,7 +163,7 @@ export default function Home() {
                 <span
                   className="font-bold tracking-tight uppercase text-white whitespace-nowrap"
                   style={{
-                    fontSize: '24px',
+                    fontSize: 'clamp(13px, 4vw, 24px)',
                     lineHeight: '1.1',
                     animationName: 'pulseScale',
                     animationDuration: '14.4s',
@@ -165,9 +176,9 @@ export default function Home() {
                   TÜRKİYE'DE GÜNDEM
                 </span>
                 <span
-                  className="font-bold tracking-[0.3em] uppercase text-center text-white"
+                  className="font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase text-center text-white"
                   style={{
-                    fontSize: '13px',
+                    fontSize: 'clamp(9px, 2.5vw, 13px)',
                     lineHeight: '1.1',
                     animationName: 'pulseScale',
                     animationDuration: '14.4s',
@@ -181,13 +192,23 @@ export default function Home() {
                   TRGUNDEM.NET
                 </span>
               </button>
-              {logoEl}
+
+              {/* Sağ logo — mobilde gizli */}
+              <button
+                type="button"
+                onClick={handleHomeClick}
+                aria-label="Ana sayfaya dön"
+                title="Ana sayfaya dön"
+                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              >
+                <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
+              </button>
             </div>
 
             {/* Sağ: + + Tema */}
-            <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-9 w-9 text-white hover:bg-white/10 hover:text-white">
-                <span className="text-xl">+</span>
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
+                <span className="text-lg sm:text-xl">+</span>
               </Button>
               <div className="text-white">
                 <ThemeToggle />
