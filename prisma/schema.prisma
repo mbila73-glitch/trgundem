@@ -64,7 +64,7 @@ model PublishedArticle {
   sourceCount     Int      // number of distinct sources the story appeared in
   earliestPublishedAt DateTime
   latestPublishedAt   DateTime
-  status          String   @default("draft")  // "draft" | "published" | "archived"
+  status          String   @default("draft")  // "draft" | "published" | "archived" | "pending_review"
   publishedAt     DateTime?
   archivedAt      DateTime? // arşive alındığı tarih (status='archived' olduğında)
   createdAt       DateTime @default(now())

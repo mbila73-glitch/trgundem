@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
-  Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle
+  Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
+  AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -26,7 +27,7 @@ import {
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; status: string; createdAt: string };
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; };
-type AdminTab = 'messages' | 'custom' | 'published' | 'archived' | 'restart';
+type AdminTab = 'messages' | 'custom' | 'published' | 'archived' | 'pending';
 
 const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
 
@@ -62,8 +63,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   // Published articles state
   const [pubArticles, setPubArticles] = useState<PubArticle[]>([]);
   const [archivedArticles, setArchivedArticles] = useState<PubArticle[]>([]);
+  const [pendingArticles, setPendingArticles] = useState<PubArticle[]>([]);
   const [loadingArchived, setLoadingArchived] = useState(false);
   const [loadingPub, setLoadingPub] = useState(false);
+  const [loadingPending, setLoadingPending] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   // Restart tab state
   type PipelineStatus = {
@@ -150,6 +154,47 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setLoadingArchived(false); }
   }, [token]);
 
+  // Pending review haberleri yükle
+  const loadPending = useCallback(async () => {
+    if (!token) return;
+    setLoadingPending(true);
+    try {
+      const r = await fetch('/api/admin/published?status=pending_review', { headers: { Authorization: `Bearer ${token}` } });
+      const json = (await r.json()) as { articles?: PubArticle[] };
+      setPendingArticles(json.articles ?? []);
+    } catch { toast.error('Bekleyen haberler yüklenemedi'); }
+    finally { setLoadingPending(false); }
+  }, [token]);
+
+  // Pending aksiyon: 1) Yayınla + eskiyi arşive, 2) Sadece yayınla, 3) Yoksay (arşive)
+  const handlePendingAction = useCallback(async (id: string, action: 'publish_archive_old' | 'publish_only' | 'dismiss') => {
+    if (!token) return;
+    setPendingAction(id + action);
+    try {
+      let body: { status: string; archiveOld?: boolean };
+      if (action === 'publish_archive_old') {
+        body = { status: 'published', archiveOld: true };
+      } else if (action === 'publish_only') {
+        body = { status: 'published' };
+      } else {
+        body = { status: 'archived' };
+      }
+      const r = await fetch(`/api/admin/published/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const json = await r.json();
+      if (!r.ok || !json.ok) throw new Error(json.error || 'İşlem başarısız');
+      if (action === 'publish_archive_old') toast.success('Yayınlandı — eski arşive taşındı');
+      else if (action === 'publish_only') toast.success('Yayınlandı');
+      else toast.success('Bekleyen haber yoksayıldı');
+      // Listeyi yenile
+      setPendingArticles(prev => prev.filter(p => p.id !== id));
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
+    finally { setPendingAction(null); }
+  }, [token]);
+
   // Restart: pipeline status çek + (restarting iken polling)
   const fetchPipelineStatus = useCallback(async () => {
     try {
@@ -196,9 +241,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       if (adminTab === 'messages') void loadMessages();
       if (adminTab === 'published') void loadPublished();
       if (adminTab === 'archived') void loadArchived();
-      if (adminTab === 'restart') void fetchPipelineStatus();
+      if (adminTab === 'pending') void loadPending();
     }
-  }, [open, token, adminTab, loadMessages, loadPublished, loadArchived, fetchPipelineStatus]);
+  }, [open, token, adminTab, loadMessages, loadPublished, loadArchived, loadPending]);
 
   // Restart polling — restarting iken her 2 saniyede bir status çek
   useEffect(() => {
@@ -394,6 +439,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                   <Button variant="outline" size="sm" onClick={() => setResetOpen(true)} className="gap-1.5 text-xs text-destructive hover:text-destructive border-destructive/30">
                     <RotateCcw className="h-3.5 w-3.5" /> Siteyi Sıfırla
                   </Button>
+                  <Button variant="default" size="sm" onClick={() => setRestartConfirmOpen(true)} disabled={restarting} className="gap-1.5 text-xs bg-news hover:bg-news/90 text-news-foreground border-blue-500">
+                    {restarting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Akışı Başlat
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={handleLogout} className="text-xs">Çıkış</Button>
                 </div>
               )}
@@ -422,9 +470,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <>
                 {/* Sub-tabs — sticky (scroll ederken kaybolmasın) */}
                 <div className="sticky top-0 z-10 mb-4 -mx-6 px-6 py-2 flex gap-1 rounded-lg border border-border bg-background/95 backdrop-blur shadow-sm">
-                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper], ['archived', 'Arşiv', Archive], ['restart', 'Akışı Başlat', RefreshCw]] as const).map(([id, label, Icon]) => (
-                    <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper], ['archived', 'Arşiv', Archive], ['pending', 'Olası Tekrar', AlertCircle]] as const).map(([id, label, Icon]) => (
+                    <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition relative ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Icon className="h-3.5 w-3.5" /> {label}
+                      {id === 'pending' && pendingArticles.length > 0 && (
+                        <Badge className="ml-1 bg-news text-news-foreground text-[9px] px-1.5 py-0.5 rounded-full">{pendingArticles.length}</Badge>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -677,129 +728,106 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                 )}
 
                 {/* Restart tab — pipeline'ı hemen tetikler + canlı ilerleme */}
-                {adminTab === 'restart' && (
-                  <div className="space-y-4">
-                    {/* Restart butonu */}
-                    <Card className="border-2 border-news/30 bg-news/[0.03] p-5">
-                      <div className="flex items-start gap-3">
-                        <RefreshCw className={`h-8 w-8 flex-shrink-0 text-news ${restarting ? 'animate-spin' : ''}`} />
-                        <div className="flex-1">
-                          <h3 className="text-base font-bold text-foreground">Akışı Başlat</h3>
-                          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                            RSS kaynaklarını hemen okur, tekrarlayan haberleri gruplar, AI ile özetler ve yayınlarar. Sıralı çalışır:
-                            <span className="font-medium text-foreground"> RSS okuma → tekrar tespiti → AI özetleme → yayınlama</span>.
-                            Canlı ilerleme aşağıda görünür.
-                          </p>
-                          <div className="mt-3 flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => setRestartConfirmOpen(true)}
-                              disabled={restarting}
-                              className="gap-2"
-                            >
-                              <RefreshCw className="h-4 w-4" />
-                              {restarting ? 'Çalışıyor...' : 'Pipeline Restart'}
-                            </Button>
-                            {restarting && (
-                              <Button size="sm" variant="outline" onClick={() => { setRestarting(false); setPolling(false); }} className="gap-1.5">
-                                <XCircle className="h-4 w-4" /> İzlemeyi Durdur
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-
-                    {/* Restart onay dialoğu */}
-                    <AlertDialog open={restartConfirmOpen} onOpenChange={setRestartConfirmOpen}>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Pipeline restart?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Mevcut tüm published haberler 'stale' yapılacak, RSS kaynakları yeniden okunacak ve AI özet pipeline'ı hemen başlayacak. Bu işlem 5-10 dakika sürebilir. Onaylıyor musunuz?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleRestart} className="bg-news text-news-foreground hover:bg-news/90 gap-2">
-                            <RefreshCw className="h-4 w-4" /> Restart
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-
-                    {/* Canlı ilerleme — 4 satır */}
-                    <div className="space-y-2">
-                      <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Canlı İlerleme</h3>
-                      <PipelineStepRow
-                        label="RSS güncellendi"
-                        detail={pipelineStatus?.rssRead != null ? `${pipelineStatus.rssRead} kaynak okundu` : null}
-                        stage={pipelineStatus?.stage ?? null}
-                        startedStages={['refresh', 'build-icerik', 'build-kaynak-sayi', 'build-ozet', 'done']}
-                        doneStages={['build-icerik', 'build-kaynak-sayi', 'build-ozet', 'done']}
-                        startedAt={pipelineStatus?.startedAt ?? null}
-                      />
-                      <PipelineStepRow
-                        label="Tekrarlanan haberler sayıldı"
-                        detail={pipelineStatus?.duplicatesFound != null ? `${pipelineStatus.duplicatesFound} farklı haber bulundu` : null}
-                        stage={pipelineStatus?.stage ?? null}
-                        startedStages={['build-kaynak-sayi', 'build-ozet', 'done']}
-                        doneStages={['build-ozet', 'done']}
-                        startedAt={pipelineStatus?.startedAt ?? null}
-                      />
-                      <PipelineStepRow
-                        label="Haber özeti tamamlandı"
-                        detail={pipelineStatus?.summariesDone != null ? `${pipelineStatus.summariesDone} özet tamamlandı` : null}
-                        stage={pipelineStatus?.stage ?? null}
-                        startedStages={['build-ozet', 'done']}
-                        doneStages={['done']}
-                        startedAt={pipelineStatus?.startedAt ?? null}
-                      />
-                      <PipelineStepRow
-                        label="Haberler yayınlandı"
-                        detail={pipelineStatus?.publishedCount != null ? `${pipelineStatus.publishedCount} haber yayınlandı` : null}
-                        stage={pipelineStatus?.stage ?? null}
-                        startedStages={['done']}
-                        doneStages={['done']}
-                        startedAt={pipelineStatus?.startedAt ?? null}
-                        isLast
-                      />
-                    </div>
-
-                    {/* Hata varsa */}
-                    {pipelineStatus?.error && (
-                      <Card className="border-destructive/50 bg-destructive/[0.04] p-4">
-                        <div className="flex items-start gap-2">
-                          <XCircle className="h-5 w-5 flex-shrink-0 text-destructive" />
-                          <div>
-                            <p className="text-sm font-semibold text-destructive">Hata oluştu</p>
-                            <p className="mt-1 text-xs text-muted-foreground">{pipelineStatus.error}</p>
-                          </div>
-                        </div>
+                {/* Pending (Olası Tekrar) tab — %50+ benzer başlıkla gelen ama birebir aynı olmayan haberler */}
+                {adminTab === 'pending' && (
+                  <div className="space-y-3">
+                    {loadingPending ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-32 w-full rounded-xl" />)}</div>
+                    : pendingArticles.length === 0 ? (
+                      <Card className="flex flex-col items-center gap-3 p-10 text-center">
+                        <Check className="h-10 w-10 text-emerald-500" />
+                        <p className="text-sm text-muted-foreground">Bekleyen tekrar haberi yok</p>
+                        <p className="text-xs text-muted-foreground/70">%50+ benzer başlıkla gelen ama birebir olmayan haberler burada listelenir.</p>
                       </Card>
-                    )}
-
-                    {/* Tamamlandı mesajı */}
-                    {pipelineStatus?.stage === 'done' && (
-                      <Card className="border-emerald-500/40 bg-emerald-500/[0.04] p-4">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-5 w-5 flex-shrink-0 text-emerald-600" />
-                          <div>
-                            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Pipeline tamamlandı</p>
-                            {pipelineStatus.finishedAt && (
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                Bitiş: {new Date(pipelineStatus.finishedAt).toLocaleTimeString('tr-TR')}
+                    ) : (
+                      <>
+                        <Card className="border-2 border-news/30 bg-news/[0.03] p-4">
+                          <div className="flex items-start gap-3">
+                            <AlertCircle className="h-5 w-5 flex-shrink-0 text-news mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-foreground">{pendingArticles.length} olası tekrar haberi beklemede</p>
+                              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                                Bu haberler mevcut yayındaki haberlerle %50+ benzerlik taşıyo ama birebir aynı başlık değiller.
+                                Aşağıdaki düğmelerle karar verin:
+                                <span className="font-medium text-foreground"> Yayınla+Arşive</span> (eskisini arşive, yenisini yayınla),
+                                <span className="font-medium text-foreground"> Sadece Yayınla</span> (eskisi de kalsın),
+                                <span className="font-medium text-foreground"> Yoksay</span> (bekleme listesinden kaldır).
                               </p>
-                            )}
+                            </div>
                           </div>
-                        </div>
-                      </Card>
+                        </Card>
+                        {pendingArticles.map(a => (
+                          <Card key={a.id} className="p-4 border-amber-500/40 bg-amber-50/30 dark:bg-amber-950/10">
+                            <div className="flex items-start gap-3">
+                              {a.imageUrl && <img src={a.imageUrl} alt="" className="h-16 w-24 rounded object-cover flex-shrink-0" onError={(e) => (e.currentTarget.style.display = 'none')} />}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge className="text-[10px]" variant="secondary">{a.category}</Badge>
+                                  <Badge className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300">{a.sourceCount} kaynak</Badge>
+                                  <span className="text-[10px] text-muted-foreground">{a.wordCount} kelime</span>
+                                </div>
+                                <h4 className="mt-1 text-sm font-semibold text-foreground line-clamp-2">{a.aiTitle}</h4>
+                                <p className="mt-1 text-xs text-muted-foreground line-clamp-3">{a.aiSummary}</p>
+                                <div className="mt-3 flex gap-1.5 flex-wrap">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    disabled={pendingAction === a.id + 'publish_archive_old'}
+                                    onClick={() => handlePendingAction(a.id, 'publish_archive_old')}
+                                    className="gap-1 text-xs h-7 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  >
+                                    {pendingAction === a.id + 'publish_archive_old' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                                    Yayınla + Eskiyi Arşive
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={pendingAction === a.id + 'publish_only'}
+                                    onClick={() => handlePendingAction(a.id, 'publish_only')}
+                                    className="gap-1 text-xs h-7 border-blue-500 text-blue-700 hover:bg-blue-50"
+                                  >
+                                    {pendingAction === a.id + 'publish_only' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Newspaper className="h-3 w-3" />}
+                                    Sadece Yayınla
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    disabled={pendingAction === a.id + 'dismiss'}
+                                    onClick={() => handlePendingAction(a.id, 'dismiss')}
+                                    className="gap-1 text-xs h-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  >
+                                    {pendingAction === a.id + 'dismiss' ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
+                                    Yoksay
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </>
                     )}
                   </div>
                 )}
               </>
             )}
           </div>
+
+          {/* Restart onay dialog — sekmeden bağımsız (header'daki mavi düğmeden açılır) */}
+          <AlertDialog open={restartConfirmOpen} onOpenChange={setRestartConfirmOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Akışı başlat?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Pipeline hemen tetiklenecek: RSS kaynakları okunacak, tekrarlayan haberler gruplanacak, AI özet üretilecek ve yayınlanacak. Bu işlem 1-3 dakika sürebilir. Onaylıyor musunuz?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                <AlertDialogAction onClick={handleRestart} className="bg-news text-news-foreground hover:bg-news/90 gap-2">
+                  <RefreshCw className="h-4 w-4" /> Başlat
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </DialogContent>
       </Dialog>
 

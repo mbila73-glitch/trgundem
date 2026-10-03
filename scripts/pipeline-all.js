@@ -359,7 +359,7 @@ async function main() {
       var existing = existingPublished.concat(existingArchived);
       log('Mevcut haber (yayında ' + existingPublished.length + ' + arşiv ' + existingArchived.length + ')');
 
-      var added = 0, skipped = 0, aiOk = 0, archived = 0;
+      var added = 0, skipped = 0, aiOk = 0, archived = 0, pendingCount = 0;
       for (var i = 0; i < topGroups.length; i++) {
         var group = topGroups[i];
         var groupArticlesList = group.articles;
@@ -367,27 +367,39 @@ async function main() {
         var cat = firstArticle.category || 'Güncel';
         var sourceCount = group.sourceIds.size;
 
-        // Aynı başlığa sahip eski publishedArticle varsa → arşive taşı, yenisini yayınla
-        // Kategori filtreleme YOK — farklı kategori de olsa aynı başlık yakalanır
-        // Eşik 0.5 (daha rahat yakala — sadece "Erdoğan" değil, en az 2 anlamlı kelime)
-        // Birebir aynı başlık → titleSimilar 1.0 döner (kesin eşleşme)
-        var oldArticleToArchive = null;
-        var alreadyArchived = false; // Aynı başlık zaten arşivde mi?
+        // 3 KATMANLI EŞLEŞTİRME:
+        // 1) Birebir aynı başlık → eski published ARŞİVE, yenisi PUBLISHED (otomatik)
+        // 2) Yüksek benzerlik (>=0.5, >=3 anlamlı kelime ortak) → pending_review (manuel onay)
+        // 3) Düşük benzerlik → normal PUBLISHED
+        var oldArticleToArchive = null;       // published ise → arşive taşı
+        var alreadyArchived = false;          // arşivde var, yine de yayınla
+        var sendToPending = false;            // %50 benzer, manuel onaya gönder
+
+        // Önce birebir eşleşme ara (kesin aynı başlık)
         for (var j = 0; j < existing.length; j++) {
-          var sim = titleSimilar(firstArticle.title, existing[j].aiTitle || '');
-          if (sim >= 0.5) {
-            // Kategori farklı ama birebir değilse atla (0.85+ ise yakala)
-            if (existing[j].category !== cat && sim < 0.85) continue;
-            if (existing[j].status === 'published') {
-              oldArticleToArchive = existing[j];
-              break;
-            } else {
-              // Arşivde var — yenisini yine de yayınla (taze), eskisi arşivde kalsın
-              alreadyArchived = true;
-              break;
-            }
+          var simBirebir = titleSimilar(firstArticle.title, existing[j].aiTitle || '');
+          if (simBirebir < 0.85) continue; // birebir değil
+          if (existing[j].status === 'published') {
+            oldArticleToArchive = existing[j];
+            break;
+          } else {
+            alreadyArchived = true;
+            break;
           }
         }
+
+        // Birebir eşleşme yoksa, %50 benzer ara (pending_review)
+        if (!oldArticleToArchive && !alreadyArchived) {
+          for (var k = 0; k < existing.length; k++) {
+            var simSimilar = titleSimilar(firstArticle.title, existing[k].aiTitle || '');
+            if (simSimilar < 0.5) continue;
+            // %50+ benzer → manuel onaya gönder
+            sendToPending = true;
+            log('  [Olası tekrar - pending] (' + cat + '): ' + firstArticle.title.slice(0, 50) + ' (benzerlik: ' + Math.round(simSimilar * 100) + '%)');
+            break;
+          }
+        }
+
         if (alreadyArchived) {
           log('  [Arşivde var, taze yayınla] (' + cat + '): ' + firstArticle.title.slice(0, 50));
         }
@@ -421,6 +433,7 @@ async function main() {
 
         try {
           var publishTime = new Date(Date.now() - i * 60000);
+          var newStatus = sendToPending ? 'pending_review' : 'published';
           await globalThis.prisma.publishedArticle.create({
             data: {
               aiTitle: firstArticle.title,
@@ -432,14 +445,18 @@ async function main() {
               earliestPublishedAt: groupArticlesList[groupArticlesList.length - 1].publishedAt || publishTime,
               latestPublishedAt: publishTime,
               wordCount: summaryText.split(/\s+/).length,
-              status: 'published',
-              publishedAt: publishTime
+              status: newStatus,
+              publishedAt: sendToPending ? null : publishTime
             }
           });
           added++;
+          if (sendToPending) {
+            pendingCount++;
+            log('  [pending_review] eklendi: ' + firstArticle.title.slice(0, 50));
+          }
         } catch (e) { log('  DB hata: ' + e.message); }
       }
-      log('Added: ' + added + ', Skip: ' + skipped + ', Archived: ' + archived + ', AI: ' + aiOk);
+      log('Added: ' + added + ', Archived: ' + archived + ', Pending: ' + pendingCount + ', AI: ' + aiOk);
 
       // Arşiv: kategori bazlı 15'den fazla varsa eskiyi arşive taşı
       for (var ci = 0; ci < Object.keys(CATEGORY_MIN_SOURCES).length; ci++) {

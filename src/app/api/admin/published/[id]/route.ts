@@ -12,7 +12,7 @@ function checkAuth(req: NextRequest): boolean {
   } catch { return false; }
 }
 
-// PATCH /api/admin/published/[id] — edit article OR restore from archive
+// PATCH /api/admin/published/[id] — edit article OR restore from archive OR pending_review decision
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -21,17 +21,48 @@ export async function PATCH(
   const { id } = await params;
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Geçersiz gövde' }, { status: 400 }); }
-  const data = body as { aiTitle?: string; aiSummary?: string; imageUrl?: string | null; status?: string };
+  const data = body as { aiTitle?: string; aiSummary?: string; imageUrl?: string | null; status?: string; archiveOld?: boolean };
   const update: Record<string, unknown> = {};
   if (typeof data.aiTitle === 'string') update.aiTitle = data.aiTitle.trim();
   if (typeof data.aiSummary === 'string') update.aiSummary = data.aiSummary.trim();
   if (data.imageUrl !== undefined) update.imageUrl = data.imageUrl;
-  // Arşivden yayına al: status → published
+
+  // Pending → Published: pending_review → published (yeni yayınla)
   if (data.status === 'published') {
     update.status = 'published';
     update.archivedAt = null;
     update.publishedAt = new Date();
+
+    // Eğer "archiveOld: true" gelirse, bu pending haberi yayınlarken
+    // aynı başlığa sahip eski published'ı ARŞİVE taşı (manuel onay: "Yayınla ve Eskiyi Arşive")
+    if (data.archiveOld) {
+      // Aynı başlığa sahip, şu an published olan haberleri bul (pending olan hariç)
+      const pending = await db.publishedArticle.findUnique({ where: { id }, select: { aiTitle: true, category: true } });
+      if (pending) {
+        const oldPublished = await db.publishedArticle.findMany({
+          where: {
+            status: 'published',
+            aiTitle: pending.aiTitle,
+            NOT: { id },
+          },
+          select: { id: true },
+        });
+        for (const old of oldPublished) {
+          await db.publishedArticle.update({
+            where: { id: old.id },
+            data: { status: 'archived', archivedAt: new Date() },
+          });
+        }
+      }
+    }
   }
+
+  // Pending → Archived: pending_review → archived (manuel ret)
+  if (data.status === 'archived') {
+    update.status = 'archived';
+    update.archivedAt = new Date();
+  }
+
   try {
     const r = await db.publishedArticle.update({ where: { id }, data: update });
     return NextResponse.json({ ok: true, article: r });
