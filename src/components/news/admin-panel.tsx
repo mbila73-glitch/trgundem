@@ -359,7 +359,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setLoadingSources(false); }
   };
 
-  const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); setArchivedArticles([]); setAdminTab('messages'); };
+  const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); setArchivedArticles([]); setAdminTab('messages'); onClose(); };
   const newCount = messages.filter(m => m.status === 'new').length;
   const allSelected = messages.length > 0 && selectedIds.size === messages.length;
   const resetConfirmed = resetConfirm.trim().toLowerCase() === 'evet';
