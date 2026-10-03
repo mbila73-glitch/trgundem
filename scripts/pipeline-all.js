@@ -100,7 +100,7 @@ async function aiSummarize(title, contents) {
   if (sorted.length === 0) return null;
 
   var combinedContent = sorted.join('\n\n---\n\n').slice(0, 8000);
-  var prompt = 'Aşağıdaki haberi en az 150 kelimelik, farklı cümlelerle, telif sorunu olmayacak şekilde özetle. Türkçe yaz. Sadece özeti yaz, başka metin ekleme.\n\nBAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
+  var prompt = 'Aşağıdaki haber metinlerini oku. Asla kaynak metinle aynı cümlelerı kurma. Tamamen kendi cümlelerinle, eş anlamlı kelimeler kullanarak, cümle yapısını değiştirerek yaz. Orijinal metinden hiçbir cümleyi, hiçbir ifadeyi kopyalama. Bu bir özet değil, haberin yeniden yazımıdır. En az 150 kelime olmalı. Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\nBAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
 
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_API_KEY;
 
