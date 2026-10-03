@@ -19,7 +19,11 @@ try {
   });
 } catch (e) {}
 
-var GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+var GEMINI_API_KEY = '';
+// 1. /var/www/.gemini-key dosyasından oku (en kalıcı)
+try { GEMINI_API_KEY = fs.readFileSync('/var/www/.gemini-key', 'utf8').trim(); } catch (e) {}
+// 2. .env'den oku
+if (!GEMINI_API_KEY) GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 var GEMINI_MODEL = 'gemini-flash-lite-latest';
 
 log('GEMINI key: ' + (GEMINI_API_KEY ? 'VAR' : 'YOK'));
