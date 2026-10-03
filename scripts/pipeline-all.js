@@ -295,6 +295,8 @@ async function main() {
         }
 
         try {
+          // En çok kaynaklı en üstte — publishedAt kaynak sayısına göre ayarla
+          var publishTime = new Date(Date.now() - i * 60000);
           await globalThis.prisma.publishedArticle.create({
             data: {
               aiTitle: firstArticle.title,
@@ -303,8 +305,8 @@ async function main() {
               imageUrl: bestImage,
               sourceArticleIds: JSON.stringify(allIds),
               sourceCount: sourceCount,
-              earliestPublishedAt: groupArticlesList[groupArticlesList.length - 1].publishedAt || new Date(),
-              latestPublishedAt: firstArticle.publishedAt || new Date(),
+              earliestPublishedAt: groupArticlesList[groupArticlesList.length - 1].publishedAt || publishTime,
+              latestPublishedAt: publishTime,
               wordCount: summaryText.split(/\s+/).length,
               status: 'published',
               publishedAt: new Date()
