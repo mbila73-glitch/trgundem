@@ -124,20 +124,46 @@ async function aiSummarize(title, contents) {
   return null;
 }
 
-// Başlık benzerliği
+// Başlık benzerliği — Siyasetçi isimleri tek başına yeterli değil, en az 2 anlamlı kelime
 function normalizeTitle(t) { return (t || '').toLowerCase().replace(/[''`]/g, "'").replace(/[^\w\sçğıöşü]/g, ' ').replace(/\s+/g, ' ').trim(); }
+
+// Sık geçen kelime kara listesi (siyasetçi isimleri vb. — tek başına haber eşleştirme)
+var STOP_WORDS = new Set([
+  'erdoğan','erdogan','bahçeli','bahceli','akşener','aksener','kılıçdaroğlu','kilicdaroglu',
+  'soylu','pelin','cumhurbaşkanı','cumhurbaskani','bakan','başkan','baskan','genel','merkezi',
+  'türkiye','turkiye','türk','turk','ankara','istanbul','izmir','bugün','bugun','yarın','yarin',
+  'haber','son','dakika','gelen','yapan','olarak','için','ile','bin','yıl','yılın','ilan','etti','açıklama'
+]);
+
 function titleSimilar(t1, t2) {
   var n1 = normalizeTitle(t1), n2 = normalizeTitle(t2);
   if (!n1 || !n2) return 0;
-  var w1 = n1.split(' ').filter(function(w) { return w.length > 3; });
-  var w2 = n2.split(' ').filter(function(w) { return w.length > 3; });
+  // 4+ karakter ve stop word olmayan kelimeleri al
+  var w1 = n1.split(' ').filter(function(w) { return w.length > 3 && !STOP_WORDS.has(w); });
+  var w2 = n2.split(' ').filter(function(w) { return w.length > 3 && !STOP_WORDS.has(w); });
+  if (!w1.length || !w2.length) return 0;
+  var set2 = new Set(w2); var common = 0;
+  w1.forEach(function(w) { if (set2.has(w)) common++; });
+  var ratio = common / Math.max(w1.length, w2.length);
+  // Sadece 1 ortak kelime varsa benzerlik yetersiz (en az 2 anlamlı kelime şart)
+  if (common < 2) return 0;
+  return ratio;
+}
+
+// İçerik benzerliği — başlık yeterli değilse içeriğe bak
+function contentSimilar(c1, c2) {
+  if (!c1 || !c2) return 0;
+  var n1 = normalizeTitle(c1.slice(0, 1500));
+  var n2 = normalizeTitle(c2.slice(0, 1500));
+  var w1 = n1.split(' ').filter(function(w) { return w.length > 4 && !STOP_WORDS.has(w); });
+  var w2 = n2.split(' ').filter(function(w) { return w.length > 4 && !STOP_WORDS.has(w); });
   if (!w1.length || !w2.length) return 0;
   var set2 = new Set(w2); var common = 0;
   w1.forEach(function(w) { if (set2.has(w)) common++; });
   return common / Math.max(w1.length, w2.length);
 }
 
-// Gruplama
+// Gruplama — başlık benzerliği DÜŞÜK (0.35) + içerik benzerliği YÜKSEK (0.25) veya başlık YÜKSEK (0.55)
 function groupArticles(articles) {
   var groups = [], used = new Set();
   for (var i = 0; i < articles.length; i++) {
@@ -146,7 +172,14 @@ function groupArticles(articles) {
     used.add(i);
     for (var j = i + 1; j < articles.length; j++) {
       if (used.has(j)) continue;
-      if (titleSimilar(articles[i].title, articles[j].title) >= 0.5) {
+      // Farklı kategori ise eşleşme
+      var catI = articles[i].category || 'Güncel';
+      var catJ = articles[j].category || 'Güncel';
+      if (catI !== catJ) continue;
+      var titleSim = titleSimilar(articles[i].title, articles[j].title);
+      var contentSim = contentSimilar(articles[i].content || articles[i].description || '', articles[j].content || articles[j].description || '');
+      // Başlık benzer 0.35+ VEYA başlık 0.2+ VE içerik 0.25+
+      if (titleSim >= 0.35 || (titleSim >= 0.2 && contentSim >= 0.25)) {
         group.articles.push(articles[j]);
         group.sourceIds.add(articles[j].sourceId);
         used.add(j);
@@ -288,10 +321,11 @@ async function main() {
         var sourceCount = group.sourceIds.size;
 
         // Aynı başlığa sahip eski publishedArticle varsa → arşive taşı, yenisini yayınla
+        // Eşik 0.5 (daha rahat yakala — sadece "Erdoğan" değil, en az 2 anlamlı kelime)
         var oldArticleToArchive = null;
         for (var j = 0; j < existing.length; j++) {
           if (existing[j].category !== cat) continue;
-          if (titleSimilar(firstArticle.title, existing[j].aiTitle || '') >= 0.7) {
+          if (titleSimilar(firstArticle.title, existing[j].aiTitle || '') >= 0.5) {
             oldArticleToArchive = existing[j];
             break;
           }
