@@ -28,12 +28,17 @@ globalThis.fetch = function(url, options) {
   return new Promise(function(resolve, reject) {
     var lib = url.indexOf('https') === 0 ? require('https') : require('http');
     var urlObj = new URL(url);
+    var headers = Object.assign({}, options.headers || {});
+    // Content-Length ekle — yoksa API body'yi okuyamıyor!
+    if (options.body) {
+      headers['Content-Length'] = Buffer.byteLength(options.body);
+    }
     var req = lib.request({
       hostname: urlObj.hostname,
       port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
       path: urlObj.pathname + urlObj.search,
       method: options.method || 'GET',
-      headers: options.headers || {}
+      headers: headers
     }, function(resp) {
       var chunks = [];
       resp.on('data', function(c) { chunks.push(c); });
