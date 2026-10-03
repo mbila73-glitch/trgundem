@@ -14,8 +14,8 @@ const SUB_TABS: Array<{
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { id: 'all', label: 'Tüm Haberler', icon: Newspaper },
-  { id: 'guncel', label: 'Güncel', icon: FileText },
+  { id: 'all', label: "Türkiye'de Gündem", icon: Newspaper },
+  { id: 'guncel', label: 'Siyaset', icon: FileText },
   { id: 'kamu', label: 'Kamu / Resmi', icon: FolderTree },
   { id: 'ekonomi', label: 'Ekonomi / Finans', icon: FolderTree },
   { id: 'bilim', label: 'Bilim / Teknoloji', icon: FolderTree },
