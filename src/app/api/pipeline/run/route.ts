@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { spawn } from 'node:child_process';
-import { appendFile, readFile, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { appendFile, readFile, writeFile, openSync } from 'node:fs/promises';
+import { existsSync, openSync as openSyncSync } from 'node:fs';
 
 const LOG_FILE = '/var/www/pipeline-once.log';
 const STATUS_FILE = '/var/www/pipeline-status.json';
+const SPAWN_LOG = '/var/www/pipeline-spawn.log';
 const NODE_BIN = '/usr/bin/node';
 const SCRIPT = '/var/www/scripts/pipeline-all.js';
 
@@ -14,12 +15,15 @@ export async function POST() {
     await writeFile(STATUS_FILE, JSON.stringify({ stage: 'triggered', startedAt, finishedAt: null, message: 'Pipeline Admin Tarafından Başlatıldı' }, null, 2), 'utf8').catch(() => {});
     await appendFile(LOG_FILE, `\n[${startedAt}] === Pipeline Tetiklendi ===\n`, 'utf8').catch(() => {});
 
+    // Spawn — çıktıyı log dosyasına yaz
+    const out = openSyncSync(SPAWN_LOG, 'a');
+    const err = openSyncSync(SPAWN_LOG, 'a');
     const child = spawn(NODE_BIN, ['--expose-gc', SCRIPT, '--once'], {
       cwd: '/var/www',
       detached: true,
-      stdio: 'ignore',
+      stdio: ['ignore', out, err],
       shell: false,
-      env: { ...process.env, PIPELINE_TRIGGERED: 'admin' }
+      env: { ...process.env, PIPELINE_TRIGGERED: 'admin', HOME: '/root' }
     });
     child.unref();
 
