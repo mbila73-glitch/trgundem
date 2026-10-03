@@ -149,3 +149,8 @@
     background: var(--muted-foreground);
   }
 }
+
+/* Tüm metinlerde her kelime büyük baş harf — TRGUNDEM.NET hariç (zaten büyük) */
+h1, h2, h3, h4, h5, h6, p, span, a, button, label, td, th, div:not(.trgundem-logo) {
+  text-transform: capitalize;
+}
