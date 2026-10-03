@@ -245,6 +245,101 @@ const AY_SAHIPLERI = {
   11: { ad: 'Murat',   cinsiyet: 'Bey'   },  // Aralık
 };
 
+// === TATIL GÜNLERI (2026-2027) ===
+// Resmi tatiller + dini bayramlar (her yıl güncellenmeli)
+// Hafta sonu otomatik kontrol edilir, buraya sadece tatil günleri yazılır
+const TATIL_GUNLERI_2026_2027 = [
+  // 2026 — Resmi tatiller (her yıl aynı tarih)
+  '2026-01-01', // Yeni Yıl
+  '2026-04-23', // Ulusal Egemenlik ve Çocuk Bayramı
+  '2026-05-01', // Emek ve Dayanışma Günü
+  '2026-05-19', // Atatürk'ü Anma, Gençlik ve Spor Bayramı
+  '2026-08-30', // Zafer Bayramı
+  '2026-10-29', // Cumhuriyet Bayramı (Perşembe)
+  // 2026 — Dini bayramlar (her yıl farklı)
+  '2026-03-30', '2026-03-31', '2026-04-01', '2026-04-02', // Ramazan (arife + 3 gün)
+  '2026-06-05', '2026-06-06', '2026-06-07', '2026-06-08', '2026-06-09', // Kurban (arife + 4 gün)
+
+  // 2027 — Resmi tatiller
+  '2027-01-01', // Yeni Yıl
+  '2027-04-23', // Ulusal Egemenlik
+  '2027-05-01', // Emek
+  '2027-05-19', // Atatürk
+  '2027-08-30', // Zafer
+  '2027-10-29', // Cumhuriyet
+  // 2027 — Dini bayramlar (tahmini, yıl başında Diyanet'ten doğrula)
+  '2027-03-20', '2027-03-21', '2027-03-22', '2027-03-23', // Ramazan (tahmini)
+  '2027-05-27', '2027-05-28', '2027-05-29', '2027-05-30', '2027-05-31', // Kurban (tahmini)
+];
+
+// Verilen tarihin tatil olup olmadığını kontrol et (hafta sonu + tatil listesi)
+function isTatilGun(dateStr) {
+  // YYYY-MM-DD → Date (yerel saat ile)
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const day = date.getDay(); // 0=Pazar, 6=Cumartesi
+
+  // Hafta sonu kontrolü
+  if (day === 0 || day === 6) return { tatil: true, sebep: day === 0 ? 'Pazar' : 'Cumartesi' };
+
+  // Tatil listesi kontrolü
+  if (TATIL_GUNLERI_2026_2027.includes(dateStr)) {
+    return { tatil: true, sebep: 'Resmi/Dini tatil' };
+  }
+
+  return { tatil: false, sebep: '' };
+}
+
+// Verilen tarihten itibaren ilk iş gününü bul
+function getIlkIsGunu(dateStr) {
+  let [y, m, d] = dateStr.split('-').map(Number);
+  let date = new Date(y, m - 1, d);
+  let dateStr2 = dateStr;
+  let attempts = 0;
+  while (isTatilGun(dateStr2).tatil && attempts < 10) {
+    date.setDate(date.getDate() + 1);
+    const yy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    dateStr2 = `${yy}-${mm}-${dd}`;
+    attempts++;
+  }
+  return dateStr2;
+}
+
+// Verilen ay için tetikleme tarihini hesapla
+// Öncelik: manuel config > otomatik hesaplama
+function getTriggerDateForMonth(yearMonth) {
+  // Manuel config varsa onu kullan
+  if (config[yearMonth] && config[yearMonth].triggerDate) {
+    return {
+      triggerDate: config[yearMonth].triggerDate,
+      isHoliday: config[yearMonth].isHoliday || false,
+      note: config[yearMonth].note || '',
+      source: 'config'
+    };
+  }
+
+  // Otomatik hesapla
+  const normalDate = `${yearMonth}-15`;
+  const tatilKontrol = isTatilGun(normalDate);
+  if (tatilKontrol.tatil) {
+    const ilkIsGunu = getIlkIsGunu(normalDate);
+    return {
+      triggerDate: ilkIsGunu,
+      isHoliday: true,
+      note: `15'i ${tatilKontrol.sebep}, ilk iş günü ${ilkIsGunu}`,
+      source: 'auto'
+    };
+  }
+  return {
+    triggerDate: normalDate,
+    isHoliday: false,
+    note: '',
+    source: 'auto'
+  };
+}
+
 // Sayıyı Türk formatında yaz (5234.56 → "5.234,56")
 function formatFiyat(num) {
   if (num === null || num === undefined || isNaN(num)) return '—';
@@ -321,35 +416,52 @@ async function main() {
   console.log('Tarih:', todayDate, '/', now.toLocaleTimeString('tr-TR'));
   console.log('');
 
-  // Bu ay config var mı?
-  const monthConfig = config[yearMonth];
-  if (!monthConfig) {
-    console.log(`Bu ay (${yearMonth}) için config yok — çık`);
+  // Ağustos → yaz tatili, altın günü yok
+  if (now.getMonth() === 7) {
+    console.log('Ağustos — yaz tatili, altın günü yok — çık');
     return;
   }
 
-  console.log('Ay config:', JSON.stringify(monthConfig));
+  // Ay sahibi
+  const aySahibi = AY_SAHIPLERI[now.getMonth()];
+  console.log(`Bu ayki altın sahibi: ${aySahibi.ad} ${aySahibi.cinsiyet}`);
+  console.log('');
+
+  // Tetikleme tarihini hesapla (manuel config > otomatik)
+  const triggerInfo = getTriggerDateForMonth(yearMonth);
+  console.log('Tetikleme bilgisi:');
+  console.log(`  normalDate: ${yearMonth}-15`);
+  console.log(`  triggerDate: ${triggerInfo.triggerDate}`);
+  console.log(`  isHoliday: ${triggerInfo.isHoliday}`);
+  console.log(`  note: ${triggerInfo.note || '(yok)'}`);
+  console.log(`  source: ${triggerInfo.source}`);
   console.log('');
 
   // Bugün triggerDate mi?
-  if (monthConfig.triggerDate === todayDate) {
+  if (triggerInfo.triggerDate === todayDate) {
     console.log(`✓ Bugün triggerDate — fiyat çek + mail gönder`);
     const fiyatData = await fetchHaremAltin();
     if (fiyatData) {
       await sendAltinMail(fiyatData, todayDate);
     } else {
-      console.log('Fiyat alınamadı — mail gönderilmedi');
-      // Yine de mail gönder, fiyat "alınamadı" desin
+      console.log('Fiyat alınamadı — fallback mail gönderiliyor');
       const fallbackData = { fiyat: '(alınamadı)', kaynak: 'https://www.haremaltin.com/ — manuel kontrol edin' };
       await sendAltinMail(fallbackData, todayDate);
     }
     return;
   }
 
-  // Bugün normalDate + tatil mi?
-  if (monthConfig.normalDate === todayDate && monthConfig.isHoliday) {
-    console.log(`✓ Bugün normalDate + tatil — tatil bildirimi gönder`);
-    await sendTatilBildirimi(monthConfig);
+  // Bugün normalDate + tatil mi? (tatil bildirimi gönder)
+  const normalDate = `${yearMonth}-15`;
+  if (normalDate === todayDate && triggerInfo.isHoliday) {
+    console.log(`✓ Bugün 15'i tatil — tatil bildirimi gönder`);
+    const tatilConfig = {
+      normalDate,
+      triggerDate: triggerInfo.triggerDate,
+      isHoliday: triggerInfo.isHoliday,
+      note: triggerInfo.note,
+    };
+    await sendTatilBildirimi(tatilConfig);
     return;
   }
 
