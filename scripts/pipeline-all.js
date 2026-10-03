@@ -2,7 +2,7 @@
 var path = require('path');
 var fs = require('fs');
 
-// .env dosyasını oku
+// .env dosyasını oku (her zaman ata — son değer kazan)
 var envPath = path.join(__dirname, '..', '.env');
 try {
   var envContent = fs.readFileSync(envPath, 'utf8');
@@ -13,7 +13,8 @@ try {
     if (idx > 0) {
       var key = line.substring(0, idx).trim();
       var val = line.substring(idx + 1).trim();
-      if (!process.env[key]) process.env[key] = val;
+      // Her zaman ata — .env'de birden fazla satır varsa son değer kazan
+      process.env[key] = val;
     }
   });
 } catch (e) {}
