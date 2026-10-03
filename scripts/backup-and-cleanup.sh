@@ -196,11 +196,19 @@ GÜVENLIK:
 - Sadece yerel bilgisayarında şifreli diskte sakla
 EOF
 
-# 3g. ZIP oluştur
+# 3g. ZIP oluştur (zip yoksa tar.gz kullan)
 echo ""
-echo "ZIP oluşturuluyor..."
+echo "Sıkıştırma yapılıyor..."
 cd /tmp
-zip -r -q "$BACKUP_FILE" "$(basename $TMP_DIR)"
+if command -v zip &> /dev/null; then
+  zip -r -q "$BACKUP_FILE" "$(basename $TMP_DIR)"
+  BACKUP_EXT="zip"
+else
+  # zip yoksa tar.gz kullan
+  BACKUP_FILE="${BACKUP_FILE%.zip}.tar.gz"
+  tar -czf "$BACKUP_FILE" "$(basename $TMP_DIR)"
+  BACKUP_EXT="tar.gz"
+fi
 cd /var/www
 
 # 3h. Geçici dizini temizle
