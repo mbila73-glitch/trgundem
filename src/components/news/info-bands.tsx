@@ -85,15 +85,26 @@ export function InfoBands() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/finans')
-      .then(async (r) => {
-        const json = (await r.json()) as { ok: boolean; data?: FinansItem[]; source?: string };
-        if (json.ok && json.data && json.data.length > 0) {
-          setFinans(json.data);
-          if (json.source) setFinansSource(json.source.split('—')[0].trim());
-        }
-      })
-      .catch(() => {});
+    let active = true;
+    const loadFinans = () => {
+      fetch('/api/finans')
+        .then(async (r) => {
+          const json = (await r.json()) as { ok: boolean; data?: FinansItem[]; source?: string };
+          if (!active) return;
+          if (json.ok && json.data && json.data.length > 0) {
+            setFinans(json.data);
+            if (json.source) setFinansSource(json.source.split('—')[0].trim());
+          }
+        })
+        .catch(() => {});
+    };
+    loadFinans();
+    // Her 30 saniyede bir yenile
+    const interval = setInterval(loadFinans, 30000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const openArticle = (id: string) => {
