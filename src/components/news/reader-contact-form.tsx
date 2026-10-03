@@ -69,7 +69,6 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
         onClose();
         setTimeout(function() {
           toast.success('Mesajınız Tarafımıza Ulaşmıştır Teşekkürler', {
-            duration: 2000,
             position: 'top-center',
             style: {
               background: '#10b981',
