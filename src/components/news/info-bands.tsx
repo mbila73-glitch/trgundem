@@ -99,8 +99,8 @@ export function InfoBands() {
         .catch(() => {});
     };
     loadFinans();
-    // Her 30 saniyede bir yenile
-    const interval = setInterval(loadFinans, 30000);
+    // Her 10 saniyede bir yenile
+    const interval = setInterval(loadFinans, 10000);
     return () => {
       active = false;
       clearInterval(interval);

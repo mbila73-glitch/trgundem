@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 // Gram Altın hesaplama: (Ons fiyatı × USD kuru) / 31.1035
 
 let cache: { data: Array<{ name: string; value: string; change: string; up: boolean }>; ts: number } | null = null;
-const CACHE_MS = 30 * 1000; // 30 saniye — kullanıcı talebi
+const CACHE_MS = 10 * 1000; // 10 saniye — kullanıcı talebi
 
 // TCMB'den döviz kurları çek
 async function fetchTcmbRates(): Promise<{ code: string; rate: number; prevRate: number | null }[]> {
