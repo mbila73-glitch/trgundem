@@ -6840,7 +6840,7 @@ async function refreshInternal(source) {
       req.on('timeout', function() { req.destroy(); reject(new Error('timeout')); });
     });
     const feed = await parser.parseString(xml);
-    const items = (feed.items ?? []).slice(0, 30);
+    const items = feed.items ?? [];
     fetched = items.length;
     for (const item of items) {
       const guid = item.guid || item.link || `${source.id}:${item.title}` || crypto.randomUUID();

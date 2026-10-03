@@ -262,12 +262,12 @@ async function main() {
 
   if (globalThis.prisma) {
     try {
-      // Son 12 saat makaleler
-      var since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      // Son 12 saat makaleler (24 saat değil — taze haberler)
+      var since = new Date(Date.now() - 12 * 60 * 60 * 1000);
       var articles = await globalThis.prisma.article.findMany({
         where: { publishedAt: { gte: since } },
         orderBy: { publishedAt: 'desc' },
-        take: 200,
+        take: 500,
         select: { id: true, title: true, content: true, description: true, sourceId: true, category: true, imageUrl: true, publishedAt: true }
       });
       log('Son 12 saat makale: ' + articles.length);
