@@ -20,7 +20,7 @@ try {
 
 // GEMINI API KEY — .env'den oku
 var GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-var GEMINI_MODEL = 'gemini-flash-lite';
+var GEMINI_MODEL = 'gemini-3.8-flash';
 
 // fetch'i native http ile değiştir (Wasm yok)
 globalThis.fetch = function(url, options) {
