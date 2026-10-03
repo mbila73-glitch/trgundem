@@ -67,9 +67,21 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
         setSubject('');
         setMessage('');
         onClose();
-        // 1 saniye sonra toast ile mesaj göster, 3 saniye kalsın
+        // 1 saniye sonra toast ile mesaj göster — form penceresi konumunda
         setTimeout(function() {
-          toast.success('Mesajınız iletilmiştir', { duration: 3000 });
+          toast.success('Mesajınız Tarafımıza Ulaşmıştır Teşekkürler', {
+            duration: 4000,
+            position: 'top-center',
+            style: {
+              background: '#10b981',
+              color: '#fff',
+              fontSize: '16px',
+              fontWeight: '600',
+              padding: '16px 24px',
+              borderRadius: '12px',
+              boxShadow: '0 4px 24px rgba(16,185,129,0.3)',
+            }
+          });
         }, 1000);
       }
     } catch (e) {
