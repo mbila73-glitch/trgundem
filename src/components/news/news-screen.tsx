@@ -294,10 +294,10 @@ export function NewsScreen() {
 
     const url =
       active === 'all'
-        ? '/api/published-articles?layout=all&status=published'
+        ? '/api/published-articles?limit=100&status=published'
         : `/api/published-articles?category=${encodeURIComponent(
-            CATEGORY_MAP[active] ?? '',
-          )}&limit=${CATEGORY_LIMITS[CATEGORY_MAP[active] ?? ''] ?? 30}&status=published`;
+            CATEGORY_MAP[active] ?? 'Güncel',
+          )}&limit=${CATEGORY_LIMITS[CATEGORY_MAP[active] ?? 'Güncel'] ?? 30}&status=published`;
 
     fetch(url, { cache: 'no-store' })
       .then(async (r) => {
