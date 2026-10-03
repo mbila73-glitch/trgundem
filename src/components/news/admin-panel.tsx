@@ -420,7 +420,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <>
                 {/* Sub-tabs — sticky (scroll ederken kaybolmasın) */}
                 <div className="sticky top-0 z-10 mb-4 -mx-6 px-6 py-2 flex gap-1 rounded-lg border border-border bg-background/95 backdrop-blur shadow-sm">
-                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper], ['archived', 'Arşiv', Archive], ['restart', 'Restart', RefreshCw]] as const).map(([id, label, Icon]) => (
+                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber Ekle', Star], ['published', 'Yayındaki Haberler', Newspaper], ['archived', 'Arşiv', Archive], ['restart', 'Akışı Başlat', RefreshCw]] as const).map(([id, label, Icon]) => (
                     <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Icon className="h-3.5 w-3.5" /> {label}
                     </button>
@@ -661,7 +661,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       <div className="flex items-start gap-3">
                         <RefreshCw className={`h-8 w-8 flex-shrink-0 text-news ${restarting ? 'animate-spin' : ''}`} />
                         <div className="flex-1">
-                          <h3 className="text-base font-bold text-foreground">Pipeline Restart</h3>
+                          <h3 className="text-base font-bold text-foreground">Akışı Başlat</h3>
                           <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                             RSS kaynaklarını hemen okur, tekrarlayan haberleri gruplar, AI ile özetler ve yayınlarar. Sıralı çalışır:
                             <span className="font-medium text-foreground"> RSS okuma → tekrar tespiti → AI özetleme → yayınlama</span>.
