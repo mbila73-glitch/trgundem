@@ -198,35 +198,69 @@ TRGUNDEM.NET Altın Takip`;
   return await sendMail(subject, text, html);
 }
 
+// Fiyat string'i sayıya çevir, Türk formatı (5.234,56 → 5234.56)
+function parseFiyat(fiyatStr) {
+  if (!fiyatStr) return null;
+  try {
+    // "5.234,56" → "5234.56"
+    const cleaned = fiyatStr.replace(/\./g, '').replace(',', '.');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Sayıyı Türk formatında yaz (5234.56 → "5.234,56")
+function formatFiyat(num) {
+  if (num === null || num === undefined || isNaN(num)) return '—';
+  return num.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 // === ALTIN GÜNÜ MAILI ===
 async function sendAltinMail(fiyatData, triggerDate) {
-  const subject = `Altın Günü — ${triggerDate} — Harem Altın: ${fiyatData.fiyat} TL/gram`;
+  // 1 gram fiyat + 2 gram hesapla
+  const fiyat1 = parseFiyat(fiyatData.fiyat);
+  const fiyat2 = fiyat1 !== null ? fiyat1 * 2 : null;
+
+  const fiyat1Display = fiyat1 !== null ? formatFiyat(fiyat1) : fiyatData.fiyat;
+  const fiyat2Display = fiyat2 !== null ? formatFiyat(fiyat2) : '—';
+
+  const subject = `Altın Günü — ${triggerDate} saat 13:00 — Harem Altın: 1gr ${fiyat1Display} TL / 2gr ${fiyat2Display} TL`;
   const text = `Merhaba,
 
-Bugün ${triggerDate} altın günümüz.
+Bugün ${triggerDate} saat 13:00 itibariyle Harem Altın satış fiyatları:
 
-Harem Altın satış fiyatı (saat 13:00 itibariyle):
-${fiyatData.fiyat} TL/gram
+1 GRAM ALTIN: ${fiyat1Display} TL
+2 GRAM ALTIN: ${fiyat2Display} TL
 
 Kaynak: ${fiyatData.kaynak}
 
 İyi günler.
 
-TRGUNDEM.NET Altın Takip`;
+TRGUNDEM.NET Altın Takip — otomatik bildirim`;
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px;">
       <div style="background: #0ea5e9; color: white; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
         <h2 style="margin: 0;">Altın Günü Bildirimi</h2>
       </div>
-      <p>Tarih: <strong>${triggerDate}</strong></p>
-      <p>Saat: <strong>13:00</strong> (Harem Altın referansı)</p>
+      <p>Tarih: <strong>${triggerDate}</strong> · Saat: <strong>13:00</strong> (Harem Altın referansı)</p>
       <div style="margin-top:20px;padding:20px;background:#f0f9ff;border-radius:8px;border-left:4px solid #0ea5e9">
-        <p style="margin:0;font-size:14px;color:#6b7280">HAREM ALTIN SATIŞ FİYATI</p>
-        <p style="margin:8px 0 0;font-size:32px;font-weight:bold;color:#0ea5e9">${fiyatData.fiyat} TL <span style="font-size:14px;color:#6b7280">/gram</span></p>
+        <p style="margin:0;font-size:14px;color:#6b7280">HAREM ALTIN SATIŞ FİYATLARI</p>
+        <div style="display:flex;gap:24px;margin-top:12px;flex-wrap:wrap">
+          <div>
+            <p style="margin:0;font-size:13px;color:#6b7280">1 GRAM ALTIN</p>
+            <p style="margin:4px 0 0;font-size:28px;font-weight:bold;color:#0ea5e9">${fiyat1Display} <span style="font-size:14px;color:#6b7280">TL</span></p>
+          </div>
+          <div>
+            <p style="margin:0;font-size:13px;color:#6b7280">2 GRAM ALTIN</p>
+            <p style="margin:4px 0 0;font-size:28px;font-weight:bold;color:#0ea5e9">${fiyat2Display} <span style="font-size:14px;color:#6b7280">TL</span></p>
+          </div>
+        </div>
       </div>
       <p style="margin-top:16px;font-size:12px;color:#6b7280">Kaynak: <a href="https://www.haremaltin.com/" style="color:#0ea5e9">${fiyatData.kaynak}</a></p>
       <hr style="margin-top:20px;border:none;border-top:1px solid #e5e7eb">
-      <p style="font-size:11px;color:#9ca3af;margin-top:16px">TRGUNDEM.NET Altın Takip — otomatik bildirim</p>
+      <p style="font-size:11px;color:#9ca3af;margin-top:16px">TRGUNDEM.NET Altın Takip — otomatik bildirim · Saat 13:00 referans fiyatı</p>
     </div>
   `;
   return await sendMail(subject, text, html);
