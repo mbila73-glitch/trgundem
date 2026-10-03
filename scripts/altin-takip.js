@@ -194,16 +194,37 @@ TRGUNDEM.NET Altın Takip`;
   return await sendMail(subject, text, html);
 }
 
-// Fiyat string'i sayıya çevir, Türk formatı (5.234,56 → 5234.56)
+// Fiyat string'i sayıya çevir — hem Türk (5.234,56) hem Amerikan (5,234.56) formatı destekler
 function parseFiyat(fiyatStr) {
   if (!fiyatStr) return null;
-  try {
-    // "5.234,56" → "5234.56"
-    const cleaned = fiyatStr.replace(/\./g, '').replace(',', '.');
+  const cleaned = fiyatStr.replace(/[^\d.,]/g, '').trim();
+  if (!cleaned) return null;
+
+  const lastComma = cleaned.lastIndexOf(',');
+  const lastDot = cleaned.lastIndexOf('.');
+  const lastSep = Math.max(lastComma, lastDot);
+
+  if (lastSep === -1) {
+    // Hiç ayraç yok — tam sayı
     const num = parseFloat(cleaned);
     return isNaN(num) ? null : num;
-  } catch (e) {
-    return null;
+  }
+
+  const afterSep = cleaned.substring(lastSep + 1);
+  const beforeSep = cleaned.substring(0, lastSep);
+
+  // Eğer son ayractan sonra 1-2 hane varsa → ondalık ayraç
+  // Eğer 3+ hane varsa → binlik ayraç (3 hane = binlik, virgülden sonra 3 hane normalde)
+  if (afterSep.length <= 2) {
+    // Ondalık ayraç — öncesi binlik ayraçları temizle
+    const integerPart = beforeSep.replace(/[.,]/g, '');
+    const result = parseFloat(integerPart + '.' + afterSep);
+    return isNaN(result) ? null : result;
+  } else {
+    // Binlik ayraç — tüm ayraçları kaldır, tam sayı
+    const allDigits = cleaned.replace(/[.,]/g, '');
+    const result = parseFloat(allDigits);
+    return isNaN(result) ? null : result;
   }
 }
 
