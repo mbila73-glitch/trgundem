@@ -117,11 +117,21 @@ async function aiSummarize(title, content) {
         return null;
       }
 
+      // Hata varsa log'la
+      if (result.error) {
+        log('  AI error ' + result.error.code + ': ' + (result.error.message || '').slice(0, 100));
+        return null;
+      }
+
+      // Tam yanıtı log'la (debug)
+      var resultStr = JSON.stringify(result).slice(0, 300);
+      log('  AI yanit: ' + resultStr);
+
       if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
         var text = result.candidates[0].content.parts[0].text;
         return text ? text.trim() : null;
       }
-      log('  AI bos yanit (deneme ' + attempt + '/3)');
+      log('  AI candidates bos (deneme ' + attempt + '/3)');
       if (attempt < 3) { await new Promise(function(r) { setTimeout(r, 3000); }); continue; }
       return null;
     } catch (e) {
