@@ -19,8 +19,8 @@ const SUB_TABS: Array<{
   { id: 'kamu', label: 'Kamu / Resmi', icon: FolderTree },
   { id: 'ekonomi', label: 'Ekonomi / Finans', icon: FolderTree },
   { id: 'bilim', label: 'Bilim / Teknoloji', icon: FolderTree },
-  { id: 'spor', label: 'Spor / Magazin', icon: FolderTree },
   { id: 'kultur', label: 'Kültür / Sanat', icon: FolderTree },
+  { id: 'spor', label: 'Spor / Magazin', icon: FolderTree },
   { id: 'ozel', label: 'Özel Haber', icon: Star },
 ];
 
