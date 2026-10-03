@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle
+  AlertCircle, Maximize2, Minimize2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -68,6 +68,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [loadingPub, setLoadingPub] = useState(false);
   const [loadingPending, setLoadingPending] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
 
   // Restart tab state
   type PipelineStatus = {
@@ -430,7 +431,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-        <DialogContent className="flex max-h-[66vh] min-h-[66vh] w-[50vw] max-w-[50vw] flex-col p-0">
+        <DialogContent className={`flex flex-col p-0 transition-all duration-200 ${fullscreen ? 'w-screen h-screen max-w-none max-h-none min-w-screen min-h-screen rounded-none border-0' : 'max-h-[66vh] min-h-[66vh] w-[50vw] max-w-[50vw]'}`}>
           <DialogHeader className="px-6 pt-6 pb-0">
             <DialogTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2"><Lock className="h-5 w-5" /> Yönetici Paneli</span>
@@ -441,6 +442,15 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                   </Button>
                   <Button variant="default" size="sm" onClick={() => setRestartConfirmOpen(true)} disabled={restarting} className="gap-1.5 text-xs bg-news hover:bg-news/90 text-news-foreground border-blue-500">
                     {restarting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Akışı Başlat
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFullscreen(f => !f)}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                    title={fullscreen ? 'Küçült' : 'Tam Ekran'}
+                  >
+                    {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={handleLogout} className="text-xs">Çıkış</Button>
                 </div>
