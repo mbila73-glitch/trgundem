@@ -155,17 +155,24 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     try {
       const r = await fetch('/api/pipeline/status', { cache: 'no-store' });
       if (!r.ok) return;
-      const json = (await r.json()) as PipelineStatus & { ok: boolean };
+      const json = await r.json();
+      // Route yanıtı: { ok, currentStatus, recentLog } — currentStatus içinde
+      const status = json.currentStatus || json;
       setPipelineStatus({
-        stage: json.stage,
-        startedAt: json.startedAt,
-        finishedAt: json.finishedAt,
-        rssRead: json.rssRead,
-        duplicatesFound: json.duplicatesFound,
-        summariesDone: json.summariesDone,
-        publishedCount: json.publishedCount,
-        error: json.error,
+        stage: status.stage,
+        startedAt: status.startedAt,
+        finishedAt: status.finishedAt,
+        rssRead: status.rssRead,
+        duplicatesFound: status.duplicatesFound,
+        summariesDone: status.summariesDone,
+        publishedCount: status.publishedCount,
+        error: status.error,
       });
+      // Pipeline bitti → restarting false
+      if (status.stage === 'done' || status.stage === 'error') {
+        setRestarting(false);
+        setPolling(false);
+      }
     } catch { /* ignore */ }
   }, []);
 
