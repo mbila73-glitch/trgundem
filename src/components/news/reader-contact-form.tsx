@@ -118,7 +118,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  <span>temsilci@trgundem.net</span>
+                  <span className="lowercase">temsilci@trgundem.net</span>
                 </>
               )}
             </button>
