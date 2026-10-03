@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ADMIN_PASSWORD = 'Trgundem123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
 
 // POST /api/admin/login
 // body: { password: string }

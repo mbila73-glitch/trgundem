@@ -3,7 +3,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const ADMIN_PASSWORD = 'Trgundem123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
 
 function checkAuth(req: NextRequest): boolean {
   const auth = req.headers.get('authorization');

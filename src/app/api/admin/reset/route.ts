@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 
-const ADMIN_PASSWORD = 'Trgundem123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
 
 function checkAuth(req: NextRequest): boolean {
   const auth = req.headers.get('authorization');

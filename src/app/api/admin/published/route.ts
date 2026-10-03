@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-const ADMIN_PASSWORD = 'Trgundem123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
 
 function checkAuth(req: NextRequest): boolean {
   const auth = req.headers.get('authorization');
