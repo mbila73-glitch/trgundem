@@ -487,6 +487,51 @@ async function main() {
       }
       log('Added: ' + added + ', Archived: ' + archived + ', AI: ' + aiOk);
 
+      // ====== POST-CYCLE CLEANUP ======
+      // Pipeline bittikten sonra tüm published'ları tara,
+      // aynı/benzer başlığa sahip eskileri SİL (duplicate'e atma, direkt sil)
+      // Bu sayede "aynı haber farklı saatlerde" durumu olmaz
+      try {
+        var allPublished = await globalThis.prisma.publishedArticle.findMany({
+          where: { status: 'published' },
+          select: { id: true, aiTitle: true, aiSummary: true, category: true, latestPublishedAt: true },
+          orderBy: { latestPublishedAt: 'desc' }  // en yeni ilk
+        });
+
+        var seenTitles = [];  // [{ title, summary, id }]
+        var toDelete = [];
+
+        for (var pi = 0; pi < allPublished.length; pi++) {
+          var pub = allPublished[pi];
+          var isDuplicate = false;
+
+          for (var si = 0; si < seenTitles.length; si++) {
+            var sim = titleSimilar(pub.aiTitle, seenTitles[si].aiTitle || '');
+            var simC = contentSimilar(pub.aiSummary || '', seenTitles[si].aiSummary || '');
+            // Eşik: title >= 0.3 veya (title >= 0.15 + content >= 0.3)
+            if (sim >= 0.3 || (sim >= 0.15 && simC >= 0.3)) {
+              // Bu pub daha eski (çünkü allPublished latestPublishedAt desc sıralı)
+              // Yani pub'ı sil
+              isDuplicate = true;
+              break;
+            }
+          }
+
+          if (isDuplicate) {
+            toDelete.push(pub.id);
+          } else {
+            seenTitles.push(pub);
+          }
+        }
+
+        if (toDelete.length > 0) {
+          var delResult = await globalThis.prisma.publishedArticle.deleteMany({
+            where: { id: { in: toDelete } }
+          });
+          log('Post-cycle cleanup: ' + delResult.count + ' tekrar haber silindi (ana sayfada tekrar kalmadi)');
+        }
+      } catch (e) { log('Post-cleanup hatasi: ' + e.message); }
+
       // Eski duplicate'leri sil (7 günden eski) — DB şişmesin
       try {
         var dupCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
