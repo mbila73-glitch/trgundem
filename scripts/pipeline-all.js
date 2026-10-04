@@ -229,14 +229,12 @@ function groupArticles(articles) {
     used.add(i);
     for (var j = i + 1; j < articles.length; j++) {
       if (used.has(j)) continue;
-      // Farklı kategori ise eşleşme
-      var catI = articles[i].category || 'Güncel';
-      var catJ = articles[j].category || 'Güncel';
-      if (catI !== catJ) continue;
+      // Kategori BAĞIMSIZ — aynı haber farklı kategori etiketiyle gelirse yine eşleşir
       var titleSim = titleSimilar(articles[i].title, articles[j].title);
       var contentSim = contentSimilar(articles[i].content || articles[i].description || '', articles[j].content || articles[j].description || '');
-      // Başlık benzer 0.35+ VEYA başlık 0.2+ VE içerik 0.25+
-      if (titleSim >= 0.35 || (titleSim >= 0.2 && contentSim >= 0.25)) {
+      // Eşik DÜŞÜK (0.2) — aynı olay farklı başlıkla gelen haberleri yakala
+      // titleSimilar >= 0.2 VEYA (title >= 0.1 + content >= 0.2)
+      if (titleSim >= 0.2 || (titleSim >= 0.1 && contentSim >= 0.2)) {
         group.articles.push(articles[j]);
         group.sourceIds.add(articles[j].sourceId);
         used.add(j);
