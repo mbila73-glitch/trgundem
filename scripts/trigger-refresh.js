@@ -67,21 +67,94 @@ globalThis.fetch = function(url, options, redirectCount) {
 
 let PrismaClient;
 try { PrismaClient = require('@prisma/client').PrismaClient; } catch (e) { console.error('Prisma:', e.message); process.exit(1); }
-let Parser;
-try { Parser = require('rss-parser'); } catch (e) { console.error('rss-parser:', e.message); process.exit(1); }
 
-// strict:false ile kötü XML'leri tolere et (diğer xml2js ayarları rss-parser'ı bozuyor)
-const parser = new Parser({
-  timeout: 30000,
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (compatible; TRGUNDEM-Pipeline/1.0)',
-    'Accept': 'application/rss+xml, application/xml, text/xml, */*'
+// fast-xml-parser — rss-parser'dan çok daha toleranslı
+let XMLParser;
+try { XMLParser = require('fast-xml-parser').XMLParser; } catch (e) {
+  console.error('fast-xml-parser yükleyin: npm install fast-xml-parser');
+  process.exit(1);
+}
+
+const xmlParser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: '@_',
+  isArray: (tagName, jPath, isLeafNode, isAttribute) => {
+    // 'item' ve 'entry' her zaman array olsun
+    if (['item', 'entry'].includes(tagName)) return true;
+    return false;
   },
-  defaultRSS: 2.0,
-  xml2js: {
-    strict: false
-  }
+  removeNSFromVals: false,
+  allowBooleanAttributes: true,
+  parseAttributeValue: false,
+  tagValueProcessor: (tagName, tagValue) => tagValue,
+  cdataPropName: '__cdata',
+  trimValues: true
 });
+
+// RSS XML'ini parse et, feed objesi döndür
+function parseRss(xml) {
+  const obj = xmlParser.parse(xml, true);
+
+  // RSS 2.0: rss.channel.item[]
+  // Atom 1.0: feed.entry[]
+  // RSS 1.0 (RDF): rdf:RDF.item[]
+  let channel, items;
+
+  if (obj.rss && obj.rss.channel) {
+    channel = obj.rss.channel;
+    items = channel.item || [];
+  } else if (obj.feed) {
+    channel = obj.feed;
+    items = obj.feed.entry || [];
+  } else if (obj['rdf:RDF']) {
+    channel = obj['rdf:RDF'];
+    items = obj['rdf:RDF'].item || [];
+  } else {
+    throw new Error('Feed not recognized (RSS 2.0/Atom 1.0/RDF expected)');
+  }
+
+  if (!Array.isArray(items)) items = items ? [items] : [];
+
+  // Item'ları normalize et
+  return items.map(item => {
+    // CDATA ve textValue'ları çıkar
+    function val(v) {
+      if (v === undefined || v === null) return '';
+      if (typeof v === 'object') {
+        if (v.__cdata !== undefined) return String(v.__cdata);
+        if (v['#text'] !== undefined) return String(v['#text']);
+        return '';
+      }
+      return String(v);
+    }
+
+    const link = val(item.link) || (item.link && item.link['@_href']) || '';
+    const guid = item.guid ? (typeof item.guid === 'object' ? val(item.guid) : item.guid) : '';
+    const pubDateRaw = val(item.pubDate) || val(item.published) || val(item.updated) || val(item['dc:date']);
+    let isoDate = null;
+    if (pubDateRaw) {
+      try {
+        const d = new Date(pubDateRaw);
+        if (!isNaN(d.getTime())) isoDate = d.toISOString();
+      } catch (e) {}
+    }
+
+    return {
+      title: val(item.title) || '(Başlıksız)',
+      link,
+      guid: guid || link,
+      pubDate: pubDateRaw,
+      isoDate,
+      description: val(item.description),
+      content: val(item['content:encoded']) || val(item.content) || val(item.summary),
+      enclosure: item.enclosure,
+      mediaThumbnail: item['media:thumbnail'],
+      mediaContent: item['media:content'],
+      categories: item.category,
+      creator: val(item['dc:creator']) || val(item.creator)
+    };
+  });
+}
 
 function stripHtml(html) {
   if (!html) return '';
@@ -100,12 +173,12 @@ function stripHtml(html) {
 }
 
 function pickImage(item) {
+  if (item.enclosure && item.enclosure['@_url']) return item.enclosure['@_url'];
   if (item.enclosure && item.enclosure.url) return item.enclosure.url;
-  if (item['media:thumbnail'] && item['media:thumbnail'].$ && item['media:thumbnail'].$.url) return item['media:thumbnail'].$.url;
-  if (item['media:content'] && item['media:content'].$ && item['media:content'].$.url) return item['media:content'].$.url;
-  if (item.media && item.media.url) return item.media.url;
-  if (item.image && item.image.url) return item.image.url;
-  const desc = item.content || item.description || item['content:encoded'] || '';
+  if (item.mediaThumbnail && item.mediaThumbnail['@_url']) return item.mediaThumbnail['@_url'];
+  if (item.mediaContent && item.mediaContent['@_url']) return item.mediaContent['@_url'];
+  // description veya content içinde <img src="...">
+  const desc = item.content || item.description || '';
   if (desc) {
     const m = String(desc).match(/<img[^>]+src=["']([^"']+)["']/i);
     if (m) return m[1];
@@ -114,8 +187,10 @@ function pickImage(item) {
 }
 
 function pickCategory(item, sourceCategory) {
-  if (item.categories && item.categories.length > 0) return item.categories[0];
-  if (item.category) return typeof item.category === 'string' ? item.category : (item.category._ || sourceCategory);
+  if (item.categories) {
+    if (Array.isArray(item.categories)) return typeof item.categories[0] === 'object' ? val(item.categories[0]) : item.categories[0];
+    return typeof item.categories === 'object' ? val(item.categories) : item.categories;
+  }
   return sourceCategory;
 }
 
@@ -126,7 +201,12 @@ async function fetchRss(source) {
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const xml = await r.text();
   if (!xml || xml.length < 50) throw new Error('boş yanıt');
-  return await parser.parseString(xml);
+  // HTML dönmüş mü?
+  if (xml.substring(0, 200).toLowerCase().includes('<!doctype html') || xml.substring(0, 200).toLowerCase().includes('<html')) {
+    throw new Error('HTML döndü (RSS değil)');
+  }
+  const items = parseRss(xml);
+  return items;
 }
 
 async function main() {
@@ -156,8 +236,7 @@ async function main() {
       let fetched = 0;
       let added = 0;
       try {
-        const feed = await fetchRss(src);
-        const items = (feed.items || []).slice(0, 50);
+        const items = (await fetchRss(src)).slice(0, 50);
         fetched = items.length;
 
         for (const item of items) {
@@ -165,7 +244,7 @@ async function main() {
             const guid = item.guid || item.link || `${src.id}:${item.title || Date.now()}`;
             const link = item.link || '';
             const title = (item.title || '').trim() || '(Başlıksız)';
-            const pubDateRaw = item.isoDate || item.pubDate || item.pubdate;
+            const pubDateRaw = item.isoDate || item.pubDate;
             let publishedAt;
             try {
               publishedAt = pubDateRaw ? new Date(pubDateRaw) : new Date();
@@ -202,11 +281,11 @@ async function main() {
               if (exists3) continue;
             }
 
-            const rawDescription = stripHtml(item.contentSnippet || item.description || '');
-            const rawContent = stripHtml(item['content:encoded'] || item.content || '');
+            const rawDescription = stripHtml(item.description);
+            const rawContent = stripHtml(item.content);
             const content = rawContent.length >= rawDescription.length ? rawContent : rawDescription;
             const imageUrl = pickImage(item);
-            const author = item.creator || item.author || (item['dc:creator'] && (typeof item['dc:creator'] === 'string' ? item['dc:creator'] : item['dc:creator']._)) || null;
+            const author = item.creator || null;
             const category = pickCategory(item, src.category);
 
             await db.article.create({
