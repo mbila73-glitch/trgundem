@@ -502,6 +502,22 @@ async function main() {
       }
       log('Added: ' + added + ', Archived: ' + archived + ', AI: ' + aiOk);
 
+      // Yayın süresi dolan haberleri arşive taşı (6 saatten eski published)
+      // Bu sayede site "taze" kalır — aynı başlıklar 6 saat sonra kalkar, yenileri gelir
+      try {
+        var staleCutoff = new Date(Date.now() - 6 * 60 * 60 * 1000); // 6 saat
+        var staleResult = await globalThis.prisma.publishedArticle.updateMany({
+          where: {
+            status: 'published',
+            latestPublishedAt: { lt: staleCutoff }
+          },
+          data: { status: 'archived', archivedAt: new Date() }
+        });
+        if (staleResult.count > 0) {
+          log('Yayın süresi dolan haber arşive taşındı: ' + staleResult.count + ' (6 saatten eski)');
+        }
+      } catch (e) { log('Stale arşiv hatası: ' + e.message); }
+
       // ====== POST-CYCLE CLEANUP ======
       // Pipeline bittikten sonra tüm published'ları tara,
       // aynı/benzer başlığa sahip eskileri SİL (duplicate'e atma, direkt sil)
