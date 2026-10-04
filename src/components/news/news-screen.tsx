@@ -349,8 +349,9 @@ export function NewsScreen() {
   const handleLoadMore = async () => {
     setLoadingMore(true);
     try {
+      // offset=25, limit=25 → ikinci batch, toplam 50 haber
       const r = await fetch(
-        '/api/published-articles?layout=all&status=published&offset=30&limit=20',
+        '/api/published-articles?layout=all&status=published&offset=25&limit=25',
         { cache: 'no-store' },
       );
       if (!r.ok) throw new Error('Daha fazla haber yüklenemedi');
