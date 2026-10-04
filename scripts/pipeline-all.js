@@ -347,12 +347,12 @@ async function main() {
       // Tekrar kontrolü KATEGORİ BAĞIMSIZ — tüm kategorilerde aynı/benzer başlık ara
       var existingPublished = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published' },
-        select: { id: true, aiTitle: true, aiSummary: true, category: true, latestPublishedAt: true, status: true },
+        select: { id: true, aiTitle: true, aiSummary: true, category: true, latestPublishedAt: true, sourceCount: true, status: true },
         orderBy: { publishedAt: 'desc' }
       });
       var existingArchived = await globalThis.prisma.publishedArticle.findMany({
         where: { status: { in: ['archived', 'duplicate'] } },
-        select: { id: true, aiTitle: true, aiSummary: true, category: true, status: true },
+        select: { id: true, aiTitle: true, aiSummary: true, category: true, sourceCount: true, status: true },
         orderBy: { archivedAt: 'desc' },
         take: 500
       });
@@ -370,12 +370,16 @@ async function main() {
 
         // TEKRAR KONTROLÜ — kategori BAĞIMSIZ, eşik DÜŞÜK (0.3)
         // Yeni mantık (çok sıkı tekrar yakalama):
-        // - titleSimilar >= 0.3 → eski duplicate, yeni published
-        // - titleSimilar 0.15-0.3 + contentSimilar >= 0.3 → eski duplicate
-        // - < 0.15 → published (yeni haber)
+        // - titleSimilar >= 0.85 (birebir) + published ise: SKIP (create etme, AI çağırma)
+        //   existing'i güncelle (latestPublishedAt, sourceCount)
+        // - titleSimilar >= 0.85 + archived/duplicate ise: yeni published create
+        // - titleSimilar 0.3-0.85: eski duplicate, yeni published (AI yeni)
+        // - titleSimilar 0.15-0.3 + contentSimilar >= 0.3: eski duplicate
+        // - < 0.15: published (yeni haber)
         // Tüm yeni haberler direkt PUBLISHED — pending_review YOK
         var oldArticleToDuplicate = null;
         var alreadyArchived = false;
+        var skipCreate = false;  // birebir aynı başlık + published → create etme
 
         // Önce benzer başlık ara — kategori fark etmez
         for (var j = 0; j < existing.length; j++) {
@@ -388,6 +392,23 @@ async function main() {
           var matched = simTitle >= 0.3 || (simTitle >= 0.15 && simContent >= 0.3);
           if (!matched) continue;
 
+          if (simTitle >= 0.85 && existing[j].status === 'published') {
+            // Birebir aynı başlık + published → SKIP (create etme, AI çağırma)
+            // existing'i güncelle (latestPublishedAt, sourceCount)
+            skipCreate = true;
+            try {
+              await globalThis.prisma.publishedArticle.update({
+                where: { id: existing[j].id },
+                data: {
+                  latestPublishedAt: new Date(),
+                  sourceCount: Math.max(existing[j].sourceCount || 0, sourceCount)
+                }
+              });
+              log('  [Birebir ayni, skip + update] (' + cat + '): ' + firstArticle.title.slice(0, 50));
+            } catch (e) {}
+            break;
+          }
+
           if (existing[j].status === 'published') {
             oldArticleToDuplicate = existing[j];
             log('  [Tekrar bulundu, eski -> duplicate] (' + cat + '/' + (existing[j].category || '?') + '): ' + firstArticle.title.slice(0, 50) + ' (benzerlik: ' + Math.round(simTitle * 100) + '%)');
@@ -396,6 +417,11 @@ async function main() {
             alreadyArchived = true;
             break;
           }
+        }
+
+        if (skipCreate) {
+          skipped++;
+          continue;  // AI çağırma, create etme, sonraki gruba geç
         }
 
         if (alreadyArchived) {
@@ -460,6 +486,28 @@ async function main() {
         } catch (e) { log('  DB hata: ' + e.message); }
       }
       log('Added: ' + added + ', Archived: ' + archived + ', AI: ' + aiOk);
+
+      // Eski duplicate'leri sil (7 günden eski) — DB şişmesin
+      try {
+        var dupCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        var oldDups = await globalThis.prisma.publishedArticle.deleteMany({
+          where: { status: 'duplicate', archivedAt: { lt: dupCutoff } }
+        });
+        if (oldDups.count > 0) {
+          log('Eski duplicate silindi: ' + oldDups.count + ' kayit (7 günden eski)');
+        }
+      } catch (e) { log('Eski duplicate silme hatasi: ' + e.message); }
+
+      // Eski archived haberleri sil (30 günden eski) — DB şişmesin
+      try {
+        var archCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        var oldArchived = await globalThis.prisma.publishedArticle.deleteMany({
+          where: { status: 'archived', archivedAt: { lt: archCutoff } }
+        });
+        if (oldArchived.count > 0) {
+          log('Eski archived silindi: ' + oldArchived.count + ' kayit (30 günden eski)');
+        }
+      } catch (e) { log('Eski archived silme hatasi: ' + e.message); }
 
       // Arşiv: kategori bazlı 15'den fazla varsa eskiyi arşive taşı
       for (var ci = 0; ci < Object.keys(CATEGORY_MIN_SOURCES).length; ci++) {
