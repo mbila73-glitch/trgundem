@@ -90,9 +90,14 @@ async function aiFindDuplicates(titles) {
     'Format: JSON array, her grup [tutulacak_index, silinecek_index1, silinecek_index2, ...]\n' +
     'Örnek: [[0, 2, 5], [1, 3]]\n' +
     'Tekrar yoksa: []\n\n' +
-    'ÖNEMLI: Sadece AYNI haberi anlatanları grupla. Benzer ama farklı haberleri DEĞİL.\n' +
-    '"İstanbul baskını" ile "İstanbul gastronomi" FARKLI haberlerdir.\n' +
-    '"KPSS sınavı başladı" ile "KPSS sonuçları açıklandı" FARKLI haberlerdir.\n\n' +
+    'ÖNEMLI KURALLAR:\n' +
+    '1. Sadece AYNI haberi anlatanları grupla\n' +
+    '2. Benzer ama FARKLI haberleri gruplama\n' +
+    '3. Bu başlıklar ana sayfadaki 50 haberdir\n' +
+    '4. Bir haber hem ana sayfada hem kategori sekmesinde görünebilir — bu TEKRAR DEĞİLDİR\n' +
+    '5. Sadece listede aynı içeriğe sahip birden fazla kayıt varsa tekrardır\n' +
+    '6. "İstanbul baskını" ile "İstanbul gastronomi" FARKLI haberlerdir\n' +
+    '7. "KPSS sınavı başladı" ile "KPSS sonuçları açıklandı" FARKLI haberlerdir\n\n' +
     'Başlıklar:\n';
 
   titles.forEach(function(t, i) {
