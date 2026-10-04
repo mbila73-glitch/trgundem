@@ -85,20 +85,23 @@ async function aiFindDuplicates(titles) {
   if (titles.length < 2) return [];
 
   var prompt = 'Aşağıdaki haber başlıklarından hangileri AYNI haberi anlatıyor?\n' +
-    'Sadece tekrar olanları grupla. Her grupta en düşük numara en yeni (tutulacak),\n' +
-    'yüksek numaralar silinecek.\n\n' +
+    'Sadece tekrar olanları grupla. Her grupta en düşük numara EN YENİ (TUTULACAK),\n' +
+    'yüksek numaralar DAHA ESKİ (SİLİNECEK).\n\n' +
+    'Liste sıralaması: 0 = en yeni (en üstte), 49 = en eski (en altta).\n' +
+    'Tekrar varsa, en yeni olanı (en düşük numara) TUT, eskileri (yüksek numara) SİL.\n\n' +
     'Format: JSON array, her grup [tutulacak_index, silinecek_index1, silinecek_index2, ...]\n' +
-    'Örnek: [[0, 2, 5], [1, 3]]\n' +
+    'Örnek: [[0, 2, 5], [1, 3]] → 0 numarayi tut 2 ve 5 sil, 1 tut 3 sil\n' +
     'Tekrar yoksa: []\n\n' +
     'ÖNEMLI KURALLAR:\n' +
     '1. Sadece AYNI haberi anlatanları grupla\n' +
     '2. Benzer ama FARKLI haberleri gruplama\n' +
-    '3. Bu başlıklar ana sayfadaki 50 haberdir\n' +
+    '3. Bu başlıklar ana sayfadaki 50 haberdir (en yeniden eskiye sıralı)\n' +
     '4. Bir haber hem ana sayfada hem kategori sekmesinde görünebilir — bu TEKRAR DEĞİLDİR\n' +
     '5. Sadece listede aynı içeriğe sahip birden fazla kayıt varsa tekrardır\n' +
     '6. "İstanbul baskını" ile "İstanbul gastronomi" FARKLI haberlerdir\n' +
-    '7. "KPSS sınavı başladı" ile "KPSS sonuçları açıklandı" FARKLI haberlerdir\n\n' +
-    'Başlıklar:\n';
+    '7. "KPSS sınavı başladı" ile "KPSS sonuçları açıklandı" FARKLI haberlerdir\n' +
+    '8. Tekrar grubunda HER ZAMAN en düşük numara (en yeni) tutulur\n\n' +
+    'Başlıklar (en yeni en üstte):\n';
 
   titles.forEach(function(t, i) {
     prompt += i + '. ' + decodeHtmlEntities(t).slice(0, 100) + '\n';
