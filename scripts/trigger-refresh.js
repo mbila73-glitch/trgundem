@@ -187,11 +187,16 @@ function pickImage(item) {
 }
 
 function pickCategory(item, sourceCategory) {
+  // ÖNCELİK: source kategorisi (RSS feed category'sine güvenme)
+  // Kullanıcı 105 kaynağı kategori bazlı seed etti, source.category doğru
+  // RSS feed'inin category'si farklı olabilir (örn: "Gündem" → Siyaset source olmalı)
+  if (sourceCategory) return sourceCategory;
+  // Source kategorisi yoksa RSS'ten gelen category kullan
   if (item.categories) {
     if (Array.isArray(item.categories)) return typeof item.categories[0] === 'object' ? val(item.categories[0]) : item.categories[0];
     return typeof item.categories === 'object' ? val(item.categories) : item.categories;
   }
-  return sourceCategory;
+  return 'Güncel';
 }
 
 async function fetchRss(source) {
