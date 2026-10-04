@@ -162,8 +162,25 @@ async function aiSummarize(title, contents, category) {
   return bestText;
 }
 
-// Başlık benzerliği — Siyasetçi isimleri tek başına yeterli değil, en az 2 anlamlı kelime
-function normalizeTitle(t) { return (t || '').toLowerCase().replace(/[''`]/g, "'").replace(/[^\w\sçğıöşü]/g, ' ').replace(/\s+/g, ' ').trim(); }
+// Başlık benzerliği — HTML entity decode + Siyasetçi isimleri tek başına yeterli değil, en az 2 anlamlı kelime
+function normalizeTitle(t) {
+  if (!t) return '';
+  // HTML entity decode (&#039; -> ', &amp; -> &, &quot; -> ", &nbsp; -> space, &#x27; -> ')
+  return String(t)
+    .replace(/&#x([0-9a-fA-F]+);/g, function(_, h) { return String.fromCharCode(parseInt(h, 16)); })
+    .replace(/&#(\d+);/g, function(_, d) { return String.fromCharCode(parseInt(d, 10)); })
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .toLowerCase()
+    .replace(/[''`]/g, "'")
+    .replace(/[^\w\sçğıöşü]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 // Sık geçen kelime kara listesi (siyasetçi isimleri vb. — tek başına haber eşleştirme)
 var STOP_WORDS = new Set([
