@@ -368,14 +368,14 @@ async function main() {
         var cat = firstArticle.category || 'Güncel';
         var sourceCount = group.sourceIds.size;
 
-        // TEKRAR KONTROLÜ — kategori BAĞIMSIZ, eşik 0.5 (düşük)
-        // Yeni mantık:
-        // - titleSimilar >= 0.5 → eski duplicate, yeni published
-        // - titleSimilar 0.2-0.5 + contentSimilar >= 0.25 → eski duplicate, yeni published
-        // - < 0.2 → published (yeni haber)
+        // TEKRAR KONTROLÜ — kategori BAĞIMSIZ, eşik DÜŞÜK (0.3)
+        // Yeni mantık (çok sıkı tekrar yakalama):
+        // - titleSimilar >= 0.3 → eski duplicate, yeni published
+        // - titleSimilar 0.15-0.3 + contentSimilar >= 0.3 → eski duplicate
+        // - < 0.15 → published (yeni haber)
         // Tüm yeni haberler direkt PUBLISHED — pending_review YOK
-        var oldArticleToDuplicate = null;     // published ise → duplicate statüsüne
-        var alreadyArchived = false;          // arşivde/duplicate'te var, yine de yayınla
+        var oldArticleToDuplicate = null;
+        var alreadyArchived = false;
 
         // Önce benzer başlık ara — kategori fark etmez
         for (var j = 0; j < existing.length; j++) {
@@ -384,8 +384,8 @@ async function main() {
             firstArticle.content || firstArticle.description || '',
             existing[j].aiSummary || ''
           );
-          // Eşik: title >= 0.5 VEYA (title >= 0.2 VE content >= 0.25)
-          var matched = simTitle >= 0.5 || (simTitle >= 0.2 && simContent >= 0.25);
+          // Eşik: title >= 0.3 VEYA (title >= 0.15 VE content >= 0.3)
+          var matched = simTitle >= 0.3 || (simTitle >= 0.15 && simContent >= 0.3);
           if (!matched) continue;
 
           if (existing[j].status === 'published') {
