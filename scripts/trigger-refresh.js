@@ -19,10 +19,12 @@ try {
   });
 } catch (e) {}
 
-// fetch override — native http (Wasm yok)
-globalThis.fetch = function(url, options) {
+// fetch override — native http, redirect takip (max 5 seviye)
+globalThis.fetch = function(url, options, redirectCount) {
   options = options || {};
+  redirectCount = redirectCount || 0;
   return new Promise(function(resolve, reject) {
+    if (redirectCount > 5) { reject(new Error('too many redirects')); return; }
     var lib = url.indexOf('https') === 0 ? require('https') : require('http');
     var urlObj = new URL(url);
     var headers = Object.assign({}, options.headers || {});
@@ -34,6 +36,16 @@ globalThis.fetch = function(url, options) {
       method: options.method || 'GET',
       headers: headers
     }, function(resp) {
+      // Redirect takip (301, 302, 307, 308)
+      if ([301, 302, 307, 308].includes(resp.statusCode) && resp.headers.location) {
+        var newUrl = resp.headers.location;
+        // Göreceli URL → tam URL
+        if (newUrl.startsWith('/')) {
+          newUrl = urlObj.protocol + '//' + urlObj.host + newUrl;
+        }
+        resolve(globalThis.fetch(newUrl, options, redirectCount + 1));
+        return;
+      }
       var chunks = [];
       resp.on('data', function(c) { chunks.push(c); });
       resp.on('end', function() {
