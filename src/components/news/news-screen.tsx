@@ -351,9 +351,10 @@ export function NewsScreen() {
   const handleLoadMore = async () => {
     setLoadingMore(true);
     try {
-      // offset=25, limit=25 → ikinci batch, toplam 50 haber
+      // İlk batch'teki ID'leri exclude olarak gönder — tekrar olmasın
+      const excludeIds = articles.map(a => a.id).join(',');
       const r = await fetch(
-        '/api/published-articles?layout=all&status=published&offset=25&limit=25',
+        `/api/published-articles?layout=all&status=published&limit=25&exclude=${encodeURIComponent(excludeIds)}`,
         { cache: 'no-store' },
       );
       if (!r.ok) throw new Error('Daha fazla haber yüklenemedi');

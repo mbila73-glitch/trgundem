@@ -82,6 +82,7 @@ export async function GET(req: NextRequest) {
         for (const { cat } of quotas) {
           if (extrasByCat[cat] && extrasByCat[cat][roundIndex]) {
             all.push(extrasByCat[cat][roundIndex]);
+            excludeIds.push(extrasByCat[cat][roundIndex].id);
             added = true;
           }
           if (all.length >= 25) break;
@@ -100,16 +101,21 @@ export async function GET(req: NextRequest) {
         total: all.length,
         totalPublished: maxTotal,
         hasMore: maxTotal > all.length,
+        // İlk batch'teki ID'leri dön — ikinci batch'te exclude için
+        firstBatchIds: all.map(a => a.id),
       });
     }
 
-    // İkinci batch ("Diğer Haberler"): kategorisiz, en yeni kalanlar (offset 25'den itibaren)
+    // İkinci batch ("Diğer Haberler"): ilk batch'teki ID'leri HARİÇ TUT
+    // exclude parametresi: comma-separated ID listesi
+    const excludeParam = sp.get('exclude') ?? '';
+    const excludeIds = excludeParam ? excludeParam.split(',').filter(Boolean) : [];
+
     const limit = Math.min(Number(sp.get('limit') ?? 25), 25);
     const articles = await db.publishedArticle.findMany({
-      where: { status },
+      where: { status, id: { notIn: excludeIds } },
       orderBy: { latestPublishedAt: 'desc' },
       take: limit,
-      skip: offset,
     });
     const totalPublished = await db.publishedArticle.count({ where: { status } });
     const maxTotal = Math.min(totalPublished, 50);
@@ -117,7 +123,7 @@ export async function GET(req: NextRequest) {
       articles,
       total: articles.length,
       totalPublished: maxTotal,
-      hasMore: offset + articles.length < maxTotal,
+      hasMore: maxTotal > (excludeIds.length + articles.length),
     });
   }
 
