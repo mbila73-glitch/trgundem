@@ -349,6 +349,8 @@ export function NewsScreen() {
   }, [active]);
 
   const handleLoadMore = async () => {
+    // Sadece 1 kez basılabilir — 50'ye ulaşınca çık
+    if (articles.length >= 50 || loadingMore) return;
     setLoadingMore(true);
     try {
       // İlk batch'teki ID'leri exclude olarak gönder — tekrar olmasın
@@ -363,7 +365,11 @@ export function NewsScreen() {
         hasMore?: boolean;
       };
       setArticles((prev) => [...prev, ...(json.articles ?? [])]);
+      // 50'ye ulaşınca hasMore false — düğme kaybolsun
       setHasMore(json.hasMore ?? false);
+      if (articles.length + (json.articles?.length ?? 0) >= 50) {
+        setHasMore(false);
+      }
     } catch {
       setHasMore(false);
     } finally {
@@ -523,13 +529,13 @@ export function NewsScreen() {
             ))}
           </div>
 
-          {active === 'all' && hasMore && (
+          {active === 'all' && hasMore && articles.length < 50 && (
             <div className="mt-6 flex justify-center">
               <Button
                 variant="outline"
                 size="lg"
                 onClick={handleLoadMore}
-                disabled={loadingMore}
+                disabled={loadingMore || articles.length >= 50}
                 className="gap-2"
               >
                 {loadingMore ? (
