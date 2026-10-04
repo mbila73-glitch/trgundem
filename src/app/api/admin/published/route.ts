@@ -19,6 +19,7 @@ function checkAuth(req: NextRequest): boolean {
 //   ?status=pending_review — sadece pending review'deki haberler
 //   ?status=published — sadece yayındaki (default)
 //   ?status=archived — arşivdekiler
+//   ?status=duplicate — tekrar olanlar (eski birebir aynı başlıklar)
 //   ?include=pending — yayındaki + pending beraber
 export async function GET(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
@@ -31,6 +32,8 @@ export async function GET(req: NextRequest) {
     statusFilter = ['pending_review'];
   } else if (statusParam === 'archived') {
     statusFilter = ['archived'];
+  } else if (statusParam === 'duplicate') {
+    statusFilter = ['duplicate'];
   } else if (includePending) {
     statusFilter = ['published', 'draft', 'pending_review'];
   } else {

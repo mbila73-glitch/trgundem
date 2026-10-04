@@ -155,15 +155,15 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setLoadingArchived(false); }
   }, [token]);
 
-  // Pending review haberleri yükle
+  // Duplicate (Tekrarlar) haberleri yükle — eski birebir aynı başlıklar
   const loadPending = useCallback(async () => {
     if (!token) return;
     setLoadingPending(true);
     try {
-      const r = await fetch('/api/admin/published?status=pending_review', { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetch('/api/admin/published?status=duplicate', { headers: { Authorization: `Bearer ${token}` } });
       const json = (await r.json()) as { articles?: PubArticle[] };
       setPendingArticles(json.articles ?? []);
-    } catch { toast.error('Bekleyen haberler yüklenemedi'); }
+    } catch { toast.error('Tekrar haberler yüklenemedi'); }
     finally { setLoadingPending(false); }
   }, [token]);
 
