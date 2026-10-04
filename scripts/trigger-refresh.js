@@ -70,7 +70,7 @@ try { PrismaClient = require('@prisma/client').PrismaClient; } catch (e) { conso
 let Parser;
 try { Parser = require('rss-parser'); } catch (e) { console.error('rss-parser:', e.message); process.exit(1); }
 
-// strict:false ile kötü XML'leri tolere et
+// strict:false ile kötü XML'leri tolere et (diğer xml2js ayarları rss-parser'ı bozuyor)
 const parser = new Parser({
   timeout: 30000,
   headers: {
@@ -79,12 +79,7 @@ const parser = new Parser({
   },
   defaultRSS: 2.0,
   xml2js: {
-    strict: false,
-    trim: true,
-    normalizeTags: true,
-    ignoreAttrs: false,
-    mergeAttrs: true,
-    explicitArray: false
+    strict: false
   }
 });
 
