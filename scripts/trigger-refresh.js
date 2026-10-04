@@ -222,6 +222,7 @@ async function main() {
 
   let totalFetched = 0;
   let totalAdded = 0;
+  let skippedDuplicates = 0;
   let failedSources = 0;
   const errors = [];
   const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -281,6 +282,33 @@ async function main() {
               if (exists3) continue;
             }
 
+            // Duplicate 4: KATEGORİ BAĞIMSIZ — tüm kaynaklarda başlık kontrolü
+            // Başlığın normalize edilmiş ilk 40 karakteri eşitse skip
+            // Bu, "aynı haber farklı kaynakta" durumunu yakalar (RSS öncesi eleme)
+            const titleNorm = title.toLowerCase()
+              .replace(/[''`]/g, "'")
+              .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+              .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
+              .replace(/&\w+;/g, ' ')
+              .replace(/[^\w\sçğıöşü]/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 40);
+            if (titleNorm.length > 10) {
+              // Tüm kaynaklarda, son 24 saatte, benzer başlık var mı
+              const exists4 = await db.article.findFirst({
+                where: {
+                  title: { startsWith: titleNorm.slice(0, 25) },
+                  publishedAt: { gte: since24 }
+                },
+                select: { id: true }
+              });
+              if (exists4) {
+                skippedDuplicates++;
+                continue;
+              }
+            }
+
             const rawDescription = stripHtml(item.description);
             const rawContent = stripHtml(item.content);
             const content = rawContent.length >= rawDescription.length ? rawContent : rawDescription;
@@ -327,6 +355,7 @@ async function main() {
   console.log(`İşlenen kaynak: ${sources.length}`);
   console.log(`Çekilen öğe:    ${totalFetched}`);
   console.log(`Eklenen makale: ${totalAdded}`);
+  console.log(`Tekrar elendi (kategori bağımsız): ${skippedDuplicates}`);
   console.log(`Başarısız kaynak: ${failedSources}`);
   if (errors.length > 0) {
     console.log('');
