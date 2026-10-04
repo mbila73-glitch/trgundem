@@ -432,7 +432,7 @@ async function main() {
         try {
           var publishTime = new Date(Date.now() - i * 60000);
           // Tüm yeni haberler direkt PUBLISHED — pending_review KALDIRILDI
-          await globalThis.prisma.publishedArticle.create({
+          var createdArticle = await globalThis.prisma.publishedArticle.create({
             data: {
               aiTitle: firstArticle.title,
               aiSummary: summaryText.slice(0, 2000),
@@ -448,6 +448,15 @@ async function main() {
             }
           });
           added++;
+          // CRITICAL: yeni create edileni existing listesine ekle
+          // ki cycle içinde aynı başlıkla başka grup gelirse onu görelim
+          existing.push({
+            id: createdArticle.id,
+            aiTitle: firstArticle.title,
+            aiSummary: summaryText.slice(0, 2000),
+            category: cat,
+            status: 'published'
+          });
         } catch (e) { log('  DB hata: ' + e.message); }
       }
       log('Added: ' + added + ', Archived: ' + archived + ', AI: ' + aiOk);
