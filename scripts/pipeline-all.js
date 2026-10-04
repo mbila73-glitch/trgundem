@@ -97,6 +97,20 @@ var CATEGORY_MIN_WORDS = {
   'Aktüel': 100
 };
 
+// HTML entity decode — publishedArticle.aiTitle temiz olsun
+function decodeHtmlEntities(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&#x([0-9a-fA-F]+);/g, function(_, h) { return String.fromCharCode(parseInt(h, 16)); })
+    .replace(/&#(\d+);/g, function(_, d) { return String.fromCharCode(parseInt(d, 10)); })
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
 function countWords(text) {
   if (!text) return 0;
   return text.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
@@ -220,7 +234,9 @@ function contentSimilar(c1, c2) {
   return common / Math.max(w1.length, w2.length);
 }
 
-// Gruplama — başlık benzerliği DÜŞÜK (0.35) + içerik benzerliği YÜKSEK (0.25) veya başlık YÜKSEK (0.55)
+// Gruplama — başlık benzerliği 0.3 + içerik benzerliği 0.4 (combo)
+// Eşik yüksek — alakasız haberler aynı grupta birleşmesin
+// "İstanbul baskını" vs "İstanbul gastronomi" -> titleSimilar düşük, ayrı grup
 function groupArticles(articles) {
   var groups = [], used = new Set();
   for (var i = 0; i < articles.length; i++) {
@@ -232,9 +248,9 @@ function groupArticles(articles) {
       // Kategori BAĞIMSIZ — aynı haber farklı kategori etiketiyle gelirse yine eşleşir
       var titleSim = titleSimilar(articles[i].title, articles[j].title);
       var contentSim = contentSimilar(articles[i].content || articles[i].description || '', articles[j].content || articles[j].description || '');
-      // Eşik DÜŞÜK (0.2) — aynı olay farklı başlıkla gelen haberleri yakala
-      // titleSimilar >= 0.2 VEYA (title >= 0.1 + content >= 0.2)
-      if (titleSim >= 0.2 || (titleSim >= 0.1 && contentSim >= 0.2)) {
+      // Eşik: title >= 0.3 (yüksek) VEYA (title >= 0.15 + content >= 0.4 yüksek)
+      // Bu, alakasız haberlerin aynı grupta olmasını önler
+      if (titleSim >= 0.3 || (titleSim >= 0.15 && contentSim >= 0.4)) {
         group.articles.push(articles[j]);
         group.sourceIds.add(articles[j].sourceId);
         used.add(j);
@@ -475,7 +491,7 @@ async function main() {
           // Tüm yeni haberler direkt PUBLISHED — pending_review KALDIRILDI
           var createdArticle = await globalThis.prisma.publishedArticle.create({
             data: {
-              aiTitle: firstArticle.title,
+              aiTitle: decodeHtmlEntities(firstArticle.title),
               aiSummary: summaryText.slice(0, 2000),
               category: cat,
               imageUrl: bestImage,
@@ -493,7 +509,7 @@ async function main() {
           // ki cycle içinde aynı başlıkla başka grup gelirse onu görelim
           existing.push({
             id: createdArticle.id,
-            aiTitle: firstArticle.title,
+            aiTitle: decodeHtmlEntities(firstArticle.title),
             aiSummary: summaryText.slice(0, 2000),
             category: cat,
             status: 'published'
