@@ -343,21 +343,22 @@ async function main() {
       });
       log('Kategori limitlerine göre seçilen grup: ' + topGroups.length);
 
-      // Mevcut yayınlanan VE arşivdeki haberleri al (birebir aynı başlık tekrarını kesin önle)
+      // Mevcut yayınlanan VE arşiv/duplicate haberleri al (birebir + benzer kontrol)
+      // Tekrar kontrolü KATEGORİ BAĞIMSIZ — tüm kategorilerde aynı/benzer başlık ara
       var existingPublished = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published' },
-        select: { id: true, aiTitle: true, category: true, latestPublishedAt: true, status: true },
+        select: { id: true, aiTitle: true, aiSummary: true, category: true, latestPublishedAt: true, status: true },
         orderBy: { publishedAt: 'desc' }
       });
       var existingArchived = await globalThis.prisma.publishedArticle.findMany({
-        where: { status: 'archived' },
-        select: { id: true, aiTitle: true, category: true, status: true },
+        where: { status: { in: ['archived', 'duplicate'] } },
+        select: { id: true, aiTitle: true, aiSummary: true, category: true, status: true },
         orderBy: { archivedAt: 'desc' },
-        take: 200
+        take: 500
       });
-      // Birleşik liste (yayında + arşiv) — kategori farkı gözetmeksizin aynı başlık ara
+      // Birleşik liste (yayında + arşiv + duplicate) — kategori farkı gözetmeksizin aynı başlık ara
       var existing = existingPublished.concat(existingArchived);
-      log('Mevcut haber (yayında ' + existingPublished.length + ' + arşiv ' + existingArchived.length + ')');
+      log('Mevcut haber (yayında ' + existingPublished.length + ' + arşiv/dup ' + existingArchived.length + ')');
 
       var added = 0, skipped = 0, aiOk = 0, archived = 0, pendingCount = 0;
       for (var i = 0; i < topGroups.length; i++) {
@@ -367,37 +368,32 @@ async function main() {
         var cat = firstArticle.category || 'Güncel';
         var sourceCount = group.sourceIds.size;
 
-        // 3 KATMANLI EŞLEŞTİRME (yeni mantık — pending_review KALDIRILDI):
-        // 1) Birebir aynı başlık (>=0.85) → eski published 'duplicate' statüsüne (arşive DEĞİL)
-        //    Yenisi direkt PUBLISHED — Ana sayfada görünür
-        //    Eski 'duplicate' → "Tekrarlar" sekmesinde görünür (ana sayfada değil)
-        // 2) %50+ benzer → YENİSİ PUBLISHED, eskisi published kalsın (dokunma)
-        // 3) Düşük benzerlik → normal PUBLISHED
-        // Pending_review tamamen kaldırıldı — tüm yeni haberler direkt yayında
+        // TEKRAR KONTROLÜ — kategori BAĞIMSIZ, eşik 0.5 (düşük)
+        // Yeni mantık:
+        // - titleSimilar >= 0.5 → eski duplicate, yeni published
+        // - titleSimilar 0.2-0.5 + contentSimilar >= 0.25 → eski duplicate, yeni published
+        // - < 0.2 → published (yeni haber)
+        // Tüm yeni haberler direkt PUBLISHED — pending_review YOK
         var oldArticleToDuplicate = null;     // published ise → duplicate statüsüne
-        var alreadyArchived = false;          // arşivde var, yine de yayınla
+        var alreadyArchived = false;          // arşivde/duplicate'te var, yine de yayınla
 
-        // Birebir eşleşme ara (>=0.85) — eskisi published ise duplicate yap
+        // Önce benzer başlık ara — kategori fark etmez
         for (var j = 0; j < existing.length; j++) {
-          var simBirebir = titleSimilar(firstArticle.title, existing[j].aiTitle || '');
-          if (simBirebir < 0.85) continue;
+          var simTitle = titleSimilar(firstArticle.title, existing[j].aiTitle || '');
+          var simContent = contentSimilar(
+            firstArticle.content || firstArticle.description || '',
+            existing[j].aiSummary || ''
+          );
+          // Eşik: title >= 0.5 VEYA (title >= 0.2 VE content >= 0.25)
+          var matched = simTitle >= 0.5 || (simTitle >= 0.2 && simContent >= 0.25);
+          if (!matched) continue;
+
           if (existing[j].status === 'published') {
             oldArticleToDuplicate = existing[j];
+            log('  [Tekrar bulundu, eski -> duplicate] (' + cat + '/' + (existing[j].category || '?') + '): ' + firstArticle.title.slice(0, 50) + ' (benzerlik: ' + Math.round(simTitle * 100) + '%)');
             break;
           } else if (existing[j].status === 'archived' || existing[j].status === 'duplicate') {
             alreadyArchived = true;
-            break;
-          }
-        }
-
-        // %50+ benzer varsa sadece log yaz (eskisi published kalsın, yenisi published)
-        if (!oldArticleToDuplicate && !alreadyArchived) {
-          for (var k = 0; k < existing.length; k++) {
-            var simSimilar = titleSimilar(firstArticle.title, existing[k].aiTitle || '');
-            if (simSimilar < 0.5) continue;
-            if (existing[k].status === 'published') {
-              log('  [%50+ benzer, eskisi published kalsın] (' + cat + '): ' + firstArticle.title.slice(0, 50) + ' (benzerlik: ' + Math.round(simSimilar * 100) + '%)');
-            }
             break;
           }
         }
@@ -412,7 +408,7 @@ async function main() {
               data: { status: 'duplicate', archivedAt: new Date() }
             });
             archived++;
-            log('  [Eski → duplicate] (' + cat + '): ' + (oldArticleToDuplicate.aiTitle || '').slice(0, 50));
+            log('  [Eski -> duplicate] (' + cat + '): ' + (oldArticleToDuplicate.aiTitle || '').slice(0, 50));
           } catch (e) {}
         }
 

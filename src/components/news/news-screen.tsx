@@ -311,12 +311,14 @@ export function NewsScreen() {
     Promise.resolve().then(() => setError(null));
     setHasMore(false);
 
+    // 'all' kategorisinde layout=all → 25 haber + "Diğer" ile 25 daha
+    // Kategori bazında ise per kategori limit
     const url =
       active === 'all'
-        ? '/api/published-articles?limit=100&status=published'
+        ? '/api/published-articles?layout=all&status=published'
         : `/api/published-articles?category=${encodeURIComponent(
             CATEGORY_MAP[active] ?? 'Güncel',
-          )}&limit=${CATEGORY_LIMITS[CATEGORY_MAP[active] ?? 'Güncel'] ?? 30}&status=published`;
+          )}&limit=${CATEGORY_LIMITS[CATEGORY_MAP[active] ?? 'Güncel'] ?? 25}&status=published`;
 
     fetch(url, { cache: 'no-store' })
       .then(async (r) => {
