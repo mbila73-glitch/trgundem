@@ -93,7 +93,7 @@ var CATEGORY_MIN_WORDS = {
   'Bilim / Teknoloji': 80,
   'Kültür / Sanat': 100,
   'Spor / Magazin': 80,
-  'Güncel': 100,
+  'Siyaset': 100,
   'Aktüel': 100
 };
 
@@ -265,7 +265,7 @@ function groupArticles(articles) {
 var CATEGORY_MIN_SOURCES = {
   'Siyaset': 3,
   'Ekonomi / Finans': 3,
-  'Güncel': 2,
+  'Siyaset': 2,
   'Kamu / Resmi': 2,
   'Bilim / Teknoloji': 2,
   'Kültür / Sanat': 2,
@@ -276,7 +276,7 @@ var CATEGORY_MIN_SOURCES = {
 var CATEGORY_PUBLISH_LIMITS = {
   'Siyaset': 15,
   'Ekonomi / Finans': 10,
-  'Güncel': 5,
+  'Siyaset': 5,
   'Kamu / Resmi': 5,
   'Bilim / Teknoloji': 5,
   'Kültür / Sanat': 5,
@@ -348,7 +348,7 @@ async function main() {
 
       // Kategori bazlı min kaynak filtrele
       var multiSource = groups.filter(function(g) {
-        var cat = g.articles[0].category || 'Güncel';
+        var cat = g.articles[0].category || 'Siyaset';
         var minSources = CATEGORY_MIN_SOURCES[cat] || 2;
         return g.sourceIds.size >= minSources;
       });
@@ -361,7 +361,7 @@ async function main() {
       // Her kategori için en çok kaynaklı ilk N grup (Siyaset:15, Ekonomi:10, diğerleri:5)
       var byCategory = {};
       multiSource.forEach(function(g) {
-        var cat = g.articles[0].category || 'Güncel';
+        var cat = g.articles[0].category || 'Siyaset';
         if (!byCategory[cat]) byCategory[cat] = [];
         byCategory[cat].push(g);
       });
@@ -402,11 +402,11 @@ async function main() {
         var catSourcesByCat = {};
         for (var gi = 0; gi < groupArticlesList.length; gi++) {
           var ga = groupArticlesList[gi];
-          var gcat = ga.category || 'Güncel';
+          var gcat = ga.category || 'Siyaset';
           if (!catSourcesByCat[gcat]) catSourcesByCat[gcat] = new Set();
           catSourcesByCat[gcat].add(ga.sourceId);
         }
-        var bestCat = firstArticle.category || 'Güncel';
+        var bestCat = firstArticle.category || 'Siyaset';
         var bestCount = 0;
         Object.keys(catSourcesByCat).forEach(function(c) {
           if (catSourcesByCat[c].size > bestCount) {

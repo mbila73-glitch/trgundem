@@ -25,7 +25,7 @@ const SUB_TABS: Array<{
 ];
 
 const CATEGORY_MAP: Record<string, string> = {
-  guncel: 'Güncel',
+  guncel: 'Siyaset',
   kamu: 'Kamu / Resmi',
   ekonomi: 'Ekonomi / Finans',
   bilim: 'Bilim / Teknoloji',
@@ -35,7 +35,7 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 const CATEGORY_LIMITS: Record<string, number> = {
-  'Güncel': 10,
+  'Siyaset': 15,
   'Kamu / Resmi': 7,
   'Ekonomi / Finans': 7,
   'Spor / Magazin': 5,
