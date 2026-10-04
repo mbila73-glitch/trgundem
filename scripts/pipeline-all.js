@@ -396,7 +396,25 @@ async function main() {
         var group = topGroups[i];
         var groupArticlesList = group.articles;
         var firstArticle = groupArticlesList[0];
-        var cat = firstArticle.category || 'Güncel';
+        // GRUBUN KATEGORISI = en cok unique source'a sahip kategori (çoğunluk)
+        // Bu, "Spor kategorisinde haber yoksa Spor satırı boş kalsın" mantığını sağlar
+        // Önceki: firstArticle.category (rastgele) → yanlış kategori
+        var catSourcesByCat = {};
+        for (var gi = 0; gi < groupArticlesList.length; gi++) {
+          var ga = groupArticlesList[gi];
+          var gcat = ga.category || 'Güncel';
+          if (!catSourcesByCat[gcat]) catSourcesByCat[gcat] = new Set();
+          catSourcesByCat[gcat].add(ga.sourceId);
+        }
+        var bestCat = firstArticle.category || 'Güncel';
+        var bestCount = 0;
+        Object.keys(catSourcesByCat).forEach(function(c) {
+          if (catSourcesByCat[c].size > bestCount) {
+            bestCount = catSourcesByCat[c].size;
+            bestCat = c;
+          }
+        });
+        var cat = bestCat;
         var sourceCount = group.sourceIds.size;
 
         // TEKRAR KONTROLÜ — kategori BAĞIMSIZ, eşik DÜŞÜK (0.3)
