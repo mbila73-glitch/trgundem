@@ -21,9 +21,11 @@ export async function GET(req: NextRequest) {
       // ====== ANA SAYFA 25 HABER DÜZENİ ======
       // 1. BAŞ HABER: Özel kategoride varsa ilk Özel, yoksa en yüksek sourceCount (en çok tekrar eden)
       // 2. KATEGORI KOTALARI (baş hariç):
-      //    Siyaset 9 + Ekonomi 6 + Kamu 3 + Kültür 3 + Spor 3 = 24
+      //    Siyaset 7 + Ekonomi 5 + Kamu 4 + Kültür 3 + Spor 3 + Bilim 2 = 24
       //    Baş ile birlikte = 25
-      // 3. Eksik kategori varsa, eksik kotayı kategorisiz pool'dan tamamla
+      // 3. Eksik kategori varsa: ROUND-ROBIN
+      //    Her kategorinin "kota fazlası" 1'er 1'er sırayla eklenir
+      //    Örn: 18 haber yerleşti, 19. = Siyaset 8., 20. = Ekonomi 6., 21. = Kamu 5., vs.
 
       const excludeIds: string[] = [];
 
@@ -37,7 +39,6 @@ export async function GET(req: NextRequest) {
       if (ozel.length > 0) {
         basHaber = ozel[0];
       } else {
-        // Özel yoksa — en yüksek sourceCount (en çok tekrar eden)
         basHaber = await db.publishedArticle.findFirst({
           where: { status },
           orderBy: [{ sourceCount: 'desc' }, { latestPublishedAt: 'desc' }],
@@ -47,37 +48,46 @@ export async function GET(req: NextRequest) {
 
       // 2. Kategori kotaları — sırayla
       const quotas: Array<{ cat: string; limit: number }> = [
-        { cat: 'Siyaset', limit: 9 },
-        { cat: 'Ekonomi / Finans', limit: 6 },
-        { cat: 'Kamu / Resmi', limit: 3 },
+        { cat: 'Siyaset', limit: 7 },
+        { cat: 'Ekonomi / Finans', limit: 5 },
+        { cat: 'Kamu / Resmi', limit: 4 },
         { cat: 'Kültür / Sanat', limit: 3 },
         { cat: 'Spor / Magazin', limit: 3 },
+        { cat: 'Bilim / Teknoloji', limit: 2 },
       ];
 
       let all = basHaber ? [basHaber] : [];
-      let eksikKalan = 0;
+      // Her kategori için: kota kadarını all'a koy, kalanı extras'a (round-robin için)
+      const extrasByCat: Record<string, any[]> = {};
 
       for (const { cat, limit } of quotas) {
+        // Tüm kategori haberlerini al (kota + fazla)
         const items = await db.publishedArticle.findMany({
           where: { category: cat, status, id: { notIn: excludeIds } },
           orderBy: { latestPublishedAt: 'desc' },
-          take: limit,
+          take: limit + 20, // kota + en az 20 fazla (round-robin için)
         });
-        all = [...all, ...items];
-        items.forEach(i => excludeIds.push(i.id));
-        if (items.length < limit) {
-          eksikKalan += (limit - items.length);
-        }
+        // İlk 'limit' kadarı kota
+        const kota = items.slice(0, limit);
+        kota.forEach(i => { all.push(i); excludeIds.push(i.id); });
+        // Kalanlar extra (round-robin pool)
+        extrasByCat[cat] = items.slice(limit);
       }
 
-      // 3. Eksik kalan kotaları kategorisiz pool'dan tamamla
-      if (eksikKalan > 0) {
-        const pool = await db.publishedArticle.findMany({
-          where: { status, id: { notIn: excludeIds } },
-          orderBy: { latestPublishedAt: 'desc' },
-          take: eksikKalan,
-        });
-        all = [...all, ...pool];
+      // 3. Eksik kategori varsa: ROUND-ROBIN
+      // Her kategorinin 1 fazlasını sırayla al, 25'e tamamla
+      let roundIndex = 0;
+      while (all.length < 25 && roundIndex < 50) {
+        let added = false;
+        for (const { cat } of quotas) {
+          if (extrasByCat[cat] && extrasByCat[cat][roundIndex]) {
+            all.push(extrasByCat[cat][roundIndex]);
+            added = true;
+          }
+          if (all.length >= 25) break;
+        }
+        roundIndex++;
+        if (!added) break; // hiç extra kalmadı
       }
 
       // Toplam 25 ile sınırla
