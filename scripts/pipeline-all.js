@@ -532,25 +532,25 @@ async function main() {
         }
       } catch (e) { log('Post-cleanup hatasi: ' + e.message); }
 
-      // Eski duplicate'leri sil (7 günden eski) — DB şişmesin
+      // Eski duplicate'leri sil (3 günden eski) — DB şişmesin
       try {
-        var dupCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        var dupCutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
         var oldDups = await globalThis.prisma.publishedArticle.deleteMany({
           where: { status: 'duplicate', archivedAt: { lt: dupCutoff } }
         });
         if (oldDups.count > 0) {
-          log('Eski duplicate silindi: ' + oldDups.count + ' kayit (7 günden eski)');
+          log('Eski duplicate silindi: ' + oldDups.count + ' kayit (3 günden eski)');
         }
       } catch (e) { log('Eski duplicate silme hatasi: ' + e.message); }
 
-      // Eski archived haberleri sil (30 günden eski) — DB şişmesin
+      // Eski archived haberleri sil (15 günden eski) — DB şişmesin
       try {
-        var archCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        var archCutoff = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
         var oldArchived = await globalThis.prisma.publishedArticle.deleteMany({
           where: { status: 'archived', archivedAt: { lt: archCutoff } }
         });
         if (oldArchived.count > 0) {
-          log('Eski archived silindi: ' + oldArchived.count + ' kayit (30 günden eski)');
+          log('Eski archived silindi: ' + oldArchived.count + ' kayit (15 günden eski)');
         }
       } catch (e) { log('Eski archived silme hatasi: ' + e.message); }
 
