@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
-type Status = { type: 'success' | 'rejected'; text: string } | null;
+type Status = { type: 'success' | 'rejected'; text: string; profanityWord?: string } | null;
 
 export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState('');
@@ -53,13 +53,12 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email: email || '(belirtilmedi)', subject, message }),
       });
-      const json = (await r.json()) as { ok?: boolean; error?: string; rejected?: boolean; message?: string };
+      const json = (await r.json()) as { ok?: boolean; error?: string; rejected?: boolean; message?: string; profanityWord?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Gönderilemedi');
 
       if (json.rejected) {
-        setStatus({ type: 'rejected', text: json.message || 'Mesajınız iade edilmiştir' });
-        setMessage('');
-        // Tamam düğmesi ile kapat — otomatik kapanmaz
+        setStatus({ type: 'rejected', text: 'Mesajınız iade edilerek IP adresiniz kayıt altına alınmıştır,', profanityWord: json.profanityWord });
+        // Mesaj silinmesin — kullanıcı düzenleyip tekrar göndersin
       } else {
         // Önce pencereyi kapat, formu temizle
         setName('');
@@ -140,7 +139,17 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
               ) : (
                 <XCircle className="h-8 w-8 flex-shrink-0" />
               )}
-              <p className="text-base font-semibold text-center leading-relaxed">{status.text}</p>
+              <p className="text-base font-semibold text-center leading-relaxed">
+                {status.type === 'rejected' && status.profanityWord ? (
+                  <>
+                    {status.text}{' '}
+                    <span className="text-red-600 font-bold underline decoration-red-600">{status.profanityWord}</span>
+                    {' '}kelimesini düzeltiniz
+                  </>
+                ) : (
+                  status.text
+                )}
+              </p>
             </div>
             {status.type === 'rejected' && (
               <Button
