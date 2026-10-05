@@ -18,8 +18,32 @@ function getSmtpTransport() {
   });
 }
 
-// Okuyucu mesajını komple içeriğiyle mail'a gönder
-async function sendReaderEmailMessage(data: { name: string; email: string; subject: string; message: string }) {
+// Okuyucunun IP adresini al — Nginx X-Forwarded-For/X-Real-IP/CF-Connecting-IP
+function getClientIp(req: NextRequest): string {
+  // Önce Cloudflare/CDN (en güvenilir) — gerçek client IP'si
+  const cfIp = req.headers.get('cf-connecting-ip');
+  if (cfIp && cfIp.trim()) return cfIp.trim();
+  // Nginx: X-Real-IP
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp && realIp.trim()) return realIp.trim();
+  // Nginx proxy chain: X-Forwarded-For — virgülle ayrılmış listedir,
+  // ilk eleman en dıştaki (gerçek client) IP'dir
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded && forwarded.trim()) {
+    const first = forwarded.split(',')[0].trim();
+    if (first) return first;
+  }
+  return 'bilinmiyor';
+}
+
+// Okuyucu mesajını komple içeriğiyle (IP dahil) mail'a gönder
+async function sendReaderEmailMessage(data: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  ip: string;
+}) {
   const transport = getSmtpTransport();
   if (!transport) return { sent: false, reason: 'no-smtp-config' };
   const from = process.env.SMTP_FROM || process.env.SMTP_USER;
@@ -31,6 +55,7 @@ async function sendReaderEmailMessage(data: { name: string; email: string; subje
     `Ad Soyad: ${data.name}`,
     `E-posta: ${data.email}`,
     `Konu: ${data.subject}`,
+    `IP Adresi: ${data.ip}`,
     ``,
     `Mesaj:`,
     ``,
@@ -48,6 +73,7 @@ async function sendReaderEmailMessage(data: { name: string; email: string; subje
         <tr><td style="padding: 8px; font-weight: bold; width: 100px; color: #374151;">Ad Soyad:</td><td style="padding: 8px;">${data.name}</td></tr>
         <tr><td style="padding: 8px; font-weight: bold; color: #374151;">E-posta:</td><td style="padding: 8px;">${data.email}</td></tr>
         <tr><td style="padding: 8px; font-weight: bold; color: #374151;">Konu:</td><td style="padding: 8px;">${data.subject}</td></tr>
+        <tr><td style="padding: 8px; font-weight: bold; color: #374151;">IP Adresi:</td><td style="padding: 8px; color: #dc2626; font-weight: bold;">${data.ip}</td></tr>
       </table>
       <div style="margin-top: 16px; padding: 16px; background: #f9fafb; border-radius: 6px; border-left: 4px solid #0ea5e9;">
         <h3 style="margin: 0 0 8px; font-size: 14px; color: #6b7280;">MESAJ:</h3>
@@ -62,50 +88,6 @@ async function sendReaderEmailMessage(data: { name: string; email: string; subje
   } catch (e) {
     return { sent: false, reason: (e as Error).message };
   }
-}
-
-// Türkçe argo/küfür kelime listesi (normalize edilmiş halleriyle)
-const PROFANITY_WORDS: string[] = [
-  'amk', 'aq', 'amına', 'amina', 'amın', 'amin', 'yarrak', 'yarak', 'pic',
-  'pıç', 'oc', 'oç', 'sik', 'siktir', 'göt', 'got', 'pezevenk', 'pezeveng',
-  'oruspu', 'orospu', 'kahpe', 'pezevenk', 'ebenin', 'götünü', 'gotunu',
-  'sikimi', 'sikimi', 'amını', 'amina', 'yarragi', 'yarragi', 'yarrak',
-  'oç', 'oc', 'mal', 'salak', 'gerizekalı', 'gerizekali', 'aptal',
-  'ibne', 'iban', 'top', 'puşt', 'pust', 'velet', 'piç', 'pic',
-  'amq', 'amcık', 'amcik', 'yavsak', 'yavşak', 'şerefsiz', 'serefsiz',
-  'götler', 'gotler', 'sokarim', 'sokarım', 'soktim', 'soktum',
-  'amme', 'yarram', 'yarram', 'bok', 'boku', 'boktan', 'bk',
-];
-
-function containsProfanity(text: string): boolean {
-  const normalized = text
-    .toLowerCase()
-    .replace(/İ/g, 'i')
-    .replace(/I/g, 'ı')
-    .replace(/Ş/g, 's')
-    .replace(/Ç/g, 'c')
-    .replace(/Ğ/g, 'g')
-    .replace(/Ü/g, 'u')
-    .replace(/Ö/g, 'o')
-    .replace(/ı/g, 'i')
-    .replace(/ş/g, 's')
-    .replace(/ç/g, 'c')
-    .replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u')
-    .replace(/ö/g, 'o')
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  const words = normalized.split(' ');
-  for (const w of words) {
-    if (PROFANITY_WORDS.includes(w)) return true;
-  }
-  // Also check substrings for compound words
-  for (const pw of PROFANITY_WORDS) {
-    if (normalized.includes(pw) && pw.length > 3) return true;
-  }
-  return false;
 }
 
 // POST /api/reader-message — submit a reader message (no auth)
@@ -132,11 +114,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Profanity check — yakalanan kelimeyi döndür
+  // IP al — hem DB'ye kaydet hem mail'e ekle
+  const ip = getClientIp(req);
+
+  // Profanity check — yakalanan kelimeyi döndür (mesaj silinmez, kullanıcı düzeltsin)
   const profanityWord = findProfanity(message);
   if (profanityWord) {
     return NextResponse.json(
-      { ok: true, rejected: true, profanityWord, message: 'Mesajınız iade edilerek IP adresiniz kayıt altına alınmıştır, Lütfen ' + profanityWord + ' kelimesini düzeltiniz' },
+      {
+        ok: true,
+        rejected: true,
+        profanityWord,
+        message: 'Mesajınız iade edilerek IP adresiniz kayıt altına alınmıştır, Lütfen ' + profanityWord + ' kelimesini düzeltiniz',
+      },
       { status: 200 },
     );
   }
@@ -148,17 +138,19 @@ export async function POST(req: NextRequest) {
         email: (email?.trim() || '(belirtilmedi)').slice(0, 200),
         subject: (subject?.trim() ?? '(Konusuz)').slice(0, 200),
         message: message.trim().slice(0, 5000),
+        ip,
         status: 'new',
       },
     });
 
-    // SMTP ile komple mesajı mail'a gönder (DB kaydı sonrası, async — bekleme)
+    // SMTP ile komple mesajı (IP dahil) mail'a gönder (DB kaydı sonrası, async — bekleme)
     // Hata olsa bile POST başarılı sayılır (mail gönderilemezse DB'de yine de kayıtlı)
     sendReaderEmailMessage({
       name: created.name,
       email: created.email,
       subject: created.subject,
       message: created.message,
+      ip,
     }).catch((e) => {
       console.error('[reader-message] mail gönderme hatası:', e);
     });

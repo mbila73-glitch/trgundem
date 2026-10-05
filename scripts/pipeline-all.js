@@ -282,7 +282,6 @@ function groupArticles(articles) {
 var CATEGORY_MIN_SOURCES = {
   'Siyaset': 3,
   'Ekonomi / Finans': 3,
-  'Siyaset': 2,
   'Kamu / Resmi': 2,
   'Bilim / Teknoloji': 2,
   'Kültür / Sanat': 2,
@@ -293,7 +292,6 @@ var CATEGORY_MIN_SOURCES = {
 var CATEGORY_PUBLISH_LIMITS = {
   'Siyaset': 15,
   'Ekonomi / Finans': 10,
-  'Siyaset': 5,
   'Kamu / Resmi': 5,
   'Bilim / Teknoloji': 5,
   'Kültür / Sanat': 5,
@@ -312,7 +310,7 @@ var HOME_LAYOUT = [
 // Kategori max haber sayısı (eskiyi arşive taşımak için)
 var CATEGORY_MAX = 15;
 var HOME_MAX_TOTAL = 50;
-var HOME_MAX_FIRST_PAGE = 25;
+var HOME_MAX_FIRST_PAGE = 50; // TEK BATCH — 50 haber tek sayfada
 
 var exitListeners = [];
 var origExit = process.exit;

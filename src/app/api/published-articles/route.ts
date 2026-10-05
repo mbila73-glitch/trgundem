@@ -2,128 +2,107 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 // GET /api/published-articles
-//   ?category=Güncel           -> filter by category
-//   ?limit=30&offset=0          -> pagination
-//   ?status=draft|published     -> default: published
-//   ?layout=all                 -> "Tüm Haberler" layout: Özel 1 + kategori kotaları
-//                                 (Özel 1 + Güncel 8 + Kamu 5 + Ekonomi 5 + Spor 3 + Bilim 2 + Kültür 2) = 26 → 25'e ayarla
-//   ?layout=all&offset=25&limit=25 -> "Diğer Haberler" (ikinci batch, kategorisiz, en yeni)
-//                                    toplam max 50 haber
+//   ?category=Siyaset           -> filter by category
+//   ?limit=30&offset=0           -> pagination
+//   ?status=draft|published      -> default: published
+//   ?layout=all                  -> ANA SAYFA 50 HABER (TEK BATCH)
+//                                 Baş: Özel varsa ilk Özel, yoksa en yüksek sourceCount
+//                                 Kategori kotaları (baş hariç):
+//                                   Siyaset 14 + Ekonomi 10 + Kamu 8 + Kültür 6 + Spor 6 + Bilim 4 = 48
+//                                 Baş ile birlikte = 49-50
+//                                 Eksik varsa: round-robin ile 50'ye tamamla
+//                                 hasMore: false ("Diğer Haberler" yok)
+//   ?search=<text>               -> aiTitle contains (case-insensitive)
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const layout = sp.get('layout');
   const status = sp.get('status') ?? 'published';
+  const search = sp.get('search')?.trim();
+
+  // Arama — tüm published'larda aiTitle contains
+  if (search && search.length > 0) {
+    const articles = await db.publishedArticle.findMany({
+      where: {
+        status,
+        aiTitle: { contains: search },
+      },
+      orderBy: { latestPublishedAt: 'desc' },
+      take: 50,
+    });
+    return NextResponse.json({ articles, total: articles.length, hasMore: false });
+  }
 
   if (layout === 'all') {
-    const offset = Number(sp.get('offset') ?? 0);
+    // ====== ANA SAYFA 50 HABER (TEK BATCH) ======
+    const excludeIds: string[] = [];
 
-    if (offset === 0) {
-      // ====== ANA SAYFA 25 HABER DÜZENİ ======
-      // 1. BAŞ HABER: Özel kategoride varsa ilk Özel, yoksa en yüksek sourceCount (en çok tekrar eden)
-      // 2. KATEGORI KOTALARI (baş hariç):
-      //    Siyaset 7 + Ekonomi 5 + Kamu 4 + Kültür 3 + Spor 3 + Bilim 2 = 24
-      //    Baş ile birlikte = 25
-      // 3. Eksik kategori varsa: ROUND-ROBIN
-      //    Her kategorinin "kota fazlası" 1'er 1'er sırayla eklenir
-      //    Örn: 18 haber yerleşti, 19. = Siyaset 8., 20. = Ekonomi 6., 21. = Kamu 5., vs.
-
-      const excludeIds: string[] = [];
-
-      // 1. Baş haber seçimi
-      let basHaber = null;
-      const ozel = await db.publishedArticle.findMany({
-        where: { category: 'Özel', status },
-        orderBy: { latestPublishedAt: 'desc' },
-        take: 1,
-      });
-      if (ozel.length > 0) {
-        basHaber = ozel[0];
-      } else {
-        basHaber = await db.publishedArticle.findFirst({
-          where: { status },
-          orderBy: [{ sourceCount: 'desc' }, { latestPublishedAt: 'desc' }],
-        });
-      }
-      if (basHaber) excludeIds.push(basHaber.id);
-
-      // 2. Kategori kotaları — sırayla
-      const quotas: Array<{ cat: string; limit: number }> = [
-        { cat: 'Siyaset', limit: 7 },
-        { cat: 'Ekonomi / Finans', limit: 5 },
-        { cat: 'Kamu / Resmi', limit: 4 },
-        { cat: 'Kültür / Sanat', limit: 3 },
-        { cat: 'Spor / Magazin', limit: 3 },
-        { cat: 'Bilim / Teknoloji', limit: 2 },
-      ];
-
-      let all = basHaber ? [basHaber] : [];
-      // Her kategori için: kota kadarını all'a koy, kalanı extras'a (round-robin için)
-      const extrasByCat: Record<string, any[]> = {};
-
-      for (const { cat, limit } of quotas) {
-        // Tüm kategori haberlerini al (kota + fazla)
-        const items = await db.publishedArticle.findMany({
-          where: { category: cat, status, id: { notIn: excludeIds } },
-          orderBy: { latestPublishedAt: 'desc' },
-          take: limit + 20, // kota + en az 20 fazla (round-robin için)
-        });
-        // İlk 'limit' kadarı kota
-        const kota = items.slice(0, limit);
-        kota.forEach(i => { all.push(i); excludeIds.push(i.id); });
-        // Kalanlar extra (round-robin pool)
-        extrasByCat[cat] = items.slice(limit);
-      }
-
-      // 3. Eksik kategori varsa: ROUND-ROBIN
-      // Her kategorinin 1 fazlasını sırayla al, 25'e tamamla
-      let roundIndex = 0;
-      while (all.length < 25 && roundIndex < 50) {
-        let added = false;
-        for (const { cat } of quotas) {
-          if (extrasByCat[cat] && extrasByCat[cat][roundIndex]) {
-            all.push(extrasByCat[cat][roundIndex]);
-            excludeIds.push(extrasByCat[cat][roundIndex].id);
-            added = true;
-          }
-          if (all.length >= 25) break;
-        }
-        roundIndex++;
-        if (!added) break; // hiç extra kalmadı
-      }
-
-      // Toplam 25 ile sınırla
-      all = all.slice(0, 25);
-
-      const totalPublished = await db.publishedArticle.count({ where: { status } });
-      const maxTotal = Math.min(totalPublished, 50);
-      return NextResponse.json({
-        articles: all,
-        total: all.length,
-        totalPublished: maxTotal,
-        hasMore: maxTotal > all.length,
-        // İlk batch'teki ID'leri dön — ikinci batch'te exclude için
-        firstBatchIds: all.map(a => a.id),
+    // 1. Baş haber seçimi
+    let basHaber: any = null;
+    const ozel = await db.publishedArticle.findMany({
+      where: { category: 'Özel', status },
+      orderBy: { latestPublishedAt: 'desc' },
+      take: 1,
+    });
+    if (ozel.length > 0) {
+      basHaber = ozel[0];
+    } else {
+      basHaber = await db.publishedArticle.findFirst({
+        where: { status },
+        orderBy: [{ sourceCount: 'desc' }, { latestPublishedAt: 'desc' }],
       });
     }
+    if (basHaber) excludeIds.push(basHaber.id);
 
-    // İkinci batch ("Diğer Haberler"): ilk batch'teki ID'leri HARİÇ TUT
-    // exclude parametresi: comma-separated ID listesi
-    const excludeParam = sp.get('exclude') ?? '';
-    const excludeIds = excludeParam ? excludeParam.split(',').filter(Boolean) : [];
+    // 2. Kategori kotaları — baş hariç 49 koltuk
+    //    Siyaset 14 + Ekonomi 10 + Kamu 8 + Kültür 6 + Spor 6 + Bilim 4 = 48
+    //    Eğer Özel baş varsa 48 + 1 = 49, 1 koltuk round-robin
+    //    Eğer Özel baş yoksa 48 + 1 (Siyaset'in başı) = 49 → 1 koltuk round-robin
+    const quotas: Array<{ cat: string; limit: number }> = [
+      { cat: 'Siyaset', limit: 14 },
+      { cat: 'Ekonomi / Finans', limit: 10 },
+      { cat: 'Kamu / Resmi', limit: 8 },
+      { cat: 'Kültür / Sanat', limit: 6 },
+      { cat: 'Spor / Magazin', limit: 6 },
+      { cat: 'Bilim / Teknoloji', limit: 4 },
+    ];
 
-    const limit = Math.min(Number(sp.get('limit') ?? 25), 25);
-    const articles = await db.publishedArticle.findMany({
-      where: { status, id: { notIn: excludeIds } },
-      orderBy: { latestPublishedAt: 'desc' },
-      take: limit,
-    });
-    const totalPublished = await db.publishedArticle.count({ where: { status } });
-    const maxTotal = Math.min(totalPublished, 50);
+    let all: any[] = basHaber ? [basHaber] : [];
+    const extrasByCat: Record<string, any[]> = {};
+
+    for (const { cat, limit } of quotas) {
+      const items = await db.publishedArticle.findMany({
+        where: { category: cat, status, id: { notIn: excludeIds } },
+        orderBy: { latestPublishedAt: 'desc' },
+        take: limit + 30,
+      });
+      const kota = items.slice(0, limit);
+      kota.forEach(i => { all.push(i); excludeIds.push(i.id); });
+      extrasByCat[cat] = items.slice(limit);
+    }
+
+    // 3. Round-robin: 50'ye tamamla
+    let roundIndex = 0;
+    while (all.length < 50 && roundIndex < 100) {
+      let added = false;
+      for (const { cat } of quotas) {
+        if (extrasByCat[cat] && extrasByCat[cat][roundIndex]) {
+          all.push(extrasByCat[cat][roundIndex]);
+          excludeIds.push(extrasByCat[cat][roundIndex].id);
+          added = true;
+        }
+        if (all.length >= 50) break;
+      }
+      roundIndex++;
+      if (!added) break;
+    }
+
+    // 50 ile sınırla
+    all = all.slice(0, 50);
+
     return NextResponse.json({
-      articles,
-      total: articles.length,
-      totalPublished: maxTotal,
-      hasMore: maxTotal > (excludeIds.length + articles.length),
+      articles: all,
+      total: all.length,
+      hasMore: false, // Tek batch — "Diğer Haberler" YOK
     });
   }
 

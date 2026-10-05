@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -25,7 +25,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 
-type Message = { id: string; name: string; email: string; subject: string; message: string; status: string; createdAt: string };
+type Message = { id: string; name: string; email: string; subject: string; message: string; ip?: string | null; status: string; reply?: string | null; repliedAt?: string | null; createdAt: string };
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; };
 type AdminTab = 'messages' | 'custom' | 'published' | 'archived' | 'pending';
 
@@ -43,6 +43,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  // Mesaja cevap state'leri
+  const [replyingId, setReplyingId] = useState<string | null>(null); // hangi mesajda editör açık
+  const [replyDraft, setReplyDraft] = useState(''); // editördeki metin
+  const [generatingReply, setGeneratingReply] = useState<string | null>(null); // AI taslak üretiyor (mesaj id)
+  const [sendingReply, setSendingReply] = useState<string | null>(null); // cevap gönderiliyor (mesaj id)
+  const [archivingMsg, setArchivingMsg] = useState<string | null>(null); // mesaj arşivleniyor (id)
 
   // Reset state
   const [resetOpen, setResetOpen] = useState(false);
@@ -269,6 +275,87 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       toast.success('Mesaj silindi');
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
     finally { setDeletingId(null); }
+  };
+
+  // Mesaja cevap editörünü aç
+  const openReplyEditor = (m: Message) => {
+    if (replyingId === m.id) {
+      // Açık olan editörü kapat
+      setReplyingId(null);
+      setReplyDraft('');
+      return;
+    }
+    setReplyingId(m.id);
+    setReplyDraft(m.reply || ''); // mevcut cevap varsa onu yükle, tekrar düzenlenebilsin
+  };
+
+  // AI ile cevap taslağı üret
+  const handleGenerateReply = async (m: Message) => {
+    setGeneratingReply(m.id);
+    try {
+      const r = await fetch('/api/ai-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message: m.message, senderName: m.name, senderEmail: m.email }),
+      });
+      const json = (await r.json()) as { ok?: boolean; reply?: string; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Taslak üretilemedi');
+      setReplyDraft(json.reply || '');
+      setReplyingId(m.id); // AI üretince editörü aç
+      toast.success('AI taslak hazır, düzenleyip gönderebilirsiniz');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'AI taslak hatası');
+    } finally {
+      setGeneratingReply(null);
+    }
+  };
+
+  // Cevabı gönder (SMTP ile okuyucuya + DB'ye kaydet)
+  const handleSendReply = async (id: string) => {
+    if (!replyDraft.trim()) {
+      toast.error('Cevap metni boş');
+      return;
+    }
+    setSendingReply(id);
+    try {
+      const r = await fetch(`/api/admin/messages/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reply: replyDraft.trim() }),
+      });
+      const json = (await r.json()) as { ok?: boolean; reply?: string; repliedAt?: string; emailSent?: boolean; emailReason?: string; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Cevap gönderilemedi');
+      // Mesajı listede güncelle
+      setMessages(a => a.map(m => m.id === id ? { ...m, reply: json.reply || replyDraft.trim(), repliedAt: json.repliedAt || new Date().toISOString(), status: 'read' } : m));
+      toast.success(json.emailSent ? 'Cevap gönderildi — okuyucuya mail atıldı' : 'Cevap kaydedildi ama mail gönderilemedi');
+      // Editörü kapat
+      setReplyingId(null);
+      setReplyDraft('');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Cevap hatası');
+    } finally {
+      setSendingReply(null);
+    }
+  };
+
+  // Mesajı arşivle
+  const handleArchiveMessage = async (id: string) => {
+    setArchivingMsg(id);
+    try {
+      const r = await fetch(`/api/admin/messages/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'archived' }),
+      });
+      const json = (await r.json()) as { ok?: boolean; status?: string; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Arşivleme başarısız');
+      setMessages(a => a.filter(m => m.id !== id)); // arşivde göster (şimdilik listeden kaldır)
+      toast.success('Mesaj arşivlendi');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Arşiv hatası');
+    } finally {
+      setArchivingMsg(null);
+    }
   };
 
   const toggleSelect = (id: string) => setSelectedIds(p => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
@@ -506,12 +593,132 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                     {loadingMsgs ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}</div>
                     : messages.length === 0 ? <Card className="flex flex-col items-center gap-3 p-10 text-center"><Mail className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Henüz okuyucu mesajı yok</p></Card>
                     : <div className="space-y-3">{messages.map(m => { const sel = selectedIds.has(m.id); return (
-                      <Card key={m.id} className={`p-4 ${m.status === 'new' ? 'border-news/40 bg-news/[0.04]' : ''} ${sel ? 'ring-2 ring-news/40' : ''}`}>
-                        <div className="flex items-start gap-3"><Checkbox checked={sel} onCheckedChange={() => toggleSelect(m.id)} className="mt-1" />
-                          <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><h4 className="text-sm font-semibold">{m.name}</h4>{m.status === 'new' && <Badge className="bg-news text-news-foreground text-[9px]">YENİ</Badge>}<span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground"><Clock className="h-3 w-3" />{new Date(m.createdAt).toLocaleString('tr-TR')}</span></div>
-                            <p className="mt-0.5 text-xs text-muted-foreground">{m.email} · {m.subject}</p><p className="mt-2 text-sm leading-relaxed text-foreground/80">{m.message}</p></div>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(m.id)} disabled={deletingId === m.id} className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-destructive">{deletingId === m.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}</Button>
-                        </div></Card>); })}</div>}
+                      <Card key={m.id} className={`p-4 ${m.status === 'new' ? 'border-news/40 bg-news/[0.04]' : ''} ${sel ? 'ring-2 ring-news/40' : ''} ${m.repliedAt ? 'border-emerald-300 dark:border-emerald-700' : ''}`}>
+                        <div className="flex items-start gap-3">
+                          <Checkbox checked={sel} onCheckedChange={() => toggleSelect(m.id)} className="mt-1" />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-semibold">{m.name}</h4>
+                              {m.status === 'new' && <Badge className="bg-news text-news-foreground text-[9px]">YENİ</Badge>}
+                              {m.repliedAt && (
+                                <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 text-[9px] gap-1">
+                                  <Check className="h-3 w-3" />YANITLANDI
+                                </Badge>
+                              )}
+                              <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                {new Date(m.createdAt).toLocaleString('tr-TR')}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {m.email} · {m.subject}
+                              {m.ip && m.ip !== 'bilinmiyor' && (
+                                <span className="ml-2 text-[10px] text-rose-600 dark:text-rose-400 font-mono">IP: {m.ip}</span>
+                              )}
+                            </p>
+                            <p className="mt-2 text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">{m.message}</p>
+
+                            {/* Cevap yazma editörü — sadece bu mesajda açıkken göster */}
+                            {replyingId === m.id && (
+                              <div className="mt-3 rounded-md border border-border bg-muted/30 p-3 space-y-2">
+                                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                                  <Send className="h-3.5 w-3.5" />
+                                  Cevap ({m.email})
+                                  {generatingReply === m.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-news" />}
+                                </div>
+                                <Textarea
+                                  value={replyDraft}
+                                  onChange={(e) => setReplyDraft(e.target.value)}
+                                  rows={5}
+                                  placeholder="Cevabınızı buraya yazın..."
+                                  className="resize-y min-h-[120px]"
+                                  disabled={sendingReply === m.id}
+                                />
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleSendReply(m.id)}
+                                    disabled={sendingReply === m.id || !replyDraft.trim()}
+                                    className="gap-1.5 text-xs"
+                                  >
+                                    {sendingReply === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                                    Gönder
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleGenerateReply(m)}
+                                    disabled={generatingReply === m.id}
+                                    className="gap-1.5 text-xs"
+                                  >
+                                    {generatingReply === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageSquare className="h-3.5 w-3.5" />}
+                                    AI ile Taslak Üret
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => { setReplyingId(null); setReplyDraft(''); }}
+                                    className="gap-1.5 text-xs"
+                                  >
+                                    <X className="h-3.5 w-3.5" />İptal
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Daha önce gönderilmiş cevap — editör kapalıyken göster */}
+                            {replyingId !== m.id && m.reply && (
+                              <div className="mt-3 rounded-md border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-3">
+                                <div className="flex items-center gap-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                                  <Check className="h-3.5 w-3.5" />
+                                  Gönderilen cevap
+                                  {m.repliedAt && (
+                                    <span className="ml-auto inline-flex items-center gap-1 text-[10px]">
+                                      <Clock className="h-3 w-3" />
+                                      {new Date(m.repliedAt).toLocaleString('tr-TR')}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="mt-1 text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">{m.reply}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Sağdaki butonlar: Cevapla + Arşivle + Sil */}
+                          <div className="flex flex-shrink-0 flex-col gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openReplyEditor(m)}
+                              className="h-8 w-8 text-muted-foreground hover:text-news"
+                              title="Cevap Yaz"
+                              disabled={sendingReply === m.id || archivingMsg === m.id}
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleArchiveMessage(m.id)}
+                              disabled={archivingMsg === m.id || deletingId === m.id}
+                              className="h-8 w-8 text-muted-foreground hover:text-amber-600"
+                              title="Arşivle"
+                            >
+                              {archivingMsg === m.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(m.id)}
+                              disabled={deletingId === m.id || archivingMsg === m.id}
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              title="Sil"
+                            >
+                              {deletingId === m.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>); })}</div>}
                   </div>
                 )}
 

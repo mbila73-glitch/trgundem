@@ -20,16 +20,19 @@ try {
   });
 } catch (e) {}
 
-// 3 Gemini API key
+// 5 Gemini API key
 var GEMINI_KEYS = [];
 try { var k1 = fs.readFileSync('/var/www/.gemini-key', 'utf8').trim(); if (k1) GEMINI_KEYS.push(k1); } catch (e) {}
 try { var k2 = fs.readFileSync('/var/www/.gemini-key2', 'utf8').trim(); if (k2) GEMINI_KEYS.push(k2); } catch (e) {}
 try { var k3 = fs.readFileSync('/var/www/.gemini-key3', 'utf8').trim(); if (k3) GEMINI_KEYS.push(k3); } catch (e) {}
+try { var k4 = fs.readFileSync('/var/www/.gemini-key4', 'utf8').trim(); if (k4) GEMINI_KEYS.push(k4); } catch (e) {}
+try { var k5 = fs.readFileSync('/var/www/.gemini-key5', 'utf8').trim(); if (k5) GEMINI_KEYS.push(k5); } catch (e) {}
 if (GEMINI_KEYS.length === 0) {
   var ek1 = process.env.GEMINI_API_KEY || ''; if (ek1) GEMINI_KEYS.push(ek1);
 }
 var GEMINI_MODEL = 'gemini-flash-lite-latest';
 var keyIndex = 0;
+var deadKeys = new Set(); // bu cycle'da ölü key'ler (403/429) — atlanır
 
 // fetch override
 globalThis.fetch = function(url, options) {
@@ -109,9 +112,10 @@ async function aiFindDuplicates(titles) {
 
   prompt += '\nSadece JSON array döndür, başka hiçbir şey yazma.';
 
-  for (var attempt = 1; attempt <= 3; attempt++) {
+  for (var attempt = 1; attempt <= GEMINI_KEYS.length; attempt++) {
     var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
     keyIndex++;
+    if (deadKeys.has(currentKey)) { continue; }
     var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + currentKey;
     try {
       var resp = await fetch(url, {
@@ -120,7 +124,16 @@ async function aiFindDuplicates(titles) {
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 2000, temperature: 0.3 } })
       });
       var result = await resp.json();
-      if (result.error) { console.log('AI error:', result.error.code, result.error.message); if (attempt < 3) { await new Promise(r => setTimeout(r, 3000)); continue; } return []; }
+      if (result.error) {
+        console.log('AI error:', result.error.code, result.error.message);
+        if (result.error.code === 403 || result.error.code === 429) {
+          deadKeys.add(currentKey);
+          continue;
+        }
+        if (attempt < GEMINI_KEYS.length) { await new Promise(r => setTimeout(r, 3000)); continue; }
+        return [];
+      }
+      deadKeys.delete(currentKey);
       if (result.candidates && result.candidates[0] && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts[0]) {
         var text = result.candidates[0].content.parts[0].text.trim();
         // JSON parse et
@@ -135,11 +148,12 @@ async function aiFindDuplicates(titles) {
         }
         return [];
       }
-      if (attempt < 3) { await new Promise(r => setTimeout(r, 3000)); continue; }
+      if (attempt < GEMINI_KEYS.length) { await new Promise(r => setTimeout(r, 3000)); continue; }
       return [];
     } catch (e) {
-      console.log('AI hata (deneme ' + attempt + '/3):', e.message);
-      if (attempt < 3) { await new Promise(r => setTimeout(r, 5000)); continue; }
+      console.log('AI hata (deneme ' + attempt + '/' + GEMINI_KEYS.length + '):', e.message);
+      deadKeys.add(currentKey);
+      if (attempt < GEMINI_KEYS.length) { await new Promise(r => setTimeout(r, 5000)); continue; }
       return [];
     }
   }

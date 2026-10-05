@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
 import { useHeart } from '@/lib/use-heart';
 import type { PublishedArticle } from '@/lib/types';
-
 const SUB_TABS: Array<{
   id: string;
   label: string;
@@ -36,11 +35,11 @@ const CATEGORY_MAP: Record<string, string> = {
 
 const CATEGORY_LIMITS: Record<string, number> = {
   'Siyaset': 15,
-  'Kamu / Resmi': 7,
-  'Ekonomi / Finans': 7,
-  'Spor / Magazin': 5,
-  'Bilim / Teknoloji': 3,
-  'Kültür / Sanat': 3,
+  'Kamu / Resmi': 8,
+  'Ekonomi / Finans': 10,
+  'Spor / Magazin': 8,
+  'Bilim / Teknoloji': 5,
+  'Kültür / Sanat': 8,
   'Özel': 30,
 };
 
@@ -231,8 +230,6 @@ export function NewsScreen() {
   const [articles, setArticles] = useState<PublishedArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
 
   // Track which article is open (from URL ?article=<id>)
   const [openArticleId, setOpenArticleId] = useState<string | null>(null);
@@ -309,9 +306,8 @@ export function NewsScreen() {
     let cancelled = false;
     Promise.resolve().then(() => setLoading(true));
     Promise.resolve().then(() => setError(null));
-    setHasMore(false);
 
-    // 'all' kategorisinde layout=all → 25 haber + "Diğer" ile 25 daha
+    // 'all' kategorisinde layout=all → 50 haber TEK BATCH (Diğer Haberler yok)
     // Kategori bazında ise per kategori limit
     const url =
       active === 'all'
@@ -332,7 +328,6 @@ export function NewsScreen() {
       .then((data) => {
         if (cancelled) return;
         setArticles(data.articles ?? []);
-        setHasMore(data.hasMore ?? false);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -347,35 +342,6 @@ export function NewsScreen() {
       cancelled = true;
     };
   }, [active]);
-
-  const handleLoadMore = async () => {
-    // Sadece 1 kez basılabilir — 50'ye ulaşınca çık
-    if (articles.length >= 50 || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      // İlk batch'teki ID'leri exclude olarak gönder — tekrar olmasın
-      const excludeIds = articles.map(a => a.id).join(',');
-      const r = await fetch(
-        `/api/published-articles?layout=all&status=published&limit=25&exclude=${encodeURIComponent(excludeIds)}`,
-        { cache: 'no-store' },
-      );
-      if (!r.ok) throw new Error('Daha fazla haber yüklenemedi');
-      const json = (await r.json()) as {
-        articles: PublishedArticle[];
-        hasMore?: boolean;
-      };
-      setArticles((prev) => [...prev, ...(json.articles ?? [])]);
-      // 50'ye ulaşınca hasMore false — düğme kaybolsun
-      setHasMore(json.hasMore ?? false);
-      if (articles.length + (json.articles?.length ?? 0) >= 50) {
-        setHasMore(false);
-      }
-    } catch {
-      setHasMore(false);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
 
   const current = SUB_TABS.find((t) => t.id === active) ?? SUB_TABS[0];
 
@@ -529,24 +495,7 @@ export function NewsScreen() {
             ))}
           </div>
 
-          {active === 'all' && hasMore && articles.length < 50 && (
-            <div className="mt-6 flex justify-center">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleLoadMore}
-                disabled={loadingMore || articles.length >= 50}
-                className="gap-2"
-              >
-                {loadingMore ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-                Diğer Haberler
-              </Button>
-            </div>
-          )}
+          {/* "Diğer Haberler" düğmesi kalktı — 50 haber tek batch yükleniyor */}
         </>
       )}
     </section>
