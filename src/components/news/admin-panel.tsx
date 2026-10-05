@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -50,6 +50,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [generatingReply, setGeneratingReply] = useState<string | null>(null); // AI taslak üretiyor (mesaj id)
   const [sendingReply, setSendingReply] = useState<string | null>(null); // cevap gönderiliyor (mesaj id)
   const [archivingMsg, setArchivingMsg] = useState<string | null>(null); // mesaj arşivleniyor (id)
+
+  // Arama state'leri — her sekmede ayrı arama
+  const [msgSearch, setMsgSearch] = useState(''); // Mesajlar sekmesinde ara
+  const [pubSearch, setPubSearch] = useState(''); // Yayında sekmesinde ara
+  const [archivedSearch, setArchivedSearch] = useState(''); // Arşiv sekmesinde ara
+  const [pendingSearch, setPendingSearch] = useState(''); // Tekrar sekmesinde ara
 
   // Reset state
   const [resetOpen, setResetOpen] = useState(false);
@@ -607,7 +613,31 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                     )}
                     {loadingMsgs ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}</div>
                     : messages.filter(m => m.status !== 'archived').length === 0 ? <Card className="flex flex-col items-center gap-3 p-10 text-center"><Mail className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Henüz okuyucu mesajı yok</p></Card>
-                    : <div className="space-y-3">{messages.filter(m => m.status !== 'archived').map(m => { const sel = selectedIds.has(m.id); return (
+                    : <>
+                      {/* Mesaj arama çubuğu */}
+                      <div className="mb-3 flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2 py-1">
+                        <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                        <Input
+                          type="text"
+                          value={msgSearch}
+                          onChange={(e) => setMsgSearch(e.target.value)}
+                          placeholder="Mesajlarda ara (ad, e-posta, konu, mesaj)..."
+                          className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-6 px-1"
+                        />
+                        {msgSearch && (
+                          <button type="button" onClick={() => setMsgSearch('')} className="text-muted-foreground hover:text-foreground">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-3">{messages.filter(m => m.status !== 'archived').filter(m => {
+                        if (!msgSearch.trim()) return true;
+                        const q = msgSearch.toLowerCase();
+                        return (m.name.toLowerCase().includes(q) ||
+                                m.email.toLowerCase().includes(q) ||
+                                m.subject.toLowerCase().includes(q) ||
+                                m.message.toLowerCase().includes(q));
+                      }).map(m => { const sel = selectedIds.has(m.id); return (
                       <Card key={m.id} className={`p-4 ${m.status === 'new' ? 'border-news/40 bg-news/[0.04]' : ''} ${sel ? 'ring-2 ring-news/40' : ''} ${m.repliedAt ? 'border-emerald-300 dark:border-emerald-700' : ''}`}>
                         <div className="flex items-start gap-3">
                           <Checkbox checked={sel} onCheckedChange={() => toggleSelect(m.id)} className="mt-1" />
@@ -733,7 +763,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             </Button>
                           </div>
                         </div>
-                      </Card>); })}</div>}
+                      </Card>); })}</div>
+                    </>}
                   </div>
                 )}
 
@@ -776,8 +807,29 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Ana Sayfadaki Haberler</h3>
                           <Badge variant="secondary" className="text-[10px]">{Math.min(30, pubArticles.length)}</Badge>
                         </div>
+
+                        {/* Yayında arama çubuğu */}
+                        <div className="mb-3 flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2 py-1">
+                          <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                          <Input
+                            type="text"
+                            value={pubSearch}
+                            onChange={(e) => setPubSearch(e.target.value)}
+                            placeholder="Yayındaki haberlerde ara (başlık, özet)..."
+                            className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-6 px-1"
+                          />
+                          {pubSearch && (
+                            <button type="button" onClick={() => setPubSearch('')} className="text-muted-foreground hover:text-foreground">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
                         <div className="mb-6 space-y-3">
-                          {pubArticles.slice(0, 30).map(a => (
+                          {pubArticles.slice(0, 30).filter(a => {
+                            if (!pubSearch.trim()) return true;
+                            const q = pubSearch.toLowerCase();
+                            return a.aiTitle.toLowerCase().includes(q) || a.aiSummary.toLowerCase().includes(q);
+                          }).map(a => (
                             <Card key={a.id} className="p-4">
                               {editingId === a.id ? (
                                 <div className="space-y-3">
@@ -936,6 +988,23 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           </button>
                         </div>
 
+                        {/* Arşiv arama çubuğu — her iki alt sekmede de çalışır */}
+                        <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2 py-1">
+                          <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                          <Input
+                            type="text"
+                            value={archivedSearch}
+                            onChange={(e) => setArchivedSearch(e.target.value)}
+                            placeholder={archivedSubtab === 'articles' ? 'Arşivdeki haberlerde ara...' : 'Arşivdeki mesajlarda ara...'}
+                            className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-6 px-1"
+                          />
+                          {archivedSearch && (
+                            <button type="button" onClick={() => setArchivedSearch('')} className="text-muted-foreground hover:text-foreground">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+
                         {/* Arşivlenen Haberler içeriği */}
                         {archivedSubtab === 'articles' && (
                           <div>
@@ -946,7 +1015,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               </Card>
                             ) : (
                               <div className="space-y-3">
-                                {archivedArticles.map(a => (
+                                {archivedArticles.filter(a => {
+                                  if (!archivedSearch.trim()) return true;
+                                  const q = archivedSearch.toLowerCase();
+                                  return a.aiTitle.toLowerCase().includes(q) || a.aiSummary.toLowerCase().includes(q);
+                                }).map(a => (
                                   <Card key={a.id} className="p-4 opacity-80">
                                     <div className="flex items-start gap-3">
                                       {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded grayscale"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
@@ -1013,7 +1086,14 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               </Card>
                             ) : (
                               <div className="space-y-3">
-                                {messages.filter(m => m.status === 'archived').map(m => (
+                                {messages.filter(m => m.status === 'archived').filter(m => {
+                                  if (!archivedSearch.trim()) return true;
+                                  const q = archivedSearch.toLowerCase();
+                                  return (m.name.toLowerCase().includes(q) ||
+                                          m.email.toLowerCase().includes(q) ||
+                                          m.subject.toLowerCase().includes(q) ||
+                                          m.message.toLowerCase().includes(q));
+                                }).map(m => (
                                   <Card key={m.id} className="p-4 opacity-80">
                                     <div className="flex items-start gap-3">
                                       <div className="min-w-0 flex-1">
@@ -1111,7 +1191,28 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             </div>
                           </div>
                         </Card>
-                        {pendingArticles.map(a => (
+
+                        {/* Pending arama çubuğu */}
+                        <div className="mb-3 flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2 py-1">
+                          <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                          <Input
+                            type="text"
+                            value={pendingSearch}
+                            onChange={(e) => setPendingSearch(e.target.value)}
+                            placeholder="Tekrar haberlerde ara (başlık, özet)..."
+                            className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-6 px-1"
+                          />
+                          {pendingSearch && (
+                            <button type="button" onClick={() => setPendingSearch('')} className="text-muted-foreground hover:text-foreground">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        {pendingArticles.filter(a => {
+                          if (!pendingSearch.trim()) return true;
+                          const q = pendingSearch.toLowerCase();
+                          return a.aiTitle.toLowerCase().includes(q) || a.aiSummary.toLowerCase().includes(q);
+                        }).map(a => (
                           <Card key={a.id} className="p-4 border-amber-500/40 bg-amber-50/30 dark:bg-amber-950/10">
                             <div className="flex items-start gap-3">
                               {a.imageUrl && <img src={a.imageUrl} alt="" className="h-16 w-24 rounded object-cover flex-shrink-0" onError={(e) => (e.currentTarget.style.display = 'none')} />}

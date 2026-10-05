@@ -472,23 +472,23 @@ export function NewsScreen() {
           })}
         </div>
 
-        {/* Arama çubuğu — kategori sekmelerinin altında (açık mavi dolgu) */}
-        <form onSubmit={onSearchSubmit} className="mt-2 flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/20 p-1.5">
-          <Search className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 ml-1.5" />
+        {/* Arama çubuğu — kategori sekmelerinin altında (açık mavi dolgu, kompakt) */}
+        <form onSubmit={onSearchSubmit} className="mt-1 flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
+          <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Haberlerde ara..."
-            className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm"
+            className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-6 px-1"
           />
           <Button
             type="submit"
             size="sm"
             disabled={searching || !searchQuery.trim()}
-            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3"
+            className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-6 px-2 py-0"
           >
-            {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+            {searching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
             <span className="hidden sm:inline">Ara</span>
           </Button>
           {searchResults !== null && (
@@ -497,9 +497,9 @@ export function NewsScreen() {
               size="sm"
               variant="ghost"
               onClick={clearSearch}
-              className="gap-1.5 text-xs h-8 px-2 text-muted-foreground hover:text-foreground"
+              className="gap-1 text-[10px] h-6 px-1.5 py-0 text-muted-foreground hover:text-foreground"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3 w-3" />
               <span className="hidden sm:inline">Temizle</span>
             </Button>
           )}
