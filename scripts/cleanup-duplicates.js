@@ -167,6 +167,75 @@ async function aiFindDuplicates(titles) {
   return [];
 }
 
+// VLM ile görsel kontrolü — görselde medya logosu/watermark var mı?
+// Gemini flash lite görsel destekler (inline_data base64)
+async function checkImageForLogo(imageUrl) {
+  try {
+    // Görseli çek, base64'e çevir
+    var resp = await fetch(imageUrl, { signal: AbortSignal.timeout(8000) });
+    if (!resp.ok) return null;
+    var buffer = await resp.arrayBuffer();
+    var base64 = Buffer.from(buffer).toString('base64');
+    
+    // MIME type tespit
+    var mime = 'image/jpeg';
+    if (imageUrl.toLowerCase().includes('.png')) mime = 'image/png';
+    if (imageUrl.toLowerCase().includes('.webp')) mime = 'image/webp';
+    if (imageUrl.toLowerCase().includes('.gif')) mime = 'image/gif';
+    
+    var prompt = 'Bu görselde bir medya kuruluşunun, haber sitesinin logosu, adı, watermark\'ı veya kanal adı var mı? ' +
+      'Sadece JSON döndür: {"hasLogo": true} veya {"hasLogo": false}. ' +
+      'Örnek logolar: site adı (Oda TV, CNN Türk, HaberTürk vb.), TV kanal logosu, web sitesi adı. ' +
+      'Sadece küçük watermark/logo varsa bile hasLogo: true döndür.';
+    
+    for (var attempt = 0; attempt < GEMINI_KEYS.length; attempt++) {
+      var currentKey = GEMINI_KEYS[attempt % GEMINI_KEYS.length];
+      if (deadKeys.has(currentKey)) continue;
+      
+      var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + currentKey;
+      try {
+        var vlmResp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [
+              { text: prompt },
+              { inline_data: { mime_type: mime, data: base64 } }
+            ]}],
+            generationConfig: { maxOutputTokens: 50, temperature: 0.1 }
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+        var result = await vlmResp.json();
+        if (result.error) {
+          if (result.error.code === 403 || result.error.code === 429) {
+            deadKeys.add(currentKey);
+            continue;
+          }
+          continue;
+        }
+        deadKeys.delete(currentKey);
+        if (result.candidates && result.candidates[0] && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts[0]) {
+          var text = result.candidates[0].content.parts[0].text;
+          var match = text.match(/\{[\s\S]*\}/);
+          if (match) {
+            try {
+              var parsed = JSON.parse(match[0]);
+              return parsed.hasLogo === true;
+            } catch (e) {}
+          }
+          // JSON parse edilemezse metin kontrolü
+          if (text.toLowerCase().includes('true') || text.toLowerCase().includes('evet')) return true;
+          if (text.toLowerCase().includes('false') || text.toLowerCase().includes('hayır')) return false;
+        }
+      } catch (e) { continue; }
+    }
+    return null; // tüm key'ler denendi, hata
+  } catch (e) {
+    return null; // görsel çekilemedi
+  }
+}
+
 // Algoritma ile de hızlı kontrol (birebir)
 function quickDuplicateCheck(titles) {
   var seen = {};
@@ -253,6 +322,40 @@ async function main() {
     console.log('Toplam silinen:', delResult.count);
   } else {
     console.log('Tekrar bulunamadı.');
+  }
+
+  // 3. VLM ile görsel kontrolü — son 30 dk'da create edilen haberler
+  // Görselde medya logosu/watermark varsa imageUrl'yi null yap (logo fallback göster)
+  console.log('');
+  console.log('--- VLM GÖRSEL KONTROLÜ ---');
+  var recentCutoff = new Date(Date.now() - 30 * 60 * 1000);
+  var recentWithImages = await db.publishedArticle.findMany({
+    where: { status: 'published', imageUrl: { not: null }, createdAt: { gte: recentCutoff } },
+    select: { id: true, aiTitle: true, imageUrl: true },
+  });
+  console.log('Son 30 dk görselli yeni haber:', recentWithImages.length);
+  
+  var imageFixed = 0;
+  for (var ri = 0; ri < recentWithImages.length; ri++) {
+    var article = recentWithImages[ri];
+    if (!article.imageUrl) continue;
+    console.log('  [' + (ri+1) + '/' + recentWithImages.length + '] Görsel kontrol: ' + article.aiTitle.slice(0, 50));
+    var hasLogo = await checkImageForLogo(article.imageUrl);
+    if (hasLogo === true) {
+      console.log('    ✗ Logo tespit edildi → imageUrl null yapıldı');
+      await db.publishedArticle.update({
+        where: { id: article.id },
+        data: { imageUrl: null }
+      });
+      imageFixed++;
+    } else if (hasLogo === false) {
+      console.log('    ✓ Logo yok, görsel korundu');
+    } else {
+      console.log('    ? VLM hatası, görsel korundu');
+    }
+  }
+  if (imageFixed > 0) {
+    console.log('Logo içeren görsel temizlendi: ' + imageFixed + ' haber → logo fallback gösterilecek');
   }
 
   // Son durum
