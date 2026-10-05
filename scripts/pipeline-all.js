@@ -129,31 +129,46 @@ async function aiSummarize(title, contents, category) {
   var combinedContent = sorted.join('\n\n---\n\n').slice(0, 8000);
   var minWords = CATEGORY_MIN_WORDS[category] || 100;
 
-  function buildPrompt(minW) {
-    return 'Sen bağımsız bir haber editörüsün. Aşağıda farklı kaynaklardan gelen, aynı habere ait metinler var. ' +
+  function buildPrompt(minW, prevText, plagiarismChunks) {
+    var prompt = 'Sen bağımsız bir haber editörüsün. Aşağıda farklı kaynaklardan gelen, aynı habere ait metinler var. ' +
       'Bu metinleri oku, ANLA, sonra KENDİ CÜMLELERİNLE bağımsız bir gazeteci gibi YENİDEN YAZ. ' +
       'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n' +
       'TELİF GÜVENLİĞİ KURALLARI — ZORUNLU:\n' +
-      '1. Kaynak metinle %30 DAN FAZLA kelime örtüşmesi yapma. Aynı cümleyi ASLA kurma.\n' +
-      '2. Cümle yapılarını tamamen değiştir:\n' +
+      '1. BİRBİR AYNI CÜMLE KESİNLİKLE OLMASIN. Kaynak metindeki hiçbir cümleyi aynen kopyalama.\n' +
+      '   Cümleyi bölüm: özne + yüklem + nesne sırasını değiştir, eş anlamlı kelimeler kullan.\n' +
+      '2. Kaynak metinle %30 DAN FAZLA kelime örtüşmesi yapma.\n' +
+      '3. Cümle yapılarını tamamen değiştir:\n' +
       '   - Aktif cümleyi pasife çevir (önceledi → tarafından önelendi)\n' +
       '   - Olumsuzu olumlu, olumlu olumsuz yap (ifade değişmeden)\n' +
       '   - Düz cümleyi soru, soruyu düz cümleye çevir\n' +
       '   - Cümle sırasını değiştir (önce sonuç, sonra sebep — veya tersi)\n' +
-      '3. Eş anlamlı kelimeler kullan:\n' +
+      '4. Eş anlamlı kelimeler kullan:\n' +
       '   - "açıkladı" yerine "belirtti / ifadede bulundu / söyledi / dile getirdi"\n' +
       '   - "dedi" yerine "ifade etti / kaydetti / vurguladı / belirtti"\n' +
       '   - "yüzde" yerine "yüzde oranında / yüzde ... seviyesinde / ...-oranla"\n' +
       '   - "bugün" yerine "bu gün / yaşadığımız gün / günümüzde"\n' +
       '   - "başkanı" yerine "yöneticisi / temsilcisi / sözcüsü" (anlam uygunsa)\n' +
-      '4. Kaynak metindeki İFADEYİ DEĞİL, ANLAMI aktar. Anlamı koru, ifadeyi değiştir.\n' +
-      '5. Sayısal veriler (rakam, yüzde, tarih, saat) — ANLAMI KORU ANCAK FARKLI CÜMLEDE VER:\n' +
+      '5. Kaynak metindeki İFADEYİ DEĞİL, ANLAMI aktar. Anlamı koru, ifadeyi değiştir.\n' +
+      '6. Sayısal veriler (rakam, yüzde, tarih, saat) — ANLAMI KORU ANCAK FARKLI CÜMLEDE VER:\n' +
       '   Kaynakta "Borsa %2 yükseldi" yazıyorsa sen "Borsa endeksinde yüzde iki oranında artış gözlendi" yaz.\n' +
       '   Kaynakta "5 Ekim 2026" yazıyorsa sen "Ekim ayının beşinci günü / 2026 yılının ekim ayında" yaz.\n' +
-      '6. Alıntı yapılmış sözleri ("..." içindeki ifadeler) AYNEN KORUMAK ZORUNLU DEĞİL — kendi cümlenle aktar.\n' +
-      '7. Kişi adları ve kurum adları korunabilir ANCAK cümle içinde farklı konumlandır.\n' +
-      '8. Eğer kaynak metinle çok benzer çıkarsa, kendini düzelt — farklı bir cümle kur.\n\n' +
-      'İÇERİK KURALLARI:\n' +
+      '7. Alıntı yapılmış sözleri ("..." içindeki ifadeler) AYNEN KORUMAK ZORUNLU DEĞİL — kendi cümlenle aktar.\n' +
+      '8. Kişi adları ve kurum adları korunabilir ANCAK cümle içinde farklı konumlandır.\n' +
+      '9. Eğer kaynak metinle çok benzer çıkarsa, kendini düzelt — farklı bir cümle kur.\n' +
+      '10. 4+ kelimelik ardışık dizilim kaynak metinde varsa, bu bir kopyalama sayılır — DEĞİŞTİR.\n';
+
+    // Eğer önceki denemeden plagiarizm tespit edildiyse, AI'a geri bildirim ver
+    if (prevText && plagiarismChunks && plagiarismChunks.length > 0) {
+      prompt += '\nÖNCEKİ DENEMENDE KOPYALAMA TESPİT EDİLDİ. Şu ifadeler kaynak metinle birebir aynı:\n';
+      plagiarismChunks.slice(0, 5).forEach(function(chunk, i) {
+        prompt += '  ' + (i+1) + '. "' + chunk + '"\n';
+      });
+      prompt += 'Bu ifadelerin hiçbirini yeniden yazdığın metinde aynen kullanma. ' +
+        'Tamamen farklı cümle yapısı ve eş anlamlı kelimelerle yeniden yaz.\n';
+      prompt += '\nÖNCEKİ DENEMEN (referans için, kopyalama):\n' + prevText.slice(0, 1500) + '\n';
+    }
+
+    prompt += '\nİÇERİK KURALLARI:\n' +
       '1. Mantıksal tutarlılık: haberin anlamına sadık kal. Olmayan çıkarımlar yapma. ' +
       '"deprem öncesi 16 artçı" gibi saçma mantıksal hatalardan kaçın. Eylemi doğru özne yap, ' +
       'sayıları doğru kullan, eylem-sayı-özne ilişkisi bozukluğu yapma.\n' +
@@ -174,10 +189,45 @@ async function aiSummarize(title, contents, category) {
       'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme ' +
       '(başlık, etiket, markdown, açıklama yok).\n\n' +
       'BAŞLIK (referans): ' + title + '\n\nKAYNAK HABER METİNLERİ:\n' + combinedContent;
+    return prompt;
+  }
+
+  // Plagiarizm kontrolü — AI cevabında 4+ kelimelik ardışık dizilim kaynak metinde var mı?
+  function findPlagiarism(aiText, sourceText) {
+    var normalize = function(t) {
+      return String(t || '')
+        .toLowerCase()
+        .replace(/[''`]/g, "'")
+        .replace(/[İI]/g, 'i')
+        .replace(/Ş/g, 's').replace(/Ç/g, 'c').replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ö/g, 'o')
+        .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o')
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+    var ai = normalize(aiText);
+    var src = normalize(sourceText);
+    if (!ai || !src) return [];
+
+    var aiWords = ai.split(' ');
+    var found = [];
+    var seen = new Set();
+    // 4 kelimelik ardışık dizilimleri kaynak metinde ara
+    for (var i = 0; i + 4 <= aiWords.length; i++) {
+      var chunk = aiWords.slice(i, i + 4).join(' ');
+      // 15+ karakter ve sadece jenerik olmayan (en az 1 meaningful kelime içersin)
+      if (chunk.length > 15 && src.indexOf(chunk) >= 0 && !seen.has(chunk)) {
+        seen.add(chunk);
+        found.push(chunk);
+      }
+    }
+    return found;
   }
 
   var bestText = null;
   var bestWordCount = 0;
+  var prevAttemptText = null;
+  var prevPlagiarism = null;
 
   for (var attempt = 1; attempt <= GEMINI_KEYS.length; attempt++) {
     var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
@@ -191,7 +241,7 @@ async function aiSummarize(title, contents, category) {
       var resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
+        body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords, prevAttemptText, prevPlagiarism) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
       });
       var result = await resp.json();
       if (result.error && result.error.code === 403) {
@@ -221,7 +271,21 @@ async function aiSummarize(title, contents, category) {
         if (text) {
           text = text.trim();
           var wc = countWords(text);
-          log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ')');
+
+          // Plagiarizm kontrolü — kaynak metinle 4+ kelimelik ardışık dizilim ara
+          var plagiarism = findPlagiarism(text, combinedContent);
+
+          if (plagiarism.length > 0) {
+            log('  AI özet: ' + wc + ' kelime — ' + plagiarism.length + ' kopyalama tespit edildi (örn: "' + plagiarism[0].slice(0, 50) + '")');
+            // bestText olarak kabul et ama retry için geri bildirim ver
+            if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
+            prevAttemptText = text;
+            prevPlagiarism = plagiarism;
+            // Yeniden deneme yapılacak (return etme)
+            continue;
+          }
+
+          log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ') — kopyalama YOK');
           if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
           if (wc >= minWords) return text;
           continue;
