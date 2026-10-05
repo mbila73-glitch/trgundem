@@ -16,7 +16,8 @@ function getClientIp(req: NextRequest): string {
 }
 
 // GET /api/heart?articleId=X
-// Okuyucunun beğeni sayısını ve userLiked (IP'ye göre) döner
+// Okuyucunun gördüğü toplam kalp sayısı = initialHearts + clickHearts
+// userLiked = IP bu makaleyi daha önce beğenmiş mi
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const articleId = sp.get('articleId');
@@ -28,13 +29,12 @@ export async function GET(req: NextRequest) {
   try {
     const article = await db.publishedArticle.findUnique({
       where: { id: articleId },
-      select: { hearts: true },
+      select: { initialHearts: true, clickHearts: true },
     });
     if (!article) {
       return NextResponse.json({ error: 'Haber bulunamadı' }, { status: 404 });
     }
 
-    // IP bu makaleyi daha önce beğenmiş mi?
     const heartLog = await db.heartLog.findUnique({
       where: { articleId_ip: { articleId, ip } },
       select: { id: true },
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      hearts: article.hearts,
+      hearts: article.initialHearts + article.clickHearts, // toplam (okuyucu görür)
       userLiked: Boolean(heartLog),
     });
   } catch (e) {
@@ -55,7 +55,8 @@ export async function GET(req: NextRequest) {
 
 // POST /api/heart
 // body: { articleId }
-// IP başına 1 kez beğenme — toggle (beğenmediyse beğen, beğendiyse geri al)
+// IP başına 1 kez beğenme — toggle
+// Sadece clickHearts artırılır/azaltılır (initialHearts değişmez)
 export async function POST(req: NextRequest) {
   let body: unknown;
   try {
@@ -70,46 +71,46 @@ export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
 
   try {
-    // IP bu makaleyi beğenmiş mi?
     const existing = await db.heartLog.findUnique({
       where: { articleId_ip: { articleId, ip } },
     });
 
     if (existing) {
-      // Beğeniyi geri al — HeartLog sil, hearts -1
+      // Beğeniyi geri al — clickHearts -1
       await db.$transaction([
         db.heartLog.delete({ where: { id: existing.id } }),
         db.publishedArticle.update({
           where: { id: articleId },
-          data: { hearts: { decrement: 1 } },
+          data: { clickHearts: { decrement: 1 } },
         }),
       ]);
       const updated = await db.publishedArticle.findUnique({
         where: { id: articleId },
-        select: { hearts: true },
+        select: { initialHearts: true, clickHearts: true },
       });
+      const total = Math.max(0, (updated?.clickHearts ?? 0)) + (updated?.initialHearts ?? 0);
       return NextResponse.json({
         ok: true,
-        hearts: Math.max(0, updated?.hearts ?? 0),
+        hearts: total,
         userLiked: false,
       });
     }
 
-    // Yeni beğeni — HeartLog oluştur, hearts + 1
+    // Yeni beğeni — clickHearts + 1
     await db.$transaction([
       db.heartLog.create({ data: { articleId, ip } }),
       db.publishedArticle.update({
         where: { id: articleId },
-        data: { hearts: { increment: 1 } },
+        data: { clickHearts: { increment: 1 } },
       }),
     ]);
     const updated = await db.publishedArticle.findUnique({
       where: { id: articleId },
-      select: { hearts: true },
+      select: { initialHearts: true, clickHearts: true },
     });
     return NextResponse.json({
       ok: true,
-      hearts: updated?.hearts ?? 0,
+      hearts: (updated?.initialHearts ?? 0) + (updated?.clickHearts ?? 0),
       userLiked: true,
     });
   } catch (e) {

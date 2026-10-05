@@ -69,6 +69,8 @@ export type PublishedArticle = {
   latestPublishedAt: string;
   status: string;
   publishedAt: string | null;
+  initialHearts: number;  // yayına alınırken random atanır (223-413)
+  clickHearts: number;    // okuyucu tıklama sayısı (gerçek)
   createdAt: string;
   updatedAt: string;
 };

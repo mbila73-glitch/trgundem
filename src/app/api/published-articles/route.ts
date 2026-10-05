@@ -19,17 +19,32 @@ export async function GET(req: NextRequest) {
   const status = sp.get('status') ?? 'published';
   const search = sp.get('search')?.trim();
 
-  // Arama — tüm published'larda aiTitle contains
+  // Arama — Türkçe karakter normalize + büyük/küçük harf duyarsız
+  // SQLite LIKE Türkçe karakterler için insensitive değil, bu yüzden JS tarafında filter yapıyoruz
   if (search && search.length > 0) {
-    const articles = await db.publishedArticle.findMany({
-      where: {
-        status,
-        aiTitle: { contains: search },
-      },
+    const normalizeTr = (s: string): string =>
+      String(s || '')
+        .toLowerCase()
+        .replace(/İ/g, 'i').replace(/I/g, 'ı')
+        .replace(/Ş/g, 's').replace(/Ç/g, 'c')
+        .replace(/Ğ/g, 'g').replace(/Ü/g, 'u')
+        .replace(/Ö/g, 'o')
+        .replace(/ı/g, 'i').replace(/ş/g, 's')
+        .replace(/ç/g, 'c').replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u').replace(/ö/g, 'o')
+        .trim();
+
+    const normalizedSearch = normalizeTr(search);
+    // Tüm published'ları çek (limit 300), JS tarafında normalize filter
+    const all = await db.publishedArticle.findMany({
+      where: { status },
       orderBy: { latestPublishedAt: 'desc' },
-      take: 50,
+      take: 300,
     });
-    return NextResponse.json({ articles, total: articles.length, hasMore: false });
+    const filtered = all
+      .filter(a => normalizeTr(a.aiTitle).includes(normalizedSearch))
+      .slice(0, 50);
+    return NextResponse.json({ articles: filtered, total: filtered.length, hasMore: false });
   }
 
   if (layout === 'all') {

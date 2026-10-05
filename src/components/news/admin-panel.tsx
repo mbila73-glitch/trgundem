@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; ip?: string | null; status: string; reply?: string | null; repliedAt?: string | null; createdAt: string };
-type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; };
+type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; initialHearts: number; clickHearts: number; };
 type AdminTab = 'messages' | 'custom' | 'published' | 'archived' | 'pending';
 
 const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
@@ -800,6 +800,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                     <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
                                     <div className="mt-1 flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
                                       <span className="hidden sm:inline">{a.wordCount} kelime</span>
+                                      <span className="inline-flex items-center gap-0.5 text-rose-600 dark:text-rose-400">
+                                        <Heart className="h-3 w-3 fill-rose-500" />
+                                        <span className="font-medium tabular-nums">{a.initialHearts ?? 0}+{a.clickHearts ?? 0}</span>
+                                      </span>
                                       {a.latestPublishedAt && (
                                         <span className="inline-flex items-center gap-1 tabular-nums">
                                           <Clock className="h-3 w-3" />

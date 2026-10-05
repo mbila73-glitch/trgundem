@@ -67,7 +67,8 @@ model PublishedArticle {
   status          String   @default("draft")  // "draft" | "published" | "archived" | "pending_review" | "duplicate"
   publishedAt     DateTime?
   archivedAt      DateTime? // arşive alındığı tarih (status='archived' olduğunda)
-  hearts          Int      @default(0)  // beğeni sayısı (global, tüm cihazlarda ortak)
+  initialHearts   Int      @default(0)  // yayına alınırken random atanır (223-413)
+  clickHearts     Int      @default(0)  // okuyucu tıklama sayısı (gerçek)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

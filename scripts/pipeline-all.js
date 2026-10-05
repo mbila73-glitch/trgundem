@@ -702,6 +702,8 @@ async function main() {
               earliestPublishedAt: groupArticlesList[groupArticlesList.length - 1].publishedAt || publishTime,
               latestPublishedAt: publishTime,
               wordCount: summaryText.split(/\s+/).length,
+              initialHearts: Math.floor(Math.random() * (413 - 223 + 1)) + 223, // random 223-413
+              clickHearts: 0,
               status: 'published',
               publishedAt: publishTime
             }
