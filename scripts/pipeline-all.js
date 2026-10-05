@@ -468,10 +468,10 @@ function groupArticles(articles) {
   return groups;
 }
 
-// Kategori bazlı min kaynak sayısı
+// Kategori bazlı min kaynak sayısı — tüm kategoriler 2 (Siyaset/Ekonomi için 3 idi, 2'ye düşürüldü)
 var CATEGORY_MIN_SOURCES = {
-  'Siyaset': 3,
-  'Ekonomi / Finans': 3,
+  'Siyaset': 2,
+  'Ekonomi / Finans': 2,
   'Kamu / Resmi': 2,
   'Bilim / Teknoloji': 2,
   'Kültür / Sanat': 2,

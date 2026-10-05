@@ -204,13 +204,13 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-12 w-auto object-contain opacity-50" />
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
           </div>
         )}
         {/* Logo fallback — görsel yüklenemezse göster */}
         {!article.imageUrl && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-12 w-auto object-contain opacity-50" />
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
           </div>
         )}
       </div>
@@ -250,13 +250,13 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-10 w-auto object-contain opacity-50" />
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
           </div>
         )}
         {/* Logo fallback — görsel yoksa veya yüklenemezse */}
         {!article.imageUrl && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-10 w-auto object-contain opacity-50" />
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
           </div>
         )}
       </div>
@@ -367,7 +367,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                         const img = document.createElement('img');
                         img.src = '/trlogo2.jpg';
                         img.alt = 'TRGUNDEM';
-                        img.className = 'h-16 w-auto object-contain opacity-50';
+                        img.className = 'max-h-[90%] max-w-[90%] object-contain opacity-50';
                         div.appendChild(img);
                         parent.appendChild(div);
                       }
@@ -375,7 +375,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
-                    <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-16 w-auto object-contain opacity-50" />
+                    <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
                   </div>
                 )}
                 {/* Sıra numarası badge — sol üst */}
