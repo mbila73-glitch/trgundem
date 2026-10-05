@@ -796,7 +796,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                 <div className="flex items-start gap-2 sm:gap-3">
                                   {a.imageUrl && <div className="h-14 w-20 sm:h-16 sm:w-24 flex-shrink-0 overflow-hidden rounded"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
                                   <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5 sm:gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4></div>
+                                    <div className="flex items-center gap-1.5 sm:gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px] flex-shrink-0">{a.category}</Badge></div>
                                     <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
                                     <div className="mt-1 flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
                                       <span className="hidden sm:inline">{a.wordCount} kelime</span>
@@ -854,7 +854,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   <div className="flex items-start gap-3">
                                     {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
                                     <div className="min-w-0 flex-1">
-                                      <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4></div>
+                                      <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
                                       <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
                                       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
                                         <span>{a.wordCount} kelime</span>
@@ -947,7 +947,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                     <div className="flex items-start gap-3">
                                       {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded grayscale"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
                                       <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4></div>
+                                        <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
                                         <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
                                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
                                           <span>{a.wordCount} kelime</span>
@@ -1113,7 +1113,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               {a.imageUrl && <img src={a.imageUrl} alt="" className="h-16 w-24 rounded object-cover flex-shrink-0" onError={(e) => (e.currentTarget.style.display = 'none')} />}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  
+                                  <Badge className="text-[10px]" variant="secondary">{a.category}</Badge>
                                   <Badge className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300">{a.sourceCount} kaynak</Badge>
                                   <span className="text-[10px] text-muted-foreground">{a.wordCount} kelime</span>
                                 </div>
