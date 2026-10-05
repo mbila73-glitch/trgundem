@@ -66,14 +66,26 @@ model PublishedArticle {
   latestPublishedAt   DateTime
   status          String   @default("draft")  // "draft" | "published" | "archived" | "pending_review" | "duplicate"
   publishedAt     DateTime?
-  archivedAt      DateTime? // arşive alındığı tarih (status='archived' olduğında)
+  archivedAt      DateTime? // arşive alındığı tarih (status='archived' olduğunda)
+  hearts          Int      @default(0)  // beğeni sayısı (global, tüm cihazlarda ortak)
   createdAt       DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  updatedAt       DateTime @updatedAt
 
   @@index([category])
   @@index([status])
   @@index([publishedAt])
   @@index([archivedAt])
+}
+
+// Beğeni logu — IP başına 1 kez beğenme kontrolü
+model HeartLog {
+  id         String   @id @default(cuid())
+  articleId  String
+  ip         String
+  createdAt  DateTime @default(now())
+
+  @@unique([articleId, ip])  // aynı IP aynı makaleye 1 kez beğenebilir
+  @@index([articleId])
 }
 
 model ReaderMessage {
