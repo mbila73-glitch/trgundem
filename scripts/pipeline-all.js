@@ -129,7 +129,23 @@ async function aiSummarize(title, contents, category) {
   var minWords = CATEGORY_MIN_WORDS[category] || 100;
 
   function buildPrompt(minW) {
-    return 'Aşağıdaki haber metinlerini oku. Asla kaynak metinle aynı cümleleri kurma. Tamamen kendi cümlelerinle, eş anlamlı kelimeler kullanarak, cümle yapısını değiştirerek yaz. Orijinal metinden hiçbir cümleyi, hiçbir ifadeyi kopyalama. Bu bir özet değil, haberin yeniden yazımıdır. EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\nBAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
+    return 'Aşağıdaki haber metinlerini oku. Asla kaynak metinle aynı cümleleri kurma. ' +
+      'Tamamen kendi cümlelerinle, eş anlamlı kelimeler kullanarak, cümle yapısını değiştirerek yaz. ' +
+      'Orijinal metinden hiçbir cümleyi, hiçbir ifadeyi kopyalama. Bu bir özet değil, haberin yeniden yazımıdır. ' +
+      'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\n' +
+      'ÖNEMLİ KURALLAR:\n' +
+      '1. Mantıksal tutarlılık: haberin anlamına sadık kal. Olmayan çıkarımlar yapma. ' +
+      '"deprem öncesi 16 artçı" gibi saçma mantıksal hatalardan kaçın. Eylemi doğru özne yap, ' +
+      'sayıları doğru kullan, eylem-sayı-özne ilişkisi bozukluğu yapma.\n' +
+      '2. Terim kontrolü: teknik, siyasi, ekonomik, hukuki terimleri doğru kullan. ' +
+      '"artçı" depremden sonra gelir (ön sarsıntı öncesi). "Merkez Bankası" kısaltma, "TCMB" yerine ' +
+      'tam adını kullan. Tarih, saat, yüzde, rakam bilgisini olduğu gibi aktar, değiştirme.\n' +
+      '3. Kronoloji: olayların sırasını koru. Eski olayı "yeni" gibi, yeni olayı "eski" gibi sunma. ' +
+      '"gelecek" olanı "geçmiş" gibi, "geçmiş" olanı "gelecek" gibi yazma.\n' +
+      '4. İddia/yargı: haberde "iddia edildi" diyorsa "gerçekleşti" deme. "açıklandı" diyorsa ' +
+      '"söylendi" deme. Belirsizliği koru.\n' +
+      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n\n' +
+      'BAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
   }
 
   var bestText = null;

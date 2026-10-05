@@ -247,7 +247,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     if (open && token) {
       if (adminTab === 'messages') void loadMessages();
       if (adminTab === 'published') void loadPublished();
-      if (adminTab === 'archived') void loadArchived();
+      if (adminTab === 'archived') { void loadArchived(); void loadMessages(); }
       if (adminTab === 'pending') void loadPending();
     }
   }, [open, token, adminTab, loadMessages, loadPublished, loadArchived, loadPending]);
@@ -939,6 +939,82 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             </Card>
                           ))}
                         </div>
+
+                        {/* Arşivlenmiş Mesajlar alt başlığı */}
+                        <div className="mt-8 mb-3 flex items-center gap-2">
+                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenmiş Mesajlar</h3>
+                          <Badge variant="secondary" className="text-[10px]">{messages.filter(m => m.status === 'archived').length}</Badge>
+                        </div>
+                        {messages.filter(m => m.status === 'archived').length === 0 ? (
+                          <Card className="flex flex-col items-center gap-3 p-8 text-center">
+                            <Mail className="h-8 w-8 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Arşivde mesaj yok</p>
+                          </Card>
+                        ) : (
+                          <div className="space-y-3">
+                            {messages.filter(m => m.status === 'archived').map(m => (
+                              <Card key={m.id} className="p-4 opacity-80">
+                                <div className="flex items-start gap-3">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="text-sm font-semibold">{m.name}</h4>
+                                      <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                                        <Clock className="h-3 w-3" />
+                                        {new Date(m.createdAt).toLocaleString('tr-TR')}
+                                      </span>
+                                    </div>
+                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                      {m.email} · {m.subject}
+                                      {m.ip && m.ip !== 'bilinmiyor' && (
+                                        <span className="ml-2 text-[10px] text-rose-600 dark:text-rose-400 font-mono">IP: {m.ip}</span>
+                                      )}
+                                    </p>
+                                    <p className="mt-2 text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">{m.message}</p>
+                                    {m.reply && (
+                                      <div className="mt-2 rounded-md border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-2">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                          <Check className="h-3 w-3" />
+                                          Gönderilen cevap
+                                          {m.repliedAt && (
+                                            <span className="ml-auto inline-flex items-center gap-1 text-[10px]">
+                                              <Clock className="h-3 w-3" />
+                                              {new Date(m.repliedAt).toLocaleString('tr-TR')}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <p className="mt-1 text-xs leading-relaxed text-foreground/80 whitespace-pre-wrap">{m.reply}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-shrink-0 items-center gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={async () => {
+                                        try {
+                                          const r = await fetch(`/api/admin/messages/${m.id}`, {
+                                            method: 'PATCH',
+                                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                            body: JSON.stringify({ status: 'read' }),
+                                          });
+                                          if (!r.ok) throw new Error('Geri yüklenemedi');
+                                          void loadMessages();
+                                          toast.success('Mesaj tekrar aktif edildi');
+                                        } catch (e) {
+                                          toast.error('Geri yükleme hatası');
+                                        }
+                                      }}
+                                      className="h-8 gap-1 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                    >
+                                      <RotateCcw className="h-3.5 w-3.5" />
+                                      Tekrar Aktif Et
+                                    </Button>
+                                  </div>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
                       </>
                     )}
                   </div>

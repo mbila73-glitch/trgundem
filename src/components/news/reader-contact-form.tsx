@@ -97,7 +97,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !submitting) onClose(); }}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -198,7 +198,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
             <div className="space-y-1.5">
               <Label htmlFor="r-message">Mesaj *</Label>
               {highlightedWord && message.toLowerCase().includes(highlightedWord.toLowerCase()) ? (
-                <div className="rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed max-h-[200px] overflow-y-auto">
+                <div className="rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed h-[192px] overflow-y-auto whitespace-pre-wrap break-words">
                   {message.split(new RegExp(`(${highlightedWord})`, 'gi')).map((part, i) => (
                     <span key={i} className={part.toLowerCase() === highlightedWord.toLowerCase() ? 'text-red-600 font-bold underline decoration-red-600' : ''}>
                       {part}
@@ -212,8 +212,8 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Mesajınızı buraya yazın"
                   required
-                  rows={5}
-                  className="resize-none max-h-[200px] overflow-y-auto"
+                  rows={8}
+                  className="resize-none h-[192px] overflow-y-auto"
                 />
               )}
             </div>
