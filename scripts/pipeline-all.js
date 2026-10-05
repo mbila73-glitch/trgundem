@@ -129,7 +129,7 @@ async function aiSummarize(title, contents, category) {
   var combinedContent = sorted.join('\n\n---\n\n').slice(0, 8000);
   var minWords = CATEGORY_MIN_WORDS[category] || 100;
 
-  function buildPrompt(minW, prevText, plagiarismChunks) {
+  function buildPrompt(minW, prevText, plagiarismChunks, prevWordCount) {
     var prompt = 'Sen bağımsız bir haber editörüsün. Aşağıda farklı kaynaklardan gelen, aynı habere ait metinler var. ' +
       'Bu metinleri oku, ANLA, sonra KENDİ CÜMLELERİNLE bağımsız bir gazeteci gibi YENİDEN YAZ. ' +
       'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n' +
@@ -157,7 +157,7 @@ async function aiSummarize(title, contents, category) {
       '9. Eğer kaynak metinle çok benzer çıkarsa, kendini düzelt — farklı bir cümle kur.\n' +
       '10. 4+ kelimelik ardışık dizilim kaynak metinde varsa, bu bir kopyalama sayılır — DEĞİŞTİR.\n';
 
-    // Eğer önceki denemeden plagiarizm tespit edildiyse, AI'a geri bildirim ver
+    // Eğer önceki denemeden plagiarizm tespit edildiyse
     if (prevText && plagiarismChunks && plagiarismChunks.length > 0) {
       prompt += '\nÖNCEKİ DENEMENDE KOPYALAMA TESPİT EDİLDİ. Şu ifadeler kaynak metinle birebir aynı:\n';
       plagiarismChunks.slice(0, 5).forEach(function(chunk, i) {
@@ -166,6 +166,14 @@ async function aiSummarize(title, contents, category) {
       prompt += 'Bu ifadelerin hiçbirini yeniden yazdığın metinde aynen kullanma. ' +
         'Tamamen farklı cümle yapısı ve eş anlamlı kelimelerle yeniden yaz.\n';
       prompt += '\nÖNCEKİ DENEMEN (referans için, kopyalama):\n' + prevText.slice(0, 1500) + '\n';
+    }
+
+    // Eğer önceki deneme yetersiz kelime ise
+    if (prevText && prevWordCount && prevWordCount < minW) {
+      prompt += '\nÖNCEKİ DENEMEN ' + prevWordCount + ' KELİME İDİ — YETERSİZ.\n';
+      prompt += 'EN AZ ' + minW + ' kelime yazman ZORUNLU. Önceki denemeyi referans al ama ' +
+        'DAHA UZUN ve detaylı yaz. Haberin tüm detaylarını, bağlamını, arka planını, sonuçlarını ekle.\n';
+      prompt += '\nÖNCEKİ DENEMEN (referans):\n' + prevText.slice(0, 1500) + '\n';
     }
 
     prompt += '\nİÇERİK KURALLARI:\n' +
@@ -179,13 +187,15 @@ async function aiSummarize(title, contents, category) {
       '"gelecek" olanı "geçmiş" gibi, "geçmiş" olanı "gelecek" gibi yazma.\n' +
       '4. İddia/yargı: haberde "iddia edildi" diyorsa "gerçekleşti" deme. "açıklandı" diyorsa ' +
       '"söylendi" deme. Belirsizliği koru.\n' +
-      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n\n' +
-      'UZUNLUK:\n' +
+      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n';
+
+    prompt += '\nUZUNLUK:\n' +
       'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
       'ÜST SINIR YOK — gerekirse 300, 500, 1000 veya daha fazla kelime yaz. ' +
       'Cümleni yarıda kesme, haber doğal bir sonuca ulaşmalı. ' +
-      'ASLA 200 kelimeye ulaşınca kesme — haberin tamamını yaz, bitirmediysen devam et.\n\n' +
-      'ÇIKTI FORMATI:\n' +
+      'ASLA 200 kelimeye ulaşınca kesme — haberin tamamını yaz, bitirmediysen devam et.\n';
+
+    prompt += '\nÇIKTI FORMATI:\n' +
       'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme ' +
       '(başlık, etiket, markdown, açıklama yok).\n\n' +
       'BAŞLIK (referans): ' + title + '\n\nKAYNAK HABER METİNLERİ:\n' + combinedContent;
@@ -228,6 +238,7 @@ async function aiSummarize(title, contents, category) {
   var bestWordCount = 0;
   var prevAttemptText = null;
   var prevPlagiarism = null;
+  var prevWordCount = 0;
 
   for (var attempt = 1; attempt <= GEMINI_KEYS.length; attempt++) {
     var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
@@ -241,7 +252,7 @@ async function aiSummarize(title, contents, category) {
       var resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords, prevAttemptText, prevPlagiarism) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
+        body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords, prevAttemptText, prevPlagiarism, prevWordCount) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
       });
       var result = await resp.json();
       if (result.error && result.error.code === 403) {
@@ -281,11 +292,22 @@ async function aiSummarize(title, contents, category) {
             if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
             prevAttemptText = text;
             prevPlagiarism = plagiarism;
+            prevWordCount = wc;
             // Yeniden deneme yapılacak (return etme)
             continue;
           }
 
-          log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ') — kopyalama YOK');
+          // Yetersiz kelime kontrolü — min'den azsa retry yap (AI'a "daha uzun yaz" geri bildirimi)
+          if (wc < minWords) {
+            log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ') — YETERSİZ, tekrar denenecek');
+            if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
+            prevAttemptText = text;
+            prevPlagiarism = null;  // plagiarizm temizle, sadece kelime retry
+            prevWordCount = wc;
+            continue;
+          }
+
+          log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ') — kopyalama YOK, kelime YETERLİ');
           if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
           if (wc >= minWords) return text;
           continue;
@@ -679,8 +701,13 @@ async function main() {
 
         // AI özet
         var aiText = await aiSummarize(firstArticle.title, contents, cat);
-        var summaryText = aiText || (firstArticle.description ? firstArticle.description.slice(0, 500) : firstArticle.title || '');
-        if (aiText) aiOk++;
+        // AI null ise haberi atla — fallback description KULLANMA (kısa özet oluşur)
+        if (!aiText || aiText.trim().length < 100) {
+          log('  AI cevap vermedi veya çok kısa, haber ATLANDI: ' + firstArticle.title.slice(0, 50));
+          continue;
+        }
+        var summaryText = aiText;
+        aiOk++;
 
         // En iyi görsel
         var bestImage = null;
