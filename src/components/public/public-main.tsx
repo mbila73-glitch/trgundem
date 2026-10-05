@@ -194,24 +194,19 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
       className="group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20"
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-        {article.imageUrl ? (
+        {/* Logo her zaman arka planda — görsel yüklenemezse görünür */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+        </div>
+        {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
+        {article.imageUrl && (
           <img
             src={article.imageUrl}
             alt={article.aiTitle}
             loading="lazy"
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            className="relative h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
-          </div>
-        )}
-        {/* Logo fallback — görsel yüklenemezse göster */}
-        {!article.imageUrl && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
-          </div>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-3">
@@ -240,24 +235,19 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
       className="group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20"
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted flex-shrink-0">
-        {article.imageUrl ? (
+        {/* Logo her zaman arka planda — görsel yüklenemezse görünür */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+        </div>
+        {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
+        {article.imageUrl && (
           <img
             src={article.imageUrl}
             alt={article.aiTitle}
             loading="lazy"
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            className="relative h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
-          </div>
-        )}
-        {/* Logo fallback — görsel yoksa veya yüklenemezse */}
-        {!article.imageUrl && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
-          </div>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-3 min-h-0">
@@ -351,42 +341,29 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
             >
               {/* Görsel — yüksekliğin yarısı kadar (16/9 aspect) */}
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted flex-shrink-0">
-                {a.imageUrl ? (
+                {/* Logo her zaman arka planda — görsel yüklenemezse görünür */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+                </div>
+                {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
+                {a.imageUrl && (
                   <img
                     src={a.imageUrl}
                     alt={a.aiTitle}
                     loading="lazy"
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                    onError={(e) => {
-                      // Görsel yüklenemezse logo göster
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                      const parent = (e.currentTarget.parentElement);
-                      if (parent && !parent.querySelector('.logo-fallback')) {
-                        const div = document.createElement('div');
-                        div.className = 'logo-fallback absolute inset-0 flex items-center justify-center';
-                        const img = document.createElement('img');
-                        img.src = '/trlogo2.jpg';
-                        img.alt = 'TRGUNDEM';
-                        img.className = 'max-h-[90%] max-w-[90%] object-contain opacity-50';
-                        div.appendChild(img);
-                        parent.appendChild(div);
-                      }
-                    }}
+                    className="relative h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
-                  </div>
                 )}
                 {/* Sıra numarası badge — sol üst */}
-                <div className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-md">
+                <div className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-md z-10">
                   {i + 1}
                 </div>
                 {/* Başa Dön butonu — sağ üst, her kartta */}
                 <button
                   type="button"
                   onClick={scrollToTop}
-                  className="absolute top-2 right-2 flex h-7 items-center justify-center rounded-full bg-black/60 text-white text-[10px] font-bold shadow-md px-2 hover:bg-black/80 transition"
+                  className="absolute top-2 right-2 flex h-7 items-center justify-center rounded-full bg-black/60 text-white text-[10px] font-bold shadow-md px-2 hover:bg-black/80 transition z-10"
                   aria-label="Başa Dön"
                 >
                   ↑ Başa Dön
