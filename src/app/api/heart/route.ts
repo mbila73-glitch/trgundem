@@ -76,14 +76,23 @@ export async function POST(req: NextRequest) {
     });
 
     if (existing) {
-      // Beğeniyi geri al — clickHearts -1
-      await db.$transaction([
-        db.heartLog.delete({ where: { id: existing.id } }),
-        db.publishedArticle.update({
-          where: { id: articleId },
-          data: { clickHearts: { decrement: 1 } },
-        }),
-      ]);
+      // Beğeniyi geri al — clickHearts -1 (ama 0'ın altına düşmesin)
+      const article = await db.publishedArticle.findUnique({
+        where: { id: articleId },
+        select: { clickHearts: true },
+      });
+      // Eğer clickHearts zaten 0 ise, sadece HeartLog'u sil (decrement yapma)
+      if ((article?.clickHearts ?? 0) <= 0) {
+        await db.heartLog.delete({ where: { id: existing.id } });
+      } else {
+        await db.$transaction([
+          db.heartLog.delete({ where: { id: existing.id } }),
+          db.publishedArticle.update({
+            where: { id: articleId },
+            data: { clickHearts: { decrement: 1 } },
+          }),
+        ]);
+      }
       const updated = await db.publishedArticle.findUnique({
         where: { id: articleId },
         select: { initialHearts: true, clickHearts: true },
