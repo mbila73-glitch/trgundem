@@ -539,7 +539,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-        <DialogContent className={`flex flex-col p-0 transition-all duration-200 ${fullscreen ? 'w-screen h-screen max-w-none max-h-none min-w-screen min-h-screen rounded-none border-0' : 'max-h-[88vh] min-h-[60vh] w-[95vw] max-w-[95vw] sm:max-h-[80vh] sm:min-h-[70vh] sm:w-[90vw] sm:max-w-[90vw] md:w-[70vw] md:max-w-[70vw] lg:w-[50vw] lg:max-w-[50vw]'}`}>
+        <DialogContent className={`flex flex-col p-0 transition-all duration-200 ${fullscreen ? 'w-screen h-screen max-w-none max-h-none min-w-screen min-h-screen rounded-none border-0' : 'w-[80vw] h-[80vh] max-w-[80vw] max-h-[80vh] min-w-[80vw] min-h-[80vh]'}`}>
           <DialogHeader className="px-3 pt-3 pb-0 sm:px-6 sm:pt-6">
             <DialogTitle className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base"><Lock className="h-4 w-4 sm:h-5 sm:w-5" /> <span className="hidden sm:inline">Yönetici Paneli</span><span className="sm:hidden">Panel</span></span>
