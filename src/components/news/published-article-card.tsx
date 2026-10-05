@@ -5,7 +5,7 @@ import { Clock, ExternalLink, Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { PublishedArticle } from '@/lib/types';
-import { colorForName, relativeTime, initials } from '@/lib/format';
+import { colorForName, relativeTime, initials, proxyImageUrl } from '@/lib/format';
 import { useHeart } from '@/lib/use-heart';
 
 type Props = {
@@ -34,7 +34,7 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
       {showImage ? (
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
           <img
-            src={article.imageUrl!}
+            src={proxyImageUrl(article.imageUrl) || undefined}
             alt={article.aiTitle}
             loading="lazy"
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"

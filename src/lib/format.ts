@@ -82,6 +82,16 @@ export function hostFromUrl(url: string): string {
   }
 }
 
+// Görsel URL'lerini kendi sunucumuz üzerinden proxy et
+// F12'de orijinal kaynak URL görünmesin, trgundem.net üzerinden serve edilsin
+export function proxyImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  // Yerel görseller (/uploads/, /trlogo2.jpg) — proxy'siz direkt
+  if (url.startsWith('/')) return url;
+  // Dış URL — proxy et
+  return `/api/img?url=${encodeURIComponent(url)}`;
+}
+
 // Türkçe karakter normalize — büyük/küçük harf duyarsız arama için
 // JavaScript'in toLowerCase() Türkçe karakterleri (İ, ı, Ş, ş, vb.) doğru dönüştürmez
 // İspanya → ispanya, Kılıçdaroğlu → kilicdaroglu, Şırnak → sirnak

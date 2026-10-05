@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
 import { useHeart } from '@/lib/use-heart';
+import { proxyImageUrl } from '@/lib/format';
 import type { PublishedArticle } from '@/lib/types';
 const SUB_TABS: Array<{
   id: string;
@@ -164,7 +165,7 @@ function ArticleDetailInline({
         <div className="mb-6 flex justify-center">
           <div className="relative aspect-[16/9] w-full max-w-md overflow-hidden rounded-xl bg-muted">
             <img
-              src={article.imageUrl}
+              src={proxyImageUrl(article.imageUrl) || undefined}
               alt={article.aiTitle}
               className="h-full w-full object-cover"
               onError={(e) => {
@@ -579,7 +580,7 @@ export function NewsScreen() {
                         <div className="flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md hover:border-foreground/20 sm:flex-row" onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
                           {a.imageUrl ? (
                             <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px]">
-                              <img src={a.imageUrl} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                              <img src={proxyImageUrl(a.imageUrl) || undefined} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                             </div>
                           ) : (
                             <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">
@@ -636,7 +637,7 @@ export function NewsScreen() {
                   <div className="flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md hover:border-foreground/20 sm:flex-row" onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
                     {a.imageUrl ? (
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px]">
-                        <img src={a.imageUrl} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                        <img src={proxyImageUrl(a.imageUrl) || undefined} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                       </div>
                     ) : (
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">

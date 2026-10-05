@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { PublishedArticleCard } from '@/components/news/published-article-card';
 import { useHeart } from '@/lib/use-heart';
-import { normalizeTr } from '@/lib/format';
+import { normalizeTr, proxyImageUrl } from '@/lib/format';
 import type { PublishedArticle } from '@/lib/types';
 
 // ===== Yardımcı fonksiyonlar =====
@@ -201,7 +201,7 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
         {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
         {article.imageUrl && (
           <img
-            src={article.imageUrl}
+            src={proxyImageUrl(article.imageUrl) || undefined}
             alt={article.aiTitle}
             loading="lazy"
             className="relative h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
@@ -242,7 +242,7 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
         {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
         {article.imageUrl && (
           <img
-            src={article.imageUrl}
+            src={proxyImageUrl(article.imageUrl) || undefined}
             alt={article.aiTitle}
             loading="lazy"
             className="relative h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
@@ -385,7 +385,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                 {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
                 {a.imageUrl && (
                   <img
-                    src={a.imageUrl}
+                    src={proxyImageUrl(a.imageUrl) || undefined}
                     alt={a.aiTitle}
                     loading="lazy"
                     className="relative h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
@@ -656,7 +656,7 @@ export function PublicMain() {
             {article.imageUrl ? (
               <div className="mb-6 flex justify-center">
                 <div className="relative aspect-[16/9] w-full max-w-2xl overflow-hidden rounded-xl bg-muted">
-                  <img src={article.imageUrl} alt={article.aiTitle} className="h-full w-full object-cover" />
+                  <img src={proxyImageUrl(article.imageUrl) || undefined} alt={article.aiTitle} className="h-full w-full object-cover" />
                 </div>
               </div>
             ) : (
