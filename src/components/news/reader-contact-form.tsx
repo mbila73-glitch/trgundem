@@ -59,7 +59,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
       if (json.rejected) {
         setStatus({ type: 'rejected', text: json.message || 'Mesajınız iade edilmiştir' });
         setMessage('');
-        setTimeout(() => setStatus(null), 4000);
+        // Tamam düğmesi ile kapat — otomatik kapanmaz
       } else {
         // Önce pencereyi kapat, formu temizle
         setName('');
@@ -126,20 +126,32 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
         </DialogHeader>
 
         {status ? (
-          // Status message — visible for 2 seconds
+          // Status message — Tamam düğmesi ile kapat
           <div
-            className={`flex items-center justify-center gap-3 rounded-lg p-8 ${
+            className={`flex flex-col items-center justify-center gap-4 rounded-lg p-8 ${
               status.type === 'success'
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                 : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
             }`}
           >
-            {status.type === 'success' ? (
-              <CheckCircle2 className="h-8 w-8" />
-            ) : (
-              <XCircle className="h-8 w-8" />
+            <div className="flex items-center gap-3">
+              {status.type === 'success' ? (
+                <CheckCircle2 className="h-8 w-8 flex-shrink-0" />
+              ) : (
+                <XCircle className="h-8 w-8 flex-shrink-0" />
+              )}
+              <p className="text-base font-semibold text-center leading-relaxed">{status.text}</p>
+            </div>
+            {status.type === 'rejected' && (
+              <Button
+                type="button"
+                onClick={() => setStatus(null)}
+                className="gap-2"
+              >
+                <Check className="h-4 w-4" />
+                Tamam
+              </Button>
             )}
-            <p className="text-lg font-semibold">{status.text}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 py-2">
