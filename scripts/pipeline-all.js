@@ -129,7 +129,7 @@ async function aiSummarize(title, contents, category) {
   var combinedContent = sorted.join('\n\n---\n\n').slice(0, 8000);
   var minWords = CATEGORY_MIN_WORDS[category] || 100;
 
-  function buildPrompt(minW, prevText, plagiarismChunks, prevWordCount) {
+  function buildPrompt(minW, prevText, plagiarismChunks, prevWordCount, prevAds) {
     var prompt = 'Sen bağımsız bir haber editörüsün. Aşağıda farklı kaynaklardan gelen, aynı habere ait metinler var. ' +
       'Bu metinleri oku, ANLA, sonra KENDİ CÜMLELERİNLE bağımsız bir gazeteci gibi YENİDEN YAZ. ' +
       'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n' +
@@ -168,12 +168,23 @@ async function aiSummarize(title, contents, category) {
       prompt += '\nÖNCEKİ DENEMEN (referans için, kopyalama):\n' + prevText.slice(0, 1500) + '\n';
     }
 
-    // Eğer önceki deneme yetersiz kelime ise
+    // Eğer önceki denemede yetersiz kelime ise
     if (prevText && prevWordCount && prevWordCount < minW) {
       prompt += '\nÖNCEKİ DENEMEN ' + prevWordCount + ' KELİME İDİ — YETERSİZ.\n';
       prompt += 'EN AZ ' + minW + ' kelime yazman ZORUNLU. Önceki denemeyi referans al ama ' +
         'DAHA UZUN ve detaylı yaz. Haberin tüm detaylarını, bağlamını, arka planını, sonuçlarını ekle.\n';
       prompt += '\nÖNCEKİ DENEMEN (referans):\n' + prevText.slice(0, 1500) + '\n';
+    }
+
+    // Eğer önceki denemede reklam tespit edildiyse
+    if (prevText && prevAds && prevAds.length > 0) {
+      prompt += '\nÖNCEKİ DENEMENDE REKLAM TESPİT EDİLDİ. Şu reklam/CTA ifadeleri var:\n';
+      prevAds.slice(0, 8).forEach(function(ad, i) {
+        prompt += '  ' + (i+1) + '. "' + ad + '"\n';
+      });
+      prompt += 'Bu ifadeleri ASLA yeniden yazdığın metinde kullanma. ' +
+        'Haberin konusu reklam ile ilgili değilse, tüm reklam benzeri ifadeleri tamamen çıkar. ' +
+        'Sadece haberin asıl içeriğini yaz.\n';
     }
 
     prompt += '\nİÇERİK KURALLARI:\n' +
@@ -187,7 +198,17 @@ async function aiSummarize(title, contents, category) {
       '"gelecek" olanı "geçmiş" gibi, "geçmiş" olanı "gelecek" gibi yazma.\n' +
       '4. İddia/yargı: haberde "iddia edildi" diyorsa "gerçekleşti" deme. "açıklandı" diyorsa ' +
       '"söylendi" deme. Belirsizliği koru.\n' +
-      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n';
+      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n' +
+      '6. REKLAM VE SPONSORLU İÇERİK KALDIR: Kaynak metinde geçen reklam, sponsorlu içerik, ' +
+      'çağrı aksiyonu (CTA) ifadelerini ASLA özete dahil etme. Örnekler:\n' +
+      '   - "Abone ol", "Bültenimize katıl", "Kaydol", "Üye ol" → KALDIR\n' +
+      '   - "Tıkla", "Buradan satın al", "Hemen indir", "Ücretsiz dene" → KALDIR\n' +
+      '   - "Sponsorlu içerik", "Reklam", "Promosyon", "İndirim" → KALDIR\n' +
+      '   - "İlginizi çekebilir", "Bunları da okuyun", "Diğer haberler", "Önerilen" → KALDIR\n' +
+      '   - "Bizi takip edin", "Sosyal medya", "Instagram", "Twitter", "YouTube" (kanal yönlendirme) → KALDIR\n' +
+      '   - "Uygulamamızı indir", "App Store", "Google Play" → KALDIR\n' +
+      '   - Kaynak site adı, "için tıklayın", "detaylar için" gibi yönlendirme → KALDIR\n' +
+      '   Eğer haberin ana konusu reklam değilse, reklam benzeri ifadeleri tamamen çıkar.\n';
 
     prompt += '\nUZUNLUK:\n' +
       'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
@@ -200,6 +221,29 @@ async function aiSummarize(title, contents, category) {
       '(başlık, etiket, markdown, açıklama yok).\n\n' +
       'BAŞLIK (referans): ' + title + '\n\nKAYNAK HABER METİNLERİ:\n' + combinedContent;
     return prompt;
+  }
+
+  // Reklam tespiti — AI cevabında reklam/CTA/sponsorlu içerik ifadeleri var mı?
+  var AD_PHRASES = [
+    'abone ol', 'bültenimize katıl', 'kaydol', 'üye ol', 'ücretsiz üye',
+    'tıkla', 'buradan satın al', 'hemen indir', 'ücretsiz dene',
+    'sponsorlu içerik', 'reklamdır', 'promosyon', 'indirim', 'fırsat',
+    'ilginizi çekebilir', 'bunları da okuyun', 'diğer haberler', 'önerilen',
+    'bizi takip edin', 'sosyal medya hesaplarımız', 'instagram hesabımız',
+    'twitter hesabımız', 'youtube kanalımız', 'facebook sayfamız',
+    'uygulamamızı indir', 'app store', 'google play', 'play store',
+    'için tıklayın', 'detaylar için', 'bize ulaşın', 'iletişime geçin',
+    'newsletter', 'subscribe', 'click here', 'buy now', 'download',
+    'reklam geç', 'reklamı geç', 'sponsorlu'
+  ];
+
+  function findAds(text) {
+    var normalized = String(text || '').toLowerCase();
+    var found = [];
+    AD_PHRASES.forEach(function(p) {
+      if (normalized.indexOf(p) >= 0) found.push(p);
+    });
+    return found;
   }
 
   // Plagiarizm kontrolü — AI cevabında 4+ kelimelik ardışık dizilim kaynak metinde var mı?
@@ -239,6 +283,7 @@ async function aiSummarize(title, contents, category) {
   var prevAttemptText = null;
   var prevPlagiarism = null;
   var prevWordCount = 0;
+  var prevAds = null;
 
   for (var attempt = 1; attempt <= GEMINI_KEYS.length; attempt++) {
     var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
@@ -252,7 +297,7 @@ async function aiSummarize(title, contents, category) {
       var resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords, prevAttemptText, prevPlagiarism, prevWordCount) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
+        body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords, prevAttemptText, prevPlagiarism, prevWordCount, prevAds) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
       });
       var result = await resp.json();
       if (result.error && result.error.code === 403) {
@@ -293,7 +338,20 @@ async function aiSummarize(title, contents, category) {
             prevAttemptText = text;
             prevPlagiarism = plagiarism;
             prevWordCount = wc;
+            prevAds = null;  // reklam temizle, sadece plagiarizm retry
             // Yeniden deneme yapılacak (return etme)
+            continue;
+          }
+
+          // Reklam tespiti — AI cevabında reklam/CTA ifadeleri var mı?
+          var ads = findAds(text);
+          if (ads.length > 0) {
+            log('  AI özet: ' + wc + ' kelime — ' + ads.length + ' reklam tespit edildi (örn: "' + ads[0] + '")');
+            if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
+            prevAttemptText = text;
+            prevPlagiarism = null;  // plagiarizm temizle, sadece reklam retry
+            prevWordCount = wc;
+            prevAds = ads;
             continue;
           }
 
