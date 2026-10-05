@@ -82,6 +82,26 @@ export function hostFromUrl(url: string): string {
   }
 }
 
+// Tarih + saat formatı — kısa (5 Eki 22:41)
+export function dateTimeShort(date: string | Date | null | undefined): string {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  const dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+  const timeStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  return `${dateStr} ${timeStr}`;
+}
+
+// Tarih + saat formatı — uzun (5 Ekim 2026 22:41)
+export function dateTimeLong(date: string | Date | null | undefined): string {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  const dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const timeStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  return `${dateStr} ${timeStr}`;
+}
+
 // Görsel URL'lerini kendi sunucumuz üzerinden proxy et
 // F12'de orijinal kaynak URL görünmesin, trgundem.net üzerinden serve edilsin
 export function proxyImageUrl(url: string | null | undefined): string | null {

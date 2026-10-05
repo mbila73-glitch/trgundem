@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
 import { useHeart } from '@/lib/use-heart';
-import { proxyImageUrl } from '@/lib/format';
+import { proxyImageUrl, dateTimeLong } from '@/lib/format';
 import type { PublishedArticle } from '@/lib/types';
 const SUB_TABS: Array<{
   id: string;
@@ -185,11 +185,7 @@ function ArticleDetailInline({
       <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-          })}
+          {dateTimeLong(article.latestPublishedAt)}
         </span>
       </div>
 

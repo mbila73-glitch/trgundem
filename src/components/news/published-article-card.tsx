@@ -5,7 +5,7 @@ import { Clock, ExternalLink, Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { PublishedArticle } from '@/lib/types';
-import { colorForName, relativeTime, initials, proxyImageUrl } from '@/lib/format';
+import { colorForName, relativeTime, initials, proxyImageUrl, dateTimeShort } from '@/lib/format';
 import { useHeart } from '@/lib/use-heart';
 
 type Props = {
@@ -56,7 +56,7 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
           </Avatar>
           <span className="ml-auto inline-flex items-center gap-1 tabular-nums">
             <Clock className="h-3 w-3" />
-            {relativeTime(article.latestPublishedAt)}
+            {dateTimeShort(article.latestPublishedAt)}
           </span>
         </div>
 

@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { PublishedArticleCard } from '@/components/news/published-article-card';
 import { useHeart } from '@/lib/use-heart';
-import { normalizeTr, proxyImageUrl } from '@/lib/format';
+import { normalizeTr, proxyImageUrl, dateTimeShort, dateTimeLong } from '@/lib/format';
 import type { PublishedArticle } from '@/lib/types';
 
 // ===== Yardımcı fonksiyonlar =====
@@ -217,7 +217,7 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
           <HeartCounter articleId={article.id} />
           <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
             <Clock className="h-3 w-3" />
-            {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+            {dateTimeShort(article.latestPublishedAt)}
           </span>
         </div>
       </div>
@@ -258,7 +258,7 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
           <HeartCounter articleId={article.id} />
           <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
             <Clock className="h-3 w-3" />
-            {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+            {dateTimeShort(article.latestPublishedAt)}
           </span>
         </div>
       </div>
@@ -414,7 +414,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                   <HeartCounter articleId={a.id} />
                   <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
                     <Clock className="h-3 w-3" />
-                    {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {dateTimeLong(a.latestPublishedAt)}
                   </span>
                 </div>
               </div>
@@ -423,24 +423,47 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
         ))}
       </div>
 
-      {/* PAGINATION — pencere içine entegre, kontrast renkler */}
-      <div className="flex items-center justify-center gap-1 py-2 bg-slate-800 border-t-2 border-slate-700 rounded-b-lg">
-        {articles.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={(e) => { e.stopPropagation(); goToIndex(i); }}
-            className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] font-bold transition ${
-              i === currentIndex
-                ? 'bg-red-600 text-white shadow-lg scale-110 ring-2 ring-red-400'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
-            }`}
-            aria-label={`Sayfa ${i + 1}`}
-            aria-current={i === currentIndex}
-          >
-            {i + 1}
-          </button>
-        ))}
+      {/* PAGINATION — pencere içine entegre, oklar + numaralar */}
+      <div className="flex items-center justify-center gap-1.5 py-2 bg-slate-800 border-t-2 border-slate-700 rounded-b-lg">
+        {/* Sol ok */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); scroll('left'); }}
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-red-600 text-white hover:bg-red-700 transition shadow-md"
+          aria-label="Önceki"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        {/* Sayfa numaraları */}
+        <div className="flex items-center gap-0.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          {articles.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); goToIndex(i); }}
+              className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] font-bold transition ${
+                i === currentIndex
+                  ? 'bg-red-600 text-white shadow-lg scale-110 ring-2 ring-red-400'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
+              }`}
+              aria-label={`Sayfa ${i + 1}`}
+              aria-current={i === currentIndex}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+
+        {/* Sağ ok */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); scroll('right'); }}
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-red-600 text-white hover:bg-red-700 transition shadow-md"
+          aria-label="Sonraki"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
@@ -670,7 +693,7 @@ export function PublicMain() {
             <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {dateTimeLong(article.latestPublishedAt)}
               </span>
             </div>
 
