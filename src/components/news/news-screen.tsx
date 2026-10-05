@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock } from 'lucide-react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
 import { useHeart } from '@/lib/use-heart';
@@ -230,6 +231,11 @@ export function NewsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Arama state'leri
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<PublishedArticle[] | null>(null);
+  const [searching, setSearching] = useState(false);
+
   // Track which article is open (from URL ?article=<id>)
   const [openArticleId, setOpenArticleId] = useState<string | null>(null);
 
@@ -344,13 +350,46 @@ export function NewsScreen() {
 
   const current = SUB_TABS.find((t) => t.id === active) ?? SUB_TABS[0];
 
+  // Arama yap — API'yi çağır, searchResults'a koy
+  const handleSearch = useCallback(async (q: string) => {
+    const query = q.trim();
+    if (!query) {
+      setSearchResults(null);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    try {
+      const r = await fetch(`/api/published-articles?search=${encodeURIComponent(query)}&status=published`, { cache: 'no-store' });
+      if (!r.ok) throw new Error('Arama yapılamadı');
+      const json = (await r.json()) as { articles?: PublishedArticle[] };
+      setSearchResults(json.articles ?? []);
+    } catch (e) {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  // Ara düğmesine basınca
+  const onSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void handleSearch(searchQuery);
+  };
+
+  // Aramayı temizle, ana sayfaya dön
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(null);
+  };
+
   return (
     <section className="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
-      {/* Category tabs — sticky (kaybolmasın) */}
+      {/* Category tabs + Arama çubuğu — sticky (kaybolmasın) */}
       <nav
         role="tablist"
         aria-label="Haber kategorileri"
-        className="sticky z-20 mb-4 rounded-lg border border-border bg-card p-1.5 shadow-sm"
+        className="sticky z-20 mb-4 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 p-1.5 shadow-sm"
         style={{ top: '160px' }}
       >
         {/* MOBİL: Tek buton + dropdown */}
@@ -432,11 +471,116 @@ export function NewsScreen() {
             );
           })}
         </div>
+
+        {/* Arama çubuğu — kategori sekmelerinin altında (açık mavi dolgu) */}
+        <form onSubmit={onSearchSubmit} className="mt-2 flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/20 p-1.5">
+          <Search className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 ml-1.5" />
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Haberlerde ara..."
+            className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm"
+          />
+          <Button
+            type="submit"
+            size="sm"
+            disabled={searching || !searchQuery.trim()}
+            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3"
+          >
+            {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">Ara</span>
+          </Button>
+          {searchResults !== null && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={clearSearch}
+              className="gap-1.5 text-xs h-8 px-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Temizle</span>
+            </Button>
+          )}
+        </form>
       </nav>
 
-      {/* Article detail (inline, not dialog) OR news grid */}
+      {/* Article detail (inline, not dialog) OR search results OR news grid */}
       {openArticleId ? (
         <ArticleDetailInline articleId={openArticleId} onBack={goBack} />
+      ) : searchResults !== null ? (
+        /* ARAMA SONUÇLARI BLOĞU — çubuğun altında listelenir */
+        searching ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />
+            ))}
+          </div>
+        ) : searchResults.length === 0 ? (
+          <Card className="flex flex-col items-center gap-3 p-10 text-center">
+            <Search className="h-10 w-10 text-muted-foreground" />
+            <p className="text-sm font-medium">Haber bulunamadı</p>
+            <p className="text-xs text-muted-foreground">"{searchQuery}" için sonuç yok. Farklı bir kelime deneyin.</p>
+            <div className="mt-4 flex gap-2">
+              <Button variant="outline" size="sm" onClick={clearSearch} className="gap-1.5 text-xs">
+                <X className="h-3.5 w-3.5" /> Temizle
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <>
+            {/* Arama sonuçları başlığı */}
+            <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <Search className="h-3.5 w-3.5" />
+              <span>"<strong className="text-foreground">{searchQuery}</strong>" için {searchResults.length} haber bulundu</span>
+            </div>
+
+            {/* Arama sonuçları grid */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {searchResults.map((a) => (
+                <PublishedArticleCard key={a.id} article={a} onOpen={(id) => openArticle(id)} />
+              ))}
+            </div>
+
+            {/* Ana Sayfa + Geri düğmeleri — arama sonuçlarının altında */}
+            <div className="mt-6 flex items-center justify-center gap-2 border-t border-border pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearSearch}
+                className="gap-1.5 text-sm"
+              >
+                <Home className="h-4 w-4" />
+                Ana Sayfa
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { clearSearch(); }}
+                className="gap-1.5 text-sm"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Geri
+              </Button>
+            </div>
+
+            {/* Normal ana sayfa akışı — baş haber + diğerleri (arama altında devam eder) */}
+            {articles.length > 0 && (
+              <div className="mt-8">
+                <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Newspaper className="h-3.5 w-3.5" />
+                  <span>Diğer Haberler</span>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {articles.slice(1).map((a) => (
+                    <PublishedArticleCard key={a.id} article={a} onOpen={(id) => openArticle(id)} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )
       ) : loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
