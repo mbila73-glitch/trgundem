@@ -705,31 +705,31 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               variant="ghost"
                               size="icon"
                               onClick={() => openReplyEditor(m)}
-                              className="h-8 w-8 text-muted-foreground hover:text-news"
+                              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-news"
                               title="Cevap Yaz"
                               disabled={sendingReply === m.id || archivingMsg === m.id}
                             >
-                              <MessageSquare className="h-4 w-4" />
+                              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleArchiveMessage(m.id)}
                               disabled={archivingMsg === m.id || deletingId === m.id}
-                              className="h-8 w-8 text-muted-foreground hover:text-amber-600"
+                              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-amber-600"
                               title="Arşivle"
                             >
-                              {archivingMsg === m.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className="h-4 w-4" />}
+                              {archivingMsg === m.id ? <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <Archive className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleDelete(m.id)}
                               disabled={deletingId === m.id || archivingMsg === m.id}
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
                               title="Sil"
                             >
-                              {deletingId === m.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                              {deletingId === m.id ? <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                             </Button>
                           </div>
                         </div>
@@ -793,19 +793,19 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   <div className="flex gap-2"><Button size="sm" onClick={() => saveEdit(a.id)} disabled={savingEdit} className="gap-1.5">{savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}Kaydet</Button><Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5"><X className="h-3.5 w-3.5" />İptal</Button></div>
                                 </div>
                               ) : (
-                                <div className="flex items-start gap-3">
-                                  {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
+                                <div className="flex items-start gap-2 sm:gap-3">
+                                  {a.imageUrl && <div className="h-14 w-20 sm:h-16 sm:w-24 flex-shrink-0 overflow-hidden rounded"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
                                   <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
+                                    <div className="flex items-center gap-1.5 sm:gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px] flex-shrink-0">{a.category}</Badge></div>
                                     <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
-                                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-                                      <span>{a.wordCount} kelime</span>
+                                    <div className="mt-1 flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                                      <span className="hidden sm:inline">{a.wordCount} kelime</span>
                                       {a.latestPublishedAt && (
                                         <span className="inline-flex items-center gap-1 tabular-nums">
                                           <Clock className="h-3 w-3" />
                                           {new Date(a.latestPublishedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                                           <span className="text-border">·</span>
-                                          {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                          {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
                                         </span>
                                       )}
                                       {a.sourceCount >= 1 && (
