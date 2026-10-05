@@ -89,17 +89,17 @@ try {
   globalThis.prisma = _prisma;
 } catch (e) { console.error('Prisma: ' + e.message); }
 
-// AI ÖZET — telifsiz, kategori bazlı min kelime, 3 key sırayla
+// AI ÖZET — telifsiz, kategori bazlı min kelime, 5 key sırayla
 // Kategori bazlı minimum kelime sayısı (alt sınır — AI bundan az üretmemeli)
+// Tüm kategoriler için 150 kelime alt sınır (geçmiş kayıt: 150 min, üst sınır yok)
 var CATEGORY_MIN_WORDS = {
-  'Siyaset': 200,
-  'Ekonomi / Finans': 100,
-  'Kamu / Resmi': 80,
-  'Bilim / Teknoloji': 80,
-  'Kültür / Sanat': 100,
-  'Spor / Magazin': 80,
-  'Siyaset': 100,
-  'Aktüel': 100
+  'Siyaset': 150,
+  'Ekonomi / Finans': 150,
+  'Kamu / Resmi': 150,
+  'Bilim / Teknoloji': 150,
+  'Kültür / Sanat': 150,
+  'Spor / Magazin': 150,
+  'Özel': 150
 };
 
 // HTML entity decode — publishedArticle.aiTitle temiz olsun

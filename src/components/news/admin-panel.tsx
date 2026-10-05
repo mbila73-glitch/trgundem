@@ -889,146 +889,165 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                 {adminTab === 'archived' && (
                   <div>
                     {loadingArchived ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}</div>
-                    : archivedArticles.length === 0 ? <Card className="flex flex-col items-center gap-3 p-10 text-center"><Archive className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Arşivde haber yok</p><p className="text-xs text-muted-foreground/70">Yayından kaldırılan haberler burada listelenir.</p></Card>
-                    : (
+                    : archivedArticles.length === 0 && messages.filter(m => m.status === 'archived').length === 0 ? (
+                      <Card className="flex flex-col items-center gap-3 p-10 text-center">
+                        <Archive className="h-10 w-10 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Arşivde haber yok</p>
+                        <p className="text-xs text-muted-foreground/70">Yayından kaldırılan haberler ve arşivlenen mesajlar burada listelenir.</p>
+                      </Card>
+                    ) : (
                       <>
-                        <div className="mb-3 flex items-center gap-2">
-                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenen Haberler</h3>
-                          <Badge variant="secondary" className="text-[10px]">{archivedArticles.length}</Badge>
-                        </div>
-                        <div className="space-y-3">
-                          {archivedArticles.map(a => (
-                            <Card key={a.id} className="p-4 opacity-80">
-                              <div className="flex items-start gap-3">
-                                {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded grayscale"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
-                                  <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
-                                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-                                    <span>{a.wordCount} kelime</span>
-                                    {/* Yayınlandığı tarih */}
-                                    {a.publishedAt && (
-                                      <span className="inline-flex items-center gap-1 tabular-nums">
-                                        <Clock className="h-3 w-3" />
-                                        <span className="font-medium">Yayın:</span>
-                                        {new Date(a.publishedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                                        <span className="text-border">·</span>
-                                        {new Date(a.publishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                      </span>
-                                    )}
-                                    {/* Arşive alındığı tarih */}
-                                    {a.archivedAt && (
-                                      <span className="inline-flex items-center gap-1 tabular-nums text-destructive/80">
-                                        <Archive className="h-3 w-3" />
-                                        <span className="font-medium">Arşiv:</span>
-                                        {new Date(a.archivedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                                        <span className="text-border">·</span>
-                                        {new Date(a.archivedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                {/* Tekrar Yayına Al butonu */}
-                                <div className="flex flex-shrink-0 items-center gap-1">
-                                  <Button variant="ghost" size="sm" onClick={async () => {
-                                    try {
-                                      const r = await fetch(`/api/admin/published/${a.id}`, {
-                                        method: 'PATCH',
-                                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                                        body: JSON.stringify({ status: 'published' }),
-                                      });
-                                      if (!r.ok) throw new Error('Geri yüklenemedi');
-                                      toast.success('Haber Tekrar Yayında');
-                                      void loadArchived();
-                                      void loadPublished();
-                                    } catch (e) {
-                                      toast.error('Geri yükleme hatası');
-                                    }
-                                  }} className="h-8 gap-1 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
-                                    <RotateCcw className="h-3.5 w-3.5" />
-                                    Tekrar Yayına Al
-                                  </Button>
-                                </div>
-                              </div>
-                            </Card>
-                          ))}
-                        </div>
+                        {/* İki sütun: Arşivlenen Haberler | Arşivlenen Mesajlar — yan yana */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                        {/* Arşivlenen Mesajlar alt başlığı */}
-                        <div className="mt-8 mb-3 flex items-center gap-2">
-                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenen Mesajlar</h3>
-                          <Badge variant="secondary" className="text-[10px]">{messages.filter(m => m.status === 'archived').length}</Badge>
-                        </div>
-                        {messages.filter(m => m.status === 'archived').length === 0 ? (
-                          <Card className="flex flex-col items-center gap-3 p-8 text-center">
-                            <Mail className="h-8 w-8 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">Arşivde mesaj yok</p>
-                          </Card>
-                        ) : (
-                          <div className="space-y-3">
-                            {messages.filter(m => m.status === 'archived').map(m => (
-                              <Card key={m.id} className="p-4 opacity-80">
-                                <div className="flex items-start gap-3">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <h4 className="text-sm font-semibold">{m.name}</h4>
-                                      <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-                                        <Clock className="h-3 w-3" />
-                                        {new Date(m.createdAt).toLocaleString('tr-TR')}
-                                      </span>
-                                    </div>
-                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                      {m.email} · {m.subject}
-                                      {m.ip && m.ip !== 'bilinmiyor' && (
-                                        <span className="ml-2 text-[10px] text-rose-600 dark:text-rose-400 font-mono">IP: {m.ip}</span>
-                                      )}
-                                    </p>
-                                    <p className="mt-2 text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">{m.message}</p>
-                                    {m.reply && (
-                                      <div className="mt-2 rounded-md border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-2">
-                                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
-                                          <Check className="h-3 w-3" />
-                                          Gönderilen cevap
-                                          {m.repliedAt && (
-                                            <span className="ml-auto inline-flex items-center gap-1 text-[10px]">
+                          {/* Sol sütun: Arşivlenen Haberler */}
+                          <div>
+                            <div className="mb-3 flex items-center gap-2">
+                              <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenen Haberler</h3>
+                              <Badge variant="secondary" className="text-[10px]">{archivedArticles.length}</Badge>
+                            </div>
+                            {archivedArticles.length === 0 ? (
+                              <Card className="flex flex-col items-center gap-3 p-8 text-center">
+                                <Archive className="h-8 w-8 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">Arşivde haber yok</p>
+                              </Card>
+                            ) : (
+                              <div className="space-y-3">
+                                {archivedArticles.map(a => (
+                                  <Card key={a.id} className="p-4 opacity-80">
+                                    <div className="flex items-start gap-3">
+                                      {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded grayscale"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2"><h4 className="text-sm font-semibold line-clamp-1">{a.aiTitle}</h4><Badge variant="secondary" className="text-[9px]">{a.category}</Badge></div>
+                                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
+                                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                                          <span>{a.wordCount} kelime</span>
+                                          {a.publishedAt && (
+                                            <span className="inline-flex items-center gap-1 tabular-nums">
                                               <Clock className="h-3 w-3" />
-                                              {new Date(m.repliedAt).toLocaleString('tr-TR')}
+                                              <span className="font-medium">Yayın:</span>
+                                              {new Date(a.publishedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                              <span className="text-border">·</span>
+                                              {new Date(a.publishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            </span>
+                                          )}
+                                          {a.archivedAt && (
+                                            <span className="inline-flex items-center gap-1 tabular-nums text-destructive/80">
+                                              <Archive className="h-3 w-3" />
+                                              <span className="font-medium">Arşiv:</span>
+                                              {new Date(a.archivedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                              <span className="text-border">·</span>
+                                              {new Date(a.archivedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </span>
                                           )}
                                         </div>
-                                        <p className="mt-1 text-xs leading-relaxed text-foreground/80 whitespace-pre-wrap">{m.reply}</p>
                                       </div>
-                                    )}
-                                  </div>
-                                  <div className="flex flex-shrink-0 items-center gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={async () => {
-                                        try {
-                                          const r = await fetch(`/api/admin/messages/${m.id}`, {
-                                            method: 'PATCH',
-                                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                                            body: JSON.stringify({ status: 'read' }),
-                                          });
-                                          if (!r.ok) throw new Error('Geri yüklenemedi');
-                                          void loadMessages();
-                                          toast.success('Mesaj tekrar aktif edildi');
-                                        } catch (e) {
-                                          toast.error('Geri yükleme hatası');
-                                        }
-                                      }}
-                                      className="h-8 gap-1 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                    >
-                                      <RotateCcw className="h-3.5 w-3.5" />
-                                      Tekrar Aktif Et
-                                    </Button>
-                                  </div>
-                                </div>
-                              </Card>
-                            ))}
+                                      <div className="flex flex-shrink-0 items-center gap-1">
+                                        <Button variant="ghost" size="sm" onClick={async () => {
+                                          try {
+                                            const r = await fetch(`/api/admin/published/${a.id}`, {
+                                              method: 'PATCH',
+                                              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                              body: JSON.stringify({ status: 'published' }),
+                                            });
+                                            if (!r.ok) throw new Error('Geri yüklenemedi');
+                                            toast.success('Haber Tekrar Yayında');
+                                            void loadArchived();
+                                            void loadPublished();
+                                          } catch (e) {
+                                            toast.error('Geri yükleme hatası');
+                                          }
+                                        }} className="h-8 gap-1 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+                                          <RotateCcw className="h-3.5 w-3.5" />
+                                          Tekrar Yayına Al
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </Card>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
+
+                          {/* Sağ sütun: Arşivlenen Mesajlar */}
+                          <div>
+                            <div className="mb-3 flex items-center gap-2">
+                              <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenen Mesajlar</h3>
+                              <Badge variant="secondary" className="text-[10px]">{messages.filter(m => m.status === 'archived').length}</Badge>
+                            </div>
+                            {messages.filter(m => m.status === 'archived').length === 0 ? (
+                              <Card className="flex flex-col items-center gap-3 p-8 text-center">
+                                <Mail className="h-8 w-8 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">Arşivde mesaj yok</p>
+                              </Card>
+                            ) : (
+                              <div className="space-y-3">
+                                {messages.filter(m => m.status === 'archived').map(m => (
+                                  <Card key={m.id} className="p-4 opacity-80">
+                                    <div className="flex items-start gap-3">
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <h4 className="text-sm font-semibold">{m.name}</h4>
+                                          <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                                            <Clock className="h-3 w-3" />
+                                            {new Date(m.createdAt).toLocaleString('tr-TR')}
+                                          </span>
+                                        </div>
+                                        <p className="mt-0.5 text-xs text-muted-foreground">
+                                          {m.email} · {m.subject}
+                                          {m.ip && m.ip !== 'bilinmiyor' && (
+                                            <span className="ml-2 text-[10px] text-rose-600 dark:text-rose-400 font-mono">IP: {m.ip}</span>
+                                          )}
+                                        </p>
+                                        <p className="mt-2 text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">{m.message}</p>
+                                        {m.reply && (
+                                          <div className="mt-2 rounded-md border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-2">
+                                            <div className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                              <Check className="h-3 w-3" />
+                                              Gönderilen cevap
+                                              {m.repliedAt && (
+                                                <span className="ml-auto inline-flex items-center gap-1 text-[10px]">
+                                                  <Clock className="h-3 w-3" />
+                                                  {new Date(m.repliedAt).toLocaleString('tr-TR')}
+                                                </span>
+                                              )}
+                                            </div>
+                                            <p className="mt-1 text-xs leading-relaxed text-foreground/80 whitespace-pre-wrap">{m.reply}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="flex flex-shrink-0 items-center gap-1">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={async () => {
+                                            try {
+                                              const r = await fetch(`/api/admin/messages/${m.id}`, {
+                                                method: 'PATCH',
+                                                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                                body: JSON.stringify({ status: 'read' }),
+                                              });
+                                              if (!r.ok) throw new Error('Geri yüklenemedi');
+                                              void loadMessages();
+                                              toast.success('Mesaj tekrar aktif edildi');
+                                            } catch (e) {
+                                              toast.error('Geri yükleme hatası');
+                                            }
+                                          }}
+                                          className="h-8 gap-1 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                        >
+                                          <RotateCcw className="h-3.5 w-3.5" />
+                                          Tekrar Aktif Et
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </Card>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                        </div>
                       </>
                     )}
                   </div>
