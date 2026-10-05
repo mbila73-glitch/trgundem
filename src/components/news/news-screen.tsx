@@ -565,16 +565,37 @@ export function NewsScreen() {
               </Button>
             </div>
 
-            {/* Normal ana sayfa akışı — baş haber + diğerleri (arama altında devam eder) */}
+            {/* Normal ana sayfa akışı — baş haber dahil tüm haberler (arama altında devam eder) */}
             {articles.length > 0 && (
               <div className="mt-8">
                 <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
                   <Newspaper className="h-3.5 w-3.5" />
-                  <span>Diğer Haberler</span>
+                  <span>Tüm Haberler</span>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {articles.slice(1).map((a) => (
-                    <PublishedArticleCard key={a.id} article={a} onOpen={(id) => openArticle(id)} />
+                  {articles.map((a, i) => (
+                    <div key={a.id} className={i === 0 ? 'col-span-full' : ''}>
+                      {i === 0 ? (
+                        <div className="flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md hover:border-foreground/20 sm:flex-row" onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
+                          {a.imageUrl ? (
+                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px]">
+                              <img src={a.imageUrl} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                            </div>
+                          ) : (
+                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">
+                              <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-20 w-auto object-contain opacity-50" />
+                            </div>
+                          )}
+                          <div className="flex flex-1 flex-col gap-2 p-6">
+                            <h3 className="text-xl font-bold leading-tight text-foreground hover:text-news">{a.aiTitle}</h3>
+                            <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.aiSummary}</p>
+                            <HorizontalLikeBar articleId={a.id} />
+                          </div>
+                        </div>
+                      ) : (
+                        <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} />
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
