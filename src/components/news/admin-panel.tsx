@@ -349,8 +349,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       });
       const json = (await r.json()) as { ok?: boolean; status?: string; error?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Arşivleme başarısız');
-      setMessages(a => a.filter(m => m.id !== id)); // arşivde göster (şimdilik listeden kaldır)
-      toast.success('Mesaj arşivlendi');
+      // Mesajı listeden KALDIRMA — sadece status'ünü 'archived' yap
+      // Böylece Mesajlar sekmesinde filter ile gizlenir, Arşiv sekmesinde filter ile görünür
+      setMessages(a => a.map(m => m.id === id ? { ...m, status: 'archived' } : m));
+      toast.success('Mesaj arşivlendi — Arşiv sekmesinden görüntüleyebilirsiniz');
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Arşiv hatası');
     } finally {
@@ -359,7 +361,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   };
 
   const toggleSelect = (id: string) => setSelectedIds(p => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
-  const selectAll = () => setSelectedIds(selectedIds.size === messages.length ? new Set() : new Set(messages.map(m => m.id)));
+  const selectAll = () => {
+    const visible = messages.filter(m => m.status !== 'archived');
+    setSelectedIds(selectedIds.size === visible.length ? new Set() : new Set(visible.map(m => m.id)));
+  };
 
   const deleteSelected = async () => {
     setBulkDeleting(true);
@@ -371,8 +376,14 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
   const deleteAllMsgs = async () => {
     setBulkDeleting(true);
-    try { await Promise.all(messages.map(m => fetch(`/api/admin/messages/${m.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })));
-      setMessages([]); setSelectedIds(new Set()); toast.success('Tüm mesajlar silindi');
+    try {
+      // Sadece Mesajlar sekmesinde görünenleri (archived olmayanları) sil
+      const visible = messages.filter(m => m.status !== 'archived');
+      await Promise.all(visible.map(m => fetch(`/api/admin/messages/${m.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })));
+      const visibleIds = new Set(visible.map(m => m.id));
+      setMessages(a => a.filter(m => !visibleIds.has(m.id)));
+      setSelectedIds(new Set());
+      toast.success('Tüm mesajlar silindi');
     } catch { toast.error('Tümünü silme hatası'); }
     finally { setBulkDeleting(false); }
   };
@@ -496,7 +507,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
   const handleLogout = () => { localStorage.removeItem('admin_token'); setToken(null); setMessages([]); setSelectedIds(new Set()); setPubArticles([]); setArchivedArticles([]); setAdminTab('messages'); onClose(); };
   const newCount = messages.filter(m => m.status === 'new').length;
-  const allSelected = messages.length > 0 && selectedIds.size === messages.length;
+  const allSelected = (() => {
+    const visible = messages.filter(m => m.status !== 'archived');
+    return visible.length > 0 && selectedIds.size === visible.length;
+  })();
   const resetConfirmed = resetConfirm.trim().toLowerCase() === 'evet';
 
   // File upload handler (for both custom article and published edit)
@@ -585,14 +599,14 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         <Button variant="ghost" size="sm" onClick={selectAll} disabled={bulkDeleting} className="gap-1.5 text-xs">{allSelected ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}{allSelected ? 'Seçimi Kaldır' : 'Tümünü Seç'}</Button>
                         <Button variant="outline" size="sm" onClick={deleteSelected} disabled={bulkDeleting || selectedIds.size === 0} className="gap-1.5 text-xs">{bulkDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}Seçilenleri Sil ({selectedIds.size})</Button>
                         <AlertDialog><AlertDialogTrigger asChild><Button variant="outline" size="sm" disabled={bulkDeleting} className="gap-1.5 text-xs text-destructive hover:text-destructive"><CheckCheck className="h-3.5 w-3.5" />Tümünü Sil</Button></AlertDialogTrigger>
-                          <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Tüm mesajları sil?</AlertDialogTitle><AlertDialogDescription>{messages.length} mesajın tamamı silinecek.</AlertDialogDescription></AlertDialogHeader>
+                          <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Tüm mesajları sil?</AlertDialogTitle><AlertDialogDescription>{messages.filter(m => m.status !== 'archived').length} mesajın tamamı silinecek. (Arşivdeki mesajlar korunur)</AlertDialogDescription></AlertDialogHeader>
                           <AlertDialogFooter><AlertDialogCancel>Vazgeç</AlertDialogCancel><AlertDialogAction onClick={deleteAllMsgs} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Tümünü Sil</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                         </AlertDialog>
                       </div>
                     )}
                     {loadingMsgs ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}</div>
-                    : messages.length === 0 ? <Card className="flex flex-col items-center gap-3 p-10 text-center"><Mail className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Henüz okuyucu mesajı yok</p></Card>
-                    : <div className="space-y-3">{messages.map(m => { const sel = selectedIds.has(m.id); return (
+                    : messages.filter(m => m.status !== 'archived').length === 0 ? <Card className="flex flex-col items-center gap-3 p-10 text-center"><Mail className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Henüz okuyucu mesajı yok</p></Card>
+                    : <div className="space-y-3">{messages.filter(m => m.status !== 'archived').map(m => { const sel = selectedIds.has(m.id); return (
                       <Card key={m.id} className={`p-4 ${m.status === 'new' ? 'border-news/40 bg-news/[0.04]' : ''} ${sel ? 'ring-2 ring-news/40' : ''} ${m.repliedAt ? 'border-emerald-300 dark:border-emerald-700' : ''}`}>
                         <div className="flex items-start gap-3">
                           <Checkbox checked={sel} onCheckedChange={() => toggleSelect(m.id)} className="mt-1" />
