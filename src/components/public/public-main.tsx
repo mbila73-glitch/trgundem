@@ -423,17 +423,17 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
         ))}
       </div>
 
-      {/* PAGINATION — altta 1'den N'e kadar sayfa numaraları */}
-      <div className="flex items-center justify-center gap-0.5 py-1.5 border-t border-border bg-background/50 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+      {/* PAGINATION — pencere içine entegre, kontrast renkler */}
+      <div className="flex items-center justify-center gap-1 py-2 bg-slate-800 border-t-2 border-slate-700 rounded-b-lg">
         {articles.map((_, i) => (
           <button
             key={i}
             type="button"
             onClick={(e) => { e.stopPropagation(); goToIndex(i); }}
-            className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-[10px] font-bold transition ${
+            className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] font-bold transition ${
               i === currentIndex
-                ? 'bg-red-600 text-white shadow-md scale-110'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                ? 'bg-red-600 text-white shadow-lg scale-110 ring-2 ring-red-400'
+                : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'
             }`}
             aria-label={`Sayfa ${i + 1}`}
             aria-current={i === currentIndex}
