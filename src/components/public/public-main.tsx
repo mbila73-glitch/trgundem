@@ -267,46 +267,83 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
 }
 
 // Ana pencere slider — 20 haber, tek tek göster, oklarla kayar, loop yapar
-// Yüksekliği parent'ı doldurur (yan 2 kutu ile eşit)
+// Altında 1-20 sayfa numaraları (aktif olan kırmızı)
 function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen: (id: string) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const scrollToTop = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+      setCurrentIndex(0);
     }
+  };
+
+  const goToIndex = (index: number) => {
+    if (!scrollRef.current) return;
+    const width = scrollRef.current.clientWidth;
+    scrollRef.current.scrollTo({ left: index * width, behavior: 'smooth' });
+    setCurrentIndex(index);
   };
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
     const el = scrollRef.current;
-    const max = el.scrollWidth - el.clientWidth;
+    const width = el.clientWidth;
+    if (width === 0) return;
+    const currentIdx = Math.round(el.scrollLeft / width);
 
     if (direction === 'right') {
-      // En sağdaysak → başa dön (loop)
-      if (el.scrollLeft >= max - 5) {
+      if (currentIdx >= articles.length - 1) {
         el.scrollTo({ left: 0, behavior: 'smooth' });
+        setCurrentIndex(0);
       } else {
-        el.scrollBy({ left: el.clientWidth, behavior: 'smooth' });
+        el.scrollTo({ left: (currentIdx + 1) * width, behavior: 'smooth' });
+        setCurrentIndex(currentIdx + 1);
       }
     } else {
-      // En soldaysak → sona git (loop)
-      if (el.scrollLeft <= 5) {
+      if (currentIdx <= 0) {
+        const max = el.scrollWidth - el.clientWidth;
         el.scrollTo({ left: max, behavior: 'smooth' });
+        setCurrentIndex(articles.length - 1);
       } else {
-        el.scrollBy({ left: -el.clientWidth, behavior: 'smooth' });
+        el.scrollTo({ left: (currentIdx - 1) * width, behavior: 'smooth' });
+        setCurrentIndex(currentIdx - 1);
       }
     }
   };
 
+  // Scroll event — kullanıcı manuel kaydırırsa currentIndex güncelle
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    let timeout: ReturnType<typeof setTimeout>;
+    const handleScroll = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        const width = el.clientWidth;
+        if (width === 0) return;
+        const idx = Math.round(el.scrollLeft / width);
+        if (idx >= 0 && idx < articles.length) {
+          setCurrentIndex(idx);
+        }
+      }, 100);
+    };
+    el.addEventListener('scroll', handleScroll);
+    return () => {
+      el.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeout);
+    };
+  }, [articles.length]);
+
   return (
-    <div className="relative h-full">
+    <div className="relative h-full flex flex-col">
       {/* Sol ok */}
       <button
         type="button"
         onClick={() => scroll('left')}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition shadow-lg"
+        className="absolute left-0 top-[45%] -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition shadow-lg"
         aria-label="Önceki"
       >
         <ChevronLeft className="h-5 w-5" />
@@ -316,7 +353,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
       <button
         type="button"
         onClick={() => scroll('right')}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition shadow-lg"
+        className="absolute right-0 top-[45%] -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition shadow-lg"
         aria-label="Sonraki"
       >
         <ChevronRight className="h-5 w-5" />
@@ -325,7 +362,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
       {/* Yatay scroll — tek kart görünür, loop yapar */}
       <div
         ref={scrollRef}
-        className="flex h-full overflow-x-auto scroll-smooth snap-x snap-mandatory"
+        className="flex flex-1 overflow-x-auto scroll-smooth snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {articles.map((a, i) => (
@@ -355,10 +392,6 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
                 )}
-                {/* Sıra numarası badge — sol üst */}
-                <div className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-md z-10">
-                  {i + 1}
-                </div>
                 {/* Başa Dön butonu — sağ üst, her kartta */}
                 <button
                   type="button"
@@ -387,6 +420,26 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
               </div>
             </Card>
           </div>
+        ))}
+      </div>
+
+      {/* PAGINATION — altta 1'den N'e kadar sayfa numaraları */}
+      <div className="flex items-center justify-center gap-0.5 py-1.5 border-t border-border bg-background/50 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {articles.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); goToIndex(i); }}
+            className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-[10px] font-bold transition ${
+              i === currentIndex
+                ? 'bg-red-600 text-white shadow-md scale-110'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+            }`}
+            aria-label={`Sayfa ${i + 1}`}
+            aria-current={i === currentIndex}
+          >
+            {i + 1}
+          </button>
         ))}
       </div>
     </div>
