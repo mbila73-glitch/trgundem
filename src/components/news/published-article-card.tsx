@@ -54,7 +54,6 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
               {initials(article.category)}
             </AvatarFallback>
           </Avatar>
-          <span className="font-medium text-foreground/80">{article.category}</span>
           <span className="ml-auto inline-flex items-center gap-1 tabular-nums">
             <Clock className="h-3 w-3" />
             {relativeTime(article.latestPublishedAt)}

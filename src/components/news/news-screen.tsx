@@ -181,7 +181,6 @@ function ArticleDetailInline({
       )}
 
       <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground/80">{article.category}</span>
         <span className="inline-flex items-center gap-1">
           <Clock className="h-3 w-3" />
           {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', {
@@ -480,9 +479,6 @@ export function NewsScreen() {
                       </div>
                     )}
                     <div className="flex flex-1 flex-col gap-2 p-6">
-                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="font-medium text-foreground/80">{a.category}</span>
-                      </div>
                       <h3 className="text-xl font-bold leading-tight text-foreground hover:text-news">{a.aiTitle}</h3>
                       <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.aiSummary}</p>
                       <HorizontalLikeBar articleId={a.id} />
