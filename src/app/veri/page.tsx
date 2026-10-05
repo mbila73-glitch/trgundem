@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Mail, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { NewsScreen } from '@/components/news/news-screen';
 import { InfoBands } from '@/components/news/info-bands';
 import { AdminPanel } from '@/components/news/admin-panel';
 import { ReaderContactForm } from '@/components/news/reader-contact-form';
@@ -25,10 +26,10 @@ function YayinIlkeleri({ onContactClick }: { onContactClick: () => void }) {
           <p className="font-bold text-foreground mt-4">1. Bağımsızlık ve yayın anlayışı</p>
           <p>TrGündem herhangi bir siyasi partiye, siyasi oluşuma, kamu kurumuna, özel şirkete, medya kuruluşuna veya çıkar grubuna bağlı değildir. Yayın faaliyetleri bağımsız bir anlayışla yürütülür. Herhangi bir kişi, kurum, kuruluş veya siyasi oluşum adına propaganda, tanıtım veya yönlendirme amacıyla yayın yapılmaz. Haberlerin hazırlanmasında kamu yararı, doğruluk, tarafsızlık, ifade özgürlüğü ve okuyucunun haber alma hakkı esas alınır. TrGündem'de yayımlanan haberler, ilgili kişi veya kurumların görüşlerini ya da resmî açıklamalarını yansıtmak zorunda değildir. Haber içerikleri, yayıncının bağımsız değerlendirme ve editoryal çalışma sürecinin ürünüdür.</p>
           <p className="font-bold text-foreground mt-4">2. Haberlerin hazırlanması ve özgün içerik politikası</p>
-          <p>TrGündem'de yayımlanan haberler; basın açıklamaları, resmî duyurular, kurumsal açıklamalar, kamuya açık belgeler ve diğer erişilebilir bilgi kaynaklarından yararlanarak hazırlanabilir. Güncel gelişmeler, mümkün olduğu ölçüde birden fazla bağımsız kaynaktan takip edilir. Farklı kaynaklardan edinilen bilgiler karşılaştırılır, doğrulanmaya çalışılır ve haberin konusu ile ilgisi çerçevesinde değerlendirilir. Haber içerikleri, kaynaklardan edinilen bilgilerin özgün bir şekilde değerlendirilmesi ve editoryal çalışma sonucunda hazırlanır. TrGündem'in amacı; gelişmeleri farklı kaynaklardan araştırarak okuyucuya, anlaşılır ve özgün bir haber anlatımı sunmaktır. Yapay zekâ araçları, haberlerin araştırılması, sınıflandırılması, özetlenmesi, karşılaştırılması, dil ve anlatımının geliştirilmesi gibi editoryal süreçlerde yardımcı araç olarak kullanılabilir. Kaynağı bulunmayan, doğrulanamayan veya gerçeğe aykırı olabilecek iddiaların haber olarak sunulmaması esastır.</p>
+          <p>TrGündem'de yayımlanan haberler; basın açıklamaları, resmî duyurular, kurumsal açıklamalar, kamuya açık belgeler ve diğer erişilebilir bilgi kaynaklarından yararlanılarak hazırlanabilir. Güncel gelişmeler, mümkün olduğu ölçüde birden fazla bağımsız kaynaktan takip edilir. Farklı kaynaklardan edinilen bilgiler karşılaştırılır, doğrulanmaya çalışılır ve haberin konusu ile ilgisi çerçevesinde değerlendirilir. Haber içerikleri, kaynaklardan edinilen bilgilerin özgün bir şekilde değerlendirilmesi ve editoryal çalışma sonucunda hazırlanır. TrGündem'in amacı; gelişmeleri farklı kaynaklardan araştırarak okuyucuya, anlaşılır ve özgün bir haber anlatımı sunmaktır. Yapay zekâ araçları, haberlerin araştırılması, sınıflandırılması, özetlenmesi, karşılaştırılması, dil ve anlatımının geliştirilmesi gibi editoryal süreçlerde yardımcı araç olarak kullanılabilir. Kaynağı bulunmayan, doğrulanamayan veya gerçeğe aykırı olabilecek iddiaların haber olarak sunulmaması esastır.</p>
           <p className="font-bold text-foreground mt-4">3. Kaynak gösterme ve doğrulama</p>
           <p>Özellikle kamu kurumlarının açıklamaları, resmî kararlar, istatistikler ve kamuoyunu ilgilendiren gelişmeler haberleştirilirken bilgilerin asıl kaynağından kontrol edilmesine özen gösterilir. Birden fazla kaynak arasında çelişki bulunması hâlinde bu durumun haberin anlatımına yansıtılması, kesinleşmemiş bilgilerin kesinleşmiş gibi sunulmaması ve gerekli görüldüğünde haberin güncellenmesi esastır.</p>
-          <p className="font-bold text-foreground mt-4">4. Tarafsınlık, doğruluk ve kamu yararı</p>
+          <p className="font-bold text-foreground mt-4">4. Tarafsızlık, doğruluk ve kamu yararı</p>
           <p>TrGündem, haberlerin hazırlanmasında kişisel görüşlerden, ön yargılardan ve yönlendirici anlatımlardan mümkün olduğunca uzak durmayı amaçlar. Kamuoyunu ilgilendiren olaylarda farklı tarafların açıklamalarına, mevcut bilgi ve belgelere ve olayın bağlamına yer verilmesine önem verilir. İddialar, kesinleşmiş yargı kararları veya doğrulanmış olgular gibi sunulmaz. Soruşturma, dava ve idari inceleme süreçlerinde kişilerin masumiyet karinesi ve savunma hakları gözetilir. Haber başlıklarının içeriği doğru yansıtması, okuyucuyu yanıltmaması ve yalnızca dikkat çekmek amacıyla gerçeğe aykırı veya abartılı ifadeler kullanılmaması temel yayın ilkelerindendir.</p>
           <p className="font-bold text-foreground mt-4">5. Telif hakları, görseller ve diğer içerikler</p>
           <p>TrGündem, haber metinleri, fotoğraflar, videolar, grafikler, logolar ve diğer içerikler üzerindeki telif haklarına ve fikrî mülkiyet haklarına saygı gösterir. Haberlerde kullanılan görsel ve diğer materyallerin mümkün olduğu ölçüde lisanslı, kullanımına izin verilmiş, kamu malı niteliğinde veya ilgili kullanım koşulları çerçevesinde kullanılabilir olmasına dikkat edilir. TrGündem, hak sahipliğine ilişkin makul ve somut bir bildirim ulaşması hâlinde ilgili içeriği inceler. Hak sahipliği, kullanım izni veya hukuka uygunluk konusunda sorun bulunduğunun değerlendirilmesi durumunda ilgili içerik, koşullara göre düzeltilir, değiştirilir, kaynak ve izin bilgileri güncellenir veya yayından kaldırılır. Hak sahiplerinin, eserlerinin veya görsellerinin izinsiz kullanıldığını düşünmeleri hâlinde iletişim kanalları üzerinden başvuruda bulunmaları mümkündür. Bu tür başvuruların hızlı ve dikkatli şekilde değerlendirilmesi, gerekli görülen durumlarda ilgili içerik hakkında geçici önlem alınması ve başvuru sahibine geri dönüş yapılması hedeflenir.</p>
@@ -46,7 +47,7 @@ function YayinIlkeleri({ onContactClick }: { onContactClick: () => void }) {
           <p>Telif hakkı, görsel kullanımı, kaynak gösterimi, yanlış veya eksik bilgi, kişilik hakları, düzeltme, cevap ve içerik kaldırma talepleri için TrGündem'in Okuyucu Temsilcisine Ulaşınız Mesaj kanalı kullanılabilir.{' '}
             <button type="button" onClick={(e) => { e.stopPropagation(); onContactClick(); }} className="font-semibold text-news hover:underline cursor-pointer">Mesaj yollamak için tıklayınız.</button>
           </p>
-          <p>Başvuruların sağlıklı değerlendirilebilmesi için başvuruda mümkün olduğu ölçüde şu bilgilere yer verilmesi rica olunur: İlgili haberin başlığı ve internet adresi (URL). Başvurunun konusu ve talep edilen işlem. İddia edilen hata, hak ihlali veya telif sorununun açıklaması. Varsa hak sahipliğini veya bildirilen hususu destekleyen belge, izin, bağlatı veya diğer bilgiler. Başvuru sahibine ulaşılabilecek iletişim bilgileri. Başvurular, ilgili içeriğin niteliğine ve hukuki gerekliliklere göre değerlendirilir. Gerekli görüldüğünde ek bilgi veya belge talep edilebilir. TrGündem, haklı ve doğrulanabilir başvurular doğrultusunda gerekli düzeltme, güncelleme, kaldırma veya diğer uygun işlemleri yapmayı amaçlar.</p>
+          <p>Başvuruların sağlıklı değerlendirilebilmesi için başvuruda mümkün olduğu ölçüde şu bilgilere yer verilmesi rica olunur: İlgili haberin başlığı ve internet adresi (URL). Başvurunun konusu ve talep edilen işlem. İddia edilen hata, hak ihlali veya telif sorununun açıklaması. Varsa hak sahipliğini veya bildirilen hususu destekleyen belge, izin, bağlantı veya diğer bilgiler. Başvuru sahibine ulaşılabilecek iletişim bilgileri. Başvurular, ilgili içeriğin niteliğine ve hukuki gerekliliklere göre değerlendirilir. Gerekli görüldüğünde ek bilgi veya belge talep edilebilir. TrGündem, haklı ve doğrulanabilir başvurular doğrultusunda gerekli düzeltme, güncelleme, kaldırma veya diğer uygun işlemleri yapmayı amaçlar.</p>
           <p className="font-bold text-foreground mt-4">12. Yayın politikasının güncellenmesi</p>
           <p>TrGündem, yayın ilkelerini, teknolojik gelişmeler, yayın faaliyetlerinin kapsamı ve yürürlükteki mevzuattaki değişiklikler doğrultusunda güncelleyebilir. Yapılan değişiklikler bu sayfa üzerinden yayımlanır. Güncel metin, internet sitesinde yayımlandığı tarihten itibaren geçerli olur.</p>
           <p className="text-center text-foreground/80 font-medium mt-4">TrGündem'i takip eden tüm okuyucularımıza teşekkür ederiz.</p>
@@ -66,6 +67,10 @@ export default function Home() {
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
+    // Hydration-safe mount: SSR renders placeholders (--:--:-- and '— — — —'),
+    // client renders real time after mount. Calling setState here is the
+    // canonical pattern for time-dependent content.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const initialDate = new Date();
     setNow(initialDate);
@@ -82,22 +87,43 @@ export default function Home() {
 
   const formatTime = (d: Date) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+  // Logo veya başlığa tıklanınca: eğer bir haber detayı açıksa kapat ve ana listeye dön.
+  // NewsScreen URL'deki ?article= parametresini dinler (popstate), bu yüzden
+  // parametreyi silip popstate tetiklemek yeterli.
   const handleHomeClick = () => {
     if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
+    if (!url.searchParams.has('article')) {
+      // Zaten ana ekrandayız, sadece en üste kaydır
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     url.searchParams.delete('article');
-    url.searchParams.delete('haber');
     window.history.pushState({}, '', url.toString());
     window.dispatchEvent(new PopStateEvent('popstate'));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const logoEl = (
+    <button
+      type="button"
+      onClick={handleHomeClick}
+      aria-label="Ana sayfaya dön"
+      title="Ana sayfaya dön"
+      className="flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+    >
+      <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
+    </button>
+  );
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-red-800 bg-red-600 backdrop-blur">
         <div className="mx-auto max-w-6xl px-2 sm:px-4 md:px-6">
+          {/* Mobil: tek satır, başlık tam ortada, + / tema sağda */}
+          {/* Masaüstü: 3 bölüm — sol saat, orta logo+başlık, sağ düğmeler */}
           <div className="relative flex h-14 sm:h-16 items-center justify-center sm:justify-between py-1 gap-1 sm:gap-2">
-            {/* Sol: Saat + Tarih — mobilde gizli */}
+            {/* Sol: Saat + Tarih — mobilde TAMAMEN gizli (div sararak) */}
             <div className="hidden sm:block">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
@@ -117,8 +143,9 @@ export default function Home() {
               </Popover>
             </div>
 
-            {/* Orta: Logo + Başlık + Logo */}
+            {/* Orta: Logo + Başlık + Logo — mobilde SADECE başlık, tam ortada */}
             <div className="flex items-center justify-center gap-1 sm:gap-4 md:gap-6 sm:flex-initial">
+              {/* Sol logo — mobilde gizli */}
               <button
                 type="button"
                 onClick={handleHomeClick}
@@ -129,6 +156,7 @@ export default function Home() {
                 <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>
 
+              {/* Başlık */}
               <button
                 type="button"
                 onClick={handleHomeClick}
@@ -169,6 +197,7 @@ export default function Home() {
                 </span>
               </button>
 
+              {/* Sağ logo — mobilde gizli */}
               <button
                 type="button"
                 onClick={handleHomeClick}
@@ -180,7 +209,7 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Mobil: Sol — İletişim düğmesi */}
+            {/* Mobil: Sol — İletişim düğmesi (en sola daya, başlığın üstüne gelmesin) */}
             <div className="absolute left-2 sm:hidden flex items-center flex-shrink-0 z-10">
               <Button
                 variant="default"
@@ -194,8 +223,9 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Sağ: + ve Tema */}
+            {/* Sağ: + ve Tema (mobilde sağda, masaüstünde İletişim ile birlikte) */}
             <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0 z-10">
+              {/* İletişim düğmesi — sadece masaüstü (mobilde sola taşındı) */}
               <Button
                 variant="default"
                 size="sm"
@@ -220,15 +250,8 @@ export default function Home() {
         <InfoBands />
       </div>
 
-      {/* ANA İÇERİK — şu an boş placeholder, sonraki adımda Sözcü tarzı gelecek */}
       <main className="flex-1 bg-background">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 text-center">
-          <h1 className="text-2xl font-bold text-foreground/80 mb-2">Yeni Ana Sayfa</h1>
-          <p className="text-sm text-muted-foreground">Bu alan Sözcü tarzı haber akışı ile doldurulacak.</p>
-          <p className="text-xs text-muted-foreground/60 mt-4">
-            Mevcut sayfa: <a href="/veri" className="text-news hover:underline font-medium">trgundem.net/veri</a>
-          </p>
-        </div>
+        <NewsScreen />
       </main>
 
       <footer className="mt-auto border-t border-border bg-muted/30">
