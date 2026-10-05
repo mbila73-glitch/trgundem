@@ -91,15 +91,16 @@ try {
 
 // AI ÖZET — telifsiz, kategori bazlı min kelime, 5 key sırayla
 // Kategori bazlı minimum kelime sayısı (alt sınır — AI bundan az üretmemeli)
-// Tüm kategoriler için 150 kelime alt sınır (geçmiş kayıt: 150 min, üst sınır yok)
+// Tüm kategoriler için 150 kelime alt sınır
+// 'Özel' kategoride AI çağrılmaz (admin panelinden manuel eklenir) — listede YOK
+// ÜST SINIR YOK — AI'a "haberin tamamını anlat" talimatı verilir
 var CATEGORY_MIN_WORDS = {
   'Siyaset': 150,
   'Ekonomi / Finans': 150,
   'Kamu / Resmi': 150,
   'Bilim / Teknoloji': 150,
   'Kültür / Sanat': 150,
-  'Spor / Magazin': 150,
-  'Özel': 150
+  'Spor / Magazin': 150
 };
 
 // HTML entity decode — publishedArticle.aiTitle temiz olsun
@@ -132,7 +133,10 @@ async function aiSummarize(title, contents, category) {
     return 'Aşağıdaki haber metinlerini oku. Asla kaynak metinle aynı cümleleri kurma. ' +
       'Tamamen kendi cümlelerinle, eş anlamlı kelimeler kullanarak, cümle yapısını değiştirerek yaz. ' +
       'Orijinal metinden hiçbir cümleyi, hiçbir ifadeyi kopyalama. Bu bir özet değil, haberin yeniden yazımıdır. ' +
-      'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\n' +
+      'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
+      'ÜST SINIR YOK — haberin tamamını anlatmak için gerekirse 300, 500, 1000 veya daha fazla kelime yaz. ' +
+      'Haberin hiçbir detayını atlama. Cümleni yarıda kesme, haber tamam olmalı. ' +
+      'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\n' +
       'ÖNEMLİ KURALLAR:\n' +
       '1. Mantıksal tutarlılık: haberin anlamına sadık kal. Olmayan çıkarımlar yapma. ' +
       '"deprem öncesi 16 artçı" gibi saçma mantıksal hatalardan kaçın. Eylemi doğru özne yap, ' +
@@ -144,7 +148,8 @@ async function aiSummarize(title, contents, category) {
       '"gelecek" olanı "geçmiş" gibi, "geçmiş" olanı "gelecek" gibi yazma.\n' +
       '4. İddia/yargı: haberde "iddia edildi" diyorsa "gerçekleşti" deme. "açıklandı" diyorsa ' +
       '"söylendi" deme. Belirsizliği koru.\n' +
-      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n\n' +
+      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n' +
+      '6. ASLA 200 kelimeye ulaşınca kesme — haberin tamamını yaz, bitirmediysen devam et.\n\n' +
       'BAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
   }
 
