@@ -98,25 +98,17 @@ var SOURCES = [
   { name: 'Aydınlık', url: 'https://www.aydinlik.com.tr/feed', category: 'Kültür / Sanat' },
   { name: 'Teori Dergisi', url: 'https://www.teoridergisi.com/feed', category: 'Kültür / Sanat' },
 
-  // Spor / Magazin
-  { name: 'Mynet Spor', url: 'http://spor.mynet.com/rss', category: 'Spor / Magazin' },
+  // Spor / Magazin (12 kaynak — spor/magazin/sağlık karışık gelmesin diye azaltıldı)
   { name: 'Hürriyet Spor', url: 'http://www.hurriyet.com.tr/rss/spor', category: 'Spor / Magazin' },
   { name: 'Hürriyet Magazin', url: 'http://www.hurriyet.com.tr/rss/magazin', category: 'Spor / Magazin' },
   { name: 'Milliyet Magazin', url: 'http://www.milliyet.com.tr/rss/rssNew/magazinRss.xml', category: 'Spor / Magazin' },
   { name: 'AA Spor', url: 'https://www.aa.com.tr/tr/rss/default?cat=spor', category: 'Spor / Magazin' },
-  { name: 'A Haber Spor', url: 'https://www.ahaber.com.tr/rss/spor.xml', category: 'Spor / Magazin' },
   { name: 'A Haber Magazin', url: 'https://www.ahaber.com.tr/rss/magazin.xml', category: 'Spor / Magazin' },
-  { name: 'CNN Türk Spor', url: 'https://www.cnnturk.com/feed/rss/spor/news', category: 'Spor / Magazin' },
   { name: 'CNN Türk Magazin', url: 'https://www.cnnturk.com/feed/rss/magazin/news', category: 'Spor / Magazin' },
-  { name: 'Fotomaç', url: 'https://www.fotomac.com.tr/rss/anasayfa.xml', category: 'Spor / Magazin' },
-  { name: 'Habertürk Magazin', url: 'https://www.haberturk.com/rss/magazin.xml', category: 'Spor / Magazin' },
-  { name: 'Sabah Spor', url: 'https://www.sabah.com.tr/rss/spor.xml', category: 'Spor / Magazin' },
   { name: 'Sabah Magazin', url: 'https://www.sabah.com.tr/rss/magazin.xml', category: 'Spor / Magazin' },
   { name: 'Sözcü Spor', url: 'https://www.sozcu.com.tr/feeds-rss-category-spor', category: 'Spor / Magazin' },
   { name: 'Sözcü Magazin', url: 'https://www.sozcu.com.tr/feeds-rss-category-magazin', category: 'Spor / Magazin' },
   { name: 'TRT Spor', url: 'https://www.trthaber.com/spor_articles.rss', category: 'Spor / Magazin' },
-  { name: 'Takvim Spor', url: 'https://www.takvim.com.tr/rss/spor.xml', category: 'Spor / Magazin' },
-  { name: 'Yeni Şafak Spor', url: 'https://www.yenisafak.com/rss?xml=spor', category: 'Spor / Magazin' },
   { name: 'NTV Sağlık', url: 'https://www.ntv.com.tr/saglik.rss', category: 'Spor / Magazin' },
   { name: 'TRT Sağlık', url: 'https://www.trthaber.com/saglik_articles.rss', category: 'Spor / Magazin' },
 ];
