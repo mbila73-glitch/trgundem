@@ -200,9 +200,16 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
             alt={article.aiTitle}
             loading="lazy"
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-12 w-auto object-contain opacity-50" />
+          </div>
+        )}
+        {/* Logo fallback — görsel yüklenemezse göster */}
+        {!article.imageUrl && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-12 w-auto object-contain opacity-50" />
           </div>
         )}
@@ -239,9 +246,16 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
             alt={article.aiTitle}
             loading="lazy"
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-10 w-auto object-contain opacity-50" />
+          </div>
+        )}
+        {/* Logo fallback — görsel yoksa veya yüklenemezse */}
+        {!article.imageUrl && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-10 w-auto object-contain opacity-50" />
           </div>
         )}
@@ -262,15 +276,38 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
   );
 }
 
-// Ana pencere slider — 20 haber, tek tek göster, oklarla kayar
+// Ana pencere slider — 20 haber, tek tek göster, oklarla kayar, loop yapar
 // Yüksekliği parent'ı doldurur (yan 2 kutu ile eşit)
 function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen: (id: string) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const scrollToTop = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+  };
+
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
-    const width = scrollRef.current.clientWidth;
-    scrollRef.current.scrollBy({ left: direction === 'left' ? -width : width, behavior: 'smooth' });
+    const el = scrollRef.current;
+    const max = el.scrollWidth - el.clientWidth;
+
+    if (direction === 'right') {
+      // En sağdaysak → başa dön (loop)
+      if (el.scrollLeft >= max - 5) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        el.scrollBy({ left: el.clientWidth, behavior: 'smooth' });
+      }
+    } else {
+      // En soldaysak → sona git (loop)
+      if (el.scrollLeft <= 5) {
+        el.scrollTo({ left: max, behavior: 'smooth' });
+      } else {
+        el.scrollBy({ left: -el.clientWidth, behavior: 'smooth' });
+      }
+    }
   };
 
   return (
@@ -295,7 +332,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
         <ChevronRight className="h-5 w-5" />
       </button>
 
-      {/* Yatay scroll — tek kart görünür, oka basınca sonraki */}
+      {/* Yatay scroll — tek kart görünür, loop yapar */}
       <div
         ref={scrollRef}
         className="flex h-full overflow-x-auto scroll-smooth snap-x snap-mandatory"
@@ -304,7 +341,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
         {articles.map((a, i) => (
           <div
             key={a.id}
-            className="snap-start flex-shrink-0 w-full h-full"
+            className="snap-start flex-shrink-0 w-full h-full relative"
           >
             <Card
               role="button"
@@ -320,16 +357,40 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                     alt={a.aiTitle}
                     loading="lazy"
                     className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                    onError={(e) => {
+                      // Görsel yüklenemezse logo göster
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      const parent = (e.currentTarget.parentElement);
+                      if (parent && !parent.querySelector('.logo-fallback')) {
+                        const div = document.createElement('div');
+                        div.className = 'logo-fallback absolute inset-0 flex items-center justify-center';
+                        const img = document.createElement('img');
+                        img.src = '/trlogo2.jpg';
+                        img.alt = 'TRGUNDEM';
+                        img.className = 'h-16 w-auto object-contain opacity-50';
+                        div.appendChild(img);
+                        parent.appendChild(div);
+                      }
+                    }}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
                     <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-16 w-auto object-contain opacity-50" />
                   </div>
                 )}
-                {/* Sıra numarası badge */}
+                {/* Sıra numarası badge — sol üst */}
                 <div className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-md">
                   {i + 1}
                 </div>
+                {/* Başa Dön butonu — sağ üst, her kartta */}
+                <button
+                  type="button"
+                  onClick={scrollToTop}
+                  className="absolute top-2 right-2 flex h-7 items-center justify-center rounded-full bg-black/60 text-white text-[10px] font-bold shadow-md px-2 hover:bg-black/80 transition"
+                  aria-label="Başa Dön"
+                >
+                  ↑ Başa Dön
+                </button>
               </div>
               {/* Başlık + özet + kalp — kalan yüksekliği doldur */}
               <div className="flex flex-1 flex-col gap-2 p-4 min-h-0">
