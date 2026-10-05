@@ -288,22 +288,18 @@ async function main() {
             }
 
             // Duplicate 4: KATEGORİ BAĞIMSIZ — tüm kaynaklarda başlık kontrolü
-            // Başlığın normalize edilmiş ilk 40 karakteri eşitse skip
-            // Bu, "aynı haber farklı kaynakta" durumunu yakalar (RSS öncesi eleme)
-            const titleNorm = title.toLowerCase()
-              .replace(/[''`]/g, "'")
-              .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
-              .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
-              .replace(/&\w+;/g, ' ')
-              .replace(/[^\w\sçğıöşü]/g, ' ')
-              .replace(/\s+/g, ' ')
-              .trim()
-              .slice(0, 40);
-            if (titleNorm.length > 10) {
-              // Tüm kaynaklarda, son 24 saatte, benzer başlık var mı
+            // Başlığın küçük harfe çevrilmiş İLK 35 karakteri startsWith ile
+            // (35 karakter = "Ataşehir Belediyesi'ne operasyon" uzunluğu —
+            // 25 karakter "Ataşehir Belediyesi'ne o" idi, operasyon/yolsuzluk yanlış eşleşirdi)
+            // NOT: DB'de başlık orijinal haliyle saklanır (normalize edilmez),
+            // bu yüzden biz de normalize ETMEDEN küçük harfe çevirip arıyoruz.
+            // SQLite LIKE büyük/küçük duyarsızdır ama yine de lower tutuyoruz.
+            const titleLower = title.toLowerCase().replace(/\s+/g, ' ').trim();
+            if (titleLower.length > 20) {
+              const searchKey = titleLower.slice(0, 35);
               const exists4 = await db.article.findFirst({
                 where: {
-                  title: { startsWith: titleNorm.slice(0, 25) },
+                  title: { startsWith: searchKey },
                   publishedAt: { gte: since24 }
                 },
                 select: { id: true }
