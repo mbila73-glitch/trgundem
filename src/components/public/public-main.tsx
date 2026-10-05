@@ -1,0 +1,716 @@
+'use client';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Search, Loader2, AlertCircle, X, ChevronLeft, ChevronRight, Heart, Clock, Home, ArrowLeft } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { PublishedArticleCard } from '@/components/news/published-article-card';
+import { useHeart } from '@/lib/use-heart';
+import { normalizeTr } from '@/lib/format';
+import type { PublishedArticle } from '@/lib/types';
+
+// ===== Yardımcı fonksiyonlar =====
+
+// Kategori bazlı haber listesi
+function filterByCategory(articles: PublishedArticle[], category: string): PublishedArticle[] {
+  return articles.filter(a => a.category === category);
+}
+
+// 10 kutuda kullanılan haberleri topla
+function getUsedInBoxes(
+  topBoxes: (PublishedArticle | null)[],
+  sideBoxes: (PublishedArticle | null)[],
+  bottomBoxes: (PublishedArticle | null)[],
+): Set<string> {
+  const used = new Set<string>();
+  [...topBoxes, ...sideBoxes, ...bottomBoxes].forEach(a => {
+    if (a) used.add(a.id);
+  });
+  return used;
+}
+
+// Ana pencere 20 haber — articles[0..19]
+function getMainSlider(articles: PublishedArticle[]): PublishedArticle[] {
+  return articles.slice(0, 20);
+}
+
+// Üst 4 kutu: Siyaset[0], Siyaset[1], Ekonomi[0], Ekonomi[1]
+// Eksikse articles'dan tamamla (4 kutu hep dolu)
+function getTopBoxes(articles: PublishedArticle[]): (PublishedArticle | null)[] {
+  const siyaset = filterByCategory(articles, 'Siyaset');
+  const ekonomi = filterByCategory(articles, 'Ekonomi / Finans');
+
+  const boxes: (PublishedArticle | null)[] = [];
+  const usedIds = new Set<string>();
+
+  // Önce: Siyaset[0], Siyaset[1], Ekonomi[0], Ekonomi[1]
+  const candidates = [siyaset[0], siyaset[1], ekonomi[0], ekonomi[1]];
+  for (const c of candidates) {
+    if (c && !usedIds.has(c.id)) {
+      boxes.push(c);
+      usedIds.add(c.id);
+    }
+  }
+
+  // 4'ten azsa, articles'dan tamamla (ana sayfa sırasıyla)
+  let i = 0;
+  while (boxes.length < 4 && i < articles.length) {
+    const a = articles[i];
+    if (!usedIds.has(a.id)) {
+      boxes.push(a);
+      usedIds.add(a.id);
+    }
+    i++;
+  }
+
+  // 4'ten fazlaysa kes (normalde olmaz ama garanti)
+  return boxes.slice(0, 4);
+}
+
+// Yan 2 kutu: articles[1] ve articles[2]
+// Eğer topBoxes'te varsa, articles'ın sıradaki ilk 2 haberi (topBoxes'ta olmayan)
+function getSideBoxes(articles: PublishedArticle[], topBoxes: (PublishedArticle | null)[]): (PublishedArticle | null)[] {
+  const topIds = new Set(topBoxes.filter(Boolean).map(a => a!.id));
+  const boxes: (PublishedArticle | null)[] = [];
+
+  // Önce articles[1] ve articles[2]
+  for (let i = 1; i <= 2 && i < articles.length; i++) {
+    if (!topIds.has(articles[i].id)) {
+      boxes.push(articles[i]);
+    }
+  }
+
+  // 2'den azsa, articles'ın sıradaki ilk 2 haberi (topBoxes + sideBoxes'ta olmayan)
+  let i = 3;
+  const sideIds = new Set(boxes.filter(Boolean).map(a => a!.id));
+  while (boxes.length < 2 && i < articles.length) {
+    const a = articles[i];
+    if (!topIds.has(a.id) && !sideIds.has(a.id)) {
+      boxes.push(a);
+      sideIds.add(a.id);
+    }
+    i++;
+  }
+
+  return boxes.slice(0, 2);
+}
+
+// Alt 4 kutu: Kamu[0], Spor[0], Bilim[0], Kültür[0]
+// Eksikse aynı sırayla 2. haberlerle doldur: Kamu[1], Spor[1], Bilim[1], Kültür[1]
+// Hâlâ eksikse articles'dan tamamla
+function getBottomBoxes(
+  articles: PublishedArticle[],
+  topBoxes: (PublishedArticle | null)[],
+  sideBoxes: (PublishedArticle | null)[],
+): (PublishedArticle | null)[] {
+  const kamu = filterByCategory(articles, 'Kamu / Resmi');
+  const spor = filterByCategory(articles, 'Spor / Magazin');
+  const bilim = filterByCategory(articles, 'Bilim / Teknoloji');
+  const kultur = filterByCategory(articles, 'Kültür / Sanat');
+
+  const usedIds = new Set<string>();
+  [...topBoxes, ...sideBoxes].forEach(a => {
+    if (a) usedIds.add(a.id);
+  });
+
+  const boxes: (PublishedArticle | null)[] = [];
+
+  // 1. tur: Kamu[0], Spor[0], Bilim[0], Kültür[0]
+  const candidates1 = [kamu[0], spor[0], bilim[0], kultur[0]];
+  for (const c of candidates1) {
+    if (c && !usedIds.has(c.id)) {
+      boxes.push(c);
+      usedIds.add(c.id);
+    }
+  }
+
+  // 2. tur (eksikse): Kamu[1], Spor[1], Bilim[1], Kültür[1]
+  if (boxes.length < 4) {
+    const candidates2 = [kamu[1], spor[1], bilim[1], kultur[1]];
+    for (const c of candidates2) {
+      if (boxes.length >= 4) break;
+      if (c && !usedIds.has(c.id)) {
+        boxes.push(c);
+        usedIds.add(c.id);
+      }
+    }
+  }
+
+  // Hâlâ 4'ten azsa, articles'dan tamamla
+  let i = 0;
+  while (boxes.length < 4 && i < articles.length) {
+    const a = articles[i];
+    if (!usedIds.has(a.id)) {
+      boxes.push(a);
+      usedIds.add(a.id);
+    }
+    i++;
+  }
+
+  return boxes.slice(0, 4);
+}
+
+// Kalan haberler — 10 kutuda ve ana pencerede (20) olmayanlar
+function getRemaining(
+  articles: PublishedArticle[],
+  topBoxes: (PublishedArticle | null)[],
+  sideBoxes: (PublishedArticle | null)[],
+  bottomBoxes: (PublishedArticle | null)[],
+  mainSlider: PublishedArticle[],
+): PublishedArticle[] {
+  const usedInBoxes = getUsedInBoxes(topBoxes, sideBoxes, bottomBoxes);
+  const usedInSlider = new Set(mainSlider.map(a => a.id));
+
+  return articles.filter(a => !usedInBoxes.has(a.id) && !usedInSlider.has(a.id));
+}
+
+// ===== UI Component'ler =====
+
+function HeartCounter({ articleId }: { articleId: string }) {
+  const { hearts, userLiked, toggleHeart } = useHeart(articleId);
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); toggleHeart(); }}
+      className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${userLiked ? 'text-rose-600' : 'text-muted-foreground hover:text-rose-600'}`}
+    >
+      <Heart className={`h-3.5 w-3.5 ${userLiked ? 'fill-rose-600' : ''}`} />
+      <span className="tabular-nums">{hearts}</span>
+    </button>
+  );
+}
+
+// Büyük kart (üst 4 kutu + alt 4 kutu için)
+function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen: (id: string) => void }) {
+  return (
+    <Card
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(article.id)}
+      className="group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20"
+    >
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+        {article.imageUrl ? (
+          <img
+            src={article.imageUrl}
+            alt={article.aiTitle}
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-12 w-auto object-contain opacity-50" />
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition group-hover:text-news">
+          {article.aiTitle}
+        </h3>
+        <div className="mt-auto flex items-center justify-between pt-1.5 border-t border-border/50">
+          <HeartCounter articleId={article.id} />
+          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
+            <Clock className="h-3 w-3" />
+            {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+          </span>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Orta kart (yan 2 kutu için)
+function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen: (id: string) => void }) {
+  return (
+    <Card
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(article.id)}
+      className="group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20"
+    >
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+        {article.imageUrl ? (
+          <img
+            src={article.imageUrl}
+            alt={article.aiTitle}
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-10 w-auto object-contain opacity-50" />
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition group-hover:text-news">
+          {article.aiTitle}
+        </h3>
+        <div className="mt-auto flex items-center justify-between pt-1.5 border-t border-border/50">
+          <HeartCounter articleId={article.id} />
+          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
+            <Clock className="h-3 w-3" />
+            {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+          </span>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Ana pencere slider — 20 haber, yatay kayar (oklarla)
+function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen: (id: string) => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+    const width = scrollRef.current.clientWidth;
+    scrollRef.current.scrollBy({ left: direction === 'left' ? -width * 0.8 : width * 0.8, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="relative">
+      {/* Sol ok */}
+      <button
+        type="button"
+        onClick={() => scroll('left')}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition shadow-lg"
+        aria-label="Önceki"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+
+      {/* Sağ ok */}
+      <button
+        type="button"
+        onClick={() => scroll('right')}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition shadow-lg"
+        aria-label="Sonraki"
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
+
+      {/* Yatay scrollContainer */}
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {articles.map((a, i) => (
+          <div
+            key={a.id}
+            className="snap-start flex-shrink-0 w-full sm:w-[80%] lg:w-[70%] xl:w-[60%]"
+          >
+            <Card
+              role="button"
+              tabIndex={0}
+              onClick={() => onOpen(a.id)}
+              className="group flex cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-lg"
+            >
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+                {a.imageUrl ? (
+                  <img
+                    src={a.imageUrl}
+                    alt={a.aiTitle}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-16 w-auto object-contain opacity-50" />
+                  </div>
+                )}
+                {/* Sıra numarası badge */}
+                <div className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-md">
+                  {i + 1}
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 p-4">
+                <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
+                  {a.aiTitle}
+                </h3>
+                <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
+                  {a.aiSummary}
+                </p>
+                <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                  <HeartCounter articleId={a.id} />
+                  <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
+                    <Clock className="h-3 w-3" />
+                    {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===== Ana component =====
+
+export function PublicMain() {
+  const [articles, setArticles] = useState<PublishedArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Arama
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<PublishedArticle[] | null>(null);
+  const [searching, setSearching] = useState(false);
+
+  // Haber detayı (?haber=ID)
+  const [openArticleId, setOpenArticleId] = useState<string | null>(null);
+
+  // Mount'ta articles yükle
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/published-articles?layout=all&status=published', { cache: 'no-store' })
+      .then(async (r) => {
+        if (!r.ok) throw new Error('Haberler yüklenemedi');
+        const json = (await r.json()) as { articles: PublishedArticle[] };
+        return json;
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setArticles(data.articles ?? []);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : 'Bilinmeyen hata');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  // URL'de ?haber=ID varsa aç
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const haber = params.get('haber');
+    if (haber) setOpenArticleId(haber);
+
+    const handlePopState = () => {
+      const p = new URLSearchParams(window.location.search);
+      setOpenArticleId(p.get('haber'));
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const openArticle = useCallback((id: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('haber', id);
+    window.history.pushState({}, '', url.toString());
+    setOpenArticleId(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const closeArticle = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('haber')) {
+      setOpenArticleId(null);
+      return;
+    }
+    url.searchParams.delete('haber');
+    window.history.pushState({}, '', url.toString());
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Arama yap
+  const handleSearch = useCallback(async (q: string) => {
+    const query = q.trim();
+    if (!query) {
+      setSearchResults(null);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    try {
+      const r = await fetch(`/api/published-articles?search=${encodeURIComponent(query)}&status=published`, { cache: 'no-store' });
+      if (!r.ok) throw new Error('Arama yapılamadı');
+      const json = (await r.json()) as { articles?: PublishedArticle[] };
+      setSearchResults(json.articles ?? []);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  const onSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void handleSearch(searchQuery);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(null);
+  };
+
+  // Hesaplamalar
+  const topBoxes = getTopBoxes(articles);
+  const sideBoxes = getSideBoxes(articles, topBoxes);
+  const bottomBoxes = getBottomBoxes(articles, topBoxes, sideBoxes);
+  const mainSlider = getMainSlider(articles);
+  const remaining = getRemaining(articles, topBoxes, sideBoxes, bottomBoxes, mainSlider);
+
+  // Arama sonuçları varsa onu göster
+  if (searchResults !== null) {
+    return (
+      <main className="flex-1 bg-background">
+        {/* Arama çubuğu sticky */}
+        <div className="sticky top-16 z-20 bg-background border-b border-border">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2">
+            <form onSubmit={onSearchSubmit} className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-2 py-1">
+              <Search className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <Input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Haberlerde ara..."
+                className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm h-8"
+              />
+              <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3">
+                {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+                Ara
+              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={clearSearch} className="gap-1.5 text-xs h-8">
+                <X className="h-3.5 w-3.5" /> Temizle
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
+          {searching ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />)}
+            </div>
+          ) : searchResults.length === 0 ? (
+            <Card className="flex flex-col items-center gap-3 p-10 text-center">
+              <Search className="h-10 w-10 text-muted-foreground" />
+              <p className="text-sm font-medium">Haber bulunamadı</p>
+              <p className="text-xs text-muted-foreground">"{searchQuery}" için sonuç yok.</p>
+            </Card>
+          ) : (
+            <>
+              <div className="mb-3 text-xs text-muted-foreground">
+                "<strong className="text-foreground">{searchQuery}</strong>" için {searchResults.length} haber bulundu
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {searchResults.map(a => (
+                  <PublishedArticleCard key={a.id} article={a} onOpen={openArticle} />
+                ))}
+              </div>
+              <div className="mt-6 flex justify-center gap-2 border-t border-border pt-4">
+                <Button variant="outline" size="sm" onClick={clearSearch} className="gap-1.5 text-sm">
+                  <Home className="h-4 w-4" /> Ana Sayfa
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  // Haber detayı açıksa
+  if (openArticleId) {
+    const article = articles.find(a => a.id === openArticleId);
+    if (article) {
+      return (
+        <main className="flex-1 bg-background">
+          {/* Arama çubuğu sticky */}
+          <div className="sticky top-16 z-20 bg-background border-b border-border">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2">
+              <form onSubmit={onSearchSubmit} className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-2 py-1">
+                <Search className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Haberlerde ara..."
+                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm h-8"
+                />
+                <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3">
+                  {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+                  Ara
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          <div className="mx-auto max-w-3xl py-4 px-4 sm:px-6">
+            <div className="mb-4 flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={closeArticle} className="gap-1.5 text-sm">
+                <ArrowLeft className="h-4 w-4" /> Geri
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setOpenArticleId(null); window.history.pushState({}, '', '/'); }} className="gap-1.5 text-sm">
+                <Home className="h-4 w-4" /> Ana Sayfa
+              </Button>
+            </div>
+
+            {article.imageUrl ? (
+              <div className="mb-6 flex justify-center">
+                <div className="relative aspect-[16/9] w-full max-w-2xl overflow-hidden rounded-xl bg-muted">
+                  <img src={article.imageUrl} alt={article.aiTitle} className="h-full w-full object-cover" />
+                </div>
+              </div>
+            ) : (
+              <div className="mb-6 flex justify-center">
+                <div className="relative flex aspect-[16/9] w-full max-w-2xl items-center justify-center overflow-hidden rounded-xl bg-muted">
+                  <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-20 w-auto object-contain opacity-60" />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {new Date(article.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </span>
+            </div>
+
+            <h1 className="text-2xl font-bold leading-tight mb-4">{article.aiTitle}</h1>
+            <div className="prose prose-sm max-w-none">
+              <p className="text-base leading-relaxed text-foreground/90 whitespace-pre-wrap">{article.aiSummary}</p>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between border-t border-border/50 pt-4">
+              <HeartCounter articleId={article.id} />
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={closeArticle} className="gap-1.5 text-sm">
+                  <ArrowLeft className="h-4 w-4" /> Geri
+                </Button>
+              </div>
+            </div>
+          </div>
+        </main>
+      );
+    }
+  }
+
+  // Normal ana sayfa akışı
+  return (
+    <main className="flex-1 bg-background">
+      {/* Arama çubuğu — sticky */}
+      <div className="sticky top-16 z-20 bg-background border-b border-border">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2">
+          <form onSubmit={onSearchSubmit} className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-2 py-1">
+            <Search className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Haberlerde ara..."
+              className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm h-8"
+            />
+            <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3">
+              {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">Ara</span>
+            </Button>
+          </form>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />)}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Skeleton className="lg:col-span-2 h-64 rounded-xl" />
+            <div className="grid grid-rows-2 gap-4">
+              <Skeleton className="h-32 rounded-xl" />
+              <Skeleton className="h-32 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12">
+          <Card className="flex flex-col items-center gap-3 p-10 text-center">
+            <AlertCircle className="h-10 w-10 text-destructive" />
+            <p className="text-sm text-destructive">{error}</p>
+          </Card>
+        </div>
+      ) : articles.length === 0 ? (
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12">
+          <Card className="flex flex-col items-center gap-3 p-10 text-center">
+            <AlertCircle className="h-10 w-10 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Henüz haber yok</p>
+          </Card>
+        </div>
+      ) : (
+        <>
+          {/* 1. ÜST 4 KUTU: Siyaset[0], Siyaset[1], Ekonomi[0], Ekonomi[1] */}
+          <section className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {topBoxes.map((a, i) => a ? (
+                <NewsCardLarge key={a.id} article={a} onOpen={openArticle} />
+              ) : (
+                <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />
+              ))}
+            </div>
+          </section>
+
+          {/* 2. ANA PENCERE (20 haber) + YAN 2 KUTU */}
+          <section className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Sol: Ana pencere (20 haber yatay kayar) */}
+              <div className="lg:col-span-2">
+                <div className="mb-2 flex items-center justify-between">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-foreground/80">Ana Haberler</h2>
+                  <span className="text-[10px] text-muted-foreground">{mainSlider.length} haber — oklarla gezin</span>
+                </div>
+                <MainSlider articles={mainSlider} onOpen={openArticle} />
+              </div>
+
+              {/* Sağ: 2 kutu alt alta (yükseklikleri ana pencerenin yarısı) */}
+              <div className="grid grid-rows-2 gap-4">
+                {sideBoxes.map((a, i) => a ? (
+                  <NewsCardMedium key={a.id} article={a} onOpen={openArticle} />
+                ) : (
+                  <Skeleton key={i} className="h-48 rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* 3. ALT 4 KUTU: Kamu[0], Spor[0], Bilim[0], Kültür[0] */}
+          <section className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {bottomBoxes.map((a, i) => a ? (
+                <NewsCardLarge key={a.id} article={a} onOpen={openArticle} />
+              ) : (
+                <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />
+              ))}
+            </div>
+          </section>
+
+          {/* 4. KALAN HABERLER — 3'lü gruplar halinde alt alta */}
+          {remaining.length > 0 && (
+            <section className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
+              <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Daha Fazla Haber</span>
+                <Badge variant="secondary" className="text-[10px]">{remaining.length}</Badge>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {remaining.map(a => (
+                  <PublishedArticleCard key={a.id} article={a} onOpen={openArticle} />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      )}
+    </main>
+  );
+}

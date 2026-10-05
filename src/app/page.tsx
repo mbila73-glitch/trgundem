@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Mail, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { PublicMain } from '@/components/public/public-main';
 import { InfoBands } from '@/components/news/info-bands';
 import { AdminPanel } from '@/components/news/admin-panel';
 import { ReaderContactForm } from '@/components/news/reader-contact-form';
@@ -220,16 +221,8 @@ export default function Home() {
         <InfoBands />
       </div>
 
-      {/* ANA İÇERİK — şu an boş placeholder, sonraki adımda Sözcü tarzı gelecek */}
-      <main className="flex-1 bg-background">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 text-center">
-          <h1 className="text-2xl font-bold text-foreground/80 mb-2">Yeni Ana Sayfa</h1>
-          <p className="text-sm text-muted-foreground">Bu alan Sözcü tarzı haber akışı ile doldurulacak.</p>
-          <p className="text-xs text-muted-foreground/60 mt-4">
-            Mevcut sayfa: <a href="/veri" className="text-news hover:underline font-medium">trgundem.net/veri</a>
-          </p>
-        </div>
-      </main>
+      {/* ANA İÇERİK — Sözcü tarzı: arama + 4 kutu + ana pencere + 2 yan + 4 alt + kalan haberler */}
+      <PublicMain />
 
       <footer className="mt-auto border-t border-border bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
