@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 // Finans verileri — güvenilir kaynaklar:
 // TCMB: https://www.tcmb.gov.tr/kurlar/today.xml (döviz kurları)
-// Yahoo Finance: BIST 100 (XU100.IS), Ons Altın (GC=F)
+// Yahoo Finance: BIST 100 (XU100.IS), Ons Altın (GC=F) — query1/query2 fallback
 // Gram Altın hesaplama: (Ons fiyatı × USD kuru) / 31.1035
 
 let cache: { data: Array<{ name: string; value: string; change: string; up: boolean }>; ts: number } | null = null;
@@ -42,57 +42,61 @@ async function fetchTcmbRates(): Promise<{ code: string; rate: number; prevRate:
   }
 }
 
-// Yahoo Finance'den BIST 100 ve Ons Altın çek
-async function fetchYahooData(): Promise<{ bist100: number | null; onsAltin: number | null; bist100Prev: number | null; onsPrev: number | null }> {
+// Yahoo Finance helper — belirli bir sembolden chart verisi çek
+async function tryYahoo(url: string): Promise<{ current: number | null; prev: number | null }> {
   try {
-    // BIST 100: XU100.IS
-    // Ons Altın: GC=F (Gold Futures)
-    const [bistRes, goldRes] = await Promise.allSettled([
-      fetch('https://query1.finance.yahoo.com/v8/finance/chart/XU100.IS?range=2d&interval=1d', {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        signal: AbortSignal.timeout(10000),
-      }),
-      fetch('https://query1.finance.yahoo.com/v8/finance/chart/GC=F?range=2d&interval=1d', {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        signal: AbortSignal.timeout(10000),
-      }),
-    ]);
-
-    let bist100: number | null = null;
-    let bist100Prev: number | null = null;
-    let onsAltin: number | null = null;
-    let onsPrev: number | null = null;
-
-    if (bistRes.status === 'fulfilled' && bistRes.value.ok) {
-      const data = await bistRes.value.json();
-      const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
-      if (closes && closes.length >= 2) {
-        // Son iki günün kapanışları: [önceki, bugün]
-        const validCloses = closes.filter((c: number | null) => c !== null);
-        if (validCloses.length >= 2) {
-          bist100Prev = validCloses[validCloses.length - 2];
-          bist100 = validCloses[validCloses.length - 1];
-        }
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return { current: null, prev: null };
+    const data = await resp.json();
+    const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+    if (closes && Array.isArray(closes)) {
+      const validCloses = closes.filter((c: number | null) => c !== null && c !== undefined && !isNaN(c));
+      if (validCloses.length >= 2) {
+        return {
+          current: validCloses[validCloses.length - 1],
+          prev: validCloses[validCloses.length - 2],
+        };
+      }
+      if (validCloses.length === 1) {
+        return { current: validCloses[0], prev: null };
       }
     }
-
-    if (goldRes.status === 'fulfilled' && goldRes.value.ok) {
-      const data = await goldRes.value.json();
-      const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
-      if (closes && closes.length >= 2) {
-        const validCloses = closes.filter((c: number | null) => c !== null);
-        if (validCloses.length >= 2) {
-          onsPrev = validCloses[validCloses.length - 2];
-          onsAltin = validCloses[validCloses.length - 1];
-        }
-      }
-    }
-
-    return { bist100, onsAltin, bist100Prev, onsPrev };
-  } catch (e) {
-    console.error('Yahoo Finance fetch error:', e instanceof Error ? e.message : e);
-    return { bist100: null, onsAltin: null, bist100Prev: null, onsPrev: null };
+    return { current: null, prev: null };
+  } catch {
+    return { current: null, prev: null };
   }
+}
+
+// BIST 100 — birden fazla kaynak/endpoint sırayla dene
+async function fetchBist100(): Promise<{ current: number | null; prev: number | null }> {
+  // 1. Yahoo Finance query1 — XU100.IS (BIST 100)
+  let r = await tryYahoo('https://query1.finance.yahoo.com/v8/finance/chart/XU100.IS?range=5d&interval=1d');
+  if (r.current) return r;
+
+  // 2. Yahoo Finance query2 — XU100.IS
+  r = await tryYahoo('https://query2.finance.yahoo.com/v8/finance/chart/XU100.IS?range=5d&interval=1d');
+  if (r.current) return r;
+
+  // 3. Yahoo Finance query1 — XU030.IS (BIST 30 fallback)
+  r = await tryYahoo('https://query1.finance.yahoo.com/v8/finance/chart/XU030.IS?range=5d&interval=1d');
+  if (r.current) return r;
+
+  return { current: null, prev: null };
+}
+
+// Ons Altın — Yahoo Finance (GC=F) birden fazla endpoint
+async function fetchOnsAltin(): Promise<{ current: number | null; prev: number | null }> {
+  let r = await tryYahoo('https://query1.finance.yahoo.com/v8/finance/chart/GC=F?range=5d&interval=1d');
+  if (r.current) return r;
+  r = await tryYahoo('https://query2.finance.yahoo.com/v8/finance/chart/GC=F?range=5d&interval=1d');
+  return r;
 }
 
 function calcChange(current: number, prev: number | null): { change: string; up: boolean } | null {
@@ -110,16 +114,20 @@ export async function GET() {
     return NextResponse.json({ ok: true, data: cache.data });
   }
 
-  const [tcmbRates, yahooData] = await Promise.all([fetchTcmbRates(), fetchYahooData()]);
+  const [tcmbRates, bistData, onsData] = await Promise.all([
+    fetchTcmbRates(),
+    fetchBist100(),
+    fetchOnsAltin(),
+  ]);
 
   const result: Array<{ name: string; value: string; change: string; up: boolean }> = [];
 
   // BIST 100 (Borsa İstanbul / IMKB)
-  if (yahooData.bist100 !== null) {
-    const ch = calcChange(yahooData.bist100, yahooData.bist100Prev);
+  if (bistData.current !== null) {
+    const ch = calcChange(bistData.current, bistData.prev);
     result.push({
       name: 'BIST 100',
-      value: yahooData.bist100.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      value: bistData.current.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       change: ch ? ch.change : '—',
       up: ch ? ch.up : true,
     });
@@ -135,11 +143,11 @@ export async function GET() {
   }
 
   // Ons Altın (Yahoo Finance)
-  if (yahooData.onsAltin !== null) {
-    const ch = calcChange(yahooData.onsAltin, yahooData.onsPrev);
+  if (onsData.current !== null) {
+    const ch = calcChange(onsData.current, onsData.prev);
     result.push({
       name: 'ONS ALTIN',
-      value: `$${yahooData.onsAltin.toFixed(2)}`,
+      value: `$${onsData.current.toFixed(2)}`,
       change: ch ? ch.change : '—',
       up: ch ? ch.up : true,
     });
@@ -147,7 +155,7 @@ export async function GET() {
     // Gram Altın hesapla: (Ons × USD kuru) / 31.1035
     const usdRate = tcmbRates.find(c => c.code === 'USD');
     if (usdRate) {
-      const gramAltin = (yahooData.onsAltin * usdRate.rate) / 31.1035;
+      const gramAltin = (onsData.current * usdRate.rate) / 31.1035;
       result.push({
         name: 'GRAM ALTIN',
         value: `${gramAltin.toFixed(0)} ₺`,
