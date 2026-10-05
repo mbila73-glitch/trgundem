@@ -53,13 +53,13 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email: email || '(belirtilmedi)', subject, message }),
       });
-      const json = (await r.json()) as { ok?: boolean; error?: string; rejected?: boolean };
+      const json = (await r.json()) as { ok?: boolean; error?: string; rejected?: boolean; message?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Gönderilemedi');
 
       if (json.rejected) {
-        setStatus({ type: 'rejected', text: 'Mesajınız iade edilmiştir' });
+        setStatus({ type: 'rejected', text: json.message || 'Mesajınız iade edilmiştir' });
         setMessage('');
-        setTimeout(() => setStatus(null), 2000);
+        setTimeout(() => setStatus(null), 4000);
       } else {
         // Önce pencereyi kapat, formu temizle
         setName('');

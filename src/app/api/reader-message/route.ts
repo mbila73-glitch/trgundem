@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import nodemailer from 'nodemailer';
+import { findProfanity } from '@/lib/profanity';
 
 // SMTP yapılandırması — .env'den okur
 function getSmtpTransport() {
@@ -131,10 +132,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Profanity check
-  if (containsProfanity(message)) {
+  // Profanity check — yakalanan kelimeyi döndür
+  const profanityWord = findProfanity(message);
+  if (profanityWord) {
     return NextResponse.json(
-      { ok: true, rejected: true, message: 'Mesajınız iade edilmiştir' },
+      { ok: true, rejected: true, profanityWord, message: 'Mesajınız iade edilerek IP adresiniz kayıt altına alınmıştır, Lütfen ' + profanityWord + ' kelimesini düzeltiniz' },
       { status: 200 },
     );
   }
