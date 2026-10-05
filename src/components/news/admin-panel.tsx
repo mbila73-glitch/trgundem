@@ -36,6 +36,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [password, setPassword] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
   const [adminTab, setAdminTab] = useState<AdminTab>('messages');
+  const [archivedSubtab, setArchivedSubtab] = useState<'articles' | 'messages'>('articles');
 
   // Messages state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -892,20 +893,48 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                     : archivedArticles.length === 0 && messages.filter(m => m.status === 'archived').length === 0 ? (
                       <Card className="flex flex-col items-center gap-3 p-10 text-center">
                         <Archive className="h-10 w-10 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">Arşivde haber yok</p>
+                        <p className="text-sm text-muted-foreground">Arşivde içerik yok</p>
                         <p className="text-xs text-muted-foreground/70">Yayından kaldırılan haberler ve arşivlenen mesajlar burada listelenir.</p>
                       </Card>
                     ) : (
                       <>
-                        {/* İki sütun: Arşivlenen Haberler | Arşivlenen Mesajlar — yan yana */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                          {/* Sol sütun: Arşivlenen Haberler */}
-                          <div>
-                            <div className="mb-3 flex items-center gap-2">
-                              <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenen Haberler</h3>
+                        {/* Alt sekmeler — Arşivlenen Haberler | Arşivlenen Mesajlar */}
+                        <div className="mb-4 flex gap-2 border-b border-border pb-2">
+                          <button
+                            type="button"
+                            onClick={() => setArchivedSubtab('articles')}
+                            className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${
+                              archivedSubtab === 'articles'
+                                ? 'bg-secondary text-secondary-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <Archive className="h-3.5 w-3.5" />
+                            Arşivlenen Haberler
+                            {archivedArticles.length > 0 && (
                               <Badge variant="secondary" className="text-[10px]">{archivedArticles.length}</Badge>
-                            </div>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setArchivedSubtab('messages')}
+                            className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition ${
+                              archivedSubtab === 'messages'
+                                ? 'bg-secondary text-secondary-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <Mail className="h-3.5 w-3.5" />
+                            Arşivlenen Mesajlar
+                            {messages.filter(m => m.status === 'archived').length > 0 && (
+                              <Badge variant="secondary" className="text-[10px]">{messages.filter(m => m.status === 'archived').length}</Badge>
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Arşivlenen Haberler içeriği */}
+                        {archivedSubtab === 'articles' && (
+                          <div>
                             {archivedArticles.length === 0 ? (
                               <Card className="flex flex-col items-center gap-3 p-8 text-center">
                                 <Archive className="h-8 w-8 text-muted-foreground" />
@@ -968,13 +997,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               </div>
                             )}
                           </div>
+                        )}
 
-                          {/* Sağ sütun: Arşivlenen Mesajlar */}
+                        {/* Arşivlenen Mesajlar içeriği */}
+                        {archivedSubtab === 'messages' && (
                           <div>
-                            <div className="mb-3 flex items-center gap-2">
-                              <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenen Mesajlar</h3>
-                              <Badge variant="secondary" className="text-[10px]">{messages.filter(m => m.status === 'archived').length}</Badge>
-                            </div>
                             {messages.filter(m => m.status === 'archived').length === 0 ? (
                               <Card className="flex flex-col items-center gap-3 p-8 text-center">
                                 <Mail className="h-8 w-8 text-muted-foreground" />
@@ -1046,8 +1073,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               </div>
                             )}
                           </div>
-
-                        </div>
+                        )}
                       </>
                     )}
                   </div>
