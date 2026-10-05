@@ -130,27 +130,50 @@ async function aiSummarize(title, contents, category) {
   var minWords = CATEGORY_MIN_WORDS[category] || 100;
 
   function buildPrompt(minW) {
-    return 'Aşağıdaki haber metinlerini oku. Asla kaynak metinle aynı cümleleri kurma. ' +
-      'Tamamen kendi cümlelerinle, eş anlamlı kelimeler kullanarak, cümle yapısını değiştirerek yaz. ' +
-      'Orijinal metinden hiçbir cümleyi, hiçbir ifadeyi kopyalama. Bu bir özet değil, haberin yeniden yazımıdır. ' +
-      'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
-      'ÜST SINIR YOK — haberin tamamını anlatmak için gerekirse 300, 500, 1000 veya daha fazla kelime yaz. ' +
-      'Haberin hiçbir detayını atlama. Cümleni yarıda kesme, haber tamam olmalı. ' +
-      'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.\n\n' +
-      'ÖNEMLİ KURALLAR:\n' +
+    return 'Sen bağımsız bir haber editörüsün. Aşağıda farklı kaynaklardan gelen, aynı habere ait metinler var. ' +
+      'Bu metinleri oku, ANLA, sonra KENDİ CÜMLELERİNLE bağımsız bir gazeteci gibi YENİDEN YAZ. ' +
+      'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n' +
+      'TELİF GÜVENLİĞİ KURALLARI — ZORUNLU:\n' +
+      '1. Kaynak metinle %30 DAN FAZLA kelime örtüşmesi yapma. Aynı cümleyi ASLA kurma.\n' +
+      '2. Cümle yapılarını tamamen değiştir:\n' +
+      '   - Aktif cümleyi pasife çevir (önceledi → tarafından önelendi)\n' +
+      '   - Olumsuzu olumlu, olumlu olumsuz yap (ifade değişmeden)\n' +
+      '   - Düz cümleyi soru, soruyu düz cümleye çevir\n' +
+      '   - Cümle sırasını değiştir (önce sonuç, sonra sebep — veya tersi)\n' +
+      '3. Eş anlamlı kelimeler kullan:\n' +
+      '   - "açıkladı" yerine "belirtti / ifadede bulundu / söyledi / dile getirdi"\n' +
+      '   - "dedi" yerine "ifade etti / kaydetti / vurguladı / belirtti"\n' +
+      '   - "yüzde" yerine "yüzde oranında / yüzde ... seviyesinde / ...-oranla"\n' +
+      '   - "bugün" yerine "bu gün / yaşadığımız gün / günümüzde"\n' +
+      '   - "başkanı" yerine "yöneticisi / temsilcisi / sözcüsü" (anlam uygunsa)\n' +
+      '4. Kaynak metindeki İFADEYİ DEĞİL, ANLAMI aktar. Anlamı koru, ifadeyi değiştir.\n' +
+      '5. Sayısal veriler (rakam, yüzde, tarih, saat) — ANLAMI KORU ANCAK FARKLI CÜMLEDE VER:\n' +
+      '   Kaynakta "Borsa %2 yükseldi" yazıyorsa sen "Borsa endeksinde yüzde iki oranında artış gözlendi" yaz.\n' +
+      '   Kaynakta "5 Ekim 2026" yazıyorsa sen "Ekim ayının beşinci günü / 2026 yılının ekim ayında" yaz.\n' +
+      '6. Alıntı yapılmış sözleri ("..." içindeki ifadeler) AYNEN KORUMAK ZORUNLU DEĞİL — kendi cümlenle aktar.\n' +
+      '7. Kişi adları ve kurum adları korunabilir ANCAK cümle içinde farklı konumlandır.\n' +
+      '8. Eğer kaynak metinle çok benzer çıkarsa, kendini düzelt — farklı bir cümle kur.\n\n' +
+      'İÇERİK KURALLARI:\n' +
       '1. Mantıksal tutarlılık: haberin anlamına sadık kal. Olmayan çıkarımlar yapma. ' +
       '"deprem öncesi 16 artçı" gibi saçma mantıksal hatalardan kaçın. Eylemi doğru özne yap, ' +
       'sayıları doğru kullan, eylem-sayı-özne ilişkisi bozukluğu yapma.\n' +
       '2. Terim kontrolü: teknik, siyasi, ekonomik, hukuki terimleri doğru kullan. ' +
-      '"artçı" depremden sonra gelir (ön sarsıntı öncesi). "Merkez Bankası" kısaltma, "TCMB" yerine ' +
-      'tam adını kullan. Tarih, saat, yüzde, rakam bilgisini olduğu gibi aktar, değiştirme.\n' +
+      '"artçı" depremden sonra gelir (ön sarsıntı öncesi). Tarih, saat, yüzde, rakam bilgisini ' +
+      'OLDUĞU GİBİ AL ANCAK farklı cümle yapısı içinde ver.\n' +
       '3. Kronoloji: olayların sırasını koru. Eski olayı "yeni" gibi, yeni olayı "eski" gibi sunma. ' +
       '"gelecek" olanı "geçmiş" gibi, "geçmiş" olanı "gelecek" gibi yazma.\n' +
       '4. İddia/yargı: haberde "iddia edildi" diyorsa "gerçekleşti" deme. "açıklandı" diyorsa ' +
       '"söylendi" deme. Belirsizliği koru.\n' +
-      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n' +
-      '6. ASLA 200 kelimeye ulaşınca kesme — haberin tamamını yaz, bitirmediysen devam et.\n\n' +
-      'BAŞLIK: ' + title + '\n\nHABER METİNLERİ:\n' + combinedContent;
+      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n\n' +
+      'UZUNLUK:\n' +
+      'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
+      'ÜST SINIR YOK — gerekirse 300, 500, 1000 veya daha fazla kelime yaz. ' +
+      'Cümleni yarıda kesme, haber doğal bir sonuca ulaşmalı. ' +
+      'ASLA 200 kelimeye ulaşınca kesme — haberin tamamını yaz, bitirmediysen devam et.\n\n' +
+      'ÇIKTI FORMATI:\n' +
+      'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme ' +
+      '(başlık, etiket, markdown, açıklama yok).\n\n' +
+      'BAŞLIK (referans): ' + title + '\n\nKAYNAK HABER METİNLERİ:\n' + combinedContent;
   }
 
   var bestText = null;
