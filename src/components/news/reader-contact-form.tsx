@@ -54,10 +54,21 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email: email || '(belirtilmedi)', subject, message }),
       });
-      const json = (await r.json()) as { ok?: boolean; error?: string; rejected?: boolean; message?: string; profanityWord?: string };
+      const json = (await r.json()) as {
+        ok?: boolean;
+        error?: string;
+        rejected?: boolean;
+        rateLimited?: boolean;
+        message?: string;
+        profanityWord?: string;
+      };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Gönderilemedi');
 
-      if (json.rejected) {
+      if (json.rateLimited) {
+        // Günlük limit dolu — "Günlük mesaj atma limitiniz dolmuştur..."
+        setStatus({ type: 'rejected', text: json.message || 'Günlük mesaj atma limitiniz dolmuştur. Lütfen yarın tekrar deneyiniz.' });
+        setHighlightedWord(null);
+      } else if (json.rejected) {
         setStatus({ type: 'rejected', text: 'Mesajınız iade edilerek IP adresiniz kayıt altına alınmıştır,', profanityWord: json.profanityWord });
         setHighlightedWord(json.profanityWord || null);
       } else {

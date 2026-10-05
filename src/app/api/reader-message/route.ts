@@ -18,16 +18,30 @@ function getSmtpTransport() {
   });
 }
 
+// 5 Gemini API key — .env'den oku (ai-reply ile aynı mantık)
+function getGeminiKeys(): string[] {
+  const candidates = [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3,
+    process.env.GEMINI_API_KEY_4,
+    process.env.GEMINI_API_KEY_5,
+  ];
+  const result: string[] = [];
+  for (const c of candidates) {
+    if (c && c.length > 0) result.push(c);
+  }
+  return result;
+}
+
+const GEMINI_MODEL = 'gemini-flash-lite-latest';
+
 // Okuyucunun IP adresini al — Nginx X-Forwarded-For/X-Real-IP/CF-Connecting-IP
 function getClientIp(req: NextRequest): string {
-  // Önce Cloudflare/CDN (en güvenilir) — gerçek client IP'si
   const cfIp = req.headers.get('cf-connecting-ip');
   if (cfIp && cfIp.trim()) return cfIp.trim();
-  // Nginx: X-Real-IP
   const realIp = req.headers.get('x-real-ip');
   if (realIp && realIp.trim()) return realIp.trim();
-  // Nginx proxy chain: X-Forwarded-For — virgülle ayrılmış listedir,
-  // ilk eleman en dıştaki (gerçek client) IP'dir
   const forwarded = req.headers.get('x-forwarded-for');
   if (forwarded && forwarded.trim()) {
     const first = forwarded.split(',')[0].trim();
@@ -47,7 +61,7 @@ async function sendReaderEmailMessage(data: {
   const transport = getSmtpTransport();
   if (!transport) return { sent: false, reason: 'no-smtp-config' };
   const from = process.env.SMTP_FROM || process.env.SMTP_USER;
-  const to = process.env.SMTP_USER; // kendisine gönderir (temsilci@trgundem.net)
+  const to = process.env.SMTP_USER;
   const subject = `[TRGUNDEM] Yeni Okuyucu Mesajı — ${data.subject || '(Konusuz)'}`;
   const text = [
     `Yeni bir okuyucu mesajı alındı.`,
@@ -90,8 +104,125 @@ async function sendReaderEmailMessage(data: {
   }
 }
 
+// AI ile mesajı anlam bazlı kontrol et — küfür, hakaret, tehdit, spam yakala
+// Yazım varyasyonlarını da yakalar (s1kt1r, f*ck, a.q, amk gibi)
+type AiFilterResult =
+  | { appropriate: true }
+  | { appropriate: false; reason: string; word?: string }
+  | { error: string }; // AI çalışamazsa
+
+async function checkMessageWithAI(message: string): Promise<AiFilterResult> {
+  const keys = getGeminiKeys();
+  if (keys.length === 0) {
+    return { error: 'no-api-keys' };
+  }
+
+  const prompt = [
+    'Sen bir mesaj moderatörüsün. Aşağıdaki okuyucu mesajını oku ve değerlendir.',
+    '',
+    'KURALLAR:',
+    '1. Mesajda küfür, hakaret, argo, cinsel içerik, tehdit, ırkçı/cinsiyetçi/ableist söylem var mı?',
+    '2. Spam, reklam, dolandırıcılık, kimlik avı girişimi var mı?',
+    '3. Mesaj bir haber sitesinin okuyucu temsilcisine gönderilebilecek uygun bir mesaj mı?',
+    '4. Yazım varyasyonlarını da yakala: s1kt1r, s!ktir, f*ck, a.q, amk, $1kt1r, p1ç, g0t gibi',
+    '   karakter değişimi veya noktalama ile gizlenmiş küfürleri tespit et.',
+    '5. Ancak LEGITIMATE haber açısından geçen kelimeleri yanlış yakalama:',
+    '   "özel" kelimesi normal, "özel hayat" normal, "Bakan" normal, "Bakanlar Kurulu" normal.',
+    '',
+    'Cevap formatı (SADECE JSON, başka hiçbir şey yazma):',
+    '{"appropriate": true|false, "reason": "kısa sebep", "word": "yakalanan kelime veya boş"}',
+    '',
+    'Örnekler:',
+    '- Temiz mesaj → {"appropriate": true, "reason": "uygun", "word": ""}',
+    '- Küfür → {"appropriate": false, "reason": "küfür", "word": "siktir"}',
+    '- Hakaret → {"appropriate": false, "reason": "hakaret", "word": "salak herif"}',
+    '- Spam reklam → {"appropriate": false, "reason": "spam", "word": "kazan kazan"}',
+    '',
+    'OKUYUCU MESAJI:',
+    '"""',
+    message,
+    '"""',
+  ].join('\n');
+
+  // 5 key retry — 429/403'da sıradaki key'e geç
+  for (let attempt = 0; attempt < keys.length; attempt++) {
+    const currentKey = keys[attempt % keys.length];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${currentKey}`;
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 500, temperature: 0.2 },
+        }),
+      });
+      const result = await resp.json();
+      if (result.error) {
+        // 403 (unregistered) veya 429 (kota) → sıradaki key'e geç
+        if (result.error.code === 403 || result.error.code === 429) {
+          continue;
+        }
+        // Diğer hatalar → sıradaki key'e geç ama logla
+        console.error('[reader-message AI] error', result.error.code, result.error.message);
+        continue;
+      }
+      if (
+        result.candidates &&
+        result.candidates[0] &&
+        result.candidates[0].content &&
+        result.candidates[0].content.parts &&
+        result.candidates[0].content.parts[0]
+      ) {
+        const rawText = (result.candidates[0].content.parts[0].text as string).trim();
+        // markdown ```json ... ``` temizle
+        const cleaned = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        // JSON parse — regex ile ilk {...} blokunu bul
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) {
+          try {
+            const parsed = JSON.parse(match[0]) as {
+              appropriate?: boolean;
+              reason?: string;
+              word?: string;
+            };
+            if (typeof parsed.appropriate === 'boolean') {
+              if (parsed.appropriate) {
+                return { appropriate: true };
+              }
+              return {
+                appropriate: false,
+                reason: typeof parsed.reason === 'string' ? parsed.reason : 'uygun değil',
+                word: typeof parsed.word === 'string' && parsed.word.length > 0 ? parsed.word : undefined,
+              };
+            }
+          } catch (e) {
+            console.error('[reader-message AI] JSON parse hatası:', e instanceof Error ? e.message : 'unknown', 'text:', cleaned);
+          }
+        }
+        // AI cevap verdi ama JSON parse edilemedi → son deneme değilse devam, son denemeyse fallback
+        if (attempt === keys.length - 1) {
+          return { error: 'ai-parse-failed' };
+        }
+        continue;
+      }
+    } catch (e) {
+      console.error('[reader-message AI] ağ hatası (deneme ' + (attempt + 1) + '/' + keys.length + '):', e instanceof Error ? e.message : 'unknown');
+      // ağ hatası → sıradaki key
+      continue;
+    }
+  }
+  // Tüm key'ler denendi, hiçbiri çalışmadı
+  return { error: 'all-keys-failed' };
+}
+
 // POST /api/reader-message — submit a reader message (no auth)
 // body: { name, email, subject, message }
+// 1. IP al
+// 2. IP limiti kontrol (günde max 10 mesaj)
+// 3. Hızlı kelime kontrolü (PROFANITY_WORDS)
+// 4. AI ile anlam bazlı kontrol (yazım varyasyonlarını yakala)
+// 5. Hepsi geçerse DB'ye kaydet + SMTP mail gönder
 export async function POST(req: NextRequest) {
   let body: unknown;
   try {
@@ -106,7 +237,6 @@ export async function POST(req: NextRequest) {
     message?: string;
   };
 
-  // Only name and message are required; email is optional
   if (!name?.trim() || !message?.trim()) {
     return NextResponse.json(
       { error: 'Ad ve mesaj zorunludur' },
@@ -114,10 +244,37 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // IP al — hem DB'ye kaydet hem mail'e ekle
+  // IP al
   const ip = getClientIp(req);
 
-  // Profanity check — yakalanan kelimeyi döndür (mesaj silinmez, kullanıcı düzeltsin)
+  // ====== GÜNLÜK IP LİMİTİ KONTROLÜ — max 10 mesaj/gün ======
+  try {
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentCount = await db.readerMessage.count({
+      where: {
+        ip,
+        createdAt: { gte: oneDayAgo },
+        // 'deleted' olmayanları say — silinenler limite sayılmasın
+        status: { not: 'deleted' },
+      },
+    });
+    if (recentCount >= 10) {
+      return NextResponse.json(
+        {
+          ok: true,
+          rateLimited: true,
+          message: 'Günlük mesaj atma limitiniz dolmuştur. Lütfen yarın tekrar deneyiniz.',
+        },
+        { status: 200 },
+      );
+    }
+  } catch (e) {
+    // Limit kontrolü hata verirse devam et (fallback) — ama logla
+    console.error('[reader-message] IP limit kontrol hatası:', e instanceof Error ? e.message : 'unknown');
+  }
+
+  // ====== ADIM 1: HIZLI KELİME KONTROLÜ (anlık) ======
+  // Mevcut kelime listesi ile birebir kontrol
   const profanityWord = findProfanity(message);
   if (profanityWord) {
     return NextResponse.json(
@@ -131,6 +288,27 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // ====== ADIM 2: AI İLE ANLAM BAZLI KONTROL ======
+  // Yazım varyasyonlarını yakalar (s1kt1r, f*ck, a.q, gizlenmiş tehdit vb.)
+  // AI çalışmazsa fallback: kelime kontrolü yeterli sayılır, mesaj geçsin
+  const aiResult = await checkMessageWithAI(message);
+  if ('error' in aiResult) {
+    // AI çalışamadı — mevcut kelime kontrolü temiz dedi, devam et
+    console.warn('[reader-message] AI kontrol atlandı:', aiResult.error);
+  } else if (!aiResult.appropriate) {
+    // AI mesajı reddetti — iade et
+    return NextResponse.json(
+      {
+        ok: true,
+        rejected: true,
+        profanityWord: aiResult.word || aiResult.reason,
+        message: 'Mesajınız iade edilerek IP adresiniz kayıt altına alınmıştır, Lütfen ' + (aiResult.word || aiResult.reason) + ' ifadesini düzeltiniz',
+      },
+      { status: 200 },
+    );
+  }
+
+  // ====== ADIM 3: DB'YE KAYDET + SMTP MAIL GÖNDER ======
   try {
     const created = await db.readerMessage.create({
       data: {
@@ -143,8 +321,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // SMTP ile komple mesajı (IP dahil) mail'a gönder (DB kaydı sonrası, async — bekleme)
-    // Hata olsa bile POST başarılı sayılır (mail gönderilemezse DB'de yine de kayıtlı)
     sendReaderEmailMessage({
       name: created.name,
       email: created.email,
