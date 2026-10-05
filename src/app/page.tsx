@@ -127,12 +127,12 @@ export default function Home() {
             <div className="hidden sm:block">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
-                  <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition hover:bg-white/10 cursor-pointer">
+                  <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition bg-red-400 hover:bg-red-500 text-white cursor-pointer">
                     <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-white">
-                      <Clock className="h-4 w-4 text-white/80" />
+                      <Clock className="h-4 w-4 text-white" />
                       {mounted && now ? formatTime(now) : '--:--:--'}
                     </span>
-                    <span className="text-[10px] text-white/70" suppressHydrationWarning>
+                    <span className="text-[10px] text-white/90" suppressHydrationWarning>
                       {mounted && now ? formatDate(now) : '— — — —'}
                     </span>
                   </button>
@@ -218,7 +218,7 @@ export default function Home() {
                 className="gap-1.5 text-[10px] sm:text-xs bg-red-400 hover:bg-red-500 text-white h-8 sm:h-9 px-2 sm:px-3 border border-red-300"
               >
                 <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">İletişim</span>
+                <span className="inline">İletişim</span>
               </Button>
               <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
                 <span className="text-lg sm:text-xl">+</span>
