@@ -30,6 +30,7 @@ if (GEMINI_KEYS.length === 0) {
 }
 var GEMINI_MODEL = 'gemini-flash-lite-latest';
 var keyIndex = 0;
+var deadKeys = new Set(); // bu cycle'da ölü key'ler (403/429) — atlanır
 
 var ROOT = path.resolve(__dirname, '..');
 var SF = path.join(ROOT, 'pipeline-status.json');
@@ -134,12 +135,14 @@ async function aiSummarize(title, contents, category) {
   var bestText = null;
   var bestWordCount = 0;
 
-  for (var attempt = 1; attempt <= 3; attempt++) {
+  for (var attempt = 1; attempt <= GEMINI_KEYS.length; attempt++) {
     var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
     keyIndex++;
+
+    if (deadKeys.has(currentKey)) { continue; }
+
     var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + currentKey;
-    // maxOutputTokens: minWords * 3 (ortalama 1.5-2 token/kelime + güvenlik payı)
-    var maxTokens = Math.max(800, minWords * 4);
+    var maxTokens = 4000;
     try {
       var resp = await fetch(url, {
         method: 'POST',
@@ -147,34 +150,44 @@ async function aiSummarize(title, contents, category) {
         body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
       });
       var result = await resp.json();
-      if (result.error && result.error.code === 503) {
-        log('  AI 503 (deneme ' + attempt + '/3) — key ' + (keyIndex % GEMINI_KEYS.length + 1));
-        if (attempt < 3) { await new Promise(function(r) { setTimeout(r, 5000); }); continue; }
-        return null;
+      if (result.error && result.error.code === 403) {
+        deadKeys.add(currentKey);
+        log('  AI 403 — key ölü (bu cycle atlanacak)');
+        continue;
       }
-      if (result.error) { log('  AI error ' + result.error.code + ': ' + (result.error.message || '').slice(0, 80)); return null; }
+      if (result.error && result.error.code === 429) {
+        deadKeys.add(currentKey);
+        log('  AI 429 kota dolu — key ölü (bu cycle atlanacak)');
+        continue;
+      }
+      if (result.error && result.error.code === 503) {
+        log('  AI 503 — 5 sn bekle');
+        await new Promise(function(r) { setTimeout(r, 5000); });
+        attempt--; keyIndex--;
+        continue;
+      }
+      if (result.error) {
+        log('  AI error ' + result.error.code + ': ' + (result.error.message || '').slice(0, 80));
+        deadKeys.add(currentKey);
+        continue;
+      }
+      deadKeys.delete(currentKey);
       if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
         var text = result.candidates[0].content.parts[0].text;
         if (text) {
           text = text.trim();
           var wc = countWords(text);
           log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ')');
-          // En iyi sonucu sakla (en çok kelimeye sahip)
           if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
-          // Alt limiti geçtiyse hemen döndür
           if (wc >= minWords) return text;
-          // Geçmediyse bir daha deneyebiliriz (eğer deneme hakkı varsa)
-          if (attempt < 3) { log('  AI yetersiz kelime — tekrar deneniyor...'); continue; }
-          // Son deneme ama hala yetersiz → en iyiyi dön
-          return bestText;
+          continue;
         }
       }
-      if (attempt < 3) { await new Promise(function(r) { setTimeout(r, 3000); }); continue; }
-      return bestText;
+      continue;
     } catch (e) {
-      log('  AI hata (deneme ' + attempt + '/3): ' + e.message);
-      if (attempt < 3) { await new Promise(function(r) { setTimeout(r, 5000); }); continue; }
-      return bestText;
+      log('  AI hata: ' + e.message);
+      deadKeys.add(currentKey);
+      continue;
     }
   }
   return bestText;
