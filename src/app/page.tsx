@@ -209,16 +209,31 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Sağ: İletişim + + Tema */}
-            <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+            {/* Mobil: Sol — İletişim düğmesi (en sola daya, başlığın üstüne gelmesin) */}
+            <div className="absolute left-2 sm:hidden flex items-center flex-shrink-0 z-10">
               <Button
                 variant="default"
                 size="sm"
                 onClick={() => setReaderFormOpen(true)}
-                className="gap-1.5 text-[10px] sm:text-xs bg-red-400 hover:bg-red-500 text-white h-8 sm:h-9 px-2 sm:px-3 border border-red-300"
+                className="gap-1 text-[10px] bg-red-400 hover:bg-red-500 text-white h-8 px-2 border border-red-300"
+                aria-label="İletişim"
               >
-                <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <Mail className="h-3.5 w-3.5" />
                 <span className="inline">İletişim</span>
+              </Button>
+            </div>
+
+            {/* Sağ: + ve Tema (mobilde sağda, masaüstünde İletişim ile birlikte) */}
+            <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0 z-10">
+              {/* İletişim düğmesi — sadece masaüstü (mobilde sola taşındı) */}
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setReaderFormOpen(true)}
+                className="hidden sm:inline-flex gap-1.5 text-xs bg-red-400 hover:bg-red-500 text-white h-9 px-3 border border-red-300"
+              >
+                <Mail className="h-4 w-4" />
+                <span>İletişim</span>
               </Button>
               <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
                 <span className="text-lg sm:text-xl">+</span>
