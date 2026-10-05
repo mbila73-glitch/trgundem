@@ -95,15 +95,22 @@ async function aiFindDuplicates(titles) {
     'Format: JSON array, her grup [tutulacak_index, silinecek_index1, silinecek_index2, ...]\n' +
     'Örnek: [[0, 2, 5], [1, 3]] → 0 numarayi tut 2 ve 5 sil, 1 tut 3 sil\n' +
     'Tekrar yoksa: []\n\n' +
-    'ÖNEMLI KURALLAR:\n' +
-    '1. Sadece AYNI haberi anlatanları grupla\n' +
-    '2. Benzer ama FARKLI haberleri gruplama\n' +
-    '3. Bu başlıklar ana sayfadaki 50 haberdir (en yeniden eskiye sıralı)\n' +
-    '4. Bir haber hem ana sayfada hem kategori sekmesinde görünebilir — bu TEKRAR DEĞİLDİR\n' +
-    '5. Sadece listede aynı içeriğe sahip birden fazla kayıt varsa tekrardır\n' +
-    '6. "İstanbul baskını" ile "İstanbul gastronomi" FARKLI haberlerdir\n' +
-    '7. "KPSS sınavı başladı" ile "KPSS sonuçları açıklandı" FARKLI haberlerdir\n' +
-    '8. Tekrar grubunda HER ZAMAN en düşük numara (en yeni) tutulur\n\n' +
+    'ÖNEMLI KURALLAR — TEKRAR KABUL EDÜLMEMELIDIR:\n' +
+    '1. SADECE AYNI olayı anlatanları grupla. AYNI OLAY = aynı kişi/kurum + aynı eylem + aynı zaman.\n' +
+    '2. FARKLI haberleri ASLA gruplama. Örnek farklı haberler:\n' +
+    '   - "Ataşehir Belediyesi soruşturması" vs "Mersin belediyeleri soruşturması" → FARKLI (farklı il, farklı iddialar)\n' +
+    '   - "Vahap Seçer adliyeye sevk" vs "Yasin Kol adliyeye sevk" → FARKLI (farklı kişiler, farklı soruşturma)\n' +
+    '   - "Ataşehir yolsuzluk" vs "MHK hakemler soruşturması" → FARKLI (farklı iddialar)\n' +
+    '   - "Emekli enflasyon farkı belli oldu" vs "Ekim kira zam oranı belli oldu" → FARKLI (farklı konu)\n' +
+    '   - "MasterChef veda" vs "YENİ Parti Ayvalık başkanı" → FARKLI (farklı konu)\n' +
+    '   - "BIST 100 haftaya başladı" vs "Gram altın haftaya başladı" → FARKLI (farklı finansal araç)\n' +
+    '3. JENERIK KELIMELER tekrar demek DEĞIL: "adliyeye sevk", "belli oldu", "haftaya başladı",\n' +
+    '   "soruşturma", "operasyon" gibi jenerik ifadeler farklı haberlerde geçer.\n' +
+    '4. AYNI kişiler + AYNI eylem + AYNI zaman = TEKRAR. Sadece bu durumda grupla.\n' +
+    '5. "Süper Lig hakemi Yasin Kol" vs "Hakem Yasin Kol adliyeye sevk" → TEKRAR (aynı kişi, aynı olay).\n' +
+    '6. Bir haber hem ana sayfada hem kategori sekmesinde görünebilir — bu TEKRAR DEĞILDIR.\n' +
+    '7. Eğer emin değilsen, GRUP YAPMA. Belirsizlik durumunda tek tek tut.\n' +
+    '8. Listedeki başlıkların hepsi benzer kelimeler içerebilir (Türkçe haber dili) ama aynı haber değildir.\n\n' +
     'Başlıklar (en yeni en üstte):\n';
 
   titles.forEach(function(t, i) {

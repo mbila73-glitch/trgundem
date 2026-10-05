@@ -224,17 +224,69 @@ function normalizeTitle(t) {
     .replace(/&gt;/g, '>')
     .toLowerCase()
     .replace(/[''`]/g, "'")
+    // Ay ismi + ek → ay ismi (eylülde → eylül, kasımda → kasım, ekim'in → ekim)
+    .replace(/\b(ocak|şubat|subat|mart|nisan|mayıs|mayis|haziran|temmuz|ağustos|agustos|eylül|eylul|ekim|kasım|kasim|aralık|aralik)(de|da|te|ta|in|ın|un|ün|nin|nın|nun|nün|den|dan|ten|tan|e|a|ye|ya|yi|yı|yu|yü|nden|ndan|nde|nda)\b/g, '$1')
+    // Belediye ek'leri → belediye (belediyesinde → belediye)
+    .replace(/\b(belediye)(si|sinde|sine|sinin|sinde|sinden|siyle)\b/g, '$1')
+    // Soruşturma ek'leri → soruşturma
+    .replace(/\b(soruşturma|sorusturma)(sı|si|sında|sinda|sinden|sının|sinin)\b/g, '$1')
     .replace(/[^\w\sçğıöşü]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// Sık geçen kelime kara listesi (siyasetçi isimleri vb. — tek başına haber eşleştirme)
+// Sık geçen kelime kara listesi — tek başına haber eşleştirme yapamaz
+// Siyasetçi isimleri + jenerik kelimeler + ay isimleri + yıllar + ekonomi kelimeleri
+// + "adliyeye sevk edildi", "belli oldu", "haftaya başladı" gibi jenerik ifadeler
 var STOP_WORDS = new Set([
+  // Siyasetçi isimleri
   'erdoğan','erdogan','bahçeli','bahceli','akşener','aksener','kılıçdaroğlu','kilicdaroglu',
   'soylu','pelin','cumhurbaşkanı','cumhurbaskani','bakan','başkan','baskan','genel','merkezi',
-  'türkiye','turkiye','türk','turk','ankara','istanbul','izmir','bugün','bugun','yarın','yarin',
-  'haber','son','dakika','gelen','yapan','olarak','için','ile','bin','yıl','yılın','ilan','etti','açıklama'
+  'seçer','vahap','güneş','murat','yasin','göktuğ','goktug','hazar','erel','kol',
+  // Şehirler (jenerik haberlerde geçer)
+  'türkiye','turkiye','türk','turk','ankara','istanbul','izmir','mersin','ataşehir','atasehir',
+  // Zaman ifadeleri
+  'bugün','bugun','yarın','yarin','haftaya','haftalık','günlük','aylık','yıllık','aylik','yillik',
+  // Ay isimleri
+  'ocak','şubat','subat','mart','nisan','mayıs','mayis','haziran','temmuz','ağustos','agustos',
+  'eylül','eylul','ekim','kasım','kasim','aralık','aralik',
+  // Yıllar (2020-2030)
+  '2020','2021','2022','2023','2024','2025','2026','2027','2028','2029','2030',
+  // Jenerik haber kelimeleri
+  'haber','haberin','haberi','haberler','haberleri','son','dakika','sondakika',
+  'gelen','yapan','olarak','için','ile','bin','yıl','yılın','yil','yilin','ilan','etti','açıklama','açıklandı',
+  // Adli süreç jenerik ifadeleri (yolsuzluk, soruşturma, gözaltı vs. farklı konuları bağlamamalı)
+  'adliyeye','adli','sevk','sevkledi','sevk edilen','götürüldü','gönderildi','alındı','alindi','alınan','alinan',
+  'soruşturma','soruşturması','soruşturmasında','sorusturma','sorusturmasi','operasyon','operasyonunda',
+  'gözaltına','gozaltina','gözaltı','gozalti','yakalandı','yakalandi','yakalanan',
+  'kişi','kişiler','kişinin','kisi','kisiler','kisinin','zanlı','zanlılar','sanık','sanik',
+  'sorgu','sorgusu','sorgusunda','ifade','ifadesi',
+  // "belli oldu" gibi jenerik ifadeler — farklı haberleri bağlamamalı
+  'belli','oldu','bellioldu','olduğunu','oldugunu','belli olduğunu','belli oldugunu',
+  'netleşti','netlesti','netleşen','netlesen','kesinleşti','kesinlesti','açıklandı','aciklandi',
+  // "başladı" gibi jenerik
+  'başladı','basladi','başlamış','baslamis','bağladı','bagladi','başlayan','baslayan',
+  // Sayılar + jenerik miktar ifadeleri
+  'milyon','milyar','trilyon','binlerce','yüzde','yuzde','oranı','orani','oran','oranın','oranin',
+  // Kategorik jenerikler — farklı konularda geçer
+  'borsa','borsası','borsasi','borsa İstanbul','borsa istanbul','endeks','endeksi',
+  'gram','altın','altını','altinin','ons','dolar','doları','dolari','euro','sterlin',
+  'kuru','kurusu','enflasyon','enflasyonu','zam','zam mı','zammi','ücret','ücreti',
+  'emekli','emeklilik','memur','memuru','ssk','bağkur','bagkur',
+  'kira','kira','kira zam','zam oranı','zam orani','tavan','tavan zam',
+  'piyasası','piyasasi','piyasa','piyasalar','borsalar','borsaları',
+  'sanayi','sanayisi','finans','finansal','ekonomi','ekonomisi','ekonomik','iqtisadi',
+  // Şahıs/unvan jenerik
+  'belediye','belediyesi','belediyesinde','belediyesine','büyükşehir','buyuksehir','ilçe','ilçesi','ilce','ilcesi',
+  'mhk','hakem','hakemler','hakemin','süperlig','superlig','lig','futbol','maç','maci',
+  // "haftaya başladı" / "yükselişle başladı" / "düşüşle başladı" gibi jenerik
+  'yükselişle','yükselisle','yükseliş','yukselis','düşüşle','dususle','düşüş','dusus',
+  'primle','değer','deger','kazandı','kazandi','kaybetti','kayip','kayıp','kayıplar',
+  'kapanış','kapanis','seans','seansında','seansinda','gün','gun','günü','gunu',
+  // Diğer jenerikler
+  'cumartesi','pazar','pazartesi','salı','sali','çarşamba','carsamba','perşembe','persembe','cuma',
+  'sabah','öğle','ogle','akşam','aksam','gece','gündüz','gunduz',
+  'itibariyle','itibariyile','sonrası','sonrasi','öncesi','oncesi','beraber','birlikte','dahil','ve'
 ]);
 
 function titleSimilar(t1, t2) {
@@ -249,8 +301,10 @@ function titleSimilar(t1, t2) {
   var set2 = new Set(w2); var common = 0;
   w1.forEach(function(w) { if (set2.has(w)) common++; });
   var ratio = common / Math.max(w1.length, w2.length);
-  // Sadece 1 ortak kelime varsa benzerlik yetersiz (en az 2 anlamlı kelime şart)
+  // En az 2 anlamlı ortak kelime şart (jenerik başlıklar birleşmesin)
   if (common < 2) return 0;
+  // Eşik yüksek — sadece anlamlı örtüşme varsa kabul
+  if (ratio < 0.5) return 0;
   return ratio;
 }
 
@@ -264,12 +318,18 @@ function contentSimilar(c1, c2) {
   if (!w1.length || !w2.length) return 0;
   var set2 = new Set(w2); var common = 0;
   w1.forEach(function(w) { if (set2.has(w)) common++; });
-  return common / Math.max(w1.length, w2.length);
+  var ratio = common / Math.max(w1.length, w2.length);
+  // İçerikte en az 5 anlamlı ortak kelime şart
+  if (common < 5) return 0;
+  if (ratio < 0.5) return 0;
+  return ratio;
 }
 
-// Gruplama — başlık benzerliği 0.3 + içerik benzerliği 0.4 (combo)
-// Eşik yüksek — alakasız haberler aynı grupta birleşmesin
+// Gruplama — başlık benzerliği yüksek VEYA (başlık orta + içerik yüksek)
+// Eşik YÜKSEK — alakasız haberler aynı grupta birleşmesin
 // "İstanbul baskını" vs "İstanbul gastronomi" -> titleSimilar düşük, ayrı grup
+// "Ataşehir Belediyesi soruşturması" vs "Vahap Seçer soruşturması" -> STOP'lar yeter,
+// meaningful kelimeler farklı (ataşehir+yolsuzluk vs vahap+seçer), titleSimilar düşük, ayrı grup
 function groupArticles(articles) {
   var groups = [], used = new Set();
   for (var i = 0; i < articles.length; i++) {
@@ -281,9 +341,9 @@ function groupArticles(articles) {
       // Kategori BAĞIMSIZ — aynı haber farklı kategori etiketiyle gelirse yine eşleşir
       var titleSim = titleSimilar(articles[i].title, articles[j].title);
       var contentSim = contentSimilar(articles[i].content || articles[i].description || '', articles[j].content || articles[j].description || '');
-      // Eşik: title >= 0.3 (yüksek) VEYA (title >= 0.15 + content >= 0.4 yüksek)
-      // Bu, alakasız haberlerin aynı grupta olmasını önler
-      if (titleSim >= 0.3 || (titleSim >= 0.15 && contentSim >= 0.4)) {
+      // Eşik: title >= 0.5 (yüksek) VEYA (title >= 0.3 + content >= 0.5)
+      // Bu, alakasız haberlerin aynı grupta olmasını kesin önler
+      if (titleSim >= 0.5 || (titleSim >= 0.3 && contentSim >= 0.5)) {
         group.articles.push(articles[j]);
         group.sourceIds.add(articles[j].sourceId);
         used.add(j);
@@ -468,8 +528,9 @@ async function main() {
             firstArticle.content || firstArticle.description || '',
             existing[j].aiSummary || ''
           );
-          // Eşik: title >= 0.3 VEYA (title >= 0.15 VE content >= 0.3)
-          var matched = simTitle >= 0.3 || (simTitle >= 0.15 && simContent >= 0.3);
+          // Eşik: title >= 0.5 VEYA (title >= 0.3 VE content >= 0.5)
+          // Yüksek eşik — alakasız haberler aynı sayılmasın
+          var matched = simTitle >= 0.5 || (simTitle >= 0.3 && simContent >= 0.5);
           if (!matched) continue;
 
           if (simTitle >= 0.85 && existing[j].status === 'published') {
@@ -604,8 +665,9 @@ async function main() {
           for (var si = 0; si < seenTitles.length; si++) {
             var sim = titleSimilar(pub.aiTitle, seenTitles[si].aiTitle || '');
             var simC = contentSimilar(pub.aiSummary || '', seenTitles[si].aiSummary || '');
-            // Eşik: title >= 0.3 veya (title >= 0.15 + content >= 0.3)
-            if (sim >= 0.3 || (sim >= 0.15 && simC >= 0.3)) {
+            // Eşik: title >= 0.5 veya (title >= 0.3 + content >= 0.5)
+            // Yüksek eşik — alakasız haberler silinmesin
+            if (sim >= 0.5 || (sim >= 0.3 && simC >= 0.5)) {
               // Bu pub daha eski (çünkü allPublished latestPublishedAt desc sıralı)
               // Yani pub'ı sil
               isDuplicate = true;
