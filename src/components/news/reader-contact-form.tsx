@@ -25,6 +25,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<Status>(null);
+  const [highlightedWord, setHighlightedWord] = useState<string | null>(null);
   const [emailCopied, setEmailCopied] = useState(false);
 
   const copyEmail = async () => {
@@ -58,7 +59,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
 
       if (json.rejected) {
         setStatus({ type: 'rejected', text: 'Mesajınız iade edilerek IP adresiniz kayıt altına alınmıştır,', profanityWord: json.profanityWord });
-        // Mesaj silinmesin — kullanıcı düzenleyip tekrar göndersin
+        setHighlightedWord(json.profanityWord || null);
       } else {
         // Önce pencereyi kapat, formu temizle
         setName('');
@@ -154,7 +155,7 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
             {status.type === 'rejected' && (
               <Button
                 type="button"
-                onClick={() => setStatus(null)}
+                onClick={() => { setStatus(null); setHighlightedWord(null); }}
                 className="gap-2"
               >
                 <Check className="h-4 w-4" />
@@ -196,15 +197,25 @@ export function ReaderContactForm({ open, onClose }: { open: boolean; onClose: (
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="r-message">Mesaj *</Label>
-              <Textarea
-                id="r-message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Mesajınızı buraya yazın"
-                required
-                rows={5}
-                className="resize-none"
-              />
+              {highlightedWord && message.toLowerCase().includes(highlightedWord.toLowerCase()) ? (
+                <div className="rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed max-h-[200px] overflow-y-auto">
+                  {message.split(new RegExp(`(${highlightedWord})`, 'gi')).map((part, i) => (
+                    <span key={i} className={part.toLowerCase() === highlightedWord.toLowerCase() ? 'text-red-600 font-bold underline decoration-red-600' : ''}>
+                      {part}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <Textarea
+                  id="r-message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Mesajınızı buraya yazın"
+                  required
+                  rows={5}
+                  className="resize-none max-h-[200px] overflow-y-auto"
+                />
+              )}
             </div>
             <DialogFooter>
               <Button
