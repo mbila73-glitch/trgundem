@@ -153,7 +153,8 @@ function getBottomBoxes(
   return boxes.slice(0, 4);
 }
 
-// Kalan haberler — 10 kutuda ve ana pencerede (20) olmayanlar
+// Kalan haberler — ana pencerede (20) OLMAYAN tüm haberler
+// 10 kutudaki haberler kalan içinde de olabilir (kullanıcı kuralı: "ana pencerede olmayanlar")
 function getRemaining(
   articles: PublishedArticle[],
   topBoxes: (PublishedArticle | null)[],
@@ -161,10 +162,10 @@ function getRemaining(
   bottomBoxes: (PublishedArticle | null)[],
   mainSlider: PublishedArticle[],
 ): PublishedArticle[] {
-  const usedInBoxes = getUsedInBoxes(topBoxes, sideBoxes, bottomBoxes);
   const usedInSlider = new Set(mainSlider.map(a => a.id));
-
-  return articles.filter(a => !usedInBoxes.has(a.id) && !usedInSlider.has(a.id));
+  // Ana pencerede (20 haber) OLMAYAN tüm haberleri dön
+  // 10 kutudaki tekrar kontrolü yok — kullanıcı "tekrar olabilir" dedi
+  return articles.filter(a => !usedInSlider.has(a.id));
 }
 
 // ===== UI Component'ler =====
@@ -231,7 +232,7 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
       onClick={() => onOpen(article.id)}
       className="group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20"
     >
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted flex-shrink-0">
         {article.imageUrl ? (
           <img
             src={article.imageUrl}
@@ -245,7 +246,7 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
           </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 p-3">
+      <div className="flex flex-1 flex-col gap-1.5 p-3 min-h-0">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition group-hover:text-news">
           {article.aiTitle}
         </h3>
@@ -261,23 +262,24 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
   );
 }
 
-// Ana pencere slider — 20 haber, yatay kayar (oklarla)
+// Ana pencere slider — 20 haber, tek tek göster, oklarla kayar
+// Yüksekliği parent'ı doldurur (yan 2 kutu ile eşit)
 function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen: (id: string) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
     const width = scrollRef.current.clientWidth;
-    scrollRef.current.scrollBy({ left: direction === 'left' ? -width * 0.8 : width * 0.8, behavior: 'smooth' });
+    scrollRef.current.scrollBy({ left: direction === 'left' ? -width : width, behavior: 'smooth' });
   };
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       {/* Sol ok */}
       <button
         type="button"
         onClick={() => scroll('left')}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition shadow-lg"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition shadow-lg"
         aria-label="Önceki"
       >
         <ChevronLeft className="h-5 w-5" />
@@ -287,30 +289,31 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
       <button
         type="button"
         onClick={() => scroll('right')}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition shadow-lg"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition shadow-lg"
         aria-label="Sonraki"
       >
         <ChevronRight className="h-5 w-5" />
       </button>
 
-      {/* Yatay scrollContainer */}
+      {/* Yatay scroll — tek kart görünür, oka basınca sonraki */}
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide"
+        className="flex h-full overflow-x-auto scroll-smooth snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {articles.map((a, i) => (
           <div
             key={a.id}
-            className="snap-start flex-shrink-0 w-full sm:w-[80%] lg:w-[70%] xl:w-[60%]"
+            className="snap-start flex-shrink-0 w-full h-full"
           >
             <Card
               role="button"
               tabIndex={0}
               onClick={() => onOpen(a.id)}
-              className="group flex cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-lg"
+              className="group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-lg"
             >
-              <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+              {/* Görsel — yüksekliğin yarısı kadar (16/9 aspect) */}
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted flex-shrink-0">
                 {a.imageUrl ? (
                   <img
                     src={a.imageUrl}
@@ -328,14 +331,15 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                   {i + 1}
                 </div>
               </div>
-              <div className="flex flex-col gap-2 p-4">
+              {/* Başlık + özet + kalp — kalan yüksekliği doldur */}
+              <div className="flex flex-1 flex-col gap-2 p-4 min-h-0">
                 <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
                   {a.aiTitle}
                 </h3>
                 <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
                   {a.aiSummary}
                 </p>
-                <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                <div className="mt-auto flex items-center justify-between pt-2 border-t border-border/50">
                   <HeartCounter articleId={a.id} />
                   <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
                     <Clock className="h-3 w-3" />
@@ -468,22 +472,22 @@ export function PublicMain() {
       <main className="flex-1 bg-background">
         {/* Arama çubuğu sticky */}
         <div className="sticky top-16 z-20 bg-background border-b border-border">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2">
-            <form onSubmit={onSearchSubmit} className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-2 py-1">
-              <Search className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
+            <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
+              <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Haberlerde ara..."
-                className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm h-8"
+                className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-5 px-1"
               />
-              <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3">
-                {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
-                Ara
+              <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-5 px-2 py-0">
+                {searching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+                <span className="hidden sm:inline">Ara</span>
               </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={clearSearch} className="gap-1.5 text-xs h-8">
-                <X className="h-3.5 w-3.5" /> Temizle
+              <Button type="button" size="sm" variant="ghost" onClick={clearSearch} className="gap-1 text-[10px] h-5 px-1.5 py-0">
+                <X className="h-3 w-3" /> Temizle
               </Button>
             </form>
           </div>
@@ -530,19 +534,19 @@ export function PublicMain() {
         <main className="flex-1 bg-background">
           {/* Arama çubuğu sticky */}
           <div className="sticky top-16 z-20 bg-background border-b border-border">
-            <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2">
-              <form onSubmit={onSearchSubmit} className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-2 py-1">
-                <Search className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
+              <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
+                <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <Input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Haberlerde ara..."
-                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm h-8"
+                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-5 px-1"
                 />
-                <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3">
-                  {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
-                  Ara
+                <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-5 px-2 py-0">
+                  {searching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+                  <span className="hidden sm:inline">Ara</span>
                 </Button>
               </form>
             </div>
@@ -601,20 +605,20 @@ export function PublicMain() {
   // Normal ana sayfa akışı
   return (
     <main className="flex-1 bg-background">
-      {/* Arama çubuğu — sticky */}
+      {/* Arama çubuğu — sticky, kompakt (tek karakter yüksekliği) */}
       <div className="sticky top-16 z-20 bg-background border-b border-border">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2">
-          <form onSubmit={onSearchSubmit} className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-2 py-1">
-            <Search className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
+          <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
+            <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
             <Input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Haberlerde ara..."
-              className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm h-8"
+              className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-5 px-1"
             />
-            <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3">
-              {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+            <Button type="submit" size="sm" disabled={searching || !searchQuery.trim()} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-5 px-2 py-0">
+              {searching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
               <span className="hidden sm:inline">Ara</span>
             </Button>
           </form>
@@ -661,24 +665,28 @@ export function PublicMain() {
             </div>
           </section>
 
-          {/* 2. ANA PENCERE (20 haber) + YAN 2 KUTU */}
+          {/* 2. ANA PENCERE (20 haber) + YAN 2 KUTU — yükseklikleri eşit */}
           <section className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Sol: Ana pencere (20 haber yatay kayar) */}
-              <div className="lg:col-span-2">
-                <div className="mb-2 flex items-center justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+              {/* Sol: Ana pencere (20 haber, tek tek, oklarla kayar) */}
+              <div className="lg:col-span-2 flex flex-col gap-2 min-h-[400px] sm:min-h-[480px]">
+                <div className="flex items-center justify-between">
                   <h2 className="text-sm font-bold uppercase tracking-wide text-foreground/80">Ana Haberler</h2>
                   <span className="text-[10px] text-muted-foreground">{mainSlider.length} haber — oklarla gezin</span>
                 </div>
-                <MainSlider articles={mainSlider} onOpen={openArticle} />
+                <div className="flex-1 min-h-0">
+                  <MainSlider articles={mainSlider} onOpen={openArticle} />
+                </div>
               </div>
 
-              {/* Sağ: 2 kutu alt alta (yükseklikleri ana pencerenin yarısı) */}
-              <div className="grid grid-rows-2 gap-4">
+              {/* Sağ: 2 kutu alt alta — toplam yükseklik ana pencereye eşit, her biri yarım */}
+              <div className="grid grid-rows-2 gap-4 min-h-[400px] sm:min-h-[480px]">
                 {sideBoxes.map((a, i) => a ? (
-                  <NewsCardMedium key={a.id} article={a} onOpen={openArticle} />
+                  <div key={a.id} className="min-h-0">
+                    <NewsCardMedium article={a} onOpen={openArticle} />
+                  </div>
                 ) : (
-                  <Skeleton key={i} className="h-48 rounded-xl" />
+                  <Skeleton key={i} className="rounded-xl" />
                 ))}
               </div>
             </div>
