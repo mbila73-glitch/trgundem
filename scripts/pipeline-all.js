@@ -212,9 +212,9 @@ async function aiSummarize(title, contents, category) {
 
     prompt += '\nUZUNLUK:\n' +
       'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
-      'ÜST SINIR YOK — gerekirse 300, 500, 1000 veya daha fazla kelime yaz. ' +
+      'EN ÇOK 300 kelime olmalı — daha uzun yazma. 300 kelime yeterli, haberi tamamla. ' +
       'Cümleni yarıda kesme, haber doğal bir sonuca ulaşmalı. ' +
-      'ASLA 200 kelimeye ulaşınca kesme — haberin tamamını yaz, bitirmediysen devam et.\n';
+      'ASLA 300 kelimeyi geçme — kısa ve öz tut.\n';
 
     prompt += '\nÇIKTI FORMATI:\n' +
       'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme ' +
@@ -779,7 +779,7 @@ async function main() {
           var createdArticle = await globalThis.prisma.publishedArticle.create({
             data: {
               aiTitle: decodeHtmlEntities(firstArticle.title),
-              aiSummary: summaryText.slice(0, 2000),
+              aiSummary: summaryText.slice(0, 5000),
               category: cat,
               imageUrl: bestImage,
               sourceArticleIds: JSON.stringify(groupArticlesList.map(function(a) { return a.id; })),
