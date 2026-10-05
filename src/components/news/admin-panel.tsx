@@ -8,6 +8,7 @@ import {
   AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { normalizeTr } from '@/lib/format';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -632,11 +633,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       </div>
                       <div className="space-y-3">{messages.filter(m => m.status !== 'archived').filter(m => {
                         if (!msgSearch.trim()) return true;
-                        const q = msgSearch.toLowerCase();
-                        return (m.name.toLowerCase().includes(q) ||
-                                m.email.toLowerCase().includes(q) ||
-                                m.subject.toLowerCase().includes(q) ||
-                                m.message.toLowerCase().includes(q));
+                        const q = normalizeTr(msgSearch);
+                        return (normalizeTr(m.name).includes(q) ||
+                                normalizeTr(m.email).includes(q) ||
+                                normalizeTr(m.subject).includes(q) ||
+                                normalizeTr(m.message).includes(q));
                       }).map(m => { const sel = selectedIds.has(m.id); return (
                       <Card key={m.id} className={`p-4 ${m.status === 'new' ? 'border-news/40 bg-news/[0.04]' : ''} ${sel ? 'ring-2 ring-news/40' : ''} ${m.repliedAt ? 'border-emerald-300 dark:border-emerald-700' : ''}`}>
                         <div className="flex items-start gap-3">
@@ -827,8 +828,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         <div className="mb-6 space-y-3">
                           {pubArticles.slice(0, 30).filter(a => {
                             if (!pubSearch.trim()) return true;
-                            const q = pubSearch.toLowerCase();
-                            return a.aiTitle.toLowerCase().includes(q) || a.aiSummary.toLowerCase().includes(q);
+                            const q = normalizeTr(pubSearch);
+                            return normalizeTr(a.aiTitle).includes(q) || normalizeTr(a.aiSummary).includes(q);
                           }).map(a => (
                             <Card key={a.id} className="p-4">
                               {editingId === a.id ? (
@@ -1017,8 +1018,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               <div className="space-y-3">
                                 {archivedArticles.filter(a => {
                                   if (!archivedSearch.trim()) return true;
-                                  const q = archivedSearch.toLowerCase();
-                                  return a.aiTitle.toLowerCase().includes(q) || a.aiSummary.toLowerCase().includes(q);
+                                  const q = normalizeTr(archivedSearch);
+                                  return normalizeTr(a.aiTitle).includes(q) || normalizeTr(a.aiSummary).includes(q);
                                 }).map(a => (
                                   <Card key={a.id} className="p-4 opacity-80">
                                     <div className="flex items-start gap-3">
@@ -1088,11 +1089,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               <div className="space-y-3">
                                 {messages.filter(m => m.status === 'archived').filter(m => {
                                   if (!archivedSearch.trim()) return true;
-                                  const q = archivedSearch.toLowerCase();
-                                  return (m.name.toLowerCase().includes(q) ||
-                                          m.email.toLowerCase().includes(q) ||
-                                          m.subject.toLowerCase().includes(q) ||
-                                          m.message.toLowerCase().includes(q));
+                                  const q = normalizeTr(archivedSearch);
+                                  return (normalizeTr(m.name).includes(q) ||
+                                          normalizeTr(m.email).includes(q) ||
+                                          normalizeTr(m.subject).includes(q) ||
+                                          normalizeTr(m.message).includes(q));
                                 }).map(m => (
                                   <Card key={m.id} className="p-4 opacity-80">
                                     <div className="flex items-start gap-3">
@@ -1210,8 +1211,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         </div>
                         {pendingArticles.filter(a => {
                           if (!pendingSearch.trim()) return true;
-                          const q = pendingSearch.toLowerCase();
-                          return a.aiTitle.toLowerCase().includes(q) || a.aiSummary.toLowerCase().includes(q);
+                          const q = normalizeTr(pendingSearch);
+                          return normalizeTr(a.aiTitle).includes(q) || normalizeTr(a.aiSummary).includes(q);
                         }).map(a => (
                           <Card key={a.id} className="p-4 border-amber-500/40 bg-amber-50/30 dark:bg-amber-950/10">
                             <div className="flex items-start gap-3">

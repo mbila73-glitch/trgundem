@@ -81,3 +81,28 @@ export function hostFromUrl(url: string): string {
     return url;
   }
 }
+
+// Türkçe karakter normalize — büyük/küçük harf duyarsız arama için
+// JavaScript'in toLowerCase() Türkçe karakterleri (İ, ı, Ş, ş, vb.) doğru dönüştürmez
+// İspanya → ispanya, Kılıçdaroğlu → kilicdaroglu, Şırnak → sirnak
+export function normalizeTr(s: string | null | undefined): string {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'ı')
+    .replace(/Ş/g, 's')
+    .replace(/Ç/g, 'c')
+    .replace(/Ğ/g, 'g')
+    .replace(/Ü/g, 'u')
+    .replace(/Ö/g, 'o')
+    // Türkçe küçük harfleri de Latin karşılıklarına çevir (ı→i, ş→s, vb.)
+    // Böylece arama "İ" ile "i", "I" ile "ı" birbirine karışmaz
+    .replace(/ı/g, 'i')
+    .replace(/ş/g, 's')
+    .replace(/ç/g, 'c')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ö/g, 'o')
+    .trim();
+}
+
