@@ -352,7 +352,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       // Mesajı listeden KALDIRMA — sadece status'ünü 'archived' yap
       // Böylece Mesajlar sekmesinde filter ile gizlenir, Arşiv sekmesinde filter ile görünür
       setMessages(a => a.map(m => m.id === id ? { ...m, status: 'archived' } : m));
-      toast.success('Mesaj arşivlendi — Arşiv sekmesinden görüntüleyebilirsiniz');
+      toast.success('Mesaj arşivlendi — Arşiv sekmesinin altındaki "Arşivlenen Mesajlar" bölümünden görüntüleyebilirsiniz', { duration: 5000 });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Arşiv hatası');
     } finally {
@@ -893,7 +893,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                     : (
                       <>
                         <div className="mb-3 flex items-center gap-2">
-                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenmiş Haberler</h3>
+                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenen Haberler</h3>
                           <Badge variant="secondary" className="text-[10px]">{archivedArticles.length}</Badge>
                         </div>
                         <div className="space-y-3">
@@ -954,9 +954,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           ))}
                         </div>
 
-                        {/* Arşivlenmiş Mesajlar alt başlığı */}
+                        {/* Arşivlenen Mesajlar alt başlığı */}
                         <div className="mt-8 mb-3 flex items-center gap-2">
-                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenmiş Mesajlar</h3>
+                          <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Arşivlenen Mesajlar</h3>
                           <Badge variant="secondary" className="text-[10px]">{messages.filter(m => m.status === 'archived').length}</Badge>
                         </div>
                         {messages.filter(m => m.status === 'archived').length === 0 ? (
