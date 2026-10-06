@@ -274,34 +274,38 @@ export default function Home() {
             {personelOpen && (
             <div onClick={() => setPersonelOpen(false)} className="mt-4 cursor-pointer rounded-lg border border-border bg-card p-4">
             <h3 className="text-sm font-bold text-center mb-3 text-foreground/80">Yapay Zekâ Destek Ekibi</h3>
-            <div className="grid grid-cols-2 gap-3 max-w-2xl mx-auto">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-foreground/80 text-sm">Gencay Mistek</span>
-                <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">
-                  <Mail className="h-2.5 w-2.5" />
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2 max-w-3xl mx-auto text-[11px]">
+              {/* Satır 1 Sol */}
+              <div className="flex items-center gap-1 overflow-hidden">
+                <button type="button" onClick={(e) => { e.stopPropagation(); setReaderFormOpen(true); }} className="flex-shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition">
+                  <Mail className="h-2 w-2" />
                 </button>
-                <span className="text-xs text-muted-foreground">— Haber Araştırma ve İçerik Geliştirme</span>
+                <span className="font-medium text-foreground/80 whitespace-nowrap">Gencay Mistek</span>
+                <span className="text-muted-foreground whitespace-nowrap truncate">— Haber Araştırma ve İçerik Geliştirme</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-foreground/80 text-sm">Miray Nizce</span>
-                <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">
-                  <Mail className="h-2.5 w-2.5" />
+              {/* Satır 1 Sağ */}
+              <div className="flex items-center gap-1 overflow-hidden">
+                <button type="button" onClick={(e) => { e.stopPropagation(); setReaderFormOpen(true); }} className="flex-shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition">
+                  <Mail className="h-2 w-2" />
                 </button>
-                <span className="text-xs text-muted-foreground">— Haber Yazımı ve İçerik Düzenleme</span>
+                <span className="font-medium text-foreground/80 whitespace-nowrap">Miray Nizce</span>
+                <span className="text-muted-foreground whitespace-nowrap truncate">— Haber Yazımı ve İçerik Düzenleme</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-foreground/80 text-sm">Nilay Gendir</span>
-                <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">
-                  <Mail className="h-2.5 w-2.5" />
+              {/* Satır 2 Sol */}
+              <div className="flex items-center gap-1 overflow-hidden">
+                <button type="button" onClick={(e) => { e.stopPropagation(); setReaderFormOpen(true); }} className="flex-shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition">
+                  <Mail className="h-2 w-2" />
                 </button>
-                <span className="text-xs text-muted-foreground">— Dil, Yazım ve Editoryal Kontrol</span>
+                <span className="font-medium text-foreground/80 whitespace-nowrap">Nilay Gendir</span>
+                <span className="text-muted-foreground whitespace-nowrap truncate">— Dil, Yazım ve Editoryal Kontrol</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-foreground/80 text-sm">Arven Gemin</span>
-                <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">
-                  <Mail className="h-2.5 w-2.5" />
+              {/* Satır 2 Sağ */}
+              <div className="flex items-center gap-1 overflow-hidden">
+                <button type="button" onClick={(e) => { e.stopPropagation(); setReaderFormOpen(true); }} className="flex-shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition">
+                  <Mail className="h-2 w-2" />
                 </button>
-                <span className="text-xs text-muted-foreground">— Kaynak Karşılaştırma ve İçerik Sınıflandırma</span>
+                <span className="font-medium text-foreground/80 whitespace-nowrap">Arven Gemin</span>
+                <span className="text-muted-foreground whitespace-nowrap truncate">— Kaynak Karşılaştırma ve İçerik Sınıflandırma</span>
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground/60 mt-3 leading-relaxed">* Yukarıda belirtilen isimler, TrGündem'in içerik üretim ve editoryal süreçlerinde kullanılan yapay zekâ sistemlerini insan tarafından kolayca tanımlanabilir biçimde ifade etmek amacıyla oluşturulmuş temsili persona isimleridir. Gerçek kişilere ait kimlik, özgeçmiş veya kişisel iletişim bilgilerini temsil etmezler.</p>
