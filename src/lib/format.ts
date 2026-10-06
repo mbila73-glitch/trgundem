@@ -73,6 +73,35 @@ export function colorForName(name: string): string {
   return FALLBACK_COLORS[hash % FALLBACK_COLORS.length];
 }
 
+// Kategori kısa adı (S, E, K, Sp, B, Kü, Ö) — veri sayfasında kaynak sayısı ile birlikte gösterilir
+// "S3" = Siyaset, 3 kaynak — "E2" = Ekonomi, 2 kaynak — "Sp4" = Spor/Magazin, 4 kaynak
+const CATEGORY_INITIALS: Record<string, string> = {
+  'Siyaset': 'S',
+  'Ekonomi / Finans': 'E',
+  'Kamu / Resmi': 'K',
+  'Spor / Magazin': 'Sp',
+  'Bilim / Teknoloji': 'B',
+  'Kültür / Sanat': 'Kü',
+  'Özel': 'Ö',
+};
+
+export function categoryInitial(cat: string | null | undefined): string {
+  if (!cat) return '?';
+  if (CATEGORY_INITIALS[cat]) return CATEGORY_INITIALS[cat];
+  // Bilinmeyen kategori — ilk kelimenin ilk harfi
+  const parts = cat.trim().split(/\s+/);
+  return parts.length > 0 && parts[0].length > 0 ? parts[0][0].toUpperCase() : '?';
+}
+
+// Kategori kısa adı + kaynak sayısı — "S3" "E2" "Sp4" "Ö" formatında
+// Özel haber sourceCount=999 → "Ö" (sayı gösterme)
+export function categoryBadgeText(cat: string | null | undefined, sourceCount: number | null | undefined): string {
+  const initial = categoryInitial(cat);
+  // 999 (Özel haber) veya 0/null — sadece harf
+  if (!sourceCount || sourceCount >= 999 || sourceCount <= 0) return initial;
+  return `${initial}${sourceCount}`;
+}
+
 export function hostFromUrl(url: string): string {
   try {
     const u = new URL(url);
@@ -134,5 +163,18 @@ export function normalizeTr(s: string | null | undefined): string {
     .replace(/ü/g, 'u')
     .replace(/ö/g, 'o')
     .trim();
+}
+
+// Haber başlığını dosya adı slug'ına çevir — SEO friendly
+// "Ali Emre Ballı intihar etmiş" → "ali-emre-balli-intihar-etmis"
+// Türkçe karakterler normalize edilir, alfanumerik olmayanlar "-" olur
+export function slugify(s: string | null | undefined, maxLen: number = 50): string {
+  if (!s) return '';
+  return normalizeTr(s)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-')
+    .slice(0, maxLen)
+    .replace(/-+$/, '');
 }
 

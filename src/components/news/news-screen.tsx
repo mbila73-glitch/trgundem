@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
 import { useHeart } from '@/lib/use-heart';
-import { proxyImageUrl, dateTimeLong, dateTimeShort, colorForName } from '@/lib/format';
+import { proxyImageUrl, dateTimeLong, dateTimeShort, colorForName, categoryBadgeText } from '@/lib/format';
 import type { PublishedArticle } from '@/lib/types';
 const SUB_TABS: Array<{
   id: string;
@@ -595,8 +595,8 @@ export function NewsScreen() {
                             <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
                               <HorizontalLikeBar articleId={a.id} />
                               <div className="flex items-center gap-1.5">
-                                <span className={`inline-flex h-4 w-4 items-center justify-center rounded text-[8px] font-bold text-white ${colorForName(a.category)}`}>
-                                  {a.category[0].toUpperCase()}
+                                <span className="text-[10px] text-muted-foreground/60 font-bold tabular-nums">
+                                  {categoryBadgeText(a.category, a.sourceCount)}
                                 </span>
                                 <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeShort(a.latestPublishedAt)}</span>
                               </div>

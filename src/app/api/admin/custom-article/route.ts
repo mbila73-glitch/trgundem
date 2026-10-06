@@ -2,8 +2,59 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import * as path from 'path';
 import * as fs from 'fs';
+import { slugify } from '@/lib/format';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
+
+// Production: /var/www/public/uploads/ (build'lerden etkilenmez)
+// Dev: process.cwd()/public/uploads/
+const UPLOADS_DIR = process.env.UPLOADS_DIR || (process.env.NODE_ENV === 'production' ? '/var/www/public/uploads' : path.join(process.cwd(), 'public', 'uploads'));
+
+// Dış URL'den görsel indir + /uploads/ altına slug dosya adı ile kaydet
+// Dış URL → yerel URL'e çevirir. Hata olursa null döner.
+async function downloadExternalImage(url: string, title: string): Promise<string | null> {
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'image/*',
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!resp.ok) return null;
+
+    const contentType = resp.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) return null;
+
+    const extMap: Record<string, string> = {
+      'image/jpeg': '.jpg',
+      'image/jpg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp',
+      'image/gif': '.gif',
+      'image/bmp': '.bmp',
+    };
+    const ext = extMap[contentType] || '.jpg';
+
+    const slug = slugify(title);
+    const randomSuffix = Math.random().toString(36).slice(2, 8);
+    const fileName = slug
+      ? `${slug}-${randomSuffix}${ext}`
+      : `img-${Date.now()}-${randomSuffix}${ext}`;
+
+    if (!fs.existsSync(UPLOADS_DIR)) {
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    }
+    const filePath = path.join(UPLOADS_DIR, fileName);
+    const bytes = new Uint8Array(await resp.arrayBuffer());
+    fs.writeFileSync(filePath, bytes);
+
+    return `/uploads/${fileName}`;
+  } catch (e) {
+    console.error('[downloadExternalImage] Hata:', e);
+    return null;
+  }
+}
 
 // HTML entity'leri decode et — &#039; &#x27; &quot; &amp; vb.
 function decodeHtmlEntities(str: string): string {
@@ -599,11 +650,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Başlık ve özet zorunlu' }, { status: 400 });
     }
     try {
+      // imageUrl dış URL ise indir, /uploads/ altına kaydet (slug dosya adı)
+      // Yerel URL'ler (/uploads/... veya /api/img?...) olduğu gibi kalır
+      let finalImageUrl: string | null = data.imageUrl || null;
+      if (finalImageUrl && finalImageUrl.startsWith('http')) {
+        const localUrl = await downloadExternalImage(finalImageUrl, data.title);
+        if (localUrl) {
+          finalImageUrl = localUrl;
+        }
+        // İndirme başarısız olursa dış URL'i koru (proxy ile serve edilir)
+      }
+
       const created = await db.publishedArticle.create({
         data: {
           aiTitle: data.title.trim(),
           aiSummary: data.summary.trim(),
-          imageUrl: data.imageUrl || null,
+          imageUrl: finalImageUrl,
           category: data.category || 'Özel',
           wordCount: data.summary.trim().split(/\s+/).filter(Boolean).length,
           sourceArticleIds: JSON.stringify(['custom']),
@@ -616,7 +678,7 @@ export async function POST(req: NextRequest) {
           publishedAt: new Date(),
         },
       });
-      return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
+      return NextResponse.json({ ok: true, id: created.id, imageUrl: finalImageUrl }, { status: 201 });
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : 'Kayıt hatası' }, { status: 500 });
     }

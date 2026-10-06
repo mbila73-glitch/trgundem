@@ -687,12 +687,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
   // File upload handler (for both custom article and published edit)
   const [uploading, setUploading] = useState(false);
-  const handleFileUpload = async (file: File, onDone: (url: string) => void) => {
+  const handleFileUpload = async (file: File, onDone: (url: string) => void, title?: string) => {
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const r = await fetch('/api/admin/upload', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData });
+      const uploadUrl = `/api/admin/upload${title ? `?title=${encodeURIComponent(title)}` : ''}`;
+      const r = await fetch(uploadUrl, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData });
       const json = (await r.json()) as { ok?: boolean; url?: string; error?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Yükleme hatası');
       onDone(json.url!);
@@ -1051,7 +1052,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         <div className="space-y-1.5"><Label>Görsel URL</Label><Input value={customImage} onChange={(e) => setCustomImage(e.target.value)} placeholder="https://..." />
                           <div className="flex items-center gap-2 mt-1">
                             <Label htmlFor="custom-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
-                            <input id="custom-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setCustomImage(url)); }} />
+                            <input id="custom-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setCustomImage(url), customTitle); }} />
                           </div>
                           {/* Görsel penceresi — büyük önizleme */}
                           {customImage && (
@@ -1199,7 +1200,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   <div className="space-y-1"><Label className="text-xs">Görsel URL</Label><Input value={editImage} onChange={(e) => setEditImage(e.target.value)} />
                                   <div className="flex items-center gap-2 mt-1">
                                     <Label htmlFor="edit-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
-                                    <input id="edit-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setEditImage(url)); }} />
+                                    <input id="edit-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setEditImage(url), editTitle); }} />
                                     {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
                                   </div>
                                   </div>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { PublishedArticle } from '@/lib/types';
-import { proxyImageUrl, dateTimeShort, colorForName } from '@/lib/format';
+import { proxyImageUrl, dateTimeShort, colorForName, categoryBadgeText } from '@/lib/format';
 import { useHeart } from '@/lib/use-heart';
 
 type Props = {
@@ -72,8 +72,8 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
             <span className="tabular-nums">{hearts}</span>
           </button>
           <div className="flex items-center gap-1.5">
-            <span className={`inline-flex h-4 w-4 items-center justify-center rounded text-[8px] font-bold text-white ${colorForName(article.category)}`}>
-              {article.category[0].toUpperCase()}
+            <span className="text-[10px] text-muted-foreground/60 font-bold tabular-nums">
+              {categoryBadgeText(article.category, article.sourceCount)}
             </span>
             <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
           </div>
