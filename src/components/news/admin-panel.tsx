@@ -80,6 +80,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [searchResults, setSearchResults] = useState<{site: string; url: string; title: string; content: string; images: string[]}[]>([]);
   const [selectedSourceUrls, setSelectedSourceUrls] = useState<Set<string>>(new Set());
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [searchImages, setSearchImages] = useState<{url: string; title: string; source: string}[]>([]);
+  const [searchingImages, setSearchingImages] = useState(false);
+  const [imageSearchQuery, setImageSearchQuery] = useState('');
   const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
   const [showTrustedSites, setShowTrustedSites] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
@@ -521,23 +524,15 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       setSearchResults(sources);
       // Varsayılan: tüm kaynakları işaretle
       setSelectedSourceUrls(new Set(sources.map(s => s.url)));
-      // Varsayılan görsel: en çok tekrarlanan veya ilk kaynaktan ilk görsel
-      const allImages = sources.flatMap(s => s.images);
-      if (allImages.length > 0) {
-        const counts: Record<string, number> = {};
-        for (const img of allImages) counts[img] = (counts[img] || 0) + 1;
-        let best = allImages[0];
-        let maxCount = 0;
-        for (const [img, count] of Object.entries(counts)) {
-          if (count > maxCount) { maxCount = count; best = img; }
-        }
-        setSelectedImageUrl(best);
-        setCustomImage(best);
-      }
+      // Görsel seçimi Tara'da YAPILMAZ — ayrı "Görsel Ara" düğmesi ile
+      setSelectedImageUrl(null);
+      setCustomImage('');
+      setSearchImages([]);
+      setImageSearchQuery('');
       // Title state'i en ilgili kaynaktan al
       if (sources.length > 0) setCustomTitle(sources[0].title);
       setFoundSources(sources.map(s => ({ site: s.site, url: s.url, title: s.title })));
-      toast.success(`${sources.length} kaynak bulundu — istediklerinizi seçip "AI Özetle" düğmesine basın`);
+      toast.success(`${sources.length} kaynak bulundu — istediklerinizi seçip "AI Özetle" düğmesine basın, sonra "Görsel Ara" ile telifsiz görsel bulun`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Arama hatası');
     } finally {
@@ -571,6 +566,46 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       toast.error(e instanceof Error ? e.message : 'Özet hatası');
     } finally {
       setSummarizing(false);
+    }
+  };
+
+  // Görsel Ara — AI destekli Google görsel taraması (telif istemeyenler)
+  // AI habere uygun arama sorgusu üretir, Google'da telifsiz 10 görsel arar
+  const handleImageSearch = async () => {
+    if (!customTitle.trim() && !customSummary.trim()) {
+      toast.error('Önce "Tara" + "AI Özetle" yapın — başlık/özet gerekli');
+      return;
+    }
+    setSearchingImages(true);
+    setSearchImages([]);
+    setImageSearchQuery('');
+    try {
+      const r = await fetch('/api/admin/custom-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          action: 'image-search',
+          query: customTitle,
+          content: customSummary || customContent,
+        }),
+      });
+      const json = (await r.json()) as { ok?: boolean; query?: string; images?: {url: string; title: string; source: string}[]; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Görsel arama başarısız');
+      const imgs = json.images ?? [];
+      setSearchImages(imgs);
+      setImageSearchQuery(json.query || '');
+      if (imgs.length === 0) {
+        toast.error('Hiç telifsiz görsel bulunamadı — farklı bir konu deneyin');
+      } else {
+        // İlk görseli varsayılan seç
+        setSelectedImageUrl(imgs[0].url);
+        setCustomImage(imgs[0].url);
+        toast.success(`${imgs.length} telifsiz görsel bulundu${json.query ? ` (sorgu: "${json.query}")` : ''}`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Görsel arama hatası');
+    } finally {
+      setSearchingImages(false);
     }
   };
 
@@ -992,7 +1027,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       <Button type="submit" disabled={fetching || !fetchUrl.trim()} className="gap-2">{fetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}Getir</Button>
                     </form>
 
-                    {/* Tarama Sonuçları — kaynak listesi (checkbox'lı) + görseller (radio benzeri) */}
+                    {/* Tarama Sonuçları — kaynak listesi (checkbox'lı), görsel yok */}
                     {searchResults.length > 0 && (
                       <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
                         <div className="flex items-center justify-between gap-2">
@@ -1029,33 +1064,71 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   <span className="text-muted-foreground"> — {s.title}</span>
                                 </a>
                               </label>
-                              {/* Bu kaynaktaki görseller */}
-                              {s.images && s.images.length > 0 && (
-                                <div className="mt-1.5 ml-7 flex flex-wrap gap-1.5">
-                                  {s.images.map((img, j) => (
-                                    <button
-                                      key={j}
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        if (selectedImageUrl === img) {
-                                          setSelectedImageUrl(null);
-                                          setCustomImage('');
-                                        } else {
-                                          setSelectedImageUrl(img);
-                                          setCustomImage(img);
-                                        }
-                                      }}
-                                      className={`relative h-12 w-16 overflow-hidden rounded border-2 ${selectedImageUrl === img ? 'border-news' : 'border-transparent'} flex-shrink-0`}
-                                    >
-                                      <img src={img} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
-                                      {selectedImageUrl === img && <span className="absolute inset-0 bg-news/20 flex items-center justify-center"><Check className="h-3 w-3 text-white" /></span>}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
                             </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Görsel Ara — AI destekli Google görsel taraması (telif istemeyenler) */}
+                    {(customTitle || customSummary) && (
+                      <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-950/20 p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli Google)</Label>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleImageSearch}
+                            disabled={searchingImages || (!customTitle.trim() && !customSummary.trim())}
+                            className="gap-2 bg-green-600 hover:bg-green-700"
+                          >
+                            {searchingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                            Görsel Ara
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          AI habere uygun bir arama sorgusu üretir ve Google'da <strong>telif istemeyen</strong> (royalty-free, ticari kullanıma izin veren) görseller arasından ilk 10 sonucu getirir. Public domain + CC BY/BY-SA/BY-ND lisanslı.
+                        </p>
+                        {imageSearchQuery && (
+                          <p className="text-[10px] text-green-700 dark:text-green-300">AI sorgusu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Bulunan görseller — grid 5x2 */}
+                    {searchImages.length > 0 && (
+                      <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
+                        <p className="text-[10px] font-bold text-muted-foreground">TELİFSİZ GÖRSELLER ({searchImages.length}) — tıkla seç</p>
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {searchImages.map((img, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => {
+                                setSelectedImageUrl(img.url);
+                                setCustomImage(img.url);
+                              }}
+                              className={`relative aspect-square overflow-hidden rounded border-2 ${selectedImageUrl === img.url ? 'border-news' : 'border-transparent'} flex-shrink-0 group`}
+                              title={img.title || img.source || `Görsel ${i+1}`}
+                            >
+                              <img
+                                src={img.url}
+                                alt={img.title || ''}
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                                onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                              />
+                              {selectedImageUrl === img.url && (
+                                <span className="absolute inset-0 bg-news/30 flex items-center justify-center">
+                                  <Check className="h-5 w-5 text-white" />
+                                </span>
+                              )}
+                              {img.source && (
+                                <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">
+                                  {img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}
+                                </span>
+                              )}
+                            </button>
                           ))}
                         </div>
                       </div>

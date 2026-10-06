@@ -750,7 +750,11 @@ export async function POST(req: NextRequest) {
       }
 
       // 2. Google Custom Search API ile görsel ara
-      const cseUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&searchType=image&q=${encodeURIComponent(aiSearchQuery)}&num=10`;
+      //    rights parametresi: telif istemeyenler (royalty-free, ticari kullanıma izin veren) filtresi
+      //    cc_publicdomain + cc_attribute (CC BY) + cc_sharealike (CC BY-SA) + cc_nonderived (CC BY-ND)
+      //    NOT: cc_noncommercial (NC) dahil değil — ticari kullanıma izin vermez
+      const rights = 'cc_publicdomain,cc_attribute,cc_sharealike,cc_nonderived';
+      const cseUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&searchType=image&q=${encodeURIComponent(aiSearchQuery)}&num=10&rights=${encodeURIComponent(rights)}`;
       const cseResp = await fetch(cseUrl, {
         signal: AbortSignal.timeout(15000),
       });
