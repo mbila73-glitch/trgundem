@@ -469,24 +469,29 @@ export function NewsScreen() {
           })}
         </div>
 
-        {/* Arama çubuğu — kategori sekmelerinin altında (açık mavi dolgu, kompakt) */}
-        <form onSubmit={onSearchSubmit} className="mt-1 flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
-          <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Haberlerde ara..."
-            className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-6 px-1"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            disabled={searching || !searchQuery.trim()}
-            className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-6 px-2 py-0"
-          >
-            {searching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
-            <span className="hidden sm:inline">Ara</span>
+        {/* Ana Sayfa + Arama çubuğu — kategori sekmelerinin altında */}
+        <div className="mt-1 flex items-center gap-1">
+          <a href="/" className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-8 px-3 flex-shrink-0 rounded">
+            <Home className="h-3 w-3" />
+            <span className="hidden sm:inline">Ana Sayfa</span>
+          </a>
+          <form onSubmit={onSearchSubmit} className="flex-1 flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
+            <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Haberlerde ara..."
+              className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-6 px-1"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={searching || !searchQuery.trim()}
+              className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-6 px-2 py-0"
+            >
+              {searching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+              <span className="hidden sm:inline">Ara</span>
           </Button>
           {searchResults !== null && (
             <Button
@@ -501,6 +506,7 @@ export function NewsScreen() {
             </Button>
           )}
         </form>
+        </div>
       </nav>
 
       {/* Article detail (inline, not dialog) OR search results OR news grid */}

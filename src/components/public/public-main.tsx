@@ -729,7 +729,7 @@ export function PublicMain() {
       <div className="sticky top-[160px] z-20 bg-background border-y border-border py-2">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1 flex items-center gap-1">
           {/* Ana Sayfa düğmesi */}
-          <Button type="button" size="sm" onClick={() => { clearSearch(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-5 px-2 py-0 flex-shrink-0">
+          <Button type="button" size="sm" onClick={() => { clearSearch(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-8 px-3 flex-shrink-0">
             <Home className="h-3 w-3" />
             <span className="hidden sm:inline">Ana Sayfa</span>
           </Button>
