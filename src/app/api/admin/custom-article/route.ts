@@ -5,6 +5,40 @@ import * as fs from 'fs';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
 
+// HTML entity'leri decode et — &#039; &#x27; &quot; &amp; vb.
+function decodeHtmlEntities(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/&#x([0-9a-f]+);/gi, (_m, hex: string) => {
+      try { return String.fromCodePoint(parseInt(hex, 16)); } catch { return ''; }
+    })
+    .replace(/&#(\d+);/g, (_m, dec: string) => {
+      try { return String.fromCodePoint(parseInt(dec, 10)); } catch { return ''; }
+    })
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Site adını temizle — küçük harf ise baş harfleri büyüt
+function capitalizeSite(name: string): string {
+  if (!name) return '';
+  const trimmed = name.trim();
+  // Tüm küçükse → kelime kelime büyüt
+  if (trimmed === trimmed.toLowerCase()) {
+    return trimmed.split(/\s+/).map(w =>
+      w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w
+    ).join(' ');
+  }
+  return trimmed;
+}
+
 function checkAuth(req: NextRequest): boolean {
   const auth = req.headers.get('authorization');
   if (!auth || !auth.startsWith('Bearer ')) return false;
@@ -81,7 +115,7 @@ function extractFromHtml(html: string, url: string) {
     }
   }
 
-  return { title, description: description.slice(0, 2000), content: fullText, images };
+  return { title: decodeHtmlEntities(title), description: decodeHtmlEntities(description.slice(0, 2000)), content: fullText, images };
 }
 
 // AI özeti üret — çekilen tam metinden 150-300 kelime özet
@@ -275,7 +309,11 @@ export async function POST(req: NextRequest) {
                   images: extracted.images,
                 });
                 allImages.push(...extracted.images);
-                sources.push({ site: site.name, url: link.url, title: extracted.title || link.text });
+                sources.push({
+                  site: capitalizeSite(site.name),
+                  url: link.url,
+                  title: decodeHtmlEntities(extracted.title || link.text),
+                });
               }
             } catch { /* skip */ }
           }

@@ -946,15 +946,20 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
                         {/* Bulunan Kaynaklar */}
                         {foundSources.length > 0 && (
-                          <div className="rounded-md border border-border bg-muted/30 p-2 space-y-1">
+                          <div className="rounded-md border border-border bg-muted/30 p-2 space-y-1.5">
                             <p className="text-[10px] font-bold text-muted-foreground">BULUNAN KAYNAKLAR ({foundSources.length})</p>
-                            {foundSources.map((s, i) => (
-                              <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-news">
-                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                                <span className="font-medium">{s.site}:</span>
-                                <span className="truncate">{s.title.slice(0, 60)}</span>
-                              </a>
-                            ))}
+                            <div className="space-y-1">
+                              {foundSources.map((s, i) => (
+                                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-1.5 text-[10px] text-muted-foreground hover:text-news rounded">
+                                  <span className="font-bold text-news min-w-[16px] text-right">{i+1}.</span>
+                                  <ExternalLink className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                  <span className="flex-1 min-w-0">
+                                    <span className="font-semibold text-foreground/80">{s.site}</span>
+                                    <span className="text-muted-foreground"> — {s.title}</span>
+                                  </span>
+                                </a>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
