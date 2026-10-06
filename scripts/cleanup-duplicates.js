@@ -183,10 +183,17 @@ async function checkImageForLogo(imageUrl) {
     if (imageUrl.toLowerCase().includes('.webp')) mime = 'image/webp';
     if (imageUrl.toLowerCase().includes('.gif')) mime = 'image/gif';
     
-    var prompt = 'Bu görselde bir medya kuruluşunun, haber sitesinin logosu, adı, watermark\'ı veya kanal adı var mı? ' +
-      'Sadece JSON döndür: {"hasLogo": true} veya {"hasLogo": false}. ' +
-      'Örnek logolar: site adı (Oda TV, CNN Türk, HaberTürk vb.), TV kanal logosu, web sitesi adı. ' +
-      'Sadece küçük watermark/logo varsa bile hasLogo: true döndür.';
+    var prompt = 'Bu görseli DİKKATLE incele. Görselin HERHANGİ BİR yerinde şu öğelerden biri var mı?\n' +
+      '1. Haber sitesi adı: Oda TV, Odatv, CNN Türk, HaberTürk, Sözcü, Hürriyet, NTV, TRT, AA, Milliyet, Posta, Sabah, BirGün, Cumhuriyet, Evrensel, Karar, Dünya, Ensonhaber, Mynet, İnternet Haber, Fotomaç, ShiftDelete, Chip, Webtekno, Donanım Haber, A Haber, Açık Gazete, Bianet, Medyascope, Halk TV, Sputnik, Bloomberg HT, Foreks, CNBCE, Investing, Takvim, Yeni Şafak, Aydınlık, vb.\n' +
+      '2. TV kanal logosu veya adı\n' +
+      '3. Web sitesi domain adresi (örn: odatv.com, cnnturk.com)\n' +
+      '4. Watermark (şeffaf veya yarı şeffaf metin/logo, genelde köşede)\n' +
+      '5. Kanal başlığı, jeneraği veya overlay metin\n' +
+      '6. Görselin altında/üstünde kaynak site adı yazısı\n\n' +
+      'ÇOK ÖNEMLİ: Bu öğeler çok küçük bile olsa, köşede bile olsa, soluk/watermark olarak da olsa VARSAA "hasLogo": true döndür.\n' +
+      'Görselin ana konusu bir logoyu gösteriyorsa (örn: "Oda TV logosu kaldırıldı" haberi) bile hasLogo: true döndür.\n' +
+      'SADECE hiçbir yazı/logo/watermark yoksa "hasLogo": false döndür.\n' +
+      'Cevap formatı: {"hasLogo": true} veya {"hasLogo": false}';
     
     for (var attempt = 0; attempt < GEMINI_KEYS.length; attempt++) {
       var currentKey = GEMINI_KEYS[attempt % GEMINI_KEYS.length];
@@ -351,11 +358,13 @@ async function main() {
     } else if (hasLogo === false) {
       console.log('    ✓ Logo yok, görsel korundu');
     } else {
-      console.log('    ? VLM hatası, görsel korundu');
+      console.log('    ? VLM hatası (tüm key\'ler başarısız veya timeout), görsel korundu');
     }
   }
   if (imageFixed > 0) {
     console.log('Logo içeren görsel temizlendi: ' + imageFixed + ' haber → logo fallback gösterilecek');
+  } else if (recentWithImages.length > 0) {
+    console.log('Logo bulunan görsel yok (hepsi temiz veya VLM hatası)');
   }
 
   // Son durum
