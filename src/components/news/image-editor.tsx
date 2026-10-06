@@ -22,13 +22,15 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [crop, setCrop] = useState<CropRect | null>(null);
+  const [cropDisplay, setCropDisplay] = useState<CropRect | null>(null); // UI display için
+  const cropRef = useRef<CropRect | null>(null); // Performans için — drawCanvas'ta kullanılır
   const draggingRef = useRef(false);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Canvas çizim — useRef ve zoom bağımlılığı (crop yok, performans)
   const drawCanvas = useCallback((newCrop?: CropRect | null) => {
     const canvas = canvasRef.current;
     const img = imgRef.current;
@@ -52,8 +54,8 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
     // Görseli çiz
     ctx.drawImage(img, 0, 0, canvasW, canvasH);
 
-    // Crop overlay
-    const c = newCrop !== undefined ? newCrop : crop;
+    // Crop overlay — argüman varsa onu kullan, yoksa ref'ten al
+    const c = newCrop !== undefined ? newCrop : cropRef.current;
     if (c && c.w > 0 && c.h > 0) {
       // Karartma — crop dışı alan
       ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
@@ -75,7 +77,6 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
       // Köşe handle'ları (görsel ipucu)
       const handleSize = 8;
       ctx.fillStyle = '#3b82f6';
-      // 4 köşe
       [
         [c.x, c.y],
         [c.x + c.w, c.y],
@@ -85,13 +86,14 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
         ctx.fillRect(hx - handleSize / 2, hy - handleSize / 2, handleSize, handleSize);
       });
     }
-  }, [crop, zoom]);
+  }, [zoom]);
 
-  // Görseli yükle
+  // Görseli yükle — sadece open/imageUrl değişince
   useEffect(() => {
     if (!open || !imageUrl) return;
     setImgLoaded(false);
-    setCrop(null);
+    setCropDisplay(null);
+    cropRef.current = null;
     setErrorMsg(null);
     setZoom(1);
     const img = new Image();
@@ -99,8 +101,10 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
     img.onload = () => {
       imgRef.current = img;
       setImgLoaded(true);
-      // Draw after state update
-      setTimeout(() => drawCanvas(null), 50);
+      // requestAnimationFrame ile DOM güncellemesini bekle
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => drawCanvas(null));
+      });
     };
     img.onerror = () => {
       setErrorMsg('Görsel yüklenemedi — URL geçersiz veya erişilemiyor');
@@ -108,11 +112,11 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
     };
     // Dış URL'leri proxy üzerinden al — CORS engeller
     img.src = proxyImageUrl(imageUrl) || imageUrl;
-  }, [open, imageUrl, drawCanvas]);
+  }, [open, imageUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Yeniden çiz
+  // Zoom değişince yeniden çiz
   useEffect(() => {
-    if (imgLoaded) drawCanvas();
+    if (imgLoaded) drawCanvas(null);
   }, [imgLoaded, zoom, drawCanvas]);
 
   const getCanvasPos = (e: React.MouseEvent) => {
@@ -127,39 +131,48 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
     };
   };
 
-  const onMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     const pos = getCanvasPos(e);
     draggingRef.current = true;
     dragStartRef.current = pos;
     const newCrop: CropRect = { x: pos.x, y: pos.y, w: 0, h: 0 };
-    setCrop(newCrop);
+    cropRef.current = newCrop;
+    setCropDisplay(newCrop);
     drawCanvas(newCrop);
   };
 
-  const onMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = (e: React.MouseEvent) => {
     if (!draggingRef.current) return;
+    e.preventDefault();
     const pos = getCanvasPos(e);
     const start = dragStartRef.current;
     if (!start) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
     const newCrop: CropRect = {
       x: Math.min(start.x, pos.x),
       y: Math.min(start.y, pos.y),
       w: Math.abs(pos.x - start.x),
       h: Math.abs(pos.y - start.y),
     };
-    setCrop(newCrop);
+    cropRef.current = newCrop;
+    setCropDisplay(newCrop);
     drawCanvas(newCrop);
   };
 
-  const onMouseUp = () => {
+  const handleMouseUp = () => {
+    draggingRef.current = false;
+    dragStartRef.current = null;
+  };
+
+  const handleMouseLeave = () => {
     draggingRef.current = false;
     dragStartRef.current = null;
   };
 
   const handleReset = () => {
-    setCrop(null);
+    cropRef.current = null;
+    setCropDisplay(null);
     drawCanvas(null);
   };
 
@@ -169,8 +182,9 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
   const handleCropAndSave = async () => {
     const canvas = canvasRef.current;
     const img = imgRef.current;
-    if (!canvas || !img || !crop || crop.w < 10 || crop.h < 10) {
-      toast.error('Lütfen geçerli bir kırpma alanı seçin (en az 10x10 px)');
+    const c = cropRef.current;
+    if (!canvas || !img || !c || c.w < 10 || c.h < 10) {
+      toast.error('Lütfen geçerli bir kırpma alanı seçin (en az 10x10 px) — mouse ile sürükleyin');
       return;
     }
     setSaving(true);
@@ -178,10 +192,10 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
       // Canvas koordinatlarını orijinal görsel koordinatlarına çevir
       const scaleX = img.naturalWidth / canvas.width;
       const scaleY = img.naturalHeight / canvas.height;
-      const srcX = Math.max(0, crop.x * scaleX);
-      const srcY = Math.max(0, crop.y * scaleY);
-      const srcW = Math.max(1, crop.w * scaleX);
-      const srcH = Math.max(1, crop.h * scaleY);
+      const srcX = Math.max(0, c.x * scaleX);
+      const srcY = Math.max(0, c.y * scaleY);
+      const srcW = Math.max(1, c.w * scaleX);
+      const srcH = Math.max(1, c.h * scaleY);
 
       // Yeni canvas — kırpılan bölgeyi çiz
       const newCanvas = document.createElement('canvas');
@@ -232,34 +246,38 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
         </DialogHeader>
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Mouse ile kırpma alanı seçin (tıkla ve sürükle). Seçilen alan dışı karanlık gösterilir. "Kırp ve Kaydet" ile yeni görsel oluşturulur ve özel haber görseli olarak ayarlanır.
+            Mouse ile kırpma alanı seçin — <strong>tıkla ve sürükle</strong>. Seçilen alan dışı karanlık gösterilir. "Kırp ve Kaydet" ile yeni görsel oluşturulur ve özel haber görseli olarak ayarlanır.
           </p>
           <div className="flex items-center gap-1.5">
             <Button type="button" variant="outline" size="sm" onClick={handleZoomOut} disabled={!imgLoaded} className="gap-1.5 h-7"><ZoomOut className="h-3.5 w-3.5" /></Button>
             <span className="text-[10px] text-muted-foreground tabular-nums w-10 text-center">{Math.round(zoom * 100)}%</span>
             <Button type="button" variant="outline" size="sm" onClick={handleZoomIn} disabled={!imgLoaded} className="gap-1.5 h-7"><ZoomIn className="h-3.5 w-3.5" /></Button>
             <div className="ml-auto flex items-center gap-2">
-              {crop && crop.w > 0 && crop.h > 0 && (
-                <span className="text-[10px] text-muted-foreground">Seçili: {Math.round(crop.w)} × {Math.round(crop.h)}px</span>
+              {cropDisplay && cropDisplay.w > 0 && cropDisplay.h > 0 && (
+                <span className="text-[10px] text-muted-foreground">Seçili: {Math.round(cropDisplay.w)} × {Math.round(cropDisplay.h)}px</span>
               )}
             </div>
           </div>
-          <div className="flex justify-center bg-muted/30 rounded-md p-2 min-h-[300px] items-center">
+          <div
+            className="flex justify-center bg-muted/30 rounded-md p-2 min-h-[300px] items-center select-none"
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+          >
             <canvas
               ref={canvasRef}
-              onMouseDown={onMouseDown}
-              onMouseMove={onMouseMove}
-              onMouseUp={onMouseUp}
-              onMouseLeave={onMouseUp}
-              className="cursor-crosshair max-w-full"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              className="cursor-crosshair max-w-full touch-none"
               style={{ display: imgLoaded ? 'block' : 'none' }}
             />
             {!imgLoaded && !errorMsg && <Loader2 className="h-6 w-6 animate-spin" />}
-            {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
+            {errorMsg && <p className="text-xs text-destructive text-center px-4">{errorMsg}</p>}
           </div>
         </div>
         <div className="flex justify-between gap-2 pt-2 border-t">
-          <Button type="button" variant="outline" size="sm" onClick={handleReset} disabled={!imgLoaded || !crop} className="gap-1.5">
+          <Button type="button" variant="outline" size="sm" onClick={handleReset} disabled={!imgLoaded || !cropRef.current} className="gap-1.5">
             <RotateCcw className="h-3.5 w-3.5" />
             Seçimi Sıfırla
           </Button>
@@ -269,7 +287,7 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
               type="button"
               size="sm"
               onClick={handleCropAndSave}
-              disabled={saving || !imgLoaded || !crop || crop.w < 10 || crop.h < 10}
+              disabled={saving || !imgLoaded || !cropRef.current || (cropRef.current && (cropRef.current.w < 10 || cropRef.current.h < 10))}
               className="gap-1.5 bg-blue-600 hover:bg-blue-700"
             >
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}

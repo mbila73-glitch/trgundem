@@ -83,6 +83,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [searchImages, setSearchImages] = useState<{url: string; title: string; source: string}[]>([]);
   const [searchingImages, setSearchingImages] = useState(false);
   const [imageSearchQuery, setImageSearchQuery] = useState('');
+  const [imageSearchTarget, setImageSearchTarget] = useState<'custom' | 'edit' | null>(null);
   const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
   const [showTrustedSites, setShowTrustedSites] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
@@ -570,23 +571,28 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   };
 
   // Görsel Ara — AI destekli Google görsel taraması (telif istemeyenler)
-  // AI habere uygun arama sorgusu üretir, Google'da telifsiz 10 görsel arar
-  const handleImageSearch = async () => {
-    if (!customTitle.trim() && !customSummary.trim()) {
-      toast.error('Önce "Tara" + "AI Özetle" yapın — başlık/özet gerekli');
+  // target: 'custom' (özel haber ekleme) veya 'edit' (yayında haberi düzenleme)
+  const handleImageSearch = async (target: 'custom' | 'edit') => {
+    const title = target === 'custom' ? customTitle : editTitle;
+    const summary = target === 'custom' ? (customSummary || customContent) : editSummary;
+    if (!title.trim() && !summary.trim()) {
+      toast.error(target === 'custom'
+        ? 'Önce "Tara" + "AI Özetle" yapın — başlık/özet gerekli'
+        : 'Düzenle formunda başlık gerekli');
       return;
     }
     setSearchingImages(true);
     setSearchImages([]);
     setImageSearchQuery('');
+    setImageSearchTarget(target);
     try {
       const r = await fetch('/api/admin/custom-article', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           action: 'image-search',
-          query: customTitle,
-          content: customSummary || customContent,
+          query: title,
+          content: summary,
         }),
       });
       const json = (await r.json()) as { ok?: boolean; query?: string; images?: {url: string; title: string; source: string}[]; error?: string };
@@ -597,9 +603,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       if (imgs.length === 0) {
         toast.error('Hiç telifsiz görsel bulunamadı — farklı bir konu deneyin');
       } else {
-        // İlk görseli varsayılan seç
+        // İlk görseli varsayılan seç — ilgili formun image state'ine yaz
         setSelectedImageUrl(imgs[0].url);
-        setCustomImage(imgs[0].url);
+        if (target === 'custom') setCustomImage(imgs[0].url);
+        else setEditImage(imgs[0].url);
         toast.success(`${imgs.length} telifsiz görsel bulundu${json.query ? ` (sorgu: "${json.query}")` : ''}`);
       }
     } catch (e) {
@@ -607,6 +614,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     } finally {
       setSearchingImages(false);
     }
+  };
+
+  // Görsel seçimi — imageSearchTarget'a göre ilgili formun image state'ini güncelle
+  const handleSelectSearchImage = (url: string) => {
+    setSelectedImageUrl(url);
+    if (imageSearchTarget === 'custom') setCustomImage(url);
+    else if (imageSearchTarget === 'edit') setEditImage(url);
   };
 
   // Güvenilen siteleri yükle
@@ -1078,7 +1092,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <Button
                             type="button"
                             size="sm"
-                            onClick={handleImageSearch}
+                            onClick={() => handleImageSearch('custom')}
                             disabled={searchingImages || (!customTitle.trim() && !customSummary.trim())}
                             className="gap-2 bg-green-600 hover:bg-green-700"
                           >
@@ -1089,14 +1103,14 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         <p className="text-[10px] text-muted-foreground">
                           AI habere uygun bir arama sorgusu üretir ve Google'da <strong>telif istemeyen</strong> (royalty-free, ticari kullanıma izin veren) görseller arasından ilk 10 sonucu getirir. Public domain + CC BY/BY-SA/BY-ND lisanslı.
                         </p>
-                        {imageSearchQuery && (
+                        {imageSearchQuery && imageSearchTarget === 'custom' && (
                           <p className="text-[10px] text-green-700 dark:text-green-300">AI sorgusu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
                         )}
                       </div>
                     )}
 
-                    {/* Bulunan görseller — grid 5x2 */}
-                    {searchImages.length > 0 && (
+                    {/* Bulunan görseller — grid 5x2 (custom form için) */}
+                    {imageSearchTarget === 'custom' && searchImages.length > 0 && (
                       <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
                         <p className="text-[10px] font-bold text-muted-foreground">TELİFSİZ GÖRSELLER ({searchImages.length}) — tıkla seç</p>
                         <div className="grid grid-cols-5 gap-1.5">
@@ -1104,10 +1118,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             <button
                               key={i}
                               type="button"
-                              onClick={() => {
-                                setSelectedImageUrl(img.url);
-                                setCustomImage(img.url);
-                              }}
+                              onClick={() => handleSelectSearchImage(img.url)}
                               className={`relative aspect-square overflow-hidden rounded border-2 ${selectedImageUrl === img.url ? 'border-news' : 'border-transparent'} flex-shrink-0 group`}
                               title={img.title || img.source || `Görsel ${i+1}`}
                             >
@@ -1308,6 +1319,45 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                     {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
                                   </div>
                                   </div>
+
+                                  {/* Görsel Ara — AI destekli (edit formu için) */}
+                                  {editTitle && (
+                                    <div className="rounded-md border border-green-300 bg-green-50 dark:bg-green-950/20 p-2 space-y-1.5">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <Label className="text-[10px] font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz)</Label>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          onClick={() => handleImageSearch('edit')}
+                                          disabled={searchingImages || !editTitle.trim()}
+                                          className="gap-1.5 text-xs h-7 bg-green-600 hover:bg-green-700"
+                                        >
+                                          {searchingImages ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+                                          Görsel Ara
+                                        </Button>
+                                      </div>
+                                      {imageSearchQuery && imageSearchTarget === 'edit' && (
+                                        <p className="text-[10px] text-green-700 dark:text-green-300">AI sorgusu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
+                                      )}
+                                      {imageSearchTarget === 'edit' && searchImages.length > 0 && (
+                                        <div className="grid grid-cols-5 gap-1 mt-1">
+                                          {searchImages.map((img, i) => (
+                                            <button
+                                              key={i}
+                                              type="button"
+                                              onClick={() => handleSelectSearchImage(img.url)}
+                                              className={`relative aspect-square overflow-hidden rounded border-2 ${selectedImageUrl === img.url ? 'border-news' : 'border-transparent'} flex-shrink-0 group`}
+                                              title={img.title || img.source || `Görsel ${i+1}`}
+                                            >
+                                              <img src={img.url} alt={img.title || ''} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                              {selectedImageUrl === img.url && <span className="absolute inset-0 bg-news/30 flex items-center justify-center"><Check className="h-4 w-4 text-white" /></span>}
+                                              {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">{img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}</span>}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                   {/* Kategori seçimi — mevcut kategori işaretli */}
                                   <div className="space-y-1">
                                     <Label className="text-xs">Kategori (ilk seçili kayıt için kullanılır)</Label>
