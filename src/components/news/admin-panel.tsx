@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeTr } from '@/lib/format';
@@ -73,6 +73,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [customCategory, setCustomCategory] = useState<string[]>(['Özel']);
   const [customContent, setCustomContent] = useState(''); // tam metin
   const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
+  const [showTrustedSites, setShowTrustedSites] = useState(false);
+  const [newSiteName, setNewSiteName] = useState('');
+  const [newSiteUrl, setNewSiteUrl] = useState('');
   const [fetchedImages, setFetchedImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -259,6 +265,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       if (adminTab === 'published') void loadPublished();
       if (adminTab === 'archived') { void loadArchived(); void loadMessages(); }
       if (adminTab === 'pending') void loadPending();
+      if (adminTab === 'custom') void loadTrustedSites();
     }
   }, [open, token, adminTab, loadMessages, loadPublished, loadArchived, loadPending]);
 
@@ -405,13 +412,14 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     setFetching(true);
     try {
       const r = await fetch('/api/admin/custom-article', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ action: 'fetch', url: fetchUrl }) });
-      const json = (await r.json()) as { ok?: boolean; title?: string; description?: string; images?: string[]; error?: string };
+      const json = (await r.json()) as { ok?: boolean; title?: string; description?: string; content?: string; images?: string[]; error?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Getirilemedi');
       setCustomTitle(json.title || '');
       setCustomSummary(json.description || '');
+      setCustomContent(json.content || '');
       setFetchedImages(json.images ?? []);
       setCustomImage(json.images?.[0] || '');
-      toast.success('Haber içeriği getirildi');
+      toast.success('Haber çekildi — tam içerik hazır');
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
     finally { setFetching(false); }
   };
@@ -420,13 +428,102 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     if (!customTitle.trim() || !customSummary.trim()) return;
     setSaving(true);
     try {
-      const r = await fetch('/api/admin/custom-article', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ action: 'save', title: customTitle, summary: customSummary, imageUrl: customImage || null, category: customCategory }) });
-      const json = (await r.json()) as { ok?: boolean; error?: string };
-      if (!r.ok || !json.ok) throw new Error(json.error || 'Kaydedilemedi');
-      toast.success('Özel haber yayınlandı');
-      setFetchUrl(''); setCustomTitle(''); setCustomSummary(''); setCustomImage(''); setFetchedImages([]);
+      for (const cat of customCategory) {
+        await fetch('/api/admin/custom-article', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ action: 'save', title: customTitle, summary: customSummary, imageUrl: customImage || null, category: cat }),
+        });
+      }
+      toast.success(`${customCategory.length} kategoride yayınlandı: ${customCategory.join(', ')}`);
+      setFetchUrl(''); setCustomTitle(''); setCustomSummary(''); setCustomImage(''); setCustomContent(''); setFetchedImages([]);
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
     finally { setSaving(false); }
+  };
+
+  // AI özeti oluştur — çekilen tam metinden
+  const handleAiSummary = async () => {
+    if (!customContent || customContent.length < 100) {
+      toast.error('Önce URL\'den haber çekin');
+      return;
+    }
+    setGeneratingSummary(true);
+    try {
+      const r = await fetch('/api/admin/custom-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'ai-summarize', title: customTitle, content: customContent }),
+      });
+      const json = (await r.json()) as { ok?: boolean; summary?: string; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'AI özet üretilemedi');
+      setCustomSummary(json.summary || '');
+      toast.success('AI özeti hazır');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'AI hatası');
+    } finally {
+      setGeneratingSummary(false);
+    }
+  };
+
+  // Konu ara + özet — güvenilen sitelerde ara
+  const handleSearchAndSummarize = async () => {
+    if (!searchQuery.trim()) return;
+    setSearching(true);
+    try {
+      const r = await fetch('/api/admin/custom-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'search-and-summarize', query: searchQuery }),
+      });
+      const json = (await r.json()) as { ok?: boolean; title?: string; summary?: string; imageUrl?: string | null; content?: string; sourcesFound?: number; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Arama başarısız');
+      setCustomTitle(json.title || '');
+      setCustomSummary(json.summary || '');
+      setCustomImage(json.imageUrl || '');
+      setCustomContent(json.content || '');
+      setFetchedImages(json.imageUrl ? [json.imageUrl] : []);
+      toast.success(`${json.sourcesFound || 0} kaynaktan haber bulundu, AI özeti hazır`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Arama hatası');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // Güvenilen siteleri yükle
+  const loadTrustedSites = useCallback(async () => {
+    if (!token) return;
+    try {
+      const r = await fetch('/api/admin/trusted-sites', { headers: { Authorization: `Bearer ${token}` } });
+      const json = (await r.json()) as { sites?: {id: string; name: string; searchUrl: string}[] };
+      setTrustedSites(json.sites ?? []);
+    } catch {}
+  }, [token]);
+
+  // Güvenilen site ekle
+  const handleAddTrustedSite = async () => {
+    if (!newSiteName.trim() || !newSiteUrl.trim()) return;
+    try {
+      const r = await fetch('/api/admin/trusted-sites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: newSiteName, searchUrl: newSiteUrl }),
+      });
+      const json = (await r.json()) as { ok?: boolean; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Eklenemedi');
+      setNewSiteName(''); setNewSiteUrl('');
+      void loadTrustedSites();
+      toast.success('Güvenilen site eklendi');
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
+  };
+
+  // Güvenilen site sil
+  const handleDeleteTrustedSite = async (id: string) => {
+    try {
+      await fetch(`/api/admin/trusted-sites/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      void loadTrustedSites();
+      toast.success('Site silindi');
+    } catch (e) { toast.error('Silme hatası'); }
   };
 
   // Published article handlers
@@ -774,14 +871,49 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                 {/* Custom article tab */}
                 {adminTab === 'custom' && (
                   <div className="space-y-4">
+                    {/* Konu Arama — güvenilen sitelerde ara + AI özeti */}
+                    <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
+                      <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Konu ile Haber Ara (Güvenilen Siteler)</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder='Örn: "Ali Emre Ballı intihar etmiş"'
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleSearchAndSummarize}
+                          disabled={searching || !searchQuery.trim()}
+                          className="gap-2 bg-blue-600 hover:bg-blue-700"
+                        >
+                          {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                          Ara ve Özet
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">Güvenilen sitelerde konuyu arar, içerikleri toplar, AI özeti üretir.</p>
+                    </div>
+
+                    {/* Veya URL'den çek */}
+                    <div className="text-center text-[10px] text-muted-foreground">— VEYA —</div>
                     <form onSubmit={handleFetch} className="flex gap-2">
                       <Input value={fetchUrl} onChange={(e) => setFetchUrl(e.target.value)} placeholder="https://ornek.com/haber-basligi" className="flex-1" />
                       <Button type="submit" disabled={fetching || !fetchUrl.trim()} className="gap-2">{fetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}Getir</Button>
                     </form>
+
                     {customTitle && (
                       <div className="space-y-4 rounded-lg border border-border p-4">
                         <div className="space-y-1.5"><Label>Başlık</Label><Input value={customTitle} onChange={(e) => setCustomTitle(e.target.value)} /></div>
-                        <div className="space-y-1.5"><Label>Özet</Label><Textarea value={customSummary} onChange={(e) => setCustomSummary(e.target.value)} rows={6} className="resize-none" /></div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Label>Özet</Label>
+                            <Button type="button" size="sm" variant="outline" onClick={handleAiSummary} disabled={generatingSummary || !customContent} className="gap-1.5 text-xs">
+                              {generatingSummary ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                              AI Özeti Oluştur
+                            </Button>
+                          </div>
+                          <Textarea value={customSummary} onChange={(e) => setCustomSummary(e.target.value)} rows={6} className="resize-none" />
+                        </div>
                         <div className="space-y-1.5"><Label>Görsel URL</Label><Input value={customImage} onChange={(e) => setCustomImage(e.target.value)} placeholder="https://..." />
                           <div className="flex items-center gap-2 mt-1">
                             <Label htmlFor="custom-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
@@ -811,7 +943,58 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         <Button onClick={handleSaveCustom} disabled={saving || !customTitle.trim() || !customSummary.trim()} className="w-full gap-2">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}Kaydet ve Yayınla</Button>
                       </div>
                     )}
-                    {!customTitle && !fetching && <Card className="flex flex-col items-center gap-3 p-10 text-center"><Star className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">URL yapıştırıp "Getir" butonuna basın. Haber başlığı, özeti ve görselleri otomatik çekilecektir.</p></Card>}
+                    {!customTitle && !fetching && !searching && <Card className="flex flex-col items-center gap-3 p-10 text-center"><Star className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Konu yazıp "Ara ve Özet" veya URL yapıştırıp "Getir" butonuna basın.</p></Card>}
+
+                    {/* Güvenilen Siteler Yönetimi */}
+                    <div className="rounded-lg border border-border p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-bold">Güvenilen Siteler ({trustedSites.length})</Label>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setShowTrustedSites(!showTrustedSites)} className="text-xs gap-1">
+                          {showTrustedSites ? 'Gizle' : 'Yönet'}
+                        </Button>
+                      </div>
+                      {showTrustedSites && (
+                        <div className="space-y-3">
+                          {/* Site ekleme formu */}
+                          <div className="flex gap-2">
+                            <Input
+                              value={newSiteName}
+                              onChange={(e) => setNewSiteName(e.target.value)}
+                              placeholder="Site adı (örn: Sözcü)"
+                              className="flex-1 text-xs"
+                            />
+                            <Input
+                              value={newSiteUrl}
+                              onChange={(e) => setNewSiteUrl(e.target.value)}
+                              placeholder="Arama URL (örn: https://sozcu.com.tr/ara/?q={query})"
+                              className="flex-1 text-xs"
+                            />
+                            <Button type="button" size="sm" onClick={handleAddTrustedSite} disabled={!newSiteName.trim() || !newSiteUrl.trim()} className="gap-1 text-xs">
+                              <Plus className="h-3.5 w-3.5" /> Ekle
+                            </Button>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">{'{query}'} placeholder olan URL girin. Sistem aramada bunu konu ile değiştirir.</p>
+                          {/* Site listesi */}
+                          {trustedSites.length > 0 ? (
+                            <div className="space-y-1">
+                              {trustedSites.map(s => (
+                                <div key={s.id} className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-2 py-1.5">
+                                  <div className="min-w-0 flex-1">
+                                    <span className="text-xs font-medium">{s.name}</span>
+                                    <span className="ml-2 text-[10px] text-muted-foreground truncate">{s.searchUrl}</span>
+                                  </div>
+                                  <Button type="button" size="sm" variant="ghost" onClick={() => handleDeleteTrustedSite(s.id)} className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground text-center py-2">Henüz güvenilen site yok. Ekleyin.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
