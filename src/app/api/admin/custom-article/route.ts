@@ -206,23 +206,35 @@ export async function POST(req: NextRequest) {
           if (!resp.ok) continue;
           const html = await resp.text();
 
-          // HTML'den haber linklerini bul
+          // HTML'den haber linklerini bul — hem relative hem absolute URL'ler
           const baseUrl = new URL(searchUrl);
           const domain = baseUrl.hostname;
-          const linkRegex = /<a[^>]+href=["'](\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+          // Regex: href="..." içinde herhangi URL (relative veya absolute)
+          const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
           const seenLinks = new Set<string>();
           let linkMatch;
           const relevantLinks: { url: string; text: string; score: number }[] = [];
           const allLinks: { url: string; text: string }[] = [];
+          let totalLinks = 0;
 
           while ((linkMatch = linkRegex.exec(html)) !== null) {
             const href = linkMatch[1];
             const linkText = linkMatch[2].replace(/<[^>]+>/g, '').trim();
             if (href.length > 15 && linkText.length > 20 && !seenLinks.has(href)) {
-              seenLinks.add(href);
+              totalLinks++;
               try {
-                const absUrl = new URL(href, searchUrl).href;
-                if (absUrl.includes(domain) && !absUrl.includes('/ara') && !absUrl.includes('/search')) {
+                // Relative URL'i absolute'e çevir
+                let absUrl: string;
+                if (href.startsWith('http')) {
+                  absUrl = href;
+                } else if (href.startsWith('/')) {
+                  absUrl = new URL(href, searchUrl).href;
+                } else {
+                  continue; // relative path (#anchor, javascript:, vb.) atla
+                }
+                // Sadece aynı domain veya subdomain linkleri al
+                if (absUrl.includes(domain) && !absUrl.includes('/ara') && !absUrl.includes('/search') && !absUrl.includes('/?s=')) {
+                  seenLinks.add(href);
                   const linkTextLower = linkText.toLowerCase();
                   const urlLower = absUrl.toLowerCase();
                   const matchCount = queryWords.filter(w => linkTextLower.includes(w) || urlLower.includes(w.replace(/\s/g, '-'))).length;
@@ -238,10 +250,8 @@ export async function POST(req: NextRequest) {
           let linksToFetch: { url: string; text: string }[];
 
           if (relevantLinks.length > 0 && relevantLinks[0].score > 0) {
-            // İlgili linkler var — en iyi 3'ü al
             linksToFetch = relevantLinks.slice(0, 3).map(l => ({ url: l.url, text: l.text }));
           } else {
-            // İlgili link yok — ilk 3 linki al (fallback)
             linksToFetch = allLinks.slice(0, 3);
           }
 
