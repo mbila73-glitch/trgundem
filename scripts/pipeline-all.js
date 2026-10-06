@@ -693,6 +693,20 @@ async function main() {
         var cat = bestCat;
         var sourceCount = group.sourceIds.size;
 
+        // REKLAM/TANITIM FILTRESI — başlıkta reklam/tanıtım ifadeleri varsa haberi ATLA
+        var titleLowerCheck = firstArticle.title.toLowerCase();
+        var adKeywords = ['fiyat listesi', 'fiyat listeleri', 'fiyatları açıklandı', 'özellikleri ve fiyatı',
+          'tanıtıldı: işte', 'resmen tanıtıldı', 'işte özellikleri', 'işte fiyatı',
+          'satışa sunuldu', 'çıkış tarihi belli', 'satışa çıktı'];
+        var isAd = false;
+        for (var ai2 = 0; ai2 < adKeywords.length; ai2++) {
+          if (titleLowerCheck.indexOf(adKeywords[ai2]) >= 0) { isAd = true; break; }
+        }
+        if (isAd) {
+          log('  [Reklam/Tanıtım] Haber ATLANDI: ' + firstArticle.title.slice(0, 60));
+          continue;
+        }
+
         // TEKRAR KONTROLÜ — kategori BAĞIMSIZ, eşik DÜŞÜK (0.3)
         // Yeni mantık (çok sıkı tekrar yakalama):
         // - titleSimilar >= 0.85 (birebir) + published ise: SKIP (create etme, AI çağırma)
