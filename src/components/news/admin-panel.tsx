@@ -70,7 +70,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [customTitle, setCustomTitle] = useState('');
   const [customSummary, setCustomSummary] = useState('');
   const [customImage, setCustomImage] = useState('');
-  const [customCategory] = useState('Özel');
+  const [customCategory, setCustomCategory] = useState('Özel');
   const [fetchedImages, setFetchedImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -788,7 +788,24 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           </div>
                           {fetchedImages.length > 0 && <div className="flex flex-wrap gap-2 mt-2">{fetchedImages.map((img, i) => <button key={i} type="button" onClick={() => setCustomImage(img)} className={`h-16 w-24 overflow-hidden rounded border-2 ${customImage === img ? 'border-news' : 'border-transparent'}`}><img src={img} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></button>)}</div>}
                         </div>
-                        <div className="text-xs text-muted-foreground">Kategori: Özel (otomatik)</div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Kategori</Label>
+                          <Select value={customCategory} onValueChange={setCustomCategory}>
+                            <SelectTrigger className="text-xs">
+                              <SelectValue placeholder="Kategori seç" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Özel">Özel</SelectItem>
+                              <SelectItem value="Siyaset">Siyaset</SelectItem>
+                              <SelectItem value="Ekonomi / Finans">Ekonomi / Finans</SelectItem>
+                              <SelectItem value="Kamu / Resmi">Kamu / Resmi</SelectItem>
+                              <SelectItem value="Bilim / Teknoloji">Bilim / Teknoloji</SelectItem>
+                              <SelectItem value="Kültür / Sanat">Kültür / Sanat</SelectItem>
+                              <SelectItem value="Spor / Magazin">Spor / Magazin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-[10px] text-muted-foreground">Haber seçtiğiniz kategorinin en üstüne yerleşir</p>
+                        </div>
                         <Button onClick={handleSaveCustom} disabled={saving || !customTitle.trim() || !customSummary.trim()} className="w-full gap-2">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}Kaydet ve Yayınla</Button>
                       </div>
                     )}

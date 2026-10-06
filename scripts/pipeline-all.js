@@ -855,7 +855,8 @@ async function main() {
         var staleResult = await globalThis.prisma.publishedArticle.updateMany({
           where: {
             status: 'published',
-            latestPublishedAt: { lt: staleCutoff }
+            latestPublishedAt: { lt: staleCutoff },
+            sourceCount: { lt: 999 } // Özel haberler (sourceCount=999) arşive TAŞINMAZ
           },
           data: { status: 'archived', archivedAt: new Date() }
         });

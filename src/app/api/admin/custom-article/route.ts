@@ -95,12 +95,14 @@ export async function POST(req: NextRequest) {
           aiTitle: data.title.trim(),
           aiSummary: data.summary.trim(),
           imageUrl: data.imageUrl || null,
-          category: 'Özel',
+          category: data.category || 'Özel',
           wordCount: data.summary.trim().split(/\s+/).filter(Boolean).length,
           sourceArticleIds: JSON.stringify(['custom']),
-          sourceCount: 1,
+          sourceCount: 999, // Özel haber işareti — pipeline arşive taşımasın
+          initialHearts: Math.floor(Math.random() * (413 - 223 + 1)) + 223,
+          clickHearts: 0,
           earliestPublishedAt: new Date(),
-          latestPublishedAt: new Date(),
+          latestPublishedAt: new Date(), // En yeni — kategorinin en üstünde
           status: 'published',
           publishedAt: new Date(),
         },
