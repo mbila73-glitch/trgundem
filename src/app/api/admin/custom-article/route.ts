@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Geçersiz gövde' }, { status: 400 }); }
-  const data = body as { action?: string; url?: string; title?: string; content?: string; summary?: string; imageUrl?: string | null; category?: string };
+  const data = body as { action?: string; url?: string; query?: string; title?: string; content?: string; summary?: string; imageUrl?: string | null; category?: string };
 
   // 1. FETCH — URL'den tam içerik çek
   if (data.action === 'fetch' && data.url) {

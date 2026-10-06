@@ -791,22 +791,22 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           {fetchedImages.length > 0 && <div className="flex flex-wrap gap-2 mt-2">{fetchedImages.map((img, i) => <button key={i} type="button" onClick={() => setCustomImage(img)} className={`h-16 w-24 overflow-hidden rounded border-2 ${customImage === img ? 'border-news' : 'border-transparent'}`}><img src={img} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></button>)}</div>}
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs">Kategori</Label>
-                          <Select value={customCategory} onValueChange={setCustomCategory}>
-                            <SelectTrigger className="text-xs">
-                              <SelectValue placeholder="Kategori seç" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Özel">Özel</SelectItem>
-                              <SelectItem value="Siyaset">Siyaset</SelectItem>
-                              <SelectItem value="Ekonomi / Finans">Ekonomi / Finans</SelectItem>
-                              <SelectItem value="Kamu / Resmi">Kamu / Resmi</SelectItem>
-                              <SelectItem value="Bilim / Teknoloji">Bilim / Teknoloji</SelectItem>
-                              <SelectItem value="Kültür / Sanat">Kültür / Sanat</SelectItem>
-                              <SelectItem value="Spor / Magazin">Spor / Magazin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <p className="text-[10px] text-muted-foreground">Haber seçtiğiniz kategorinin en üstüne yerleşir</p>
+                          <Label className="text-xs">Kategori (birden fazla seçebilirsiniz)</Label>
+                          <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
+                            {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
+                              <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                <Checkbox
+                                  checked={customCategory.includes(cat)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) setCustomCategory([...customCategory, cat]);
+                                    else setCustomCategory(customCategory.filter(c => c !== cat));
+                                  }}
+                                />
+                                {cat}
+                              </label>
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Haber seçtiğiniz kategorilerin hepsinde en üstte yerleşir</p>
                         </div>
                         <Button onClick={handleSaveCustom} disabled={saving || !customTitle.trim() || !customSummary.trim()} className="w-full gap-2">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}Kaydet ve Yayınla</Button>
                       </div>
