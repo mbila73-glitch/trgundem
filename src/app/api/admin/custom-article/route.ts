@@ -425,8 +425,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 2b. SEARCH AND SUMMARIZE — güvenilen sitelerde konuyu ara, içerik çek, AI özeti üret
-  if (data.action === 'search-and-summarize' && data.query) {
+  // 2b. SEARCH — güvenilen sitelerde konuyu ara, içerik çek, görselleri topla (özet ÜRETMEZ)
+  //     Frontend'e tüm kaynaklar + her birinin içeriği + görselleri döndürür
+  //     Kullanıcı sonra seçili kaynaklardan AI özet ürettirir (summarize-selected action)
+  if (data.action === 'search' && data.query) {
     try {
       // Güvenilen siteleri getir
       const sites = await db.trustedSite.findMany({ where: { active: true } });
@@ -441,13 +443,11 @@ export async function POST(req: NextRequest) {
       const STOP_WORDS = new Set(['ve', 'ile', 'için', 'bu', 'şu', 'o', 'bir', 'çok', 'az', 'ya', 'da', 'de', 'ki', 'mi', 'mı', 'mu', 'mü', 'ne', 'nasıl', 'neden', 'niçin', 'niye', 'hangi', 'kimi', 'kim', 'veya', 'ama', 'fakat', 'lakin', 'ancak', 'mesela', 'örneğin', 'gibi', 'kadar', 'dair', 'ait', 'göre', 'rağmen', 'dahi', 'bile', 'ise', 'ya da', 'hem', 'yahut', 'veyahut']);
       const queryWords = queryLower.split(/\s+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
 
-      const allContents: { title: string; content: string; images: string[] }[] = [];
-      const allImages: string[] = [];
-      const sources: { site: string; url: string; title: string }[] = [];
-
       // Link seçim eşiği — en az yarı anlamalı kelime eşleşmesi (min 1)
-      // 3 queryWord varsa en az 2; 2 varsa en az 1; 1 varsa en az 1
       const matchThreshold = Math.max(1, Math.ceil(queryWords.length / 2));
+
+      // Kaynak yapısı: site + url + title + content + images
+      const sources: { site: string; url: string; title: string; content: string; images: string[] }[] = [];
 
       // Her sitede ara
       for (const site of sites) {
@@ -463,10 +463,9 @@ export async function POST(req: NextRequest) {
           if (!resp.ok) continue;
           const html = await resp.text();
 
-          // HTML'den haber linklerini bul — hem relative hem absolute URL'ler
+          // HTML'den haber linklerini bul
           const baseUrl = new URL(searchUrl);
           const domain = baseUrl.hostname;
-          // Regex: href="..." içinde herhangi URL (relative veya absolute)
           const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
           const seenLinks = new Set<string>();
           let linkMatch;
@@ -477,16 +476,14 @@ export async function POST(req: NextRequest) {
             const linkText = linkMatch[2].replace(/<[^>]+>/g, '').trim();
             if (href.length > 15 && linkText.length > 20 && !seenLinks.has(href)) {
               try {
-                // Relative URL'i absolute'e çevir
                 let absUrl: string;
                 if (href.startsWith('http')) {
                   absUrl = href;
                 } else if (href.startsWith('/')) {
                   absUrl = new URL(href, searchUrl).href;
                 } else {
-                  continue; // relative path (#anchor, javascript:, vb.) atla
+                  continue;
                 }
-                // Sadece aynı domain veya subdomain linkleri al
                 // Ana sayfa, abonelik, arama, etiket, kategori sayfalarını atla
                 if (absUrl.includes(domain)
                     && !absUrl.includes('/ara') && !absUrl.includes('/search')
@@ -504,11 +501,9 @@ export async function POST(req: NextRequest) {
                   seenLinks.add(href);
                   const linkTextLower = linkText.toLowerCase();
                   const urlLower = absUrl.toLowerCase();
-                  // Eşleşme sayısı: query kelimelerinin kaç tanesi linkte veya URL'de geçiyor
                   const matchCount = queryWords.filter(w =>
                     linkTextLower.includes(w) || urlLower.includes(w.replace(/\s/g, '-')) || urlLower.includes(w.replace(/\s/g, '_'))
                   ).length;
-                  // Sadece eşiği geçen linkleri al — alakasız ana sayfa vb. atlanır
                   if (matchCount >= matchThreshold) {
                     relevantLinks.push({ url: absUrl, text: linkText, score: matchCount });
                   }
@@ -519,10 +514,10 @@ export async function POST(req: NextRequest) {
 
           // İlgili linkleri önceliklendir — en yüksek skor en üstte
           relevantLinks.sort((a, b) => b.score - a.score);
-          // En iyi 3 linki çek (fallback YOK — alakalı link yoksa bu siteden hiç çekme)
+          // En iyi 3 linki çek (fallback YOK)
           const linksToFetch = relevantLinks.slice(0, 3);
 
-          // Haberlerin içeriğini çek
+          // Haberlerin içeriğini çek + görselleri topla
           for (const link of linksToFetch) {
             try {
               const articleResp = await fetch(link.url, {
@@ -536,16 +531,12 @@ export async function POST(req: NextRequest) {
               const articleHtml = await articleResp.text();
               const extracted = extractFromHtml(articleHtml, link.url);
               if (extracted.content && extracted.content.length > 200) {
-                allContents.push({
-                  title: extracted.title || link.text,
-                  content: extracted.content,
-                  images: extracted.images,
-                });
-                allImages.push(...extracted.images);
                 sources.push({
                   site: capitalizeSite(site.name),
                   url: link.url,
                   title: decodeHtmlEntities(extracted.title || link.text),
+                  content: extracted.content.slice(0, 8000),
+                  images: extracted.images,
                 });
               }
             } catch { /* skip */ }
@@ -553,63 +544,52 @@ export async function POST(req: NextRequest) {
         } catch { /* skip site errors */ }
       }
 
-      if (allContents.length === 0) {
+      if (sources.length === 0) {
         return NextResponse.json({ error: 'Hiçbir sitede ilgili haber bulunamadı. Konuyu kontrol edin veya daha spesifik yazın.' }, { status: 404 });
       }
 
-      // En ilgili haberi seç — başlığında en çok arama kelimesi geçen
-      allContents.sort((a, b) => {
+      // En ilgili kaynakları üste sırala — başlığında en çok arama kelimesi geçen
+      sources.sort((a, b) => {
         const aCount = queryWords.filter(w => a.title.toLowerCase().includes(w)).length;
         const bCount = queryWords.filter(w => b.title.toLowerCase().includes(w)).length;
         return bCount - aCount;
       });
 
-      // Sadece en ilgili 2 haberi birleştir
-      const topContents = allContents.slice(0, 2);
-      const combinedContent = topContents.map(c => c.content).join('\n\n---\n\n').slice(0, 8000);
-      const bestTitle = topContents[0]?.title || query;
+      return NextResponse.json({
+        ok: true,
+        query,
+        sources,
+      });
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'Arama hatası' }, { status: 500 });
+    }
+  }
 
-      // AI özeti üret
+  // 2c. SUMMARIZE-SELECTED — frontend'den seçili kaynakları al, AI özeti üret
+  //     Frontend "Tara" ile buldu, kaynakları seçti, şimdi "AI Özetle" düğmesi bu action'ı çağırır
+  if (data.action === 'summarize-selected') {
+    const selSources = (data.sources as { title: string; content: string }[]) || [];
+    if (selSources.length === 0) {
+      return NextResponse.json({ error: 'En az bir kaynak seçin' }, { status: 400 });
+    }
+    try {
+      // Seçili kaynakların içeriğini birleştir
+      const combinedContent = selSources.map(c => c.content).join('\n\n---\n\n').slice(0, 8000);
+      const bestTitle = selSources[0]?.title || data.query || '';
+
       const summary = await aiSummarize(bestTitle, combinedContent);
 
-      // Görsel seç — en ilgili 2 haberden ilk görseli al (tekrar şartı YOK)
-      // Birden fazla kaynak aynı görseli kullandıysa öncelikli onu al
-      let bestImage: string | null = null;
-
-      // Önce tekrarlanan görsel var mı kontrol et (en az 2 kaynaktan gelen)
-      const imageCounts: Record<string, number> = {};
-      for (const img of allImages) {
-        imageCounts[img] = (imageCounts[img] || 0) + 1;
-      }
-      let maxCount = 0;
-      for (const [img, count] of Object.entries(imageCounts)) {
-        if (count > maxCount) {
-          maxCount = count;
-          bestImage = img;
-        }
-      }
-      // Tekrar 2'den azsa, en ilgili haberin ilk görselini al
-      if (maxCount < 2) {
-        bestImage = null;
-        for (const c of topContents) {
-          if (c.images && c.images.length > 0) {
-            bestImage = c.images[0];
-            break;
-          }
-        }
+      if (!summary) {
+        return NextResponse.json({ error: 'AI özet üretilemedi (kota dolu veya hata)' }, { status: 502 });
       }
 
       return NextResponse.json({
         ok: true,
         title: bestTitle,
-        summary: summary || '',
-        imageUrl: bestImage,
-        content: combinedContent,
-        sourcesFound: allContents.length,
-        sources: sources,
+        summary,
       });
     } catch (e) {
-      return NextResponse.json({ error: e instanceof Error ? e.message : 'Arama hatası' }, { status: 500 });
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'AI hatası' }, { status: 500 });
     }
   }
 

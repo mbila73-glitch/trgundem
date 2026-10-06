@@ -75,6 +75,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
+  const [summarizing, setSummarizing] = useState(false);
+  const [searchResults, setSearchResults] = useState<{site: string; url: string; title: string; content: string; images: string[]}[]>([]);
+  const [selectedSourceUrls, setSelectedSourceUrls] = useState<Set<string>>(new Set());
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
   const [showTrustedSites, setShowTrustedSites] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
@@ -467,29 +471,81 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     }
   };
 
-  // Konu ara + özet — güvenilen sitelerde ara
-  const handleSearchAndSummarize = async () => {
+  // Konu ara — güvenilen sitelerde tara (özet üretmez, sadece kaynakları + görselleri listeler)
+  const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setSearching(true);
+    // Eski sonuçları temizle
+    setSearchResults([]);
+    setSelectedSourceUrls(new Set());
+    setSelectedImageUrl(null);
+    setCustomTitle('');
+    setCustomSummary('');
+    setCustomImage('');
+    setCustomContent('');
+    setFoundSources([]);
     try {
       const r = await fetch('/api/admin/custom-article', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: 'search-and-summarize', query: searchQuery }),
+        body: JSON.stringify({ action: 'search', query: searchQuery }),
       });
-      const json = (await r.json()) as { ok?: boolean; title?: string; summary?: string; imageUrl?: string | null; content?: string; sourcesFound?: number; sources?: {site: string; url: string; title: string}[]; error?: string };
+      const json = (await r.json()) as { ok?: boolean; sources?: {site: string; url: string; title: string; content: string; images: string[]}[]; error?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Arama başarısız');
-      setCustomTitle(json.title || '');
-      setCustomSummary(json.summary || '');
-      setCustomImage(json.imageUrl || '');
-      setCustomContent(json.content || '');
-      setFetchedImages(json.imageUrl ? [json.imageUrl] : []);
-      setFoundSources(json.sources ?? []);
-      toast.success(`${json.sourcesFound || 0} kaynaktan haber bulundu, AI özeti hazır`);
+      const sources = json.sources ?? [];
+      setSearchResults(sources);
+      // Varsayılan: tüm kaynakları işaretle
+      setSelectedSourceUrls(new Set(sources.map(s => s.url)));
+      // Varsayılan görsel: en çok tekrarlanan veya ilk kaynaktan ilk görsel
+      const allImages = sources.flatMap(s => s.images);
+      if (allImages.length > 0) {
+        const counts: Record<string, number> = {};
+        for (const img of allImages) counts[img] = (counts[img] || 0) + 1;
+        let best = allImages[0];
+        let maxCount = 0;
+        for (const [img, count] of Object.entries(counts)) {
+          if (count > maxCount) { maxCount = count; best = img; }
+        }
+        setSelectedImageUrl(best);
+        setCustomImage(best);
+      }
+      // Title state'i en ilgili kaynaktan al
+      if (sources.length > 0) setCustomTitle(sources[0].title);
+      setFoundSources(sources.map(s => ({ site: s.site, url: s.url, title: s.title })));
+      toast.success(`${sources.length} kaynak bulundu — istediklerinizi seçip "AI Özetle" düğmesine basın`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Arama hatası');
     } finally {
       setSearching(false);
+    }
+  };
+
+  // AI Özetle — seçili kaynaklardan AI özeti üret
+  const handleSummarizeSelected = async () => {
+    if (selectedSourceUrls.size === 0) {
+      toast.error('En az bir kaynak seçin');
+      return;
+    }
+    setSummarizing(true);
+    try {
+      const selectedSources = searchResults
+        .filter(s => selectedSourceUrls.has(s.url))
+        .map(s => ({ title: s.title, content: s.content }));
+      const r = await fetch('/api/admin/custom-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'summarize-selected', sources: selectedSources, query: searchQuery }),
+      });
+      const json = (await r.json()) as { ok?: boolean; summary?: string; title?: string; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Özet başarısız');
+      setCustomSummary(json.summary || '');
+      if (json.title) setCustomTitle(json.title);
+      if (selectedImageUrl) setCustomImage(selectedImageUrl);
+      toast.success('AI özeti hazır');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Özet hatası');
+    } finally {
+      setSummarizing(false);
     }
   };
 
@@ -880,7 +936,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                 {/* Custom article tab */}
                 {adminTab === 'custom' && (
                   <div className="space-y-4">
-                    {/* Konu Arama — güvenilen sitelerde ara + AI özeti */}
+                    {/* Konu Arama — güvenilen sitelerde tara */}
                     <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
                       <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Konu ile Haber Ara (Güvenilen Siteler)</Label>
                       <div className="flex gap-2">
@@ -892,15 +948,15 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         />
                         <Button
                           type="button"
-                          onClick={handleSearchAndSummarize}
+                          onClick={handleSearch}
                           disabled={searching || !searchQuery.trim()}
                           className="gap-2 bg-blue-600 hover:bg-blue-700"
                         >
                           {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                          Ara ve Özet
+                          Tara
                         </Button>
                       </div>
-                      <p className="text-[10px] text-muted-foreground">Güvenilen sitelerde konuyu arar, içerikleri toplar, AI özeti üretir.</p>
+                      <p className="text-[10px] text-muted-foreground">Güvenilen sitelerde konuyu arar, kaynakları ve görselleri listeler. Sonra istediklerinizi seçip "AI Özetle" düğmesine basın.</p>
                     </div>
 
                     {/* Veya URL'den çek */}
@@ -909,6 +965,75 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       <Input value={fetchUrl} onChange={(e) => setFetchUrl(e.target.value)} placeholder="https://ornek.com/haber-basligi" className="flex-1" />
                       <Button type="submit" disabled={fetching || !fetchUrl.trim()} className="gap-2">{fetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}Getir</Button>
                     </form>
+
+                    {/* Tarama Sonuçları — kaynak listesi (checkbox'lı) + görseller (radio benzeri) */}
+                    {searchResults.length > 0 && (
+                      <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-[10px] font-bold text-muted-foreground">TARAMA SONUÇLARI ({searchResults.length} kaynak · {selectedSourceUrls.size} seçili)</p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleSummarizeSelected}
+                            disabled={summarizing || selectedSourceUrls.size === 0}
+                            className="gap-1.5 text-xs h-7 bg-blue-600 hover:bg-blue-700"
+                          >
+                            {summarizing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                            AI Özetle ({selectedSourceUrls.size})
+                          </Button>
+                        </div>
+                        <div className="space-y-1.5">
+                          {searchResults.map((s, i) => (
+                            <div key={s.url} className="rounded border border-border/50 bg-background/50 p-1.5">
+                              <label className="flex items-start gap-1.5 text-[10px] cursor-pointer">
+                                <Checkbox
+                                  checked={selectedSourceUrls.has(s.url)}
+                                  onCheckedChange={(checked) => {
+                                    setSelectedSourceUrls(prev => {
+                                      const next = new Set(prev);
+                                      if (checked) next.add(s.url);
+                                      else next.delete(s.url);
+                                      return next;
+                                    });
+                                  }}
+                                />
+                                <span className="font-bold text-news min-w-[16px] text-right">{i+1}.</span>
+                                <a href={s.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex-1 min-w-0 hover:underline">
+                                  <span className="font-semibold text-foreground/80">{s.site}</span>
+                                  <span className="text-muted-foreground"> — {s.title}</span>
+                                </a>
+                              </label>
+                              {/* Bu kaynaktaki görseller */}
+                              {s.images && s.images.length > 0 && (
+                                <div className="mt-1.5 ml-7 flex flex-wrap gap-1.5">
+                                  {s.images.map((img, j) => (
+                                    <button
+                                      key={j}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (selectedImageUrl === img) {
+                                          setSelectedImageUrl(null);
+                                          setCustomImage('');
+                                        } else {
+                                          setSelectedImageUrl(img);
+                                          setCustomImage(img);
+                                        }
+                                      }}
+                                      className={`relative h-12 w-16 overflow-hidden rounded border-2 ${selectedImageUrl === img ? 'border-news' : 'border-transparent'} flex-shrink-0`}
+                                    >
+                                      <img src={img} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                      {selectedImageUrl === img && <span className="absolute inset-0 bg-news/20 flex items-center justify-center"><Check className="h-3 w-3 text-white" /></span>}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {customTitle && (
                       <div className="space-y-4 rounded-lg border border-border p-4">
@@ -974,28 +1099,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <p className="text-[10px] text-muted-foreground">Haber seçtiğiniz kategorilerin hepsinde en üstte yerleşir</p>
                         </div>
                         <Button onClick={handleSaveCustom} disabled={saving || !customTitle.trim() || !customSummary.trim()} className="w-full gap-2">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}Kaydet ve Yayınla</Button>
-
-                        {/* Bulunan Kaynaklar */}
-                        {foundSources.length > 0 && (
-                          <div className="rounded-md border border-border bg-muted/30 p-2 space-y-1.5">
-                            <p className="text-[10px] font-bold text-muted-foreground">BULUNAN KAYNAKLAR ({foundSources.length})</p>
-                            <div className="space-y-1">
-                              {foundSources.map((s, i) => (
-                                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-1.5 text-[10px] text-muted-foreground hover:text-news rounded">
-                                  <span className="font-bold text-news min-w-[16px] text-right">{i+1}.</span>
-                                  <ExternalLink className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                                  <span className="flex-1 min-w-0">
-                                    <span className="font-semibold text-foreground/80">{s.site}</span>
-                                    <span className="text-muted-foreground"> — {s.title}</span>
-                                  </span>
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     )}
-                    {!customTitle && !fetching && !searching && <Card className="flex flex-col items-center gap-3 p-10 text-center"><Star className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Konu yazıp "Ara ve Özet" veya URL yapıştırıp "Getir" butonuna basın.</p></Card>}
+                    {!customTitle && !fetching && !searching && searchResults.length === 0 && <Card className="flex flex-col items-center gap-3 p-10 text-center"><Star className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Konu yazıp "Tara" düğmesine basın veya URL yapıştırıp "Getir" düğmesine basın.</p></Card>}
 
                     {/* Güvenilen Siteler Yönetimi */}
                     <div className="rounded-lg border border-border p-3 space-y-2">
