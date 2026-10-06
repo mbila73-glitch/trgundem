@@ -272,9 +272,9 @@ export default function Home() {
               {personelOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
             {personelOpen && (
-            <div className="mt-4 rounded-lg border border-border bg-card p-4">
+            <div onClick={() => setPersonelOpen(false)} className="mt-4 cursor-pointer rounded-lg border border-border bg-card p-4">
             <h3 className="text-sm font-bold text-center mb-3 text-foreground/80">Yapay Zekâ Destek Ekibi</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 gap-3 max-w-2xl mx-auto">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-foreground/80 text-sm">Gencay Mistek</span>
                 <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">

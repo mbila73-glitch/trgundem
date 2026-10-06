@@ -343,7 +343,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
       <button
         type="button"
         onClick={() => scroll('left')}
-        className="absolute left-0 top-[45%] -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition shadow-lg"
+        className="absolute left-0 top-[45%] -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition shadow-lg"
         aria-label="Önceki"
       >
         <ChevronLeft className="h-5 w-5" />
@@ -353,7 +353,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
       <button
         type="button"
         onClick={() => scroll('right')}
-        className="absolute right-0 top-[45%] -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition shadow-lg"
+        className="absolute right-0 top-[45%] -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition shadow-lg"
         aria-label="Sonraki"
       >
         <ChevronRight className="h-5 w-5" />
@@ -402,11 +402,14 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                   ↑ Başa Dön
                 </button>
               </div>
-              {/* Başlık + kalp — kalan yüksekliği doldur (özet yok) */}
+              {/* Başlık + özet + kalp — kalan yüksekliği doldur */}
               <div className="flex flex-1 flex-col gap-2 p-4 min-h-0">
-                <h3 className="line-clamp-3 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
+                <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
                   {a.aiTitle}
                 </h3>
+                <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
+                  {a.aiSummary}
+                </p>
                 <div className="mt-auto flex items-center justify-between pt-2 border-t border-border/50">
                   <HeartCounter articleId={a.id} />
                   <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
