@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock, ExternalLink, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { PublishedArticle } from '@/lib/types';
-import { colorForName, relativeTime, initials, proxyImageUrl, dateTimeShort } from '@/lib/format';
+import { proxyImageUrl, dateTimeShort } from '@/lib/format';
 import { useHeart } from '@/lib/use-heart';
 
 type Props = {
@@ -47,44 +46,36 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
         </div>
       )}
 
-      <div className="flex flex-1 flex-col gap-2 pt-0.5 px-4 pb-3">
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-          <Avatar className="h-5 w-5">
-            <AvatarFallback className={`text-[9px] font-semibold ${colorForName(article.category)}`}>
-              {initials(article.category)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="ml-auto inline-flex items-center gap-1 tabular-nums">
-            <Clock className="h-3 w-3" />
-            {dateTimeShort(article.latestPublishedAt)}
-          </span>
-        </div>
-
+      {/* İçerik — görselin hemen altında, boşluk YOK */}
+      <div className="flex flex-1 flex-col gap-1.5 px-3 pb-2">
+        {/* Başlık */}
         <h3 className="line-clamp-3 text-[15px] font-semibold leading-snug text-foreground transition group-hover:text-news">
           {article.aiTitle}
         </h3>
 
+        {/* Özet */}
         <p className="line-clamp-3 text-[12px] leading-relaxed text-muted-foreground">
           {article.aiSummary}
         </p>
 
-        {/* Heart bar — senkron */}
-        <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
+        {/* Alt satır: Kalp solda, Kategori + Tarih sağda — tek satır */}
+        <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
           <button
             type="button"
-            onClick={toggleHeart}
+            onClick={(e) => { e.stopPropagation(); toggleHeart(); }}
             aria-label="Beğen"
             className={`inline-flex items-center gap-1.5 text-xs font-medium transition cursor-pointer ${
               userLiked ? 'text-rose-600' : 'text-muted-foreground hover:text-rose-600'
             }`}
           >
-            <Heart className={`h-4 w-4 ${userLiked ? 'fill-rose-600' : ''}`} />
+            <Heart className={`h-3.5 w-3.5 ${userLiked ? 'fill-rose-600' : ''}`} />
             <span className="tabular-nums">{hearts}</span>
           </button>
-          <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] text-muted-foreground opacity-0 transition group-hover:opacity-100">
-            <ExternalLink className="h-3 w-3" />
-            Detay
-          </span>
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <span className="font-medium text-foreground/60">{article.category}</span>
+            <span>·</span>
+            <span className="tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
+          </div>
         </div>
       </div>
     </Card>

@@ -209,16 +209,17 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
           />
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-1 pt-0.5 px-3 pb-2">
+      <div className="flex flex-1 flex-col gap-1 px-3 pb-2">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition group-hover:text-news">
           {article.aiTitle}
         </h3>
-        <div className="mt-auto flex items-center justify-between pt-1.5 border-t border-border/50">
+        <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
           <HeartCounter articleId={article.id} />
-          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
-            <Clock className="h-3 w-3" />
-            {dateTimeShort(article.latestPublishedAt)}
-          </span>
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <span className="font-medium text-foreground/60">{article.category}</span>
+            <span>·</span>
+            <span className="tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
+          </div>
         </div>
       </div>
     </Card>
@@ -250,16 +251,17 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
           />
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-1 pt-0.5 px-3 pb-2 min-h-0">
+      <div className="flex flex-1 flex-col gap-1 px-3 pb-2 min-h-0">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition group-hover:text-news">
           {article.aiTitle}
         </h3>
-        <div className="mt-auto flex items-center justify-between pt-1.5 border-t border-border/50">
+        <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
           <HeartCounter articleId={article.id} />
-          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
-            <Clock className="h-3 w-3" />
-            {dateTimeShort(article.latestPublishedAt)}
-          </span>
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <span className="font-medium text-foreground/60">{article.category}</span>
+            <span>·</span>
+            <span className="tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
+          </div>
         </div>
       </div>
     </Card>
@@ -402,20 +404,21 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                   ↑ Başa Dön
                 </button>
               </div>
-              {/* Başlık + özet + kalp — kalan yüksekliği doldur */}
-              <div className="flex flex-1 flex-col gap-1 pt-0.5 px-4 pb-2 min-h-0">
+              {/* Başlık + özet + kalp — görselin hemen altında, boşluk yok */}
+              <div className="flex flex-1 flex-col gap-1 px-4 pb-2 min-h-0">
                 <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
                   {a.aiTitle}
                 </h3>
                 <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
                   {a.aiSummary}
                 </p>
-                <div className="mt-auto flex items-center justify-between pt-2 border-t border-border/50">
+                <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
                   <HeartCounter articleId={a.id} />
-                  <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
-                    <Clock className="h-3 w-3" />
-                    {dateTimeLong(a.latestPublishedAt)}
-                  </span>
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <span className="font-medium text-foreground/60">{a.category}</span>
+                    <span>·</span>
+                    <span className="tabular-nums">{dateTimeLong(a.latestPublishedAt)}</span>
+                  </div>
                 </div>
               </div>
             </Card>
