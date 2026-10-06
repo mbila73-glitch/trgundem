@@ -89,6 +89,15 @@ model HeartLog {
   @@index([articleId])
 }
 
+// Güvenilen haber siteleri — admin panelinden eklenir/silinir
+model TrustedSite {
+  id         String   @id @default(cuid())
+  name       String   // "Sözcü", "CNN Türk"
+  searchUrl  String   // "https://www.sozcu.com.tr/ara/?q={query}" — {query} yerine arama kelimesi
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
 model ReaderMessage {
   id         String   @id @default(cuid())
   name       String

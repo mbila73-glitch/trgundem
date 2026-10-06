@@ -176,6 +176,122 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 2b. SEARCH AND SUMMARIZE — güvenilen sitelerde konuyu ara, içerik çek, AI özeti üret
+  if (data.action === 'search-and-summarize' && data.query) {
+    try {
+      // Güvenilen siteleri getir
+      const sites = await db.trustedSite.findMany({ where: { active: true } });
+      if (sites.length === 0) {
+        return NextResponse.json({ error: 'Güvenilen site yok. Admin panelden ekleyin.' }, { status: 400 });
+      }
+
+      const query = data.query.trim();
+      const allContents: { title: string; content: string; images: string[] }[] = [];
+      const allImages: string[] = [];
+
+      // Her sitede ara
+      for (const site of sites) {
+        const searchUrl = site.searchUrl.replace('{query}', encodeURIComponent(query));
+        try {
+          const resp = await fetch(searchUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml',
+            },
+            signal: AbortSignal.timeout(10000),
+          });
+          if (!resp.ok) continue;
+          const html = await resp.text();
+
+          // HTML'den haber linklerini bul (site kendi domain'inde)
+          const baseUrl = new URL(searchUrl);
+          const domain = baseUrl.hostname;
+          const linkRegex = /<a[^>]+href=["'](\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+          const seenLinks = new Set<string>();
+          let linkMatch;
+          const articleLinks: { url: string; text: string }[] = [];
+
+          while ((linkMatch = linkRegex.exec(html)) !== null && articleLinks.length < 5) {
+            const href = linkMatch[1];
+            const linkText = linkMatch[2].replace(/<[^>]+>/g, '').trim();
+            // Haber linki olup olmadığını kontrol et
+            if (href.length > 15 && linkText.length > 20 && !seenLinks.has(href)) {
+              seenLinks.add(href);
+              try {
+                const absUrl = new URL(href, searchUrl).href;
+                if (absUrl.includes(domain) && !absUrl.includes('/ara') && !absUrl.includes('/search')) {
+                  articleLinks.push({ url: absUrl, text: linkText });
+                }
+              } catch { /* skip */ }
+            }
+          }
+
+          // İlk 3 haberin içeriğini çek
+          for (const link of articleLinks.slice(0, 3)) {
+            try {
+              const articleResp = await fetch(link.url, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                  'Accept': 'text/html,application/xhtml+xml',
+                },
+                signal: AbortSignal.timeout(10000),
+              });
+              if (!articleResp.ok) continue;
+              const articleHtml = await articleResp.text();
+              const extracted = extractFromHtml(articleHtml, link.url);
+              if (extracted.content && extracted.content.length > 200) {
+                allContents.push({
+                  title: extracted.title || link.text,
+                  content: extracted.content,
+                  images: extracted.images,
+                });
+                allImages.push(...extracted.images);
+              }
+            } catch { /* skip */ }
+          }
+        } catch { /* skip site errors */ }
+      }
+
+      if (allContents.length === 0) {
+        return NextResponse.json({ error: 'Hİçbir sitede haber bulunamadı. Konuyu kontrol edin.' }, { status: 404 });
+      }
+
+      // Tüm içerikleri birleştir
+      const combinedContent = allContents.map(c => c.content).join('\n\n---\n\n').slice(0, 8000);
+      const bestTitle = allContents[0]?.title || query;
+
+      // AI özeti üret
+      const summary = await aiSummarize(bestTitle, combinedContent);
+
+      // Görsel seç — en çok tekrarlanan görsel
+      const imageCounts: Record<string, number> = {};
+      for (const img of allImages) {
+        imageCounts[img] = (imageCounts[img] || 0) + 1;
+      }
+      let bestImage: string | null = null;
+      let maxCount = 0;
+      for (const [img, count] of Object.entries(imageCounts)) {
+        if (count > maxCount) {
+          maxCount = count;
+          bestImage = img;
+        }
+      }
+      // En az 2 tekrar yoksa null (logo göster)
+      if (maxCount < 2) bestImage = null;
+
+      return NextResponse.json({
+        ok: true,
+        title: bestTitle,
+        summary: summary || '',
+        imageUrl: bestImage,
+        content: combinedContent,
+        sourcesFound: allContents.length,
+      });
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'Arama hatası' }, { status: 500 });
+    }
+  }
+
   // 3. SAVE — haberi DB'ye kaydet (multi-kategori destekli)
   if (data.action === 'save') {
     if (!data.title?.trim() || !data.summary?.trim()) {
