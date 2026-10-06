@@ -592,8 +592,12 @@ export function PublicMain() {
       <main className="flex-1 bg-background">
         {/* Arama çubuğu sticky */}
         <div className="sticky top-[160px] z-20 bg-background border-y border-border py-2">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
-            <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1 flex items-center gap-1">
+            <Button type="button" size="sm" onClick={() => { clearSearch(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-8 px-3 flex-shrink-0">
+              <Home className="h-3 w-3" />
+              <span className="hidden sm:inline">Ana Sayfa</span>
+            </Button>
+            <form onSubmit={onSearchSubmit} className="flex-1 flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
               <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
               <Input
                 type="text"
@@ -654,8 +658,12 @@ export function PublicMain() {
         <main className="flex-1 bg-background">
           {/* Arama çubuğu sticky */}
           <div className="sticky top-[160px] z-20 bg-background border-y border-border py-2">
-            <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
-              <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1 flex items-center gap-1">
+              <Button type="button" size="sm" onClick={() => { closeArticle(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-8 px-3 flex-shrink-0">
+                <Home className="h-3 w-3" />
+                <span className="hidden sm:inline">Ana Sayfa</span>
+              </Button>
+              <form onSubmit={onSearchSubmit} className="flex-1 flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
                 <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <Input
                   type="text"
