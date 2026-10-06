@@ -185,7 +185,12 @@ export default function Home() {
 
             {/* Mobil: Sol — Yıldız + İletişim düğmesi */}
             <div className="absolute left-2 sm:hidden flex items-center gap-1 flex-shrink-0 z-10">
-              <Link href="/veri" aria-label="Veri sayfasına geç" title="Veri sayfası" className="text-[10px] leading-none text-background hover:text-background cursor-pointer select-none px-1">*</Link>
+              <Link
+                href="/veri"
+                aria-label="Veri sayfasına geç"
+                title="Veri sayfası"
+                className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-blue-500 text-white font-bold text-base leading-none hover:bg-blue-600 transition select-none"
+              >*</Link>
               <Button
                 variant="default"
                 size="sm"
@@ -200,7 +205,12 @@ export default function Home() {
 
             {/* Sağ: Yıldız + İletişim + Plus + Tema (masaüstü) */}
             <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0 z-10">
-              <Link href="/veri" aria-label="Veri sayfasına geç" title="Veri sayfası" className="hidden sm:inline text-[10px] leading-none text-background hover:text-background cursor-pointer select-none px-1">*</Link>
+              <Link
+                href="/veri"
+                aria-label="Veri sayfasına geç"
+                title="Veri sayfası"
+                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-md bg-blue-500 text-white font-bold text-base leading-none hover:bg-blue-600 transition select-none"
+              >*</Link>
               <Button
                 variant="default"
                 size="sm"
