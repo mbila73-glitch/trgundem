@@ -186,6 +186,8 @@ export async function POST(req: NextRequest) {
       }
 
       const query = data.query.trim();
+      const queryLower = query.toLowerCase();
+      const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
       const allContents: { title: string; content: string; images: string[] }[] = [];
       const allImages: string[] = [];
 
