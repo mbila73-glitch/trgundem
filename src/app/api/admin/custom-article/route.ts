@@ -190,6 +190,7 @@ export async function POST(req: NextRequest) {
       const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
       const allContents: { title: string; content: string; images: string[] }[] = [];
       const allImages: string[] = [];
+      const sources: { site: string; url: string; title: string }[] = [];
 
       // Her sitede ara
       for (const site of sites) {
@@ -205,17 +206,16 @@ export async function POST(req: NextRequest) {
           if (!resp.ok) continue;
           const html = await resp.text();
 
-          // HTML'den haber linklerini bul — sadece arama kelimesi ile ilgili olanları
+          // HTML'den haber linklerini bul
           const baseUrl = new URL(searchUrl);
           const domain = baseUrl.hostname;
           const linkRegex = /<a[^>]+href=["'](\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
           const seenLinks = new Set<string>();
           let linkMatch;
-          const articleLinks: { url: string; text: string }[] = [];
-          const queryLower = query.toLowerCase();
-          const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
+          const relevantLinks: { url: string; text: string; score: number }[] = [];
+          const allLinks: { url: string; text: string }[] = [];
 
-          while ((linkMatch = linkRegex.exec(html)) !== null && articleLinks.length < 5) {
+          while ((linkMatch = linkRegex.exec(html)) !== null) {
             const href = linkMatch[1];
             const linkText = linkMatch[2].replace(/<[^>]+>/g, '').trim();
             if (href.length > 15 && linkText.length > 20 && !seenLinks.has(href)) {
@@ -223,28 +223,30 @@ export async function POST(req: NextRequest) {
               try {
                 const absUrl = new URL(href, searchUrl).href;
                 if (absUrl.includes(domain) && !absUrl.includes('/ara') && !absUrl.includes('/search')) {
-                  // Link text'inde veya URL'de arama kelimeleri geçiyor mu?
                   const linkTextLower = linkText.toLowerCase();
                   const urlLower = absUrl.toLowerCase();
                   const matchCount = queryWords.filter(w => linkTextLower.includes(w) || urlLower.includes(w.replace(/\s/g, '-'))).length;
-                  // En az 1 kelime eşleşmeli
-                  if (matchCount >= 1) {
-                    articleLinks.push({ url: absUrl, text: linkText });
-                  }
+                  relevantLinks.push({ url: absUrl, text: linkText, score: matchCount });
+                  allLinks.push({ url: absUrl, text: linkText });
                 }
               } catch { /* skip */ }
             }
           }
 
-          // En ilgili linkleri önceliklendir — en çok kelime eşleşeni önce
-          articleLinks.sort((a, b) => {
-            const aCount = queryWords.filter(w => a.text.toLowerCase().includes(w)).length;
-            const bCount = queryWords.filter(w => b.text.toLowerCase().includes(w)).length;
-            return bCount - aCount;
-          });
+          // İlgili linkleri önceliklendir, yoksa ilk 3 linki al (fallback)
+          relevantLinks.sort((a, b) => b.score - a.score);
+          let linksToFetch: { url: string; text: string }[];
 
-          // İlk 3 haberin içeriğini çek
-          for (const link of articleLinks.slice(0, 3)) {
+          if (relevantLinks.length > 0 && relevantLinks[0].score > 0) {
+            // İlgili linkler var — en iyi 3'ü al
+            linksToFetch = relevantLinks.slice(0, 3).map(l => ({ url: l.url, text: l.text }));
+          } else {
+            // İlgili link yok — ilk 3 linki al (fallback)
+            linksToFetch = allLinks.slice(0, 3);
+          }
+
+          // Haberlerin içeriğini çek
+          for (const link of linksToFetch) {
             try {
               const articleResp = await fetch(link.url, {
                 headers: {
@@ -263,6 +265,7 @@ export async function POST(req: NextRequest) {
                   images: extracted.images,
                 });
                 allImages.push(...extracted.images);
+                sources.push({ site: site.name, url: link.url, title: extracted.title || link.text });
               }
             } catch { /* skip */ }
           }
@@ -270,7 +273,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (allContents.length === 0) {
-        return NextResponse.json({ error: 'Hİçbir sitede ilgili haber bulunamadı. Konuyu kontrol edin veya daha spesifik yazın.' }, { status: 404 });
+        return NextResponse.json({ error: 'Hiçbir sitede ilgili haber bulunamadı. Konuyu kontrol edin veya daha spesifik yazın.' }, { status: 404 });
       }
 
       // En ilgili haberi seç — başlığında en çok arama kelimesi geçen
@@ -280,7 +283,7 @@ export async function POST(req: NextRequest) {
         return bCount - aCount;
       });
 
-      // Sadece en ilgili 2 haberi birleştir (farklı haberleri karıştırmamak için)
+      // Sadece en ilgili 2 haberi birleştir
       const topContents = allContents.slice(0, 2);
       const combinedContent = topContents.map(c => c.content).join('\n\n---\n\n').slice(0, 8000);
       const bestTitle = topContents[0]?.title || query;
@@ -301,7 +304,6 @@ export async function POST(req: NextRequest) {
           bestImage = img;
         }
       }
-      // En az 2 tekrar yoksa null (logo göster)
       if (maxCount < 2) bestImage = null;
 
       return NextResponse.json({
@@ -311,6 +313,7 @@ export async function POST(req: NextRequest) {
         imageUrl: bestImage,
         content: combinedContent,
         sourcesFound: allContents.length,
+        sources: sources,
       });
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : 'Arama hatası' }, { status: 500 });

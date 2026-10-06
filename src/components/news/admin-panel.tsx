@@ -79,6 +79,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [showTrustedSites, setShowTrustedSites] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
   const [newSiteUrl, setNewSiteUrl] = useState('');
+  const [foundSources, setFoundSources] = useState<{site: string; url: string; title: string}[]>([]);
   const [fetchedImages, setFetchedImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -475,13 +476,14 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: 'search-and-summarize', query: searchQuery }),
       });
-      const json = (await r.json()) as { ok?: boolean; title?: string; summary?: string; imageUrl?: string | null; content?: string; sourcesFound?: number; error?: string };
+      const json = (await r.json()) as { ok?: boolean; title?: string; summary?: string; imageUrl?: string | null; content?: string; sourcesFound?: number; sources?: {site: string; url: string; title: string}[]; error?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Arama başarısız');
       setCustomTitle(json.title || '');
       setCustomSummary(json.summary || '');
       setCustomImage(json.imageUrl || '');
       setCustomContent(json.content || '');
       setFetchedImages(json.imageUrl ? [json.imageUrl] : []);
+      setFoundSources(json.sources ?? []);
       toast.success(`${json.sourcesFound || 0} kaynaktan haber bulundu, AI özeti hazır`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Arama hatası');
@@ -941,6 +943,20 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <p className="text-[10px] text-muted-foreground">Haber seçtiğiniz kategorilerin hepsinde en üstte yerleşir</p>
                         </div>
                         <Button onClick={handleSaveCustom} disabled={saving || !customTitle.trim() || !customSummary.trim()} className="w-full gap-2">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}Kaydet ve Yayınla</Button>
+
+                        {/* Bulunan Kaynaklar */}
+                        {foundSources.length > 0 && (
+                          <div className="rounded-md border border-border bg-muted/30 p-2 space-y-1">
+                            <p className="text-[10px] font-bold text-muted-foreground">BULUNAN KAYNAKLAR ({foundSources.length})</p>
+                            {foundSources.map((s, i) => (
+                              <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-news">
+                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                                <span className="font-medium">{s.site}:</span>
+                                <span className="truncate">{s.title.slice(0, 60)}</span>
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                     {!customTitle && !fetching && !searching && <Card className="flex flex-col items-center gap-3 p-10 text-center"><Star className="h-10 w-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">Konu yazıp "Ara ve Özet" veya URL yapıştırıp "Getir" butonuna basın.</p></Card>}
