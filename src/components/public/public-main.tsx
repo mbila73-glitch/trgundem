@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { PublishedArticleCard } from '@/components/news/published-article-card';
 import { useHeart } from '@/lib/use-heart';
-import { normalizeTr, proxyImageUrl, dateTimeShort, dateTimeLong } from '@/lib/format';
+import { normalizeTr, proxyImageUrl, dateTimeShort, dateTimeLong, colorForName } from '@/lib/format';
 import type { PublishedArticle } from '@/lib/types';
 
 // ===== Yardımcı fonksiyonlar =====
@@ -215,10 +215,11 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
         </h3>
         <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
           <HeartCounter articleId={article.id} />
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <span className="font-medium text-foreground/60">{article.category}</span>
-            <span>·</span>
-            <span className="tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className={`inline-flex h-4 w-4 items-center justify-center rounded text-[8px] font-bold text-white ${colorForName(article.category)}`}>
+              {article.category[0].toUpperCase()}
+            </span>
+            <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
           </div>
         </div>
       </div>
@@ -257,10 +258,11 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
         </h3>
         <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
           <HeartCounter articleId={article.id} />
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <span className="font-medium text-foreground/60">{article.category}</span>
-            <span>·</span>
-            <span className="tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className={`inline-flex h-4 w-4 items-center justify-center rounded text-[8px] font-bold text-white ${colorForName(article.category)}`}>
+              {article.category[0].toUpperCase()}
+            </span>
+            <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
           </div>
         </div>
       </div>
@@ -414,10 +416,11 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                 </p>
                 <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
                   <HeartCounter articleId={a.id} />
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                    <span className="font-medium text-foreground/60">{a.category}</span>
-                    <span>·</span>
-                    <span className="tabular-nums">{dateTimeLong(a.latestPublishedAt)}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`inline-flex h-4 w-4 items-center justify-center rounded text-[8px] font-bold text-white ${colorForName(a.category)}`}>
+                      {a.category[0].toUpperCase()}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeLong(a.latestPublishedAt)}</span>
                   </div>
                 </div>
               </div>
@@ -724,8 +727,13 @@ export function PublicMain() {
     <main className="flex-1 bg-background">
       {/* Arama çubuğu — sticky, kompakt (tek karakter yüksekliği) */}
       <div className="sticky top-[160px] z-20 bg-background border-y border-border py-2">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
-          <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1 flex items-center gap-1">
+          {/* Ana Sayfa düğmesi */}
+          <Button type="button" size="sm" onClick={() => { clearSearch(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-5 px-2 py-0 flex-shrink-0">
+            <Home className="h-3 w-3" />
+            <span className="hidden sm:inline">Ana Sayfa</span>
+          </Button>
+          <form onSubmit={onSearchSubmit} className="flex-1 flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
             <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
             <Input
               type="text"

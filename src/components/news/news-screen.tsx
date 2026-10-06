@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
 import { useHeart } from '@/lib/use-heart';
-import { proxyImageUrl, dateTimeLong } from '@/lib/format';
+import { proxyImageUrl, dateTimeLong, dateTimeShort, colorForName } from '@/lib/format';
 import type { PublishedArticle } from '@/lib/types';
 const SUB_TABS: Array<{
   id: string;
@@ -586,7 +586,15 @@ export function NewsScreen() {
                           <div className="flex flex-1 flex-col gap-2 p-6">
                             <h3 className="text-xl font-bold leading-tight text-foreground hover:text-news">{a.aiTitle}</h3>
                             <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.aiSummary}</p>
-                            <HorizontalLikeBar articleId={a.id} />
+                            <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
+                              <HorizontalLikeBar articleId={a.id} />
+                              <div className="flex items-center gap-1.5">
+                                <span className={`inline-flex h-4 w-4 items-center justify-center rounded text-[8px] font-bold text-white ${colorForName(a.category)}`}>
+                                  {a.category[0].toUpperCase()}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeShort(a.latestPublishedAt)}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ) : (

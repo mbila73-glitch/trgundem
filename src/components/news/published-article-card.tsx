@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { PublishedArticle } from '@/lib/types';
-import { proxyImageUrl, dateTimeShort } from '@/lib/format';
+import { proxyImageUrl, dateTimeShort, colorForName } from '@/lib/format';
 import { useHeart } from '@/lib/use-heart';
 
 type Props = {
@@ -58,7 +58,7 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
           {article.aiSummary}
         </p>
 
-        {/* Alt satır: Kalp solda, Kategori + Tarih sağda — tek satır */}
+        {/* Alt satır: Kalp solda, renkli harf + tarih sağda */}
         <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
           <button
             type="button"
@@ -71,10 +71,11 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
             <Heart className={`h-3.5 w-3.5 ${userLiked ? 'fill-rose-600' : ''}`} />
             <span className="tabular-nums">{hearts}</span>
           </button>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <span className="font-medium text-foreground/60">{article.category}</span>
-            <span>·</span>
-            <span className="tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className={`inline-flex h-4 w-4 items-center justify-center rounded text-[8px] font-bold text-white ${colorForName(article.category)}`}>
+              {article.category[0].toUpperCase()}
+            </span>
+            <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeShort(article.latestPublishedAt)}</span>
           </div>
         </div>
       </div>
