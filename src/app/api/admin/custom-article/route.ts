@@ -436,10 +436,18 @@ export async function POST(req: NextRequest) {
 
       const query = data.query.trim();
       const queryLower = query.toLowerCase();
-      const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
+
+      // Stop word'leri filtrele — "ali", "emre", "ballı" gibi isimler alınsın, jenerik bağlaçlar atılsın
+      const STOP_WORDS = new Set(['ve', 'ile', 'için', 'bu', 'şu', 'o', 'bir', 'çok', 'az', 'ya', 'da', 'de', 'ki', 'mi', 'mı', 'mu', 'mü', 'ne', 'nasıl', 'neden', 'niçin', 'niye', 'hangi', 'kimi', 'kim', 'veya', 'ama', 'fakat', 'lakin', 'ancak', 'mesela', 'örneğin', 'gibi', 'kadar', 'dair', 'ait', 'göre', 'rağmen', 'dahi', 'bile', 'ise', 'ya da', 'hem', 'yahut', 'veyahut']);
+      const queryWords = queryLower.split(/\s+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
+
       const allContents: { title: string; content: string; images: string[] }[] = [];
       const allImages: string[] = [];
       const sources: { site: string; url: string; title: string }[] = [];
+
+      // Link seçim eşiği — en az yarı anlamalı kelime eşleşmesi (min 1)
+      // 3 queryWord varsa en az 2; 2 varsa en az 1; 1 varsa en az 1
+      const matchThreshold = Math.max(1, Math.ceil(queryWords.length / 2));
 
       // Her sitede ara
       for (const site of sites) {
@@ -463,14 +471,11 @@ export async function POST(req: NextRequest) {
           const seenLinks = new Set<string>();
           let linkMatch;
           const relevantLinks: { url: string; text: string; score: number }[] = [];
-          const allLinks: { url: string; text: string }[] = [];
-          let totalLinks = 0;
 
           while ((linkMatch = linkRegex.exec(html)) !== null) {
             const href = linkMatch[1];
             const linkText = linkMatch[2].replace(/<[^>]+>/g, '').trim();
             if (href.length > 15 && linkText.length > 20 && !seenLinks.has(href)) {
-              totalLinks++;
               try {
                 // Relative URL'i absolute'e çevir
                 let absUrl: string;
@@ -482,27 +487,40 @@ export async function POST(req: NextRequest) {
                   continue; // relative path (#anchor, javascript:, vb.) atla
                 }
                 // Sadece aynı domain veya subdomain linkleri al
-                if (absUrl.includes(domain) && !absUrl.includes('/ara') && !absUrl.includes('/search') && !absUrl.includes('/?s=')) {
+                // Ana sayfa, abonelik, arama, etiket, kategori sayfalarını atla
+                if (absUrl.includes(domain)
+                    && !absUrl.includes('/ara') && !absUrl.includes('/search')
+                    && !absUrl.includes('/?s=') && !absUrl.includes('/arama')
+                    && !absUrl.includes('/abone') && !absUrl.includes('/subscribe')
+                    && !absUrl.includes('/kategori') && !absUrl.includes('/category')
+                    && !absUrl.includes('/etiket') && !absUrl.includes('/tag')
+                    && !absUrl.includes('/yazar') && !absUrl.includes('/author')
+                    && !absUrl.includes('/sayfa') && !absUrl.includes('/page/')
+                    && !absUrl.includes('/iletisim') && !absUrl.includes('/contact')
+                    && !absUrl.includes('/hakkinda') && !absUrl.includes('/about')
+                    && !absUrl.includes('/kunye') && !absUrl.includes('/privacy')
+                    && !absUrl.endsWith(domain + '/') && !absUrl.endsWith(domain)
+                    ) {
                   seenLinks.add(href);
                   const linkTextLower = linkText.toLowerCase();
                   const urlLower = absUrl.toLowerCase();
-                  const matchCount = queryWords.filter(w => linkTextLower.includes(w) || urlLower.includes(w.replace(/\s/g, '-'))).length;
-                  relevantLinks.push({ url: absUrl, text: linkText, score: matchCount });
-                  allLinks.push({ url: absUrl, text: linkText });
+                  // Eşleşme sayısı: query kelimelerinin kaç tanesi linkte veya URL'de geçiyor
+                  const matchCount = queryWords.filter(w =>
+                    linkTextLower.includes(w) || urlLower.includes(w.replace(/\s/g, '-')) || urlLower.includes(w.replace(/\s/g, '_'))
+                  ).length;
+                  // Sadece eşiği geçen linkleri al — alakasız ana sayfa vb. atlanır
+                  if (matchCount >= matchThreshold) {
+                    relevantLinks.push({ url: absUrl, text: linkText, score: matchCount });
+                  }
                 }
               } catch { /* skip */ }
             }
           }
 
-          // İlgili linkleri önceliklendir, yoksa ilk 3 linki al (fallback)
+          // İlgili linkleri önceliklendir — en yüksek skor en üstte
           relevantLinks.sort((a, b) => b.score - a.score);
-          let linksToFetch: { url: string; text: string }[];
-
-          if (relevantLinks.length > 0 && relevantLinks[0].score > 0) {
-            linksToFetch = relevantLinks.slice(0, 3).map(l => ({ url: l.url, text: l.text }));
-          } else {
-            linksToFetch = allLinks.slice(0, 3);
-          }
+          // En iyi 3 linki çek (fallback YOK — alakalı link yoksa bu siteden hiç çekme)
+          const linksToFetch = relevantLinks.slice(0, 3);
 
           // Haberlerin içeriğini çek
           for (const link of linksToFetch) {
@@ -554,12 +572,15 @@ export async function POST(req: NextRequest) {
       // AI özeti üret
       const summary = await aiSummarize(bestTitle, combinedContent);
 
-      // Görsel seç — en çok tekrarlanan görsel
+      // Görsel seç — en ilgili 2 haberden ilk görseli al (tekrar şartı YOK)
+      // Birden fazla kaynak aynı görseli kullandıysa öncelikli onu al
+      let bestImage: string | null = null;
+
+      // Önce tekrarlanan görsel var mı kontrol et (en az 2 kaynaktan gelen)
       const imageCounts: Record<string, number> = {};
       for (const img of allImages) {
         imageCounts[img] = (imageCounts[img] || 0) + 1;
       }
-      let bestImage: string | null = null;
       let maxCount = 0;
       for (const [img, count] of Object.entries(imageCounts)) {
         if (count > maxCount) {
@@ -567,7 +588,16 @@ export async function POST(req: NextRequest) {
           bestImage = img;
         }
       }
-      if (maxCount < 2) bestImage = null;
+      // Tekrar 2'den azsa, en ilgili haberin ilk görselini al
+      if (maxCount < 2) {
+        bestImage = null;
+        for (const c of topContents) {
+          if (c.images && c.images.length > 0) {
+            bestImage = c.images[0];
+            break;
+          }
+        }
+      }
 
       return NextResponse.json({
         ok: true,
