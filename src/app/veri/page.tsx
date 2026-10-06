@@ -211,8 +211,9 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Mobil: Sol — İletişim düğmesi (en sola daya, başlığın üstüne gelmesin) */}
-            <div className="absolute left-2 sm:hidden flex items-center flex-shrink-0 z-10">
+            {/* Mobil: Sol — Yıldız + İletişim düğmesi */}
+            <div className="absolute left-2 sm:hidden flex items-center gap-1 flex-shrink-0 z-10">
+              <Link href="/" aria-label="Ana sayfaya dön" title="Ana sayfa" className="text-[10px] leading-none text-blue-500 hover:text-blue-400 cursor-pointer select-none font-bold px-1">*</Link>
               <Button
                 variant="default"
                 size="sm"
@@ -225,8 +226,9 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Sağ: + ve Tema (mobilde sağda, masaüstünde İletişim ile birlikte) */}
+            {/* Sağ: Yıldız + İletişim + Plus + Tema (masaüstü) */}
             <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0 z-10">
+              <Link href="/" aria-label="Ana sayfaya dön" title="Ana sayfa" className="hidden sm:inline text-[10px] leading-none text-blue-500 hover:text-blue-400 cursor-pointer select-none font-bold px-1">*</Link>
               {/* İletişim düğmesi — sadece masaüstü (mobilde sola taşındı) */}
               <Button
                 variant="default"
@@ -237,12 +239,9 @@ export default function Home() {
                 <Mail className="h-4 w-4" />
                 <span>İletişim</span>
               </Button>
-              <div className="relative inline-flex flex-col items-center">
-                <Link href="/" aria-label="Ana sayfaya dön" title="Ana sayfa" className="absolute -top-1.5 left-0 right-0 z-10 mx-auto text-center text-[10px] leading-none text-blue-500 hover:text-blue-400 cursor-pointer select-none font-bold">*</Link>
-                <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
-                  <span className="text-lg sm:text-xl">+</span>
-                </Button>
-              </div>
+              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
+                <span className="text-lg sm:text-xl">+</span>
+              </Button>
               <div className="text-white">
                 <ThemeToggle />
               </div>

@@ -183,8 +183,9 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Mobil: Sol — İletişim düğmesi */}
-            <div className="absolute left-2 sm:hidden flex items-center flex-shrink-0 z-10">
+            {/* Mobil: Sol — Yıldız + İletişim düğmesi */}
+            <div className="absolute left-2 sm:hidden flex items-center gap-1 flex-shrink-0 z-10">
+              <Link href="/veri" aria-label="Veri sayfasına geç" title="Veri sayfası" className="text-[10px] leading-none text-background hover:text-background cursor-pointer select-none px-1">*</Link>
               <Button
                 variant="default"
                 size="sm"
@@ -197,8 +198,9 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Sağ: + ve Tema */}
+            {/* Sağ: Yıldız + İletişim + Plus + Tema (masaüstü) */}
             <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0 z-10">
+              <Link href="/veri" aria-label="Veri sayfasına geç" title="Veri sayfası" className="hidden sm:inline text-[10px] leading-none text-background hover:text-background cursor-pointer select-none px-1">*</Link>
               <Button
                 variant="default"
                 size="sm"
@@ -208,12 +210,9 @@ export default function Home() {
                 <Mail className="h-4 w-4" />
                 <span>İletişim</span>
               </Button>
-              <div className="relative inline-flex flex-col items-center">
-                <Link href="/veri" aria-label="Veri sayfasına geç" title="Veri sayfası" className="absolute -top-1.5 left-0 right-0 z-10 mx-auto text-center text-[10px] leading-none text-background hover:text-background cursor-pointer select-none">*</Link>
-                <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
-                  <span className="text-lg sm:text-xl">+</span>
-                </Button>
-              </div>
+              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
+                <span className="text-lg sm:text-xl">+</span>
+              </Button>
               <div className="text-white">
                 <ThemeToggle />
               </div>
