@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
 
@@ -12,7 +14,25 @@ function checkAuth(req: NextRequest): boolean {
   } catch { return false; }
 }
 
-// Extract text from HTML (server-side, no CORS issues)
+// 5 Gemini API key
+function getGeminiKeys(): string[] {
+  const keys: string[] = [];
+  const candidates = [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3,
+    process.env.GEMINI_API_KEY_4,
+    process.env.GEMINI_API_KEY_5,
+  ];
+  for (const c of candidates) {
+    if (c && c.length > 0) keys.push(c);
+  }
+  return keys;
+}
+
+const GEMINI_MODEL = 'gemini-flash-lite-latest';
+
+// HTML'den tam içerik çıkar — başlık + açıklama + TAM METİN + görseller
 function extractFromHtml(html: string, url: string) {
   // Title
   let title = '';
@@ -21,7 +41,7 @@ function extractFromHtml(html: string, url: string) {
   const ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
   if (ogTitle) title = ogTitle[1].trim();
 
-  // Description
+  // Description (meta)
   let description = '';
   const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
   if (descMatch) description = descMatch[1].trim();
@@ -29,14 +49,23 @@ function extractFromHtml(html: string, url: string) {
     const ogDesc = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
     if (ogDesc) description = ogDesc[1].trim();
   }
-  if (!description) {
-    // Get first paragraph with text
-    const pMatches = html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
-    for (const m of pMatches) {
-      const text = m[1].replace(/<[^>]+>/g, '').trim();
-      if (text.length > 50) { description = text.slice(0, 1000); break; }
+
+  // TAM METİN — tüm <p> tag'lerini topla (en zengin içerik)
+  let fullText = '';
+  const pMatches = html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+  for (const m of pMatches) {
+    const text = m[1].replace(/<[^>]+>/g, '').trim();
+    if (text.length > 30) fullText += text + '\n\n';
+  }
+  // <article>, <div class="content"> gibi konteynerlerden de çek
+  if (fullText.length < 200) {
+    const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+    if (articleMatch) {
+      const articleText = articleMatch[1].replace(/<[^>]+>/g, '').trim();
+      if (articleText.length > 200) fullText = articleText.slice(0, 8000);
     }
   }
+  fullText = fullText.slice(0, 8000); // max 8000 karakter
 
   // Images
   const images: string[] = [];
@@ -44,47 +73,110 @@ function extractFromHtml(html: string, url: string) {
   let match;
   while ((match = imgRegex.exec(html)) !== null && images.length < 15) {
     const src = match[1];
-    if (src.match(/\.(jpg|jpeg|png|webp|gif)/i) && !src.includes('logo') && !src.includes('icon') && !src.includes('sprite') && !src.includes('avatar') && src.length > 20) {
+    if (src.match(/\.(jpg|jpeg|png|webp|gif)/i) && !src.includes('logo') && !src.includes('icon') && !src.includes('sprite') && !src.includes('avatar') && !src.includes('banner') && src.length > 20) {
       try {
         const absUrl = new URL(src, url).href;
         images.push(absUrl);
-      } catch {
-        // skip invalid URLs
-      }
+      } catch { /* skip */ }
     }
   }
 
-  return { title, description: description.slice(0, 2000), images };
+  return { title, description: description.slice(0, 2000), content: fullText, images };
+}
+
+// AI özeti üret — çekilen tam metinden 150-300 kelime özet
+async function aiSummarize(title: string, content: string): Promise<string | null> {
+  if (!content || content.length < 100) return null;
+  const keys = getGeminiKeys();
+  if (keys.length === 0) return null;
+
+  const prompt = [
+    'Sen bağımsız bir haber editörüsün. Aşağıdaki haber metnini oku ve kendi cümlelerinle yeniden yaz.',
+    'Bu bir özet değil, haberin yeniden yazımıdır.',
+    '',
+    'KURALLAR:',
+    '1. EN AZ 150 kelime olmalı, EN ÇOK 300 kelime.',
+    '2. Kaynak metinle aynı cümleyi ASLA kurma.',
+    '3. Eş anlamlı kelimeler kullan, cümle yapısını değiştir.',
+    '4. Reklam, sponsorlu içerik, "abone ol", "tıkla" gibi ifadeleri dahil ETME.',
+    '5. Marka tanıtımı/reklamı varsa atla, sadece tarafsız haber içeriğini yaz.',
+    '6. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.',
+    '',
+    'BAŞLIK: ' + title,
+    '',
+    'HABER METNİ:',
+    content.slice(0, 6000),
+  ].join('\n');
+
+  for (let attempt = 0; attempt < keys.length; attempt++) {
+    const key = keys[attempt % keys.length];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
+      const result = await resp.json();
+      if (result.error) {
+        if (result.error.code === 403 || result.error.code === 429) continue;
+        continue;
+      }
+      if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return result.candidates[0].content.parts[0].text.trim();
+      }
+    } catch { continue; }
+  }
+  return null;
 }
 
 // POST /api/admin/custom-article
-//   { action: 'fetch', url: string } → { title, description, images[] }
+//   { action: 'fetch', url } → { title, description, content, images[] }
+//   { action: 'ai-summarize', title, content } → { summary }
 //   { action: 'save', title, summary, imageUrl, category } → { ok, id }
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Geçersiz gövde' }, { status: 400 }); }
-  const data = body as { action?: string; url?: string; title?: string; summary?: string; imageUrl?: string | null; category?: string };
+  const data = body as { action?: string; url?: string; title?: string; content?: string; summary?: string; imageUrl?: string | null; category?: string };
 
+  // 1. FETCH — URL'den tam içerik çek
   if (data.action === 'fetch' && data.url) {
     try {
-      // Direct fetch (server-side, no CORS)
       const r = await fetch(data.url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; HaberOzet/1.0; +https://haberozet.local)',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml',
         },
         signal: AbortSignal.timeout(15000),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const html = await r.text();
-      const { title, description, images } = extractFromHtml(html, data.url);
-      return NextResponse.json({ ok: true, title, description, images });
+      const { title, description, content, images } = extractFromHtml(html, data.url);
+      return NextResponse.json({ ok: true, title, description, content, images });
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : 'Sayfa okunamadı' }, { status: 500 });
     }
   }
 
+  // 2. AI SUMMARIZE — tam metinden AI özeti üret
+  if (data.action === 'ai-summarize' && data.content) {
+    try {
+      const summary = await aiSummarize(data.title || '', data.content);
+      if (!summary) {
+        return NextResponse.json({ error: 'AI özet üretilemedi (kota dolu veya hata)' }, { status: 502 });
+      }
+      return NextResponse.json({ ok: true, summary });
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'AI hatası' }, { status: 500 });
+    }
+  }
+
+  // 3. SAVE — haberi DB'ye kaydet (multi-kategori destekli)
   if (data.action === 'save') {
     if (!data.title?.trim() || !data.summary?.trim()) {
       return NextResponse.json({ error: 'Başlık ve özet zorunlu' }, { status: 400 });
@@ -98,11 +190,11 @@ export async function POST(req: NextRequest) {
           category: data.category || 'Özel',
           wordCount: data.summary.trim().split(/\s+/).filter(Boolean).length,
           sourceArticleIds: JSON.stringify(['custom']),
-          sourceCount: 999, // Özel haber işareti — pipeline arşive taşımasın
+          sourceCount: 999,
           initialHearts: Math.floor(Math.random() * (413 - 223 + 1)) + 223,
           clickHearts: 0,
           earliestPublishedAt: new Date(),
-          latestPublishedAt: new Date(), // En yeni — kategorinin en üstünde
+          latestPublishedAt: new Date(),
           status: 'published',
           publishedAt: new Date(),
         },

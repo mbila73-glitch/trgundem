@@ -70,7 +70,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [customTitle, setCustomTitle] = useState('');
   const [customSummary, setCustomSummary] = useState('');
   const [customImage, setCustomImage] = useState('');
-  const [customCategory, setCustomCategory] = useState('Özel');
+  const [customCategory, setCustomCategory] = useState<string[]>(['Özel']);
+  const [customContent, setCustomContent] = useState(''); // tam metin
+  const [generatingSummary, setGeneratingSummary] = useState(false);
   const [fetchedImages, setFetchedImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
