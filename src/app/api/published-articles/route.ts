@@ -5,12 +5,12 @@ import { db } from '@/lib/db';
 //   ?category=Siyaset           -> filter by category
 //   ?limit=30&offset=0           -> pagination
 //   ?status=draft|published      -> default: published
-//   ?layout=all                  -> ANA SAYFA 50 HABER (TEK BATCH)
+//   ?layout=all                  -> ANA SAYFA 70 HABER (TEK BATCH)
 //                                 Baş: Özel varsa ilk Özel, yoksa en yüksek sourceCount
 //                                 Kategori kotaları (baş hariç):
-//                                   Siyaset 14 + Ekonomi 10 + Kamu 8 + Kültür 6 + Spor 6 + Bilim 4 = 48
-//                                 Baş ile birlikte = 49-50
-//                                 Eksik varsa: round-robin ile 50'ye tamamla
+//                                   Siyaset 20 + Ekonomi 15 + Kamu 12 + Kültür 8 + Spor 8 + Bilim 6 = 69
+//                                 Baş ile birlikte = 70
+//                                 Eksik varsa: round-robin ile 70'ye tamamla
 //                                 hasMore: false ("Diğer Haberler" yok)
 //   ?search=<text>               -> aiTitle contains (case-insensitive)
 export async function GET(req: NextRequest) {
@@ -68,17 +68,17 @@ export async function GET(req: NextRequest) {
     }
     if (basHaber) excludeIds.push(basHaber.id);
 
-    // 2. Kategori kotaları — baş hariç 49 koltuk
-    //    Siyaset 14 + Ekonomi 10 + Kamu 8 + Kültür 6 + Spor 6 + Bilim 4 = 48
-    //    Eğer Özel baş varsa 48 + 1 = 49, 1 koltuk round-robin
-    //    Eğer Özel baş yoksa 48 + 1 (Siyaset'in başı) = 49 → 1 koltuk round-robin
+    // 2. Kategori kotaları — baş hariç 69 koltuk
+    //    Siyaset 20 + Ekonomi 15 + Kamu 12 + Kültür 8 + Spor 8 + Bilim 6 = 69
+    //    Eğer Özel baş varsa 69 + 1 = 70
+    //    Eğer Özel baş yoksa 69 + 1 (Siyaset'in başı) = 70
     const quotas: Array<{ cat: string; limit: number }> = [
-      { cat: 'Siyaset', limit: 14 },
-      { cat: 'Ekonomi / Finans', limit: 10 },
-      { cat: 'Kamu / Resmi', limit: 8 },
-      { cat: 'Kültür / Sanat', limit: 6 },
-      { cat: 'Spor / Magazin', limit: 6 },
-      { cat: 'Bilim / Teknoloji', limit: 4 },
+      { cat: 'Siyaset', limit: 20 },
+      { cat: 'Ekonomi / Finans', limit: 15 },
+      { cat: 'Kamu / Resmi', limit: 12 },
+      { cat: 'Kültür / Sanat', limit: 8 },
+      { cat: 'Spor / Magazin', limit: 8 },
+      { cat: 'Bilim / Teknoloji', limit: 6 },
     ];
 
     let all: any[] = basHaber ? [basHaber] : [];
@@ -99,9 +99,9 @@ export async function GET(req: NextRequest) {
       extrasByCat[cat] = reordered.slice(limit);
     }
 
-    // 3. Round-robin: 50'ye tamamla
+    // 3. Round-robin: 70'ye tamamla
     let roundIndex = 0;
-    while (all.length < 50 && roundIndex < 100) {
+    while (all.length < 70 && roundIndex < 100) {
       let added = false;
       for (const { cat } of quotas) {
         if (extrasByCat[cat] && extrasByCat[cat][roundIndex]) {
@@ -109,14 +109,14 @@ export async function GET(req: NextRequest) {
           excludeIds.push(extrasByCat[cat][roundIndex].id);
           added = true;
         }
-        if (all.length >= 50) break;
+        if (all.length >= 70) break;
       }
       roundIndex++;
       if (!added) break;
     }
 
-    // 50 ile sınırla
-    all = all.slice(0, 50);
+    // 70 ile sınırla
+    all = all.slice(0, 70);
 
     return NextResponse.json({
       articles: all,
