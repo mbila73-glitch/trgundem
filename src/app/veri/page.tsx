@@ -65,6 +65,7 @@ export default function Home() {
   const [now, setNow] = useState<Date | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [personelOpen, setPersonelOpen] = useState(false);
 
   useEffect(() => {
     // Hydration-safe mount: SSR renders placeholders (--:--:-- and '— — — —'),
@@ -264,8 +265,14 @@ export default function Home() {
           </div>
           <YayinIlkeleri onContactClick={() => setReaderFormOpen(true)} />
 
-          {/* Personel Listesi — Yayın İlkeleri ile ayrı bölüm */}
-          <div className="mt-6 rounded-lg border border-border bg-card p-4">
+          {/* Personel Listesi — tıklayınca açılır/kapanır */}
+          <div className="mt-6">
+            <button type="button" onClick={() => setPersonelOpen(!personelOpen)} className="flex w-full items-center justify-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition">
+              Yapay Zekâ Destek Ekibi
+              {personelOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+            {personelOpen && (
+            <div className="mt-4 rounded-lg border border-border bg-card p-4">
             <h3 className="text-sm font-bold text-center mb-3 text-foreground/80">Yapay Zekâ Destek Ekibi</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto">
               <div className="flex items-center gap-2">
@@ -300,6 +307,8 @@ export default function Home() {
             <p className="text-[10px] text-muted-foreground/60 mt-3 leading-relaxed">* Yukarıda belirtilen isimler, TrGündem'in içerik üretim ve editoryal süreçlerinde kullanılan yapay zekâ sistemlerini insan tarafından kolayca tanımlanabilir biçimde ifade etmek amacıyla oluşturulmuş temsili persona isimleridir. Gerçek kişilere ait kimlik, özgeçmiş veya kişisel iletişim bilgilerini temsil etmezler.</p>
             <p className="text-[10px] text-muted-foreground/60 mt-1 leading-relaxed">Yapay zekâ hizmetlerinin kullanımı karşılığında ilgili hizmet sağlayıcılarına ait ücretler ödenmiş ve bu hizmetlere ilişkin faturalar alınmıştır. Söz konusu hizmetlerin muhasebe ve vergi yükümlülükleri, hizmet sağlayıcıları ve işletmenin kendi mali yükümlülükleri bakımından yürürlükteki mevzuat çerçevesinde yerine getirilmektedir.</p>
             <p className="text-[10px] text-muted-foreground/60 mt-1 leading-relaxed">Yapay zekâ sistemleri; haber araştırması, kaynakların karşılaştırılması, metin oluşturma, özetleme, dil ve yazım kontrolü ile içerik sınıflandırma gibi süreçlerde editoryal destek sağlar. Yayınlanan içeriklerin nihai sorumluluğu TrGündem'e aittir.</p>
+            </div>
+            )}
           </div>
 
           <div className="mt-4 flex justify-center">
