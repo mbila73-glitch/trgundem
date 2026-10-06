@@ -684,5 +684,98 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 4. IMAGE-SEARCH — AI destekli Google görsel arama
+  //    AI, haber başlığı/metnine göre uygun arama sorgusu üretir
+  //    Google Custom Search API ile ilk 10 görseli döndürür
+  if (data.action === 'image-search') {
+    const query = (data.query || '').trim();
+    const content = (data.content || '').trim();
+    if (!query && !content) {
+      return NextResponse.json({ error: 'Başlık veya içerik gerekli' }, { status: 400 });
+    }
+
+    const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || process.env.GOOGLE_CSE_API_KEY;
+    const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
+    if (!GOOGLE_API_KEY || !GOOGLE_CSE_ID) {
+      return NextResponse.json({
+        error: 'Google API key/CSE ID eksik — .env dosyasına GOOGLE_API_KEY ve GOOGLE_CSE_ID ekleyin',
+      }, { status: 500 });
+    }
+
+    try {
+      // 1. AI'a haber metnini ver, en uygun arama sorgusunu üret
+      const keys = getGeminiKeys();
+      let aiSearchQuery = query || content.slice(0, 200);
+
+      if (keys.length > 0 && (content || query)) {
+        const aiPrompt = [
+          'Sen görsel arama uzmanısın. Aşağıdaki haber için Google Görsel arama yapacağım.',
+          'En uygun 1 arama sorgusu üret (3-5 kelime, kısa ve net, çoğul değil tekil, gereksiz bağlaçlar yok).',
+          'Türkçe veya İngilizce olabilir — habere uygun olanı seç.',
+          'Örnek: "Cemil Tugay açıklama", "deprem afad", "Ali Emre Ballı", "ekonomi büyüme"',
+          'Sadece arama sorgusunu yaz, başka hiçbir şey ekleme (başlık, etiket, açıklama yok).',
+          '',
+          'BAŞLIK: ' + query,
+          '',
+          'HABER METNİ:',
+          (content || query).slice(0, 3000),
+        ].join('\n');
+
+        for (let attempt = 0; attempt < keys.length; attempt++) {
+          const key = keys[attempt % keys.length];
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+          try {
+            const resp = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: aiPrompt }] }],
+                generationConfig: { maxOutputTokens: 50, temperature: 0.3 },
+              }),
+              signal: AbortSignal.timeout(15000),
+            });
+            const result = await resp.json();
+            if (result.error) {
+              if (result.error.code === 403 || result.error.code === 429) continue;
+              continue;
+            }
+            const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (aiText) {
+              // Temizle: yeni satırlar, tırnaklar, gereksiz boşluklar
+              aiSearchQuery = aiText.trim().replace(/^["'`]|["'`]$/g, '').split('\n')[0].trim();
+              if (aiSearchQuery.length > 0) break;
+            }
+          } catch { continue; }
+        }
+      }
+
+      // 2. Google Custom Search API ile görsel ara
+      const cseUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&searchType=image&q=${encodeURIComponent(aiSearchQuery)}&num=10`;
+      const cseResp = await fetch(cseUrl, {
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!cseResp.ok) {
+        const errText = await cseResp.text().catch(() => '');
+        return NextResponse.json({
+          error: `Google API hatası (HTTP ${cseResp.status}): ${errText.slice(0, 200)}`,
+        }, { status: 502 });
+      }
+      const cseData = await cseResp.json();
+      const items = (cseData.items || []).map((item: { link: string; title: string; image?: { contextLink?: string }; displayLink?: string }) => ({
+        url: item.link,
+        title: item.title || '',
+        source: item.image?.contextLink || item.displayLink || '',
+      }));
+
+      return NextResponse.json({
+        ok: true,
+        query: aiSearchQuery,
+        images: items,
+      });
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'Görsel arama hatası' }, { status: 500 });
+    }
+  }
+
   return NextResponse.json({ error: 'Geçersiz action' }, { status: 400 });
 }
