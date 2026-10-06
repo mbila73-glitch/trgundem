@@ -349,12 +349,10 @@ async function main() {
     console.log('  [' + (ri+1) + '/' + recentWithImages.length + '] Görsel kontrol: ' + article.aiTitle.slice(0, 50));
     var hasLogo = await checkImageForLogo(article.imageUrl);
     if (hasLogo === true) {
-      console.log('    ✗ Logo tespit edildi → imageUrl null yapıldı');
-      await db.publishedArticle.update({
-        where: { id: article.id },
-        data: { imageUrl: null }
-      });
-      imageFixed++;
+      console.log('    ⚠ Logo tespit edildi (VLM) — görsel korundu, manuel kontrol önerilir');
+      // imageUrl null YAPILMIYOR — VLM false positive riski var
+      // Manuel kontrol için logla, otomatik silme
+      // imageFixed++; (devre dışı)
     } else if (hasLogo === false) {
       console.log('    ✓ Logo yok, görsel korundu');
     } else {
