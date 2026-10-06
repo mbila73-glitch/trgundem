@@ -773,6 +773,20 @@ async function main() {
           if (groupArticlesList[k].imageUrl) { bestImage = groupArticlesList[k].imageUrl; break; }
         }
 
+        // "Son dakika" haberi tespiti — kaynak başlıkta "son dakika" geçiyorsa
+        // AI özetinden "son dakika" kaldır, başına "Konu ile ilgili son bilgiler şu şekildedir:" ekle
+        var titleLower = firstArticle.title.toLowerCase();
+        if (titleLower.indexOf('son dakika') >= 0 || titleLower.indexOf('sondakika') >= 0) {
+          // AI özetinden "son dakika" ifadelerini kaldır
+          summaryText = summaryText.replace(/son\s*dakika\.{0,3}/gi, '').replace(/sondakika\.{0,3}/gi, '').trim();
+          // Başına "Konu ile ilgili son bilgiler şu şekildedir:" ekle
+          var sonBilgilerPrefix = 'Konu ile ilgili son bilgiler şu şekildedir: ';
+          if (summaryText.toLowerCase().indexOf(sonBilgilerPrefix.toLowerCase()) !== 0) {
+            summaryText = sonBilgilerPrefix + summaryText;
+          }
+          log('  [Son dakika haberi] Özet başına "Konu ile ilgili son bilgiler" eklendi');
+        }
+
         try {
           var publishTime = new Date(Date.now() - i * 60000);
           // Tüm yeni haberler direkt PUBLISHED — pending_review KALDIRILDI

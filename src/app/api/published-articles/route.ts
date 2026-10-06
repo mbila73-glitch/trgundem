@@ -90,9 +90,13 @@ export async function GET(req: NextRequest) {
         orderBy: { latestPublishedAt: 'desc' },
         take: limit + 30,
       });
-      const kota = items.slice(0, limit);
-      kota.forEach(i => { all.push(i); excludeIds.push(i.id); });
-      extrasByCat[cat] = items.slice(limit);
+      // "Konu ile ilgili son bilgiler şu şekildedir:" içeren haberleri öncelikli sırala
+      const sonBilgiler = items.filter((a: any) => a.aiSummary?.includes('Konu ile ilgili son bilgiler şu şekildedir:'));
+      const normal = items.filter((a: any) => !a.aiSummary?.includes('Konu ile ilgili son bilgiler şu şekildedir:'));
+      const reordered = [...sonBilgiler, ...normal];
+      const kota = reordered.slice(0, limit);
+      kota.forEach((i: any) => { all.push(i); excludeIds.push(i.id); });
+      extrasByCat[cat] = reordered.slice(limit);
     }
 
     // 3. Round-robin: 50'ye tamamla
