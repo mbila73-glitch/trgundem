@@ -40,6 +40,8 @@ export async function GET(req: NextRequest) {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=86400, s-maxage=86400', // 1 gün cache
         'X-Content-Type-Options': 'nosniff',
+        // ImageEditor canvas.toBlob için — cross-origin görsel CORS'a ihtiyaç duyar
+        'Access-Control-Allow-Origin': '*',
       },
     });
   } catch (e) {

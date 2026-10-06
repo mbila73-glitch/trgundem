@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeTr } from '@/lib/format';
@@ -25,6 +25,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
+import { ImageEditor } from '@/components/news/image-editor';
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; ip?: string | null; status: string; reply?: string | null; repliedAt?: string | null; createdAt: string };
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; initialHearts: number; clickHearts: number; };
@@ -119,6 +120,30 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [editImage, setEditImage] = useState('');
   const [editCategory, setEditCategory] = useState<string[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // Image editor state
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorImageUrl, setEditorImageUrl] = useState('');
+  const [editorTitle, setEditorTitle] = useState('');
+  const [editorTarget, setEditorTarget] = useState<'custom' | 'edit'>('custom');
+
+  const openImageEditor = (target: 'custom' | 'edit') => {
+    const url = target === 'custom' ? customImage : editImage;
+    const title = target === 'custom' ? customTitle : editTitle;
+    if (!url) {
+      toast.error('Düzenlenecek görsel yok — önce bir görsel yükleyin veya seçin');
+      return;
+    }
+    setEditorImageUrl(url);
+    setEditorTitle(title);
+    setEditorTarget(target);
+    setEditorOpen(true);
+  };
+
+  const handleEditorSave = (newUrl: string) => {
+    if (editorTarget === 'custom') setCustomImage(newUrl);
+    else setEditImage(newUrl);
+  };
 
   useEffect(() => { const s = localStorage.getItem('admin_token'); if (s) setToken(s); }, []);
 
@@ -1053,6 +1078,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <div className="flex items-center gap-2 mt-1">
                             <Label htmlFor="custom-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
                             <input id="custom-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setCustomImage(url), customTitle); }} />
+                            <Button type="button" size="sm" variant="outline" onClick={() => openImageEditor('custom')} disabled={!customImage} className="gap-1.5 h-7 text-xs">
+                              <Crop className="h-3.5 w-3.5" /> Düzenle / Kırp
+                            </Button>
                           </div>
                           {/* Görsel penceresi — büyük önizleme */}
                           {customImage && (
@@ -1201,6 +1229,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   <div className="flex items-center gap-2 mt-1">
                                     <Label htmlFor="edit-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
                                     <input id="edit-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setEditImage(url), editTitle); }} />
+                                    <Button type="button" size="sm" variant="outline" onClick={() => openImageEditor('edit')} disabled={!editImage} className="gap-1.5 h-7 text-xs">
+                                      <Crop className="h-3.5 w-3.5" /> Düzenle / Kırp
+                                    </Button>
                                     {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
                                   </div>
                                   </div>
@@ -1741,6 +1772,16 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Görsel Düzenle — kırpma/crop modal'ı */}
+      <ImageEditor
+        open={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        imageUrl={editorImageUrl}
+        title={editorTitle}
+        onSave={handleEditorSave}
+        token={token}
+      />
     </>
   );
 }
