@@ -403,7 +403,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                 </button>
               </div>
               {/* Başlık + özet + kalp — kalan yüksekliği doldur */}
-              <div className="flex flex-1 flex-col gap-2 p-4 min-h-0">
+              <div className="flex flex-1 flex-col gap-1.5 pt-2 px-4 pb-3 min-h-0">
                 <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
                   {a.aiTitle}
                 </h3>
