@@ -183,13 +183,13 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Mobil: Sol — Yıldız + İletişim düğmesi */}
+            {/* Mobil: Sol — Yıldız (gizli — zemin rengi) + İletişim düğmesi */}
             <div className="absolute left-2 sm:hidden flex items-center gap-1 flex-shrink-0 z-10">
               <Link
                 href="/veri"
                 aria-label="Veri sayfasına geç"
                 title="Veri sayfası"
-                className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-blue-500 text-white font-bold text-base leading-none hover:bg-blue-600 transition select-none"
+                className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-red-600 text-red-600 font-bold text-base leading-none hover:bg-red-600 hover:text-red-600 transition select-none"
               >*</Link>
               <Button
                 variant="default"
@@ -203,13 +203,13 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Sağ: Yıldız + İletişim + Plus + Tema (masaüstü) */}
+            {/* Sağ: Yıldız (gizli — zemin rengi) + İletişim + Plus + Tema (masaüstü) */}
             <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0 z-10">
               <Link
                 href="/veri"
                 aria-label="Veri sayfasına geç"
                 title="Veri sayfası"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-md bg-blue-500 text-white font-bold text-base leading-none hover:bg-blue-600 transition select-none"
+                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-md bg-red-600 text-red-600 font-bold text-base leading-none hover:bg-red-600 hover:text-red-600 transition select-none"
               >*</Link>
               <Button
                 variant="default"
