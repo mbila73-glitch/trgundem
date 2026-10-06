@@ -203,28 +203,43 @@ export async function POST(req: NextRequest) {
           if (!resp.ok) continue;
           const html = await resp.text();
 
-          // HTML'den haber linklerini bul (site kendi domain'inde)
+          // HTML'den haber linklerini bul — sadece arama kelimesi ile ilgili olanları
           const baseUrl = new URL(searchUrl);
           const domain = baseUrl.hostname;
           const linkRegex = /<a[^>]+href=["'](\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
           const seenLinks = new Set<string>();
           let linkMatch;
           const articleLinks: { url: string; text: string }[] = [];
+          const queryLower = query.toLowerCase();
+          const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
 
           while ((linkMatch = linkRegex.exec(html)) !== null && articleLinks.length < 5) {
             const href = linkMatch[1];
             const linkText = linkMatch[2].replace(/<[^>]+>/g, '').trim();
-            // Haber linki olup olmadığını kontrol et
             if (href.length > 15 && linkText.length > 20 && !seenLinks.has(href)) {
               seenLinks.add(href);
               try {
                 const absUrl = new URL(href, searchUrl).href;
                 if (absUrl.includes(domain) && !absUrl.includes('/ara') && !absUrl.includes('/search')) {
-                  articleLinks.push({ url: absUrl, text: linkText });
+                  // Link text'inde veya URL'de arama kelimeleri geçiyor mu?
+                  const linkTextLower = linkText.toLowerCase();
+                  const urlLower = absUrl.toLowerCase();
+                  const matchCount = queryWords.filter(w => linkTextLower.includes(w) || urlLower.includes(w.replace(/\s/g, '-'))).length;
+                  // En az 1 kelime eşleşmeli
+                  if (matchCount >= 1) {
+                    articleLinks.push({ url: absUrl, text: linkText });
+                  }
                 }
               } catch { /* skip */ }
             }
           }
+
+          // En ilgili linkleri önceliklendir — en çok kelime eşleşeni önce
+          articleLinks.sort((a, b) => {
+            const aCount = queryWords.filter(w => a.text.toLowerCase().includes(w)).length;
+            const bCount = queryWords.filter(w => b.text.toLowerCase().includes(w)).length;
+            return bCount - aCount;
+          });
 
           // İlk 3 haberin içeriğini çek
           for (const link of articleLinks.slice(0, 3)) {
@@ -253,12 +268,20 @@ export async function POST(req: NextRequest) {
       }
 
       if (allContents.length === 0) {
-        return NextResponse.json({ error: 'Hİçbir sitede haber bulunamadı. Konuyu kontrol edin.' }, { status: 404 });
+        return NextResponse.json({ error: 'Hİçbir sitede ilgili haber bulunamadı. Konuyu kontrol edin veya daha spesifik yazın.' }, { status: 404 });
       }
 
-      // Tüm içerikleri birleştir
-      const combinedContent = allContents.map(c => c.content).join('\n\n---\n\n').slice(0, 8000);
-      const bestTitle = allContents[0]?.title || query;
+      // En ilgili haberi seç — başlığında en çok arama kelimesi geçen
+      allContents.sort((a, b) => {
+        const aCount = queryWords.filter(w => a.title.toLowerCase().includes(w)).length;
+        const bCount = queryWords.filter(w => b.title.toLowerCase().includes(w)).length;
+        return bCount - aCount;
+      });
+
+      // Sadece en ilgili 2 haberi birleştir (farklı haberleri karıştırmamak için)
+      const topContents = allContents.slice(0, 2);
+      const combinedContent = topContents.map(c => c.content).join('\n\n---\n\n').slice(0, 8000);
+      const bestTitle = topContents[0]?.title || query;
 
       // AI özeti üret
       const summary = await aiSummarize(bestTitle, combinedContent);
