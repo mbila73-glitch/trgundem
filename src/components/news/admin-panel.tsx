@@ -113,6 +113,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [editTitle, setEditTitle] = useState('');
   const [editSummary, setEditSummary] = useState('');
   const [editImage, setEditImage] = useState('');
+  const [editCategory, setEditCategory] = useState<string[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => { const s = localStorage.getItem('admin_token'); if (s) setToken(s); }, []);
@@ -529,21 +530,30 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   };
 
   // Published article handlers
-  const startEdit = (a: PubArticle) => { setEditingId(a.id); setEditTitle(a.aiTitle); setEditSummary(a.aiSummary); setEditImage(a.imageUrl || ''); };
-  const cancelEdit = () => { setEditingId(null); setEditTitle(''); setEditSummary(''); setEditImage(''); };
+  const startEdit = (a: PubArticle) => {
+    setEditingId(a.id);
+    setEditTitle(a.aiTitle);
+    setEditSummary(a.aiSummary);
+    setEditImage(a.imageUrl || '');
+    // Mevcut kategoriyi işaretli olarak yükle
+    setEditCategory(a.category ? [a.category] : ['Özel']);
+  };
+  const cancelEdit = () => { setEditingId(null); setEditTitle(''); setEditSummary(''); setEditImage(''); setEditCategory([]); };
   const saveEdit = async (id: string) => {
     setSavingEdit(true);
     try {
-      const r = await fetch(`/api/admin/published/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ aiTitle: editTitle, aiSummary: editSummary, imageUrl: editImage || null }) });
+      // İlk seçili kategori kayıt için kullanılır (multi-kategori yeni haber ekle formunda)
+      const cat = editCategory.length > 0 ? editCategory[0] : 'Özel';
+      const r = await fetch(`/api/admin/published/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ aiTitle: editTitle, aiSummary: editSummary, imageUrl: editImage || null, category: cat }) });
       if (!r.ok) throw new Error('Güncellenemedi');
-      setPubArticles(a => a.map(x => x.id === id ? { ...x, aiTitle: editTitle, aiSummary: editSummary, imageUrl: editImage || null } : x));
+      setPubArticles(a => a.map(x => x.id === id ? { ...x, aiTitle: editTitle, aiSummary: editSummary, imageUrl: editImage || null, category: cat } : x));
       toast.success('Haber güncellendi'); cancelEdit();
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
     finally { setSavingEdit(false); }
   };
-  const deletePub = async (id: string) => {
+  const deletePub = async (id: string, hard: boolean = false) => {
     try {
-      const r = await fetch(`/api/admin/published/${id}`, {
+      const r = await fetch(`/api/admin/published/${id}${hard ? '?hard=true' : ''}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -551,16 +561,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         const err = (await r.json().catch(() => ({})) as { error?: string; detail?: string });
         throw new Error(err.detail || err.error || `HTTP ${r.status}`);
       }
-      // Local state'i hemen güncelle — UI akıcı olsun
       setPubArticles(a => a.filter(x => x.id !== id));
-      toast.success('Haber arşive alındı');
-      // Arşiv listesini de yenile — eğer kullanıcı arşiv sekmesine geçerse güncel görür
+      toast.success(hard ? 'Haber kalıcı olarak silindi' : 'Haber arşive alındı');
       void loadArchived();
-      // Restart sekmesindeki publishedCount'u da güncelle
       void fetchPipelineStatus();
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Bilinmeyen hata';
-      toast.error(`Arşive alınamadı: ${msg}`);
+      toast.error(hard ? `Silinemedi: ${msg}` : `Arşive alınamadı: ${msg}`);
       console.error('[deletePub]', e);
     }
   };
@@ -1090,6 +1097,25 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                     {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
                                   </div>
                                   </div>
+                                  {/* Kategori seçimi — mevcut kategori işaretli */}
+                                  <div className="space-y-1">
+                                    <Label className="text-xs">Kategori (ilk seçili kayıt için kullanılır)</Label>
+                                    <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
+                                      {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
+                                        <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                          <Checkbox
+                                            checked={editCategory.includes(cat)}
+                                            onCheckedChange={(checked) => {
+                                              if (checked) setEditCategory([...editCategory.filter(c => c !== cat), cat]);
+                                              else setEditCategory(editCategory.filter(c => c !== cat));
+                                            }}
+                                          />
+                                          {cat}
+                                        </label>
+                                      ))}
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground">Çoklu kategori için "Özel Haber Ekle" bölümünü kullanın. Burada ilk seçili kategori habere uygulanır.</p>
+                                  </div>
                                   <div className="flex gap-2"><Button size="sm" onClick={() => saveEdit(a.id)} disabled={savingEdit} className="gap-1.5">{savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}Kaydet</Button><Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5"><X className="h-3.5 w-3.5" />İptal</Button></div>
                                 </div>
                               ) : (
@@ -1133,10 +1159,37 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       </div>
                                     )}
                                   </div>
-                                  <div className="flex flex-shrink-0 items-center gap-1"><Button variant="ghost" size="icon" onClick={() => startEdit(a)} className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
-                                    <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                                      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Haberi arşive al?</AlertDialogTitle><AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi arşive alınacak (yayından kalkacak). Arşiv sekmesinden görüntülenebilir.</AlertDialogDescription></AlertDialogHeader>
-                                        <AlertDialogFooter><AlertDialogCancel>Vazgeç</AlertDialogCancel><AlertDialogAction onClick={() => deletePub(a.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Arşive Al</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                                  <div className="flex flex-shrink-0 items-center gap-1">
+                                    <Button variant="ghost" size="icon" onClick={() => startEdit(a)} title="Düzenle" className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" title="Arşive Al" className="h-8 w-8 text-muted-foreground hover:text-amber-600"><Archive className="h-4 w-4" /></Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Haberi arşive al?</AlertDialogTitle>
+                                          <AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi arşive alınacak (yayından kalkacak). Arşiv sekmesinden görüntülenebilir ve istenirse tekrar yayına alınabilir.</AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => deletePub(a.id, false)} className="bg-amber-600 text-white hover:bg-amber-700">Arşive Al</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" title="Kalıcı Sil" className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Haberi kalıcı sil?</AlertDialogTitle>
+                                          <AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi kalıcı olarak silinecek. Bu işlem GERİ ALINAMAZ — haber veritabanından ve kalp kayıtlarından tamamen kaldırılacak. Devam edilsin mi?</AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => deletePub(a.id, true)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Kalıcı Sil</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
                                     </AlertDialog>
                                   </div>
                                 </div>
@@ -1173,10 +1226,36 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       </div>
                                     </div>
                                     <div className="flex flex-shrink-0 items-center gap-1">
-                                      <Button variant="ghost" size="icon" onClick={() => startEdit(a)} className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
-                                      <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Haberi arşive al?</AlertDialogTitle><AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi arşive alınacak.</AlertDialogDescription></AlertDialogHeader>
-                                          <AlertDialogFooter><AlertDialogCancel>Vazgeç</AlertDialogCancel><AlertDialogAction onClick={() => deletePub(a.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Arşive Al</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                                      <Button variant="ghost" size="icon" onClick={() => startEdit(a)} title="Düzenle" className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button variant="ghost" size="icon" title="Arşive Al" className="h-8 w-8 text-muted-foreground hover:text-amber-600"><Archive className="h-4 w-4" /></Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Haberi arşive al?</AlertDialogTitle>
+                                            <AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi arşive alınacak. Arşiv sekmesinden tekrar yayına alınabilir.</AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => deletePub(a.id, false)} className="bg-amber-600 text-white hover:bg-amber-700">Arşive Al</AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button variant="ghost" size="icon" title="Kalıcı Sil" className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Haberi kalıcı sil?</AlertDialogTitle>
+                                            <AlertDialogDescription>{a.aiTitle.slice(0, 60)} haberi kalıcı olarak silinecek. Bu işlem GERİ ALINAMAZ.</AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => deletePub(a.id, true)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Kalıcı Sil</AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
                                       </AlertDialog>
                                     </div>
                                   </div>

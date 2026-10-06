@@ -21,11 +21,15 @@ export async function PATCH(
   const { id } = await params;
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Geçersiz gövde' }, { status: 400 }); }
-  const data = body as { aiTitle?: string; aiSummary?: string; imageUrl?: string | null; status?: string; archiveOld?: boolean };
+  const data = body as { aiTitle?: string; aiSummary?: string; imageUrl?: string | null; category?: string; status?: string; archiveOld?: boolean };
   const update: Record<string, unknown> = {};
   if (typeof data.aiTitle === 'string') update.aiTitle = data.aiTitle.trim();
   if (typeof data.aiSummary === 'string') update.aiSummary = data.aiSummary.trim();
   if (data.imageUrl !== undefined) update.imageUrl = data.imageUrl;
+  // Kategori desteği — string olarak güncelle
+  if (typeof data.category === 'string' && data.category.trim().length > 0) {
+    update.category = data.category.trim();
+  }
 
   // Pending → Published: pending_review → published (yeni yayınla)
   if (data.status === 'published') {
@@ -69,9 +73,9 @@ export async function PATCH(
   } catch { return NextResponse.json({ error: 'Haber bulunamadı' }, { status: 404 }); }
 }
 
-// DELETE /api/admin/published/[id] — haberi "arşive" al (hard delete değil).
-// Artık admin panelinden silinen tüm haberler Arşiv sekmesinde görünür.
-// status: 'published' → 'archived', archivedAt: now() olarak işaretlenir.
+// DELETE /api/admin/published/[id]
+//   ?hard=true  -> haberi kalıcı sil (db.publishedArticle.delete + HeartLog temizle)
+//   (varsayılan) -> haberi "arşive" al (status: 'archived')
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -79,13 +83,30 @@ export async function DELETE(
   if (!checkAuth(req)) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
   const { id } = await params;
   if (!id) return NextResponse.json({ error: 'Geçersiz ID' }, { status: 400 });
+
+  const sp = req.nextUrl.searchParams;
+  const hard = sp.get('hard') === 'true';
+
   try {
-    // Önce kayıt var mı kontrol et (daha iyi hata mesajı için)
+    // Önce kayıt var mı kontrol et
     const existing = await db.publishedArticle.findUnique({ where: { id }, select: { id: true, status: true, aiTitle: true } });
     if (!existing) {
       return NextResponse.json({ error: 'Haber bulunamadı', id }, { status: 404 });
     }
-    // Status zaten archived ise tekrar archived yapma (idempotent)
+
+    // Hard delete — kalıcı silme
+    if (hard) {
+      // HeartLog'ları da sil (foreign key constraint için)
+      try {
+        await db.heartLog.deleteMany({ where: { articleId: id } });
+      } catch (e) {
+        console.error('[DELETE hard] HeartLog silme hatası:', e);
+      }
+      await db.publishedArticle.delete({ where: { id } });
+      return NextResponse.json({ ok: true, deleted: true, id });
+    }
+
+    // Soft delete — arşive al (status: 'archived')
     if (existing.status === 'archived') {
       return NextResponse.json({ ok: true, archived: existing, message: 'Haber zaten arşivde' });
     }
@@ -95,7 +116,6 @@ export async function DELETE(
     });
     return NextResponse.json({ ok: true, archived: r });
   } catch (e) {
-    // Hatanın gerçek sebebini logla — eski kod hatayı yutuyordu
     console.error('[DELETE /api/admin/published] Hata:', e);
     return NextResponse.json(
       { error: 'Sunucu hatası', detail: (e as Error).message, id },
