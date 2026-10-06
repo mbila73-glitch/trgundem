@@ -402,14 +402,11 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                   ↑ Başa Dön
                 </button>
               </div>
-              {/* Başlık + özet + kalp — kalan yüksekliği doldur */}
+              {/* Başlık + kalp — kalan yüksekliği doldur (özet yok) */}
               <div className="flex flex-1 flex-col gap-2 p-4 min-h-0">
-                <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
+                <h3 className="line-clamp-3 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
                   {a.aiTitle}
                 </h3>
-                <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
-                  {a.aiSummary}
-                </p>
                 <div className="mt-auto flex items-center justify-between pt-2 border-t border-border/50">
                   <HeartCounter articleId={a.id} />
                   <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
@@ -585,7 +582,7 @@ export function PublicMain() {
     return (
       <main className="flex-1 bg-background">
         {/* Arama çubuğu sticky */}
-        <div className="sticky top-16 z-20 bg-background border-b border-border">
+        <div className="sticky top-[152px] z-20 bg-background border-b border-border">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
             <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
               <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
@@ -647,7 +644,7 @@ export function PublicMain() {
       return (
         <main className="flex-1 bg-background">
           {/* Arama çubuğu sticky */}
-          <div className="sticky top-16 z-20 bg-background border-b border-border">
+          <div className="sticky top-[152px] z-20 bg-background border-b border-border">
             <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
               <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
                 <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
@@ -720,7 +717,7 @@ export function PublicMain() {
   return (
     <main className="flex-1 bg-background">
       {/* Arama çubuğu — sticky, kompakt (tek karakter yüksekliği) */}
-      <div className="sticky top-16 z-20 bg-background border-b border-border">
+      <div className="sticky top-[152px] z-20 bg-background border-b border-border">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
           <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
             <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />

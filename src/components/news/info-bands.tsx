@@ -272,36 +272,7 @@ export function InfoBands() {
           </div>
         )}
 
-        {/* 3. BIST 100 BANDI — finans altında, son dakika üstünde (Borsa İstanbul'dan) */}
-        {finans.find(f => f.name === 'BIST 100') && (
-          <div
-            className="flex items-center justify-center gap-3 bg-blue-900 px-3 sm:px-4 text-white"
-            style={{ minHeight: '32px' }}
-            title="Kaynak: Borsa İstanbul (borsaistanbul.com)"
-          >
-            <span className="flex-shrink-0 font-bold text-blue-200 text-sm uppercase tracking-wide">
-              BİST 100
-            </span>
-            {(() => {
-              const bist = finans.find(f => f.name === 'BIST 100')!;
-              return (
-                <>
-                  <span className="font-bold text-white text-sm sm:text-base tabular-nums">
-                    {bist.value}
-                  </span>
-                  {bist.change !== '—' && (
-                    <span className={`inline-flex items-center gap-0.5 text-sm font-medium ${bist.up ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {bist.up ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                      {bist.change}
-                    </span>
-                  )}
-                </>
-              );
-            })()}
-          </div>
-        )}
-
-        {/* 4. SON DAKİKA — etiket yok, haberler direkt */}
+        {/* 3. SON DAKİKA — etiket yok, haberler direkt */}
         {sonDakika.length > 0 && (
           <div className="group flex items-center gap-2 overflow-hidden bg-red-600 px-3 sm:px-4" style={{ minHeight: '32px' }}>
             <div className="relative flex-1 overflow-hidden">
