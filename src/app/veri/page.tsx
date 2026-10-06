@@ -263,6 +263,45 @@ export default function Home() {
             </Button>
           </div>
           <YayinIlkeleri onContactClick={() => setReaderFormOpen(true)} />
+
+          {/* Personel Listesi — Yayın İlkeleri ile ayrı bölüm */}
+          <div className="mt-6 rounded-lg border border-border bg-card p-4">
+            <h3 className="text-sm font-bold text-center mb-3 text-foreground/80">Yapay Zekâ Destek Ekibi</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground/80 text-sm">Gencay Mistek</span>
+                <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">
+                  <Mail className="h-2.5 w-2.5" />
+                </button>
+                <span className="text-xs text-muted-foreground">— Haber Araştırma ve İçerik Geliştirme</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground/80 text-sm">Miray Nizce</span>
+                <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">
+                  <Mail className="h-2.5 w-2.5" />
+                </button>
+                <span className="text-xs text-muted-foreground">— Haber Yazımı ve İçerik Düzenleme</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground/80 text-sm">Nilay Gendir</span>
+                <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">
+                  <Mail className="h-2.5 w-2.5" />
+                </button>
+                <span className="text-xs text-muted-foreground">— Dil, Yazım ve Editoryal Kontrol</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground/80 text-sm">Arven Gemin</span>
+                <button type="button" onClick={() => setReaderFormOpen(true)} className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition" aria-label="İletişim">
+                  <Mail className="h-2.5 w-2.5" />
+                </button>
+                <span className="text-xs text-muted-foreground">— Kaynak Karşılaştırma ve İçerik Sınıflandırma</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground/60 mt-3 leading-relaxed">* Yukarıda belirtilen isimler, TrGündem'in içerik üretim ve editoryal süreçlerinde kullanılan yapay zekâ sistemlerini insan tarafından kolayca tanımlanabilir biçimde ifade etmek amacıyla oluşturulmuş temsili persona isimleridir. Gerçek kişilere ait kimlik, özgeçmiş veya kişisel iletişim bilgilerini temsil etmezler.</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-1 leading-relaxed">Yapay zekâ hizmetlerinin kullanımı karşılığında ilgili hizmet sağlayıcılarına ait ücretler ödenmiş ve bu hizmetlere ilişkin faturalar alınmıştır. Söz konusu hizmetlerin muhasebe ve vergi yükümlülükleri, hizmet sağlayıcıları ve işletmenin kendi mali yükümlülükleri bakımından yürürlükteki mevzuat çerçevesinde yerine getirilmektedir.</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-1 leading-relaxed">Yapay zekâ sistemleri; haber araştırması, kaynakların karşılaştırılması, metin oluşturma, özetleme, dil ve yazım kontrolü ile içerik sınıflandırma gibi süreçlerde editoryal destek sağlar. Yayınlanan içeriklerin nihai sorumluluğu TrGündem'e aittir.</p>
+          </div>
+
           <div className="mt-4 flex justify-center">
             <p className="text-xs text-muted-foreground">
               <span className="font-semibold text-foreground/80">TRGUNDEM.NET</span> — Bağımsız, özgün ve çok kaynaklı haber platformu
