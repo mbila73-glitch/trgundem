@@ -851,7 +851,7 @@ async function main() {
       // Yayın süresi dolan haberleri arşive taşı (6 saatten eski published)
       // Bu sayede site "taze" kalır — aynı başlıklar 6 saat sonra kalkar, yenileri gelir
       try {
-        var staleCutoff = new Date(Date.now() - 6 * 60 * 60 * 1000); // 6 saat
+        var staleCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 saat
         var staleResult = await globalThis.prisma.publishedArticle.updateMany({
           where: {
             status: 'published',
