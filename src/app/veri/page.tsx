@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Mail, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import Link from 'next/link';
 import { NewsScreen } from '@/components/news/news-screen';
 import { InfoBands } from '@/components/news/info-bands';
 import { AdminPanel } from '@/components/news/admin-panel';
@@ -236,9 +237,12 @@ export default function Home() {
                 <Mail className="h-4 w-4" />
                 <span>İletişim</span>
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
-                <span className="text-lg sm:text-xl">+</span>
-              </Button>
+              <div className="relative inline-flex flex-col items-center">
+                <Link href="/" aria-label="Ana sayfaya dön" title="Ana sayfa" className="absolute -top-1.5 left-0 right-0 z-10 mx-auto text-center text-[10px] leading-none text-blue-500 hover:text-blue-400 cursor-pointer select-none font-bold">*</Link>
+                <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
+                  <span className="text-lg sm:text-xl">+</span>
+                </Button>
+              </div>
               <div className="text-white">
                 <ThemeToggle />
               </div>

@@ -118,54 +118,269 @@ function extractFromHtml(html: string, url: string) {
   return { title: decodeHtmlEntities(title), description: decodeHtmlEntities(description.slice(0, 2000)), content: fullText, images };
 }
 
-// AI özeti üret — çekilen tam metinden 150-300 kelime özet
+// AI özeti üret — RSS pipeline protokolü ile AYNI telif güvenliği (150-300 kelime, 10 kural, retry'lar)
+const MIN_WORDS = 150;
+const MAX_WORDS = 300;
+const MAX_TOKENS = 4000;
+
+// Reklam/CTA/sponsorlu ifade listesi (pipeline-all.js ile birebir)
+const AD_PHRASES = [
+  'abone ol', 'bültenimize katıl', 'kaydol', 'üye ol', 'ücretsiz üye',
+  'tıkla', 'buradan satın al', 'hemen indir', 'ücretsiz dene',
+  'sponsorlu içerik', 'reklamdır', 'promosyon', 'indirim', 'fırsat',
+  'ilginizi çekebilir', 'bunları da okuyun', 'diğer haberler', 'önerilen',
+  'bizi takip edin', 'sosyal medya hesaplarımız', 'instagram hesabımız',
+  'twitter hesabımız', 'youtube kanalımız', 'facebook sayfamız',
+  'uygulamamızı indir', 'app store', 'google play', 'play store',
+  'için tıklayın', 'detaylar için', 'bize ulaşın', 'iletişime geçin',
+  'newsletter', 'subscribe', 'click here', 'buy now', 'download',
+  'reklam geç', 'reklamı geç', 'sponsorlu'
+];
+
+function findAds(text: string): string[] {
+  const normalized = String(text || '').toLowerCase();
+  const found: string[] = [];
+  for (const p of AD_PHRASES) {
+    if (normalized.includes(p)) found.push(p);
+  }
+  return found;
+}
+
+// Plagiarizm kontrolü — AI cevabında 4+ kelimelik ardışık dizilim kaynak metinde var mı?
+function findPlagiarism(aiText: string, sourceText: string): string[] {
+  const normalize = (t: string): string => String(t || '')
+    .toLowerCase()
+    .replace(/[''`]/g, "'")
+    .replace(/[İI]/g, 'i')
+    .replace(/Ş/g, 's').replace(/Ç/g, 'c').replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ö/g, 'o')
+    .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const ai = normalize(aiText);
+  const src = normalize(sourceText);
+  if (!ai || !src) return [];
+
+  const aiWords = ai.split(' ');
+  const found: string[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i + 4 <= aiWords.length; i++) {
+    const chunk = aiWords.slice(i, i + 4).join(' ');
+    if (chunk.length > 15 && src.includes(chunk) && !seen.has(chunk)) {
+      seen.add(chunk);
+      found.push(chunk);
+    }
+  }
+  return found;
+}
+
+function countWords(text: string): number {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(w => w.length > 0).length;
+}
+
 async function aiSummarize(title: string, content: string): Promise<string | null> {
   if (!content || content.length < 100) return null;
   const keys = getGeminiKeys();
   if (keys.length === 0) return null;
 
-  const prompt = [
-    'Sen bağımsız bir haber editörüsün. Aşağıdaki haber metnini oku ve kendi cümlelerinle yeniden yaz.',
-    'Bu bir özet değil, haberin yeniden yazımıdır.',
-    '',
-    'KURALLAR:',
-    '1. EN AZ 150 kelime olmalı, EN ÇOK 300 kelime.',
-    '2. Kaynak metinle aynı cümleyi ASLA kurma.',
-    '3. Eş anlamlı kelimeler kullan, cümle yapısını değiştir.',
-    '4. Reklam, sponsorlu içerik, "abone ol", "tıkla" gibi ifadeleri dahil ETME.',
-    '5. Marka tanıtımı/reklamı varsa atla, sadece tarafsız haber içeriğini yaz.',
-    '6. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme.',
-    '',
-    'BAŞLIK: ' + title,
-    '',
-    'HABER METNİ:',
-    content.slice(0, 6000),
-  ].join('\n');
+  const combinedContent = content.slice(0, 8000);
+
+  // Pipeline ile birebir aynı prompt + retry geri bildirim mantığı
+  function buildPrompt(minW: number, prevText: string | null, plagiarismChunks: string[] | null, prevWordCount: number, prevAds: string[] | null): string {
+    let prompt = 'Sen bağımsız bir haber editörüsün. Aşağıda farklı kaynaklardan gelen, aynı habere ait metinler var. ' +
+      'Bu metinleri oku, ANLA, sonra KENDİ CÜMLELERİNLE bağımsız bir gazeteci gibi YENİDEN YAZ. ' +
+      'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n' +
+      'TELİF GÜVENLİĞİ KURALLARI — ZORUNLU:\n' +
+      '1. BİRBİR AYNI CÜMLE KESİNLİKLE OLMASIN. Kaynak metindeki hiçbir cümleyi aynen kopyalama.\n' +
+      '   Cümleyi bölüm: özne + yüklem + nesne sırasını değiştir, eş anlamlı kelimeler kullan.\n' +
+      '2. Kaynak metinle %30 DAN FAZLA kelime örtüşmesi yapma.\n' +
+      '3. Cümle yapılarını tamamen değiştir:\n' +
+      '   - Aktif cümleyi pasife çevir (önceledi → tarafından önelendi)\n' +
+      '   - Olumsuzu olumlu, olumlu olumsuz yap (ifade değişmeden)\n' +
+      '   - Düz cümleyi soru, soruyu düz cümleye çevir\n' +
+      '   - Cümle sırasını değiştir (önce sonuç, sonra sebep — veya tersi)\n' +
+      '4. Eş anlamlı kelimeler kullan:\n' +
+      '   - "açıkladı" yerine "belirtti / ifadede bulundu / söyledi / dile getirdi"\n' +
+      '   - "dedi" yerine "ifade etti / kaydetti / vurguladı / belirtti"\n' +
+      '   - "yüzde" yerine "yüzde oranında / yüzde ... seviyesinde / ...-oranla"\n' +
+      '   - "bugün" yerine "bu gün / yaşadığımız gün / günümüzde"\n' +
+      '   - "başkanı" yerine "yöneticisi / temsilcisi / sözcüsü" (anlam uygunsa)\n' +
+      '5. Kaynak metindeki İFADEYİ DEĞİL, ANLAMI aktar. Anlamı koru, ifadeyi değiştir.\n' +
+      '6. Sayısal veriler (rakam, yüzde, tarih, saat) — ANLAMI KORU ANCAK FARKLI CÜMLEDE VER:\n' +
+      '   Kaynakta "Borsa %2 yükseldi" yazıyorsa sen "Borsa endeksinde yüzde iki oranında artış gözlendi" yaz.\n' +
+      '   Kaynakta "5 Ekim 2026" yazıyorsa sen "Ekim ayının beşinci günü / 2026 yılının ekim ayında" yaz.\n' +
+      '7. Alıntı yapılmış sözleri ("..." içindeki ifadeler) AYNEN KORUMAK ZORUNLU DEĞİL — kendi cümlenle aktar.\n' +
+      '8. Kişi adları ve kurum adları korunabilir ANCAK cümle içinde farklı konumlandır.\n' +
+      '9. Eğer kaynak metinle çok benzer çıkarsa, kendini düzelt — farklı bir cümle kur.\n' +
+      '10. 4+ kelimelik ardışık dizilim kaynak metinde varsa, bu bir kopyalama sayılır — DEĞİŞTİR.\n';
+
+    if (prevText && plagiarismChunks && plagiarismChunks.length > 0) {
+      prompt += '\nÖNCEKİ DENEMENDE KOPYALAMA TESPİT EDİLDİ. Şu ifadeler kaynak metinle birebir aynı:\n';
+      plagiarismChunks.slice(0, 5).forEach((chunk, i) => {
+        prompt += `  ${i + 1}. "${chunk}"\n`;
+      });
+      prompt += 'Bu ifadelerin hiçbirini yeniden yazdığın metinde aynen kullanma. ' +
+        'Tamamen farklı cümle yapısı ve eş anlamlı kelimelerle yeniden yaz.\n';
+      prompt += '\nÖNCEKİ DENEMEN (referans için, kopyalama):\n' + prevText.slice(0, 1500) + '\n';
+    }
+
+    if (prevText && prevWordCount && prevWordCount < minW) {
+      prompt += `\nÖNCEKİ DENEMEN ${prevWordCount} KELİME İDİ — YETERSİZ.\n`;
+      prompt += `EN AZ ${minW} kelime yazman ZORUNLU. Önceki denemeyi referans al ama ` +
+        'DAHA UZUN ve detaylı yaz. Haberin tüm detaylarını, bağlamını, arka planını, sonuçlarını ekle.\n';
+      prompt += '\nÖNCEKİ DENEMEN (referans):\n' + prevText.slice(0, 1500) + '\n';
+    }
+
+    if (prevText && prevAds && prevAds.length > 0) {
+      prompt += '\nÖNCEKİ DENEMENDE REKLAM TESPİT EDİLDİ. Şu reklam/CTA ifadeleri var:\n';
+      prevAds.slice(0, 8).forEach((ad, i) => {
+        prompt += `  ${i + 1}. "${ad}"\n`;
+      });
+      prompt += 'Bu ifadeleri ASLA yeniden yazdığın metinde kullanma. ' +
+        'Haberin konusu reklam ile ilgili değilse, tüm reklam benzeri ifadeleri tamamen çıkar. ' +
+        'Sadece haberin asıl içeriğini yaz.\n';
+    }
+
+    prompt += '\nİÇERİK KURALLARI:\n' +
+      '1. Mantıksal tutarlılık: haberin anlamına sadık kal. Olmayan çıkarımlar yapma. ' +
+      '"deprem öncesi 16 artçı" gibi saçma mantıksal hatalardan kaçın. Eylemi doğru özne yap, ' +
+      'sayıları doğru kullan, eylem-sayı-özne ilişkisi bozukluğu yapma.\n' +
+      '2. Terim kontrolü: teknik, siyasi, ekonomik, hukuki terimleri doğru kullan. ' +
+      '"artçı" depremden sonra gelir (ön sarsıntı öncesi). Tarih, saat, yüzde, rakam bilgisini ' +
+      'OLDUĞU GİBİ AL ANCAK farklı cümle yapısı içinde ver.\n' +
+      '3. Kronoloji: olayların sırasını koru. Eski olayı "yeni" gibi, yeni olayı "eski" gibi sunma. ' +
+      '"gelecek" olanı "geçmiş" gibi, "geçmiş" olanı "gelecek" gibi yazma.\n' +
+      '4. İddia/yargı: haberde "iddia edildi" diyorsa "gerçekleşti" deme. "açıklandı" diyorsa ' +
+      '"söylendi" deme. Belirsizliği koru.\n' +
+      '5. Anlam kayması: "ekonomik büyüme" yerine "ekonomik küçülme" gibi zıt anlamlı kelime yazma.\n' +
+      '6. BAŞLIK-ÖZET UYUMU: Özet yazdığın haber BAŞLIKTA belirtilen konu ile AYNI olmalıdır. ' +
+      'Başlık "MHP Genel Başkanı Bahçeli" hakkında ise özet de BU konuyu anlatmalıdır. ' +
+      'Başlıkta bahsedilen kişiler, kurumlar ve olaylar özette yer almalıdır. ' +
+      'Eğer kaynak metinler farklı konuları içeriyorsa, SADECE başlıkla ilgili olan kısmı özetle. ' +
+      'Başka bir haberin içeriğini BAŞLIKLA ALAKASIZ olarak özete dahil ETME.\n' +
+      '7. MARKA REKLAM VE TANITIM FILTRESI: Eğer kaynak metin belirli bir markanın, ' +
+      'ürünün veya şirketin TANITIMINI, REKLAMINI veya SPONSORLU İÇERİĞİNİ içeriyorsa, ' +
+      'bu kısmı özete DAHİL ETME. Örnekler:\n' +
+      '   - Otomobil markası tanıtımı: "Yeni X modeli tanıtıldı, işte özellikleri" → REKLAM, atla\n' +
+      '   - Telefon markası tanıtımı: "Y markası yeni telefonunu çıkardı" → REKLAM, atla\n' +
+      '   - Ürün tanıtımı: "Z ürünü ile tanışın" → REKLAM, atla\n' +
+      '   Eğer haber bir markanın reklamını/tanıtımını yapıyorsa, bu içeriği ÖZETLEME. ' +
+      '   Sadece tarafsız haber içeriğini özetle.\n' +
+      '8. REKLAM VE SPONSORLU İÇERİK KALDIR: Kaynak metinde geçen reklam, sponsorlu içerik, ' +
+      'çağrı aksiyonu (CTA) ifadelerini ASLA özete dahil etme. Örnekler:\n' +
+      '   - "Abone ol", "Bültenimize katıl", "Kaydol", "Üye ol" → KALDIR\n' +
+      '   - "Tıkla", "Buradan satın al", "Hemen indir", "Ücretsiz dene" → KALDIR\n' +
+      '   - "Sponsorlu içerik", "Reklam", "Promosyon", "İndirim" → KALDIR\n' +
+      '   - "İlginizi çekebilir", "Bunları da okuyun", "Diğer haberler", "Önerilen" → KALDIR\n' +
+      '   - "Bizi takip edin", "Sosyal medya", "Instagram", "Twitter", "YouTube" (kanal yönlendirme) → KALDIR\n' +
+      '   - "Uygulamamızı indir", "App Store", "Google Play" → KALDIR\n' +
+      '   - Kaynak site adı, "için tıklayın", "detaylar için" gibi yönlendirme → KALDIR\n' +
+      '   Eğer haberin ana konusu reklam değilse, reklam benzeri ifadeleri tamamen çıkar.\n';
+
+    prompt += '\nUZUNLUK:\n' +
+      `EN AZ ${minW} kelime olmalı — daha kısa yazma. ` +
+      `EN ÇOK ${MAX_WORDS} kelime olmalı — daha uzun yazma. ${MAX_WORDS} kelime yeterli, haberi tamamla. ` +
+      'Cümleni yarıda kesme, haber doğal bir sonuca ulaşmalı. ' +
+      `ASLA ${MAX_WORDS} kelimeyi geçme — kısa ve öz tut.\n`;
+
+    prompt += '\nÇIKTI FORMATI:\n' +
+      'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme ' +
+      '(başlık, etiket, markdown, açıklama yok).\n\n' +
+      'BAŞLIK (referans): ' + title + '\n\nKAYNAK HABER METİNLERİ:\n' + combinedContent;
+    return prompt;
+  }
+
+  let bestText: string | null = null;
+  let bestWordCount = 0;
+  let prevAttemptText: string | null = null;
+  let prevPlagiarism: string[] | null = null;
+  let prevWordCount = 0;
+  let prevAds: string[] | null = null;
+  const deadKeys = new Set<number>();
 
   for (let attempt = 0; attempt < keys.length; attempt++) {
-    const key = keys[attempt % keys.length];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+    const keyIdx = attempt % keys.length;
+    if (deadKeys.has(keyIdx)) continue;
+    const key = keys[keyIdx];
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+
     try {
-      const resp = await fetch(url, {
+      const resp = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
+          contents: [{ parts: [{ text: buildPrompt(MIN_WORDS, prevAttemptText, prevPlagiarism, prevWordCount, prevAds) }] }],
+          generationConfig: { maxOutputTokens: MAX_TOKENS, temperature: 0.7 },
         }),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(45000),
       });
       const result = await resp.json();
       if (result.error) {
-        if (result.error.code === 403 || result.error.code === 429) continue;
+        // 403/429 → bu key'i dead yap, diğer dene
+        if (result.error.code === 403 || result.error.code === 429) {
+          deadKeys.add(keyIdx);
+          continue;
+        }
         continue;
       }
-      if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-        return result.candidates[0].content.parts[0].text.trim();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) continue;
+      const clean = text.trim();
+      const wc = countWords(clean);
+
+      // 1. Plagiarizm kontrolü
+      const plagiarism = findPlagiarism(clean, combinedContent);
+      if (plagiarism.length > 0) {
+        if (wc > bestWordCount) { bestText = clean; bestWordCount = wc; }
+        prevAttemptText = clean;
+        prevPlagiarism = plagiarism;
+        prevWordCount = wc;
+        prevAds = null;
+        continue;
       }
-    } catch { continue; }
+
+      // 2. Reklam kontrolü
+      const ads = findAds(clean);
+      if (ads.length > 0) {
+        if (wc > bestWordCount) { bestText = clean; bestWordCount = wc; }
+        prevAttemptText = clean;
+        prevPlagiarism = null;
+        prevWordCount = wc;
+        prevAds = ads;
+        continue;
+      }
+
+      // 3. Yetersiz kelime kontrolü
+      if (wc < MIN_WORDS) {
+        if (wc > bestWordCount) { bestText = clean; bestWordCount = wc; }
+        prevAttemptText = clean;
+        prevPlagiarism = null;
+        prevWordCount = wc;
+        prevAds = null;
+        continue;
+      }
+
+      // Üst limit — 300'den fazla varsa truncate (pipeline ile aynı)
+      let finalText = clean;
+      if (wc > MAX_WORDS) {
+        const words = clean.split(/\s+/);
+        finalText = words.slice(0, MAX_WORDS).join(' ');
+        // Cümleyi yarıda kesme — son noktaya kadar al
+        const lastPeriod = finalText.lastIndexOf('.');
+        if (lastPeriod > MAX_WORDS * 0.7) {
+          finalText = finalText.slice(0, lastPeriod + 1);
+        }
+      }
+
+      return finalText;
+    } catch {
+      deadKeys.add(keyIdx);
+      continue;
+    }
   }
-  return null;
+
+  return bestText;
 }
 
 // POST /api/admin/custom-article

@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeTr } from '@/lib/format';
@@ -920,8 +920,32 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <div className="flex items-center gap-2 mt-1">
                             <Label htmlFor="custom-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
                             <input id="custom-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setCustomImage(url)); }} />
-                            {customImage && <img src={customImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
                           </div>
+                          {/* Görsel penceresi — büyük önizleme */}
+                          {customImage && (
+                            <div className="mt-2 rounded-md border border-border overflow-hidden bg-muted/30 relative">
+                              <img
+                                src={customImage}
+                                alt="Özel haber görseli"
+                                className="w-full h-48 object-contain"
+                                onError={(e) => {
+                                  const t = e.currentTarget as HTMLImageElement;
+                                  t.style.display = 'none';
+                                  const ph = t.parentElement?.querySelector('[data-placeholder]') as HTMLElement | null;
+                                  if (ph) ph.style.display = 'flex';
+                                }}
+                              />
+                              <div data-placeholder style={{ display: 'none' }} className="w-full h-48 flex flex-col items-center justify-center text-muted-foreground gap-2">
+                                <ImageIcon className="h-8 w-8" />
+                                <p className="text-[10px]">Görsel yüklenemedi — URL geçersiz veya erişilemiyor</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => navigator.clipboard?.writeText(customImage).then(() => toast.success('Görsel URL kopyalandı'))}
+                                className="absolute top-1 right-1 rounded bg-background/80 backdrop-blur px-1.5 py-0.5 text-[9px] text-muted-foreground hover:text-foreground"
+                              >URL</button>
+                            </div>
+                          )}
                           {fetchedImages.length > 0 && <div className="flex flex-wrap gap-2 mt-2">{fetchedImages.map((img, i) => <button key={i} type="button" onClick={() => setCustomImage(img)} className={`h-16 w-24 overflow-hidden rounded border-2 ${customImage === img ? 'border-news' : 'border-transparent'}`}><img src={img} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></button>)}</div>}
                         </div>
                         <div className="space-y-1.5">
