@@ -585,7 +585,7 @@ export function PublicMain() {
     return (
       <main className="flex-1 bg-background">
         {/* Arama çubuğu sticky */}
-        <div className="sticky top-[152px] z-20 bg-background border-b border-border">
+        <div className="sticky top-[160px] z-20 bg-background border-y border-border py-2">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
             <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
               <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
@@ -647,7 +647,7 @@ export function PublicMain() {
       return (
         <main className="flex-1 bg-background">
           {/* Arama çubuğu sticky */}
-          <div className="sticky top-[152px] z-20 bg-background border-b border-border">
+          <div className="sticky top-[160px] z-20 bg-background border-y border-border py-2">
             <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
               <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
                 <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
@@ -720,7 +720,7 @@ export function PublicMain() {
   return (
     <main className="flex-1 bg-background">
       {/* Arama çubuğu — sticky, kompakt (tek karakter yüksekliği) */}
-      <div className="sticky top-[152px] z-20 bg-background border-b border-border">
+      <div className="sticky top-[160px] z-20 bg-background border-y border-border py-2">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-1">
           <form onSubmit={onSearchSubmit} className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
             <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
