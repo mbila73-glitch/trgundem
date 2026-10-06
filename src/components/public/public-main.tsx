@@ -209,7 +209,7 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
           />
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 p-3">
+      <div className="flex flex-1 flex-col gap-1 pt-0.5 px-3 pb-2">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition group-hover:text-news">
           {article.aiTitle}
         </h3>
@@ -250,7 +250,7 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
           />
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 p-3 min-h-0">
+      <div className="flex flex-1 flex-col gap-1 pt-0.5 px-3 pb-2 min-h-0">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition group-hover:text-news">
           {article.aiTitle}
         </h3>
@@ -403,7 +403,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
                 </button>
               </div>
               {/* Başlık + özet + kalp — kalan yüksekliği doldur */}
-              <div className="flex flex-1 flex-col gap-1.5 pt-2 px-4 pb-3 min-h-0">
+              <div className="flex flex-1 flex-col gap-1 pt-0.5 px-4 pb-2 min-h-0">
                 <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground transition group-hover:text-news">
                   {a.aiTitle}
                 </h3>
@@ -783,7 +783,7 @@ export function PublicMain() {
           <section className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
               {/* Sol: Ana pencere (20 haber, tek tek, oklarla kayar) */}
-              <div className="lg:col-span-2 flex flex-col gap-2 min-h-[400px] sm:min-h-[480px]">
+              <div className="lg:col-span-2 flex flex-col gap-2 min-h-[360px] sm:min-h-[432px]">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-bold uppercase tracking-wide text-foreground/80">Ana Haberler</h2>
                   <span className="text-[10px] text-muted-foreground">{mainSlider.length} haber — oklarla gezin</span>
@@ -794,7 +794,7 @@ export function PublicMain() {
               </div>
 
               {/* Sağ: 2 kutu alt alta — toplam yükseklik ana pencereye eşit, her biri yarım */}
-              <div className="grid grid-rows-2 gap-4 min-h-[400px] sm:min-h-[480px]">
+              <div className="grid grid-rows-2 gap-4 min-h-[360px] sm:min-h-[432px]">
                 {sideBoxes.map((a, i) => a ? (
                   <div key={a.id} className="min-h-0">
                     <NewsCardMedium article={a} onOpen={openArticle} />

@@ -47,7 +47,7 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
         </div>
       )}
 
-      <div className="flex flex-1 flex-col gap-2.5 p-4">
+      <div className="flex flex-1 flex-col gap-2 pt-0.5 px-4 pb-3">
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <Avatar className="h-5 w-5">
             <AvatarFallback className={`text-[9px] font-semibold ${colorForName(article.category)}`}>
