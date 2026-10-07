@@ -1209,7 +1209,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       <Input
                         value={translateInput}
                         onChange={(e) => setTranslateInput(e.target.value)}
-                        placeholder='Türkçe yaz (ör: "sel baskını")'
+                        placeholder='Türkçe yaz'
                         className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
                       />
                       <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
@@ -1246,11 +1246,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             Görsel Ara
                           </Button>
                         </div>
-                        {(searchImages.length > 0 || imageSearchInput || imageSearchQuery) && (
-                          <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1.5 h-7 text-xs w-full">
-                            <X className="h-3.5 w-3.5" /> Temizle
-                          </Button>
-                        )}
+                        <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1.5 h-7 text-xs w-full">
+                          <X className="h-3.5 w-3.5" /> Temizle
+                        </Button>
                         <p className="text-[10px] text-muted-foreground">
                           {imageSearchInput.trim()
                             ? <>Manuel arama kelimeleri ile aranır — AI üretimini atlar.</>
@@ -1502,7 +1500,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             <Input
                               value={translateInput}
                               onChange={(e) => setTranslateInput(e.target.value)}
-                              placeholder='Türkçe yaz (ör: "sel baskını")'
+                              placeholder='Türkçe yaz'
                               className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
                             />
                             <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
@@ -1656,7 +1654,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                     <Input
                                       value={translateInput}
                                       onChange={(e) => setTranslateInput(e.target.value)}
-                                      placeholder='Türkçe yaz (ör: "sel baskını")'
+                                      placeholder='Türkçe yaz'
                                       className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
                                     />
                                     <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
@@ -1678,7 +1676,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                         <Input
                                           value={imageSearchInput}
                                           onChange={(e) => setImageSearchInput(e.target.value)}
-                                          placeholder='Arama kelimeleri (ör: "Cemil Tugay")'
+                                          placeholder='Arama kelimeleri'
                                           className="flex-1 text-xs h-7"
                                           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('edit'); } }}
                                         />
