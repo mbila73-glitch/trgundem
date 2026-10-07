@@ -1725,6 +1725,41 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             <div className="space-y-3">
                               {pubArticles.slice(30).map(a => (
                                 <Card key={a.id} className="p-4">
+                                  {editingId === a.id ? (
+                                    <div className="space-y-3">
+                                      <div className="space-y-1"><Label className="text-xs">Başlık</Label><Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
+                                      <div className="space-y-1"><Label className="text-xs">Özet</Label><Textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} rows={5} className="resize-none" /></div>
+                                      <div className="space-y-1"><Label className="text-xs">Görsel URL</Label><Input value={editImage} onChange={(e) => setEditImage(e.target.value)} />
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <Label htmlFor="edit-file-other" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
+                                        <input id="edit-file-other" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setEditImage(url), editTitle); }} />
+                                        <Button type="button" size="sm" variant="outline" onClick={() => openImageEditor('edit')} disabled={!editImage} className="gap-1.5 h-7 text-xs">
+                                          <Crop className="h-3.5 w-3.5" /> Düzenle / Kırp
+                                        </Button>
+                                        {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
+                                      </div>
+                                      </div>
+                                      {/* Kategori seçimi */}
+                                      <div className="space-y-1">
+                                        <Label className="text-xs">Kategori (ilk seçili kayıt için kullanılır)</Label>
+                                        <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
+                                          {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
+                                            <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                              <Checkbox
+                                                checked={editCategory.includes(cat)}
+                                                onCheckedChange={(checked) => {
+                                                  if (checked) setEditCategory([...editCategory.filter(c => c !== cat), cat]);
+                                                  else setEditCategory(editCategory.filter(c => c !== cat));
+                                                }}
+                                              />
+                                              {cat}
+                                            </label>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2"><Button size="sm" onClick={() => saveEdit(a.id)} disabled={savingEdit} className="gap-1.5">{savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}Kaydet</Button><Button size="sm" variant="outline" onClick={cancelEdit} className="gap-1.5"><X className="h-3.5 w-3.5" />İptal</Button></div>
+                                    </div>
+                                  ) : (
                                   <div className="flex items-start gap-3">
                                     {a.imageUrl && <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded"><img src={a.imageUrl} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} /></div>}
                                     <div className="min-w-0 flex-1">
@@ -1776,6 +1811,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       </AlertDialog>
                                     </div>
                                   </div>
+                                  )}
                                 </Card>
                               ))}
                             </div>
