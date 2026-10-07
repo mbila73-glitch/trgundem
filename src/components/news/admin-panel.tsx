@@ -1231,7 +1231,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <Input
                             value={imageSearchInput}
                             onChange={(e) => setImageSearchInput(e.target.value)}
-                            placeholder='Arama kelimeleri (opsiyonel) — ör: "Cemil Tugay" veya boş bırak AI üretsin'
+                            placeholder='Arama kelimeleri'
                             className="flex-1 text-xs h-8"
                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('custom'); } }}
                           />
@@ -1521,7 +1521,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               <Input
                                 value={imageSearchInput}
                                 onChange={(e) => setImageSearchInput(e.target.value)}
-                                placeholder='Arama kelimeleri (opsiyonel) — ör: "Cemil Tugay" veya boş bırak AI üretsin'
+                                placeholder='Arama kelimeleri'
                                 className="flex-1 text-xs h-8"
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('manual'); } }}
                               />
@@ -1546,6 +1546,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               <p className="text-[10px] text-green-700 dark:text-green-300">Kullanılan sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
                             )}
                           </div>
+                          <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1.5 h-7 text-xs w-full">
+                            <X className="h-3.5 w-3.5" /> Temizle
+                          </Button>
 
                           {/* Bulunan görseller — grid 5x2 (manuel form için) */}
                           {imageSearchTarget === 'manual' && searchImages.length > 0 && (
@@ -1694,6 +1697,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       {imageSearchQuery && imageSearchTarget === 'edit' && (
                                         <p className="text-[10px] text-green-700 dark:text-green-300">Sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
                                       )}
+                                      <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1 h-6 text-[10px] w-full">
+                                        <X className="h-3 w-3" /> Temizle
+                                      </Button>
                                       {imageSearchTarget === 'edit' && searchImages.length > 0 && (
                                         <div className="grid grid-cols-5 gap-1 mt-1">
                                           {searchImages.map((img, i) => (
