@@ -848,5 +848,44 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 5. TRANSLATE — Türkçe → İngilizce çeviri (Gemini API, gerçek zamanlı)
+  if (data.action === 'translate' && typeof data.text === 'string') {
+    const text = data.text.trim();
+    if (!text) return NextResponse.json({ ok: true, translated: '' });
+
+    const keys = getGeminiKeys();
+    if (keys.length === 0) {
+      return NextResponse.json({ error: 'Gemini API key yok' }, { status: 500 });
+    }
+
+    const prompt = `Translate the following Turkish text to English. Write ONLY the translation, nothing else.\n\nTurkish: ${text}`;
+
+    for (let attempt = 0; attempt < keys.length; attempt++) {
+      const key = keys[attempt % keys.length];
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 100, temperature: 0.3 },
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+        const result = await resp.json();
+        if (result.error) {
+          if (result.error.code === 403 || result.error.code === 429) continue;
+          continue;
+        }
+        const translated = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (translated) {
+          return NextResponse.json({ ok: true, translated: translated.trim() });
+        }
+      } catch { continue; }
+    }
+    return NextResponse.json({ error: 'Çeviri başarısız' }, { status: 502 });
+  }
+
   return NextResponse.json({ error: 'Geçersiz action' }, { status: 400 });
 }

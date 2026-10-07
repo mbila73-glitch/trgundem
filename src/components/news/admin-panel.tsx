@@ -91,6 +91,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [imageSearchQuery, setImageSearchQuery] = useState('');
   const [imageSearchTarget, setImageSearchTarget] = useState<'custom' | 'edit' | 'manual' | null>(null);
   const [imageSearchInput, setImageSearchInput] = useState('');
+  // Türkçe → İngilizce çeviri (görsel arama için)
+  const [translateInput, setTranslateInput] = useState('');
+  const [translateOutput, setTranslateOutput] = useState('');
+  const [translating, setTranslating] = useState(false);
   const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
   const [showTrustedSites, setShowTrustedSites] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
@@ -681,13 +685,41 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     }
   };
 
-  // Görsel seçimi — imageSearchTarget'a göre ilgili formun image state'ini güncelle
+  // Görsel seçimi — seçince arama sonuçlarını ve input'u temizle
   const handleSelectSearchImage = (url: string) => {
-    setSelectedImageUrl(url);
     if (imageSearchTarget === 'custom') setCustomImage(url);
     else if (imageSearchTarget === 'edit') setEditImage(url);
     else if (imageSearchTarget === 'manual') setManualImage(url);
+    // Temizle — sonraki düzenlemede eski sonuçlar gelmesin
+    setSelectedImageUrl(url);
+    setSearchImages([]);
+    setImageSearchInput('');
+    setImageSearchTarget(null);
+    setImageSearchQuery('');
   };
+
+  // Türkçe → İngilizce gerçek zamanlı çeviri (500ms debounce)
+  useEffect(() => {
+    if (!translateInput.trim()) {
+      setTranslateOutput('');
+      return;
+    }
+    if (!token) return;
+    const timer = setTimeout(async () => {
+      setTranslating(true);
+      try {
+        const r = await fetch('/api/admin/custom-article', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ action: 'translate', text: translateInput.trim() }),
+        });
+        const json = (await r.json()) as { ok?: boolean; translated?: string };
+        if (json.ok) setTranslateOutput(json.translated || '');
+      } catch { /* sessiz */ }
+      finally { setTranslating(false); }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [translateInput, token]);
 
   // Güvenilen siteleri yükle
   const loadTrustedSites = useCallback(async () => {
@@ -1163,6 +1195,25 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         </div>
                       </div>
                     )}
+
+                    {/* Türkçe → İngilizce çeviri (görsel arama için) */}
+                    <div className="flex items-center gap-1 rounded-md border border-border bg-muted/30 p-1.5">
+                      <Input
+                        value={translateInput}
+                        onChange={(e) => setTranslateInput(e.target.value)}
+                        placeholder='Türkçe yaz (ör: "sel baskını") — İngilizceye çevrilir'
+                        className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
+                      />
+                      <span className="text-[10px] text-muted-foreground flex-shrink-0">→</span>
+                      <div className="flex-1 min-w-0 text-xs h-7 flex items-center px-2 bg-background rounded overflow-hidden">
+                        {translating ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <span className="text-foreground/80 truncate">{translateOutput || '—'}</span>}
+                      </div>
+                      {translateOutput && (
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setImageSearchInput(translateOutput)} className="h-7 text-[10px] flex-shrink-0 px-2">
+                          Aramada kullan
+                        </Button>
+                      )}
+                    </div>
 
                     {/* Görsel Ara — AI destekli telifsiz görsel tarama (Openverse) */}
                     {(customTitle || customSummary || imageSearchInput) && (
