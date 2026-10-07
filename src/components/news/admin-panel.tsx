@@ -449,7 +449,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   };
 
   // Custom article handlers
-  const handleFetch = async (e: React.FormEvent) => {
+  // URL'den haber çek — target 'custom' (özel) veya 'manual' (manuel form)
+  const handleFetch = async (e: React.FormEvent, target: 'custom' | 'manual' = 'custom') => {
     e.preventDefault();
     if (!fetchUrl.trim()) return;
     setFetching(true);
@@ -457,12 +458,20 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       const r = await fetch('/api/admin/custom-article', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ action: 'fetch', url: fetchUrl }) });
       const json = (await r.json()) as { ok?: boolean; title?: string; description?: string; content?: string; images?: string[]; error?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Getirilemedi');
-      setCustomTitle(json.title || '');
-      setCustomSummary(json.description || '');
-      setCustomContent(json.content || '');
-      setFetchedImages(json.images ?? []);
-      setCustomImage(json.images?.[0] || '');
-      toast.success('Haber çekildi — tam içerik hazır');
+      if (target === 'custom') {
+        setCustomTitle(json.title || '');
+        setCustomSummary(json.description || '');
+        setCustomContent(json.content || '');
+        setFetchedImages(json.images ?? []);
+        setCustomImage(json.images?.[0] || '');
+      } else {
+        // Manuel form — title + content (özete değil içeriğe yaz)
+        setManualTitle(json.title || '');
+        setManualContent(json.content || json.description || '');
+        setFetchedImages(json.images ?? []);
+        setManualImage(json.images?.[0] || '');
+      }
+      toast.success('Haber çekildi — düzenleyip yayınlayabilirsiniz');
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
     finally { setFetching(false); }
   };
@@ -1112,13 +1121,6 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       <p className="text-[10px] text-muted-foreground">Güvenilen sitelerde konuyu arar, kaynakları ve görselleri listeler. Sonra istediklerinizi seçip "AI Özetle" düğmesine basın.</p>
                     </div>
 
-                    {/* Veya URL'den çek */}
-                    <div className="text-center text-[10px] text-muted-foreground">— VEYA —</div>
-                    <form onSubmit={handleFetch} className="flex gap-2">
-                      <Input value={fetchUrl} onChange={(e) => setFetchUrl(e.target.value)} placeholder="https://ornek.com/haber-basligi" className="flex-1" />
-                      <Button type="submit" disabled={fetching || !fetchUrl.trim()} className="gap-2">{fetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}Getir</Button>
-                    </form>
-
                     {/* Tarama Sonuçları — kaynak listesi (checkbox'lı), görsel yok */}
                     {searchResults.length > 0 && (
                       <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
@@ -1354,6 +1356,166 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         </div>
                       )}
                     </div>
+                      </div>
+                    )}
+
+                    {/* Manuel Haber Ekle — URL'den haber çek + başlık/içerik/görsel manuel düzenle */}
+                    {addSubtab === 'manual' && (
+                      <div className="space-y-4">
+                        {/* URL'den haber çek */}
+                        <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
+                          <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">URL'den Haber Çek (opsiyonel)</Label>
+                          <form onSubmit={(e) => handleFetch(e, 'manual')} className="flex gap-2">
+                            <Input value={fetchUrl} onChange={(e) => setFetchUrl(e.target.value)} placeholder="https://ornek.com/haber-basligi" className="flex-1" />
+                            <Button type="submit" disabled={fetching || !fetchUrl.trim()} className="gap-2">{fetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}Getir</Button>
+                          </form>
+                          <p className="text-[10px] text-muted-foreground">URL girip "Getir" basın — başlık, içerik ve görseller otomatik doldurulur, sonra düzenlersiniz.</p>
+                        </div>
+
+                        {/* Haber formu */}
+                        <div className="space-y-4 rounded-lg border border-border p-4">
+                          <div className="space-y-1.5">
+                            <Label>Başlık</Label>
+                            <Input value={manualTitle} onChange={(e) => setManualTitle(e.target.value)} placeholder="Haber başlığını girin" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label>İçerik</Label>
+                            <Textarea value={manualContent} onChange={(e) => setManualContent(e.target.value)} rows={10} className="resize-y" placeholder="Haber içeriğini girin veya URL'den çekin" />
+                            <p className="text-[10px] text-muted-foreground">{manualContent.trim().split(/\s+/).filter(Boolean).length} kelime</p>
+                          </div>
+
+                          {/* Görsel URL + Yükle + Düzenle */}
+                          <div className="space-y-1.5">
+                            <Label>Görsel URL</Label>
+                            <Input value={manualImage} onChange={(e) => setManualImage(e.target.value)} placeholder="https://..." />
+                            <div className="flex items-center gap-2 mt-1">
+                              <Label htmlFor="manual-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">
+                                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle
+                              </Label>
+                              <input id="manual-file" type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, (url) => setManualImage(url), manualTitle); }} />
+                              <Button type="button" size="sm" variant="outline" onClick={() => openImageEditor('manual')} disabled={!manualImage} className="gap-1.5 h-7 text-xs">
+                                <Crop className="h-3.5 w-3.5" /> Düzenle / Kırp
+                              </Button>
+                            </div>
+                            {/* Görsel penceresi — büyük önizleme */}
+                            {manualImage && (
+                              <div className="mt-2 rounded-md border border-border overflow-hidden bg-muted/30 relative">
+                                <img
+                                  src={manualImage}
+                                  alt="Manuel haber görseli"
+                                  className="w-full h-48 object-contain"
+                                  onError={(e) => {
+                                    const t = e.currentTarget as HTMLImageElement;
+                                    t.style.display = 'none';
+                                    const ph = t.parentElement?.querySelector('[data-placeholder]') as HTMLElement | null;
+                                    if (ph) ph.style.display = 'flex';
+                                  }}
+                                />
+                                <div data-placeholder style={{ display: 'none' }} className="w-full h-48 flex flex-col items-center justify-center text-muted-foreground gap-2">
+                                  <ImageIcon className="h-8 w-8" />
+                                  <p className="text-[10px]">Görsel yüklenemedi — URL geçersiz veya erişilemiyor</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => navigator.clipboard?.writeText(manualImage).then(() => toast.success('Görsel URL kopyalandı'))}
+                                  className="absolute top-1 right-1 rounded bg-background/80 backdrop-blur px-1.5 py-0.5 text-[9px] text-muted-foreground hover:text-foreground"
+                                >URL</button>
+                              </div>
+                            )}
+                            {fetchedImages.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {fetchedImages.map((img, i) => (
+                                  <button key={i} type="button" onClick={() => setManualImage(img)} className={`h-16 w-24 overflow-hidden rounded border-2 ${manualImage === img ? 'border-news' : 'border-transparent'}`}>
+                                    <img src={img} alt="" className="h-full w-full object-cover" onError={(e) => (e.currentTarget.parentElement!.style.display = 'none')} />
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Görsel Ara — AI destekli telifsiz görsel tarama (Openverse) */}
+                          {(manualTitle || imageSearchInput) && (
+                            <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-950/20 p-3 space-y-2">
+                              <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli · Openverse)</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  value={imageSearchInput}
+                                  onChange={(e) => setImageSearchInput(e.target.value)}
+                                  placeholder='Arama kelimeleri (opsiyonel) — ör: "Cemil Tugay" veya boş bırak AI üretsin'
+                                  className="flex-1 text-xs h-8"
+                                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('manual'); } }}
+                                />
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={() => handleImageSearch('manual')}
+                                  disabled={searchingImages || (!manualTitle.trim() && !imageSearchInput.trim())}
+                                  className="gap-2 bg-green-600 hover:bg-green-700 h-8"
+                                >
+                                  {searchingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                                  Görsel Ara
+                                </Button>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">
+                                {imageSearchInput.trim()
+                                  ? <>Manuel arama kelimeleri ile aranır — AI üretimini atlar.</>
+                                  : <>AI habere uygun arama sorgusu üretir ve Openverse'de (Creative Commons + Public Domain) <strong>telifsiz</strong> görseller arasından ilk 10 sonucu getirir.</>
+                                }
+                              </p>
+                              {imageSearchQuery && imageSearchTarget === 'manual' && (
+                                <p className="text-[10px] text-green-700 dark:text-green-300">Kullanılan sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Bulunan görseller — grid 5x2 (manuel form için) */}
+                          {imageSearchTarget === 'manual' && searchImages.length > 0 && (
+                            <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
+                              <p className="text-[10px] font-bold text-muted-foreground">TELİFSİZ GÖRSELLER ({searchImages.length}) — tıkla seç</p>
+                              <div className="grid grid-cols-5 gap-1.5">
+                                {searchImages.map((img, i) => (
+                                  <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => handleSelectSearchImage(img.url)}
+                                    className={`relative aspect-square overflow-hidden rounded border-2 ${selectedImageUrl === img.url ? 'border-news' : 'border-transparent'} flex-shrink-0 group`}
+                                    title={img.title || img.source || `Görsel ${i+1}`}
+                                  >
+                                    <img src={img.url} alt={img.title || ''} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                    {selectedImageUrl === img.url && <span className="absolute inset-0 bg-news/30 flex items-center justify-center"><Check className="h-5 w-5 text-white" /></span>}
+                                    {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">{img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}</span>}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Kategori multi-checkbox */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Kategori (birden fazla seçebilirsiniz)</Label>
+                            <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
+                              {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
+                                <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                  <Checkbox
+                                    checked={manualCategory.includes(cat)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) setManualCategory([...manualCategory, cat]);
+                                      else setManualCategory(manualCategory.filter(c => c !== cat));
+                                    }}
+                                  />
+                                  {cat}
+                                </label>
+                              ))}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">Haber seçtiğiniz kategorilerin hepsinde en üstte yerleşir</p>
+                          </div>
+
+                          <Button onClick={handleSaveManual} disabled={saving || !manualTitle.trim() || !manualContent.trim()} className="w-full gap-2">
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}Kaydet ve Yayınla
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
