@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop, ArrowDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeTr } from '@/lib/format';
@@ -1204,23 +1204,23 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       </div>
                     )}
 
-                    {/* Türkçe → İngilizce çeviri (görsel arama için) */}
-                    <div className="flex items-center gap-1 rounded-md border border-border bg-muted/30 p-1.5">
+                    {/* Türkçe → İngilizce çeviri (görsel arama için) — ok ile arama kutusuna kopyala */}
+                    <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/30 p-1.5">
                       <Input
                         value={translateInput}
                         onChange={(e) => setTranslateInput(e.target.value)}
-                        placeholder='Türkçe yaz (ör: "sel baskını") — İngilizceye çevrilir'
+                        placeholder='Türkçe yaz (ör: "sel baskını")'
                         className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
                       />
-                      <span className="text-[10px] text-muted-foreground flex-shrink-0">→</span>
+                      <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
+                        <ArrowDown className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                      <button type="button" onClick={() => setImageSearchInput(translateOutput)} title="İngilizce metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
+                        <ArrowDown className="h-3 w-3 text-muted-foreground" />
+                      </button>
                       <div className="flex-1 min-w-0 text-xs h-7 flex items-center px-2 bg-background rounded overflow-hidden">
                         {translating ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <span className="text-foreground/80 truncate">{translateOutput || '—'}</span>}
                       </div>
-                      {translateOutput && (
-                        <Button type="button" size="sm" variant="ghost" onClick={() => setImageSearchInput(translateOutput)} className="h-7 text-[10px] flex-shrink-0 px-2">
-                          Aramada kullan
-                        </Button>
-                      )}
                     </div>
 
                     {/* Görsel Ara — AI destekli telifsiz görsel tarama (Openverse) */}
@@ -1245,12 +1245,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             {searchingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                             Görsel Ara
                           </Button>
-                          {(searchImages.length > 0 || imageSearchInput || imageSearchQuery) && (
-                            <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1.5 h-8 text-xs">
-                              <X className="h-3.5 w-3.5" /> Temizle
-                            </Button>
-                          )}
                         </div>
+                        {(searchImages.length > 0 || imageSearchInput || imageSearchQuery) && (
+                          <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1.5 h-7 text-xs w-full">
+                            <X className="h-3.5 w-3.5" /> Temizle
+                          </Button>
+                        )}
                         <p className="text-[10px] text-muted-foreground">
                           {imageSearchInput.trim()
                             ? <>Manuel arama kelimeleri ile aranır — AI üretimini atlar.</>
@@ -1497,6 +1497,25 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             )}
                           </div>
 
+                          {/* Türkçe → İngilizce çeviri — ok ile arama kutusuna kopyala */}
+                          <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/30 p-1.5">
+                            <Input
+                              value={translateInput}
+                              onChange={(e) => setTranslateInput(e.target.value)}
+                              placeholder='Türkçe yaz (ör: "sel baskını")'
+                              className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
+                            />
+                            <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
+                              <ArrowDown className="h-3 w-3 text-muted-foreground" />
+                            </button>
+                            <button type="button" onClick={() => setImageSearchInput(translateOutput)} title="İngilizce metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
+                              <ArrowDown className="h-3 w-3 text-muted-foreground" />
+                            </button>
+                            <div className="flex-1 min-w-0 text-xs h-7 flex items-center px-2 bg-background rounded overflow-hidden">
+                              {translating ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <span className="text-foreground/80 truncate">{translateOutput || '—'}</span>}
+                            </div>
+                          </div>
+
                           {/* Görsel Ara — AI destekli telifsiz görsel tarama (Openverse) */}
                           <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-950/20 p-3 space-y-2">
                             <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli · Openverse)</Label>
@@ -1630,6 +1649,25 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                     </Button>
                                     {editImage && <img src={editImage} alt="" className="h-10 w-16 rounded object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />}
                                   </div>
+                                  </div>
+
+                                  {/* Türkçe → İngilizce çeviri — ok ile arama kutusuna kopyala (edit) */}
+                                  <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/30 p-1.5">
+                                    <Input
+                                      value={translateInput}
+                                      onChange={(e) => setTranslateInput(e.target.value)}
+                                      placeholder='Türkçe yaz (ör: "sel baskını")'
+                                      className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
+                                    />
+                                    <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
+                                      <ArrowDown className="h-3 w-3 text-muted-foreground" />
+                                    </button>
+                                    <button type="button" onClick={() => setImageSearchInput(translateOutput)} title="İngilizce metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
+                                      <ArrowDown className="h-3 w-3 text-muted-foreground" />
+                                    </button>
+                                    <div className="flex-1 min-w-0 text-xs h-7 flex items-center px-2 bg-background rounded overflow-hidden">
+                                      {translating ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <span className="text-foreground/80 truncate">{translateOutput || '—'}</span>}
+                                    </div>
                                   </div>
 
                                   {/* Görsel Ara — AI destekli telifsiz (edit formu için) */}
