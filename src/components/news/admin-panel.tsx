@@ -73,6 +73,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [customImage, setCustomImage] = useState('');
   const [customCategory, setCustomCategory] = useState<string[]>(['Özel']);
   const [customContent, setCustomContent] = useState(''); // tam metin
+  // Manuel haber ekleme state'leri
+  const [manualTitle, setManualTitle] = useState('');
+  const [manualContent, setManualContent] = useState('');
+  const [manualImage, setManualImage] = useState('');
+  const [manualCategory, setManualCategory] = useState<string[]>(['Özel']);
+  const [addSubtab, setAddSubtab] = useState<'auto' | 'manual'>('auto');
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -83,7 +89,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [searchImages, setSearchImages] = useState<{url: string; title: string; source: string}[]>([]);
   const [searchingImages, setSearchingImages] = useState(false);
   const [imageSearchQuery, setImageSearchQuery] = useState('');
-  const [imageSearchTarget, setImageSearchTarget] = useState<'custom' | 'edit' | null>(null);
+  const [imageSearchTarget, setImageSearchTarget] = useState<'custom' | 'edit' | 'manual' | null>(null);
   const [imageSearchInput, setImageSearchInput] = useState('');
   const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
   const [showTrustedSites, setShowTrustedSites] = useState(false);
@@ -130,11 +136,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorImageUrl, setEditorImageUrl] = useState('');
   const [editorTitle, setEditorTitle] = useState('');
-  const [editorTarget, setEditorTarget] = useState<'custom' | 'edit'>('custom');
+  const [editorTarget, setEditorTarget] = useState<'custom' | 'edit' | 'manual'>('custom');
 
-  const openImageEditor = (target: 'custom' | 'edit') => {
-    const url = target === 'custom' ? customImage : editImage;
-    const title = target === 'custom' ? customTitle : editTitle;
+  const openImageEditor = (target: 'custom' | 'edit' | 'manual') => {
+    const url = target === 'custom' ? customImage : target === 'edit' ? editImage : manualImage;
+    const title = target === 'custom' ? customTitle : target === 'edit' ? editTitle : manualTitle;
     if (!url) {
       toast.error('Düzenlenecek görsel yok — önce bir görsel yükleyin veya seçin');
       return;
@@ -147,7 +153,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
   const handleEditorSave = (newUrl: string) => {
     if (editorTarget === 'custom') setCustomImage(newUrl);
-    else setEditImage(newUrl);
+    else if (editorTarget === 'edit') setEditImage(newUrl);
+    else if (editorTarget === 'manual') setManualImage(newUrl);
   };
 
   useEffect(() => { const s = localStorage.getItem('admin_token'); if (s) setToken(s); }, []);
@@ -477,6 +484,49 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setSaving(false); }
   };
 
+  // Manuel haber kaydet — kullanıcı başlığı, içeriği, görseli, kategorisi manuel girer
+  const handleSaveManual = async () => {
+    if (!manualTitle.trim() || !manualContent.trim()) {
+      toast.error('Başlık ve içerik zorunlu');
+      return;
+    }
+    if (manualCategory.length === 0) {
+      toast.error('En az bir kategori seçin');
+      return;
+    }
+    setSaving(true);
+    try {
+      for (const cat of manualCategory) {
+        const r = await fetch('/api/admin/custom-article', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            action: 'save',
+            title: manualTitle.trim(),
+            summary: manualContent.trim(),
+            imageUrl: manualImage || null,
+            category: cat,
+          }),
+        });
+        if (!r.ok) {
+          const err = (await r.json().catch(() => ({}))) as { error?: string };
+          throw new Error(err.error || `HTTP ${r.status}`);
+        }
+      }
+      toast.success(`${manualCategory.length} kategoride yayınlandı: ${manualCategory.join(', ')}`);
+      // Form temizle
+      setManualTitle('');
+      setManualContent('');
+      setManualImage('');
+      setManualCategory(['Özel']);
+      void loadPubArticles();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Kayıt hatası');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // AI özeti oluştur — çekilen tam metinden
   const handleAiSummary = async () => {
     if (!customContent || customContent.length < 100) {
@@ -572,15 +622,17 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   };
 
   // Görsel Ara — AI destekli telifsiz görsel tarama (Openverse)
-  // target: 'custom' (özel haber ekleme) veya 'edit' (yayında haberi düzenleme)
+  // target: 'custom' (özel haber ekleme), 'edit' (yayında haberi düzenleme) veya 'manual' (manuel haber)
   // manualQuery: kullanıcı manuel arama kelimeleri girdiyse, AI üretimini atlar
-  const handleImageSearch = async (target: 'custom' | 'edit') => {
-    const title = target === 'custom' ? customTitle : editTitle;
-    const summary = target === 'custom' ? (customSummary || customContent) : editSummary;
+  const handleImageSearch = async (target: 'custom' | 'edit' | 'manual') => {
+    const title = target === 'custom' ? customTitle : target === 'edit' ? editTitle : manualTitle;
+    const summary = target === 'custom' ? (customSummary || customContent) : target === 'edit' ? editSummary : manualContent;
     if (!title.trim() && !summary.trim() && !imageSearchInput.trim()) {
       toast.error(target === 'custom'
         ? 'Arama kelimeleri girin veya önce "Tara" + "AI Özetle" yapın'
-        : 'Arama kelimeleri girin veya düzenle formunda başlık gerekli');
+        : target === 'edit'
+        ? 'Arama kelimeleri girin veya düzenle formunda başlık gerekli'
+        : 'Arama kelimeleri girin veya manuel formda başlık girin');
       return;
     }
     setSearchingImages(true);
@@ -609,7 +661,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         // İlk görseli varsayılan seç — ilgili formun image state'ine yaz
         setSelectedImageUrl(imgs[0].url);
         if (target === 'custom') setCustomImage(imgs[0].url);
-        else setEditImage(imgs[0].url);
+        else if (target === 'edit') setEditImage(imgs[0].url);
+        else if (target === 'manual') setManualImage(imgs[0].url);
         toast.success(`${imgs.length} telifsiz görsel bulundu${json.query ? ` (sorgu: "${json.query}")` : ''}`);
       }
     } catch (e) {
@@ -624,6 +677,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     setSelectedImageUrl(url);
     if (imageSearchTarget === 'custom') setCustomImage(url);
     else if (imageSearchTarget === 'edit') setEditImage(url);
+    else if (imageSearchTarget === 'manual') setManualImage(url);
   };
 
   // Güvenilen siteleri yükle
@@ -831,7 +885,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <>
                 {/* Sub-tabs — sticky (scroll ederken kaybolmasın) */}
                 <div className="sticky top-0 z-10 mb-3 sm:mb-4 -mx-3 sm:-mx-6 px-2 sm:px-6 py-2 flex gap-0.5 sm:gap-1 overflow-x-auto rounded-lg border border-border bg-background/95 backdrop-blur shadow-sm">
-                  {([['messages', 'Mesajlar', Mail], ['custom', 'Özel Haber', Star], ['published', 'Yayında', Newspaper], ['archived', 'Arşiv', Archive], ['pending', 'Tekrar', AlertCircle]] as const).map(([id, label, Icon]) => (
+                  {([['messages', 'Mesajlar', Mail], ['custom', 'Haber Ekle', Star], ['published', 'Yayında', Newspaper], ['archived', 'Arşiv', Archive], ['pending', 'Tekrar', AlertCircle]] as const).map(([id, label, Icon]) => (
                     <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex items-center justify-center gap-1 sm:gap-1.5 rounded-md px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-medium transition relative flex-shrink-0 ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Icon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{label}</span>
                       {id === 'pending' && pendingArticles.length > 0 && (
@@ -1011,9 +1065,30 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                   </div>
                 )}
 
-                {/* Custom article tab */}
+                {/* Haber Ekle tab — iki alt-sekme: Otomatik / Manuel */}
                 {adminTab === 'custom' && (
                   <div className="space-y-4">
+                    {/* Alt-sekmeler */}
+                    <div className="flex gap-1 border-b border-border">
+                      <button
+                        type="button"
+                        onClick={() => setAddSubtab('auto')}
+                        className={`px-3 py-2 text-xs font-medium border-b-2 transition ${addSubtab === 'auto' ? 'border-news text-news' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                      >
+                        Otomatik Haber Ekle
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAddSubtab('manual')}
+                        className={`px-3 py-2 text-xs font-medium border-b-2 transition ${addSubtab === 'manual' ? 'border-news text-news' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                      >
+                        Manuel Haber Ekle
+                      </button>
+                    </div>
+
+                    {/* Otomatik Haber Ekle — mevcut özel haber içeriği */}
+                    {addSubtab === 'auto' && (
+                      <div className="space-y-4">
                     {/* Konu Arama — güvenilen sitelerde tara */}
                     <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
                       <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Konu ile Haber Ara (Güvenilen Siteler)</Label>
