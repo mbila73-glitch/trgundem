@@ -684,9 +684,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 4. IMAGE-SEARCH — AI destekli Google görsel arama
+  // 4. IMAGE-SEARCH — AI destekli telifsiz görsel arama
   //    AI, haber başlığı/metnine göre uygun arama sorgusu üretir
-  //    Google Custom Search API ile ilk 10 görseli döndürür
+  //    Openverse API (https://api.openverse.org) ile telifsiz görseller arar
+  //    Openverse: Creative Commons + Public Domain görseller — API key gerektirmez, ücretsiz
   if (data.action === 'image-search') {
     const query = (data.query || '').trim();
     const content = (data.content || '').trim();
@@ -694,30 +695,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Başlık veya içerik gerekli' }, { status: 400 });
     }
 
-    const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || process.env.GOOGLE_CSE_API_KEY;
-    const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
-    if (!GOOGLE_API_KEY || !GOOGLE_CSE_ID) {
-      return NextResponse.json({
-        error: 'Google API key/CSE ID eksik — .env dosyasına GOOGLE_API_KEY ve GOOGLE_CSE_ID ekleyin',
-      }, { status: 500 });
-    }
-
     try {
-      // 1. AI'a haber metnini ver, en uygun arama sorgusunu üret
+      // 1. AI'a haber metnini ver, en uygun arama sorgusunu üret (İngilizce — Openverse daha çok İngilizce içerik)
       const keys = getGeminiKeys();
       let aiSearchQuery = query || content.slice(0, 200);
 
       if (keys.length > 0 && (content || query)) {
         const aiPrompt = [
-          'Sen görsel arama uzmanısın. Aşağıdaki haber için Google Görsel arama yapacağım.',
-          'En uygun 1 arama sorgusu üret (3-5 kelime, kısa ve net, çoğul değil tekil, gereksiz bağlaçlar yok).',
-          'Türkçe veya İngilizce olabilir — habere uygun olanı seç.',
-          'Örnek: "Cemil Tugay açıklama", "deprem afad", "Ali Emre Ballı", "ekonomi büyüme"',
-          'Sadece arama sorgusunu yaz, başka hiçbir şey ekleme (başlık, etiket, açıklama yok).',
+          'You are an image search expert. I will search for images on Openverse (Creative Commons + Public Domain).',
+          'Generate the BEST single search query (3-5 words, short and clear, in English) for finding relevant images for this news article.',
+          'Translate to English if needed. Use simple, generic terms that match the subject.',
+          'Examples: "politics announcement", "earthquake disaster", "financial market", "election results"',
+          'Write ONLY the search query, nothing else (no title, no quotes, no explanation).',
           '',
-          'BAŞLIK: ' + query,
+          'TITLE: ' + query,
           '',
-          'HABER METNİ:',
+          'ARTICLE CONTENT:',
           (content || query).slice(0, 3000),
         ].join('\n');
 
@@ -749,27 +742,66 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 2. Google Custom Search API ile görsel ara
-      //    rights parametresi: telif istemeyenler (royalty-free, ticari kullanıma izin veren) filtresi
-      //    cc_publicdomain + cc_attribute (CC BY) + cc_sharealike (CC BY-SA) + cc_nonderived (CC BY-ND)
-      //    NOT: cc_noncommercial (NC) dahil değil — ticari kullanıma izin vermez
-      const rights = 'cc_publicdomain,cc_attribute,cc_sharealike,cc_nonderived';
-      const cseUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&searchType=image&q=${encodeURIComponent(aiSearchQuery)}&num=10&rights=${encodeURIComponent(rights)}`;
-      const cseResp = await fetch(cseUrl, {
+      // 2. Openverse API ile telifsiz görsel ara
+      //    Openverse: https://api.openverse.org/v1/images/
+      //    Creative Commons + Public Domain görseller (Wikimedia, Flickr, vs.)
+      const openverseUrl = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(aiSearchQuery)}&page_size=10&mature=false&license_type=all-cc`;
+      const ovResp = await fetch(openverseUrl, {
+        headers: {
+          'User-Agent': 'TRGundem/1.0 (https://trgundem.net)',
+          'Accept': 'application/json',
+        },
         signal: AbortSignal.timeout(15000),
       });
-      if (!cseResp.ok) {
-        const errText = await cseResp.text().catch(() => '');
+      if (!ovResp.ok) {
+        const errText = await ovResp.text().catch(() => '');
         return NextResponse.json({
-          error: `Google API hatası (HTTP ${cseResp.status}): ${errText.slice(0, 200)}`,
+          error: `Openverse API hatası (HTTP ${ovResp.status}): ${errText.slice(0, 200)}`,
         }, { status: 502 });
       }
-      const cseData = await cseResp.json();
-      const items = (cseData.items || []).map((item: { link: string; title: string; image?: { contextLink?: string }; displayLink?: string }) => ({
-        url: item.link,
-        title: item.title || '',
-        source: item.image?.contextLink || item.displayLink || '',
-      }));
+      const ovData = await ovResp.json() as { results?: Array<{ url?: string; title?: string; source?: string; foreign_landing_url?: string; creator?: string; creator_url?: string; license?: string; license_version?: string }> };
+      const items = (ovData.results || [])
+        .filter(item => item.url && item.url.match(/\.(jpg|jpeg|png|webp|gif)/i))
+        .map(item => ({
+          url: item.url!,
+          title: item.title || '',
+          source: item.source || item.foreign_landing_url || '',
+        }));
+
+      // Openverse'de az sonuç varsa, Türkçe sorgu ile tekrar dene
+      if (items.length < 5 && aiSearchQuery !== query) {
+        const fallbackUrl = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&page_size=10&mature=false&license_type=all-cc`;
+        const fbResp = await fetch(fallbackUrl, {
+          headers: {
+            'User-Agent': 'TRGundem/1.0 (https://trgundem.net)',
+            'Accept': 'application/json',
+          },
+          signal: AbortSignal.timeout(15000),
+        });
+        if (fbResp.ok) {
+          const fbData = await fbResp.json() as { results?: Array<{ url?: string; title?: string; source?: string; foreign_landing_url?: string }> };
+          const fbItems = (fbData.results || [])
+            .filter(item => item.url && item.url.match(/\.(jpg|jpeg|png|webp|gif)/i))
+            .map(item => ({
+              url: item.url!,
+              title: item.title || '',
+              source: item.source || item.foreign_landing_url || '',
+            }));
+          // Openverse + fallback birleşimi, tekrar etmeyenler
+          const allItems = [...items, ...fbItems];
+          const seen = new Set<string>();
+          const unique = allItems.filter(i => {
+            if (seen.has(i.url)) return false;
+            seen.add(i.url);
+            return true;
+          });
+          return NextResponse.json({
+            ok: true,
+            query: aiSearchQuery,
+            images: unique.slice(0, 10),
+          });
+        }
+      }
 
       return NextResponse.json({
         ok: true,

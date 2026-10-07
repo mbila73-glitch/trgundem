@@ -1084,11 +1084,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                       </div>
                     )}
 
-                    {/* Görsel Ara — AI destekli Google görsel taraması (telif istemeyenler) */}
+                    {/* Görsel Ara — AI destekli telifsiz görsel tarama (Openverse) */}
                     {(customTitle || customSummary) && (
                       <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-950/20 p-3 space-y-2">
                         <div className="flex items-center justify-between gap-2">
-                          <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli Google)</Label>
+                          <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli · Openverse)</Label>
                           <Button
                             type="button"
                             size="sm"
@@ -1101,7 +1101,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           </Button>
                         </div>
                         <p className="text-[10px] text-muted-foreground">
-                          AI habere uygun bir arama sorgusu üretir ve Google'da <strong>telif istemeyen</strong> (royalty-free, ticari kullanıma izin veren) görseller arasından ilk 10 sonucu getirir. Public domain + CC BY/BY-SA/BY-ND lisanslı.
+                          AI habere uygun bir arama sorgusu üretir ve Openverse'de (Creative Commons + Public Domain) <strong>telifsiz</strong> görseller arasından ilk 10 sonucu getirir. Ücretsiz, API key gerektirmez.
                         </p>
                         {imageSearchQuery && imageSearchTarget === 'custom' && (
                           <p className="text-[10px] text-green-700 dark:text-green-300">AI sorgusu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
