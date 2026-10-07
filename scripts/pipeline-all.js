@@ -695,13 +695,93 @@ async function main() {
 
         // REKLAM/TANITIM FILTRESI — başlıkta reklam/tanıtım ifadeleri varsa haberi ATLA
         var titleLowerCheck = firstArticle.title.toLowerCase();
-        var adKeywords = ['fiyat listesi', 'fiyat listeleri', 'fiyatları açıklandı', 'özellikleri ve fiyatı',
+        // Jenerik reklam ifadeleri (başlıkta varsa direkt atla)
+        var adKeywords = [
+          // Fiyat
+          'fiyat listesi', 'fiyat listeleri', 'fiyatları açıklandı', 'fiyatı açıklandı',
+          'özellikleri ve fiyatı', 'güncel fiyat', 'güncel fiyatlar', 'sıfır fiyat',
+          'güncel sıfır', 'sıfır otomobil fiyat', 'sıfır araba fiyat',
+          'otomobil fiyatları', 'güncel otomobil', 'oto fiyat listesi',
+          // Tanıtım / lansman
           'tanıtıldı: işte', 'resmen tanıtıldı', 'işte özellikleri', 'işte fiyatı',
-          'satışa sunuldu', 'çıkış tarihi belli', 'satışa çıktı'];
+          'tanıtımı yapıldı', 'tanıtım videosu', 'lansmanı yapıldı', 'lansman videosu',
+          'dünya prömiyeri', 'dünya lansmanı', 'tanıtım etkinliği', 'tanıtım günü',
+          'tanıtım fragmanı',
+          // Satış
+          'satışa sunuldu', 'çıkış tarihi belli', 'satışa çıktı', 'ön satış', 'ön sipariş',
+          'satışa çıkıyor', 'satışa sunulacak', 'satışa çıkan', 'satışta',
+          // Telefon/araba inceleme
+          'telefon incelemesi', 'akıllı telefon inceleme', 'telefonun özellikleri',
+          'akıllı saat tanıtıldı', 'yeni akıllı saat', 'akıllı saat incelemesi',
+          'otomobil tanıtımı', 'otomobil incelemesi', 'araba incelemesi',
+          'test sürüşü', 'test sürüşü ile', 'sürüş izlenimleri',
+          // Yeni model
+          'yeni modeli tanıtıldı', 'yeni model tanıtımı', 'model tanıtımı',
+          'modeli tanıtıldı', 'yüz yenileme yapıldı', 'yüz yenileme tanıtıldı'
+        ];
+
+        // Telefon markaları (başlıkta varsa + tanıtım eylemi de varsa atla)
+        var phoneBrands = ['iphone', 'samsung galaxy', 'xiaomi', 'oppo', 'huawei', 'realme',
+          'oneplus', 'honor', 'vivo', 'tecno', 'apple watch', 'redmi', 'poco',
+          'galaxy note', 'galaxy s2', 'galaxy a', 'galaxy m', 'galaxy z'];
+        // Araba markaları (başlıkta varsa + tanıtım eylemi de varsa atla)
+        var carBrands = ['bmw', 'mercedes', 'audi', 'toyota', 'honda', 'volvo', 'renault',
+          'fiat', 'ford', 'volkswagen', 'peugeot', 'skoda', 'hyundai', 'kia', 'mazda',
+          'nissan', 'citroen', 'opel', 'tesla', 'porsche', 'lexus', 'seat',
+          'alfa romeo', 'dacia', 'togg'];
+        // Reklam eylem kelimeleri — marka ile birlikte aranacak
+        var adActionWords = ['tanıtıldı', 'tanıtıldı:', 'tanıtımı', 'satıldı', 'satışa çıktı',
+          'satışa sunuldu', 'yeni model', 'lansmanı', 'lansmanı yapıldı',
+          'incelemesi', 'inceleme', 'satışta', 'satışa sunulacak', 'tanıtım videosu'];
+
         var isAd = false;
         for (var ai2 = 0; ai2 < adKeywords.length; ai2++) {
           if (titleLowerCheck.indexOf(adKeywords[ai2]) >= 0) { isAd = true; break; }
         }
+
+        // Telefon markası + reklam eylemi birlikte var mı?
+        if (!isAd) {
+          for (var pi = 0; pi < phoneBrands.length; pi++) {
+            if (titleLowerCheck.indexOf(phoneBrands[pi]) >= 0) {
+              for (var pj = 0; pj < adActionWords.length; pj++) {
+                if (titleLowerCheck.indexOf(adActionWords[pj]) >= 0) {
+                  isAd = true; break;
+                }
+              }
+              if (isAd) break;
+            }
+          }
+        }
+
+        // Araba markası + reklam eylemi birlikte var mı?
+        if (!isAd) {
+          for (var ci = 0; ci < carBrands.length; ci++) {
+            if (titleLowerCheck.indexOf(carBrands[ci]) >= 0) {
+              for (var cj = 0; cj < adActionWords.length; cj++) {
+                if (titleLowerCheck.indexOf(adActionWords[cj]) >= 0) {
+                  isAd = true; break;
+                }
+              }
+              if (isAd) break;
+            }
+          }
+        }
+
+        // "telefon" / "otomobil" / "araba" + reklam eylemi kombinasyonu (markasız)
+        if (!isAd) {
+          var genericDeviceWords = ['telefon', 'akıllı telefon', 'akıllı saat', 'otomobil', 'araba', 'araç', 'suv'];
+          for (var gi = 0; gi < genericDeviceWords.length; gi++) {
+            if (titleLowerCheck.indexOf(genericDeviceWords[gi]) >= 0) {
+              for (var gj = 0; gj < adActionWords.length; gj++) {
+                if (titleLowerCheck.indexOf(adActionWords[gj]) >= 0) {
+                  isAd = true; break;
+                }
+              }
+              if (isAd) break;
+            }
+          }
+        }
+
         if (isAd) {
           log('  [Reklam/Tanıtım] Haber ATLANDI: ' + firstArticle.title.slice(0, 60));
           continue;
