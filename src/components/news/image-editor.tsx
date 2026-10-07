@@ -206,11 +206,17 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
       if (!ctx) throw new Error('Canvas hatası');
       ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
 
-      // Blob'a çevir (JPEG kalite 0.92)
-      const blob = await new Promise<Blob | null>((resolve) =>
-        newCanvas.toBlob(resolve, 'image/jpeg', 0.92)
-      );
-      if (!blob) throw new Error('Blob oluşturulamadı');
+      // Blob'a çevir — toDataURL kullan (toBlob tainted canvas'ta SecurityError verebilir)
+      let blob: Blob | null = null;
+      try {
+        const dataUrl = newCanvas.toDataURL('image/jpeg', 0.92);
+        // Base64'ü blob'a çevir
+        const base64Response = await fetch(dataUrl);
+        blob = await base64Response.blob();
+      } catch (blobErr) {
+        throw new Error('Görsel kırpılamadı — canvas güvenlik hatası. Görselin proxy üzerinden gelmesi gerekiyor.');
+      }
+      if (!blob || blob.size === 0) throw new Error('Kırpılan görsel boş — alan seçimi çok küçük olabilir');
 
       // File oluştur
       const file = new File([blob], 'crop.jpg', { type: 'image/jpeg' });
@@ -224,8 +230,12 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
+      if (!r.ok) {
+        const errText = await r.text().catch(() => '');
+        throw new Error(`Yükleme hatası (HTTP ${r.status}): ${errText.slice(0, 200)}`);
+      }
       const json = (await r.json()) as { ok?: boolean; url?: string; error?: string };
-      if (!r.ok || !json.ok) throw new Error(json.error || 'Yükleme hatası');
+      if (!json.ok) throw new Error(json.error || 'Yükleme hatası');
 
       onSave(json.url!);
       toast.success('Görsel kırpıldı ve kaydedildi');
