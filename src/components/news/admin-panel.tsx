@@ -84,6 +84,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [searchingImages, setSearchingImages] = useState(false);
   const [imageSearchQuery, setImageSearchQuery] = useState('');
   const [imageSearchTarget, setImageSearchTarget] = useState<'custom' | 'edit' | null>(null);
+  const [imageSearchInput, setImageSearchInput] = useState('');
   const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
   const [showTrustedSites, setShowTrustedSites] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
@@ -570,15 +571,16 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     }
   };
 
-  // Görsel Ara — AI destekli Google görsel taraması (telif istemeyenler)
+  // Görsel Ara — AI destekli telifsiz görsel tarama (Openverse)
   // target: 'custom' (özel haber ekleme) veya 'edit' (yayında haberi düzenleme)
+  // manualQuery: kullanıcı manuel arama kelimeleri girdiyse, AI üretimini atlar
   const handleImageSearch = async (target: 'custom' | 'edit') => {
     const title = target === 'custom' ? customTitle : editTitle;
     const summary = target === 'custom' ? (customSummary || customContent) : editSummary;
-    if (!title.trim() && !summary.trim()) {
+    if (!title.trim() && !summary.trim() && !imageSearchInput.trim()) {
       toast.error(target === 'custom'
-        ? 'Önce "Tara" + "AI Özetle" yapın — başlık/özet gerekli'
-        : 'Düzenle formunda başlık gerekli');
+        ? 'Arama kelimeleri girin veya önce "Tara" + "AI Özetle" yapın'
+        : 'Arama kelimeleri girin veya düzenle formunda başlık gerekli');
       return;
     }
     setSearchingImages(true);
@@ -593,6 +595,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
           action: 'image-search',
           query: title,
           content: summary,
+          manualQuery: imageSearchInput.trim(), // boşsa AI üretir, doluysa direkt kullanılır
         }),
       });
       const json = (await r.json()) as { ok?: boolean; query?: string; images?: {url: string; title: string; source: string}[]; error?: string };
@@ -601,7 +604,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       setSearchImages(imgs);
       setImageSearchQuery(json.query || '');
       if (imgs.length === 0) {
-        toast.error('Hiç telifsiz görsel bulunamadı — farklı bir konu deneyin');
+        toast.error('Hiç telifsiz görsel bulunamadı — farklı arama kelimeleri deneyin');
       } else {
         // İlk görseli varsayılan seç — ilgili formun image state'ine yaz
         setSelectedImageUrl(imgs[0].url);
@@ -1085,26 +1088,36 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                     )}
 
                     {/* Görsel Ara — AI destekli telifsiz görsel tarama (Openverse) */}
-                    {(customTitle || customSummary) && (
+                    {(customTitle || customSummary || imageSearchInput) && (
                       <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-950/20 p-3 space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli · Openverse)</Label>
+                        <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli · Openverse)</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={imageSearchInput}
+                            onChange={(e) => setImageSearchInput(e.target.value)}
+                            placeholder='Arama kelimeleri (opsiyonel) — ör: "Cemil Tugay" veya boş bırak AI üretsin'
+                            className="flex-1 text-xs h-8"
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('custom'); } }}
+                          />
                           <Button
                             type="button"
                             size="sm"
                             onClick={() => handleImageSearch('custom')}
-                            disabled={searchingImages || (!customTitle.trim() && !customSummary.trim())}
-                            className="gap-2 bg-green-600 hover:bg-green-700"
+                            disabled={searchingImages || (!customTitle.trim() && !customSummary.trim() && !imageSearchInput.trim())}
+                            className="gap-2 bg-green-600 hover:bg-green-700 h-8"
                           >
                             {searchingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                             Görsel Ara
                           </Button>
                         </div>
                         <p className="text-[10px] text-muted-foreground">
-                          AI habere uygun bir arama sorgusu üretir ve Openverse'de (Creative Commons + Public Domain) <strong>telifsiz</strong> görseller arasından ilk 10 sonucu getirir. Ücretsiz, API key gerektirmez.
+                          {imageSearchInput.trim()
+                            ? <>Manuel arama kelimeleri ile aranır — AI üretimini atlar.</>
+                            : <>AI habere uygun arama sorgusu üretir ve Openverse'de (Creative Commons + Public Domain) <strong>telifsiz</strong> görseller arasından ilk 10 sonucu getirir. Ücretsiz, API key gerektirmez.</>
+                          }
                         </p>
                         {imageSearchQuery && imageSearchTarget === 'custom' && (
-                          <p className="text-[10px] text-green-700 dark:text-green-300">AI sorgusu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
+                          <p className="text-[10px] text-green-700 dark:text-green-300">Kullanılan sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
                         )}
                       </div>
                     )}
@@ -1320,24 +1333,31 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   </div>
                                   </div>
 
-                                  {/* Görsel Ara — AI destekli (edit formu için) */}
-                                  {editTitle && (
+                                  {/* Görsel Ara — AI destekli telifsiz (edit formu için) */}
+                                  {(editTitle || imageSearchInput) && (
                                     <div className="rounded-md border border-green-300 bg-green-50 dark:bg-green-950/20 p-2 space-y-1.5">
-                                      <div className="flex items-center justify-between gap-2">
-                                        <Label className="text-[10px] font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz)</Label>
+                                      <Label className="text-[10px] font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · Openverse)</Label>
+                                      <div className="flex gap-1">
+                                        <Input
+                                          value={imageSearchInput}
+                                          onChange={(e) => setImageSearchInput(e.target.value)}
+                                          placeholder='Arama kelimeleri (ör: "Cemil Tugay")'
+                                          className="flex-1 text-xs h-7"
+                                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('edit'); } }}
+                                        />
                                         <Button
                                           type="button"
                                           size="sm"
                                           onClick={() => handleImageSearch('edit')}
-                                          disabled={searchingImages || !editTitle.trim()}
+                                          disabled={searchingImages || (!editTitle.trim() && !imageSearchInput.trim())}
                                           className="gap-1.5 text-xs h-7 bg-green-600 hover:bg-green-700"
                                         >
                                           {searchingImages ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
-                                          Görsel Ara
+                                          Ara
                                         </Button>
                                       </div>
                                       {imageSearchQuery && imageSearchTarget === 'edit' && (
-                                        <p className="text-[10px] text-green-700 dark:text-green-300">AI sorgusu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
+                                        <p className="text-[10px] text-green-700 dark:text-green-300">Sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
                                       )}
                                       {imageSearchTarget === 'edit' && searchImages.length > 0 && (
                                         <div className="grid grid-cols-5 gap-1 mt-1">

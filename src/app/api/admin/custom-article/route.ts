@@ -688,19 +688,22 @@ export async function POST(req: NextRequest) {
   //    AI, haber başlığı/metnine göre uygun arama sorgusu üretir
   //    Openverse API (https://api.openverse.org) ile telifsiz görseller arar
   //    Openverse: Creative Commons + Public Domain görseller — API key gerektirmez, ücretsiz
+  //    manualQuery verilirse AI üretimini atlar, direkt kullanıcı kelimeleri ile arar
   if (data.action === 'image-search') {
     const query = (data.query || '').trim();
     const content = (data.content || '').trim();
-    if (!query && !content) {
-      return NextResponse.json({ error: 'Başlık veya içerik gerekli' }, { status: 400 });
+    const manualQuery = (data.manualQuery || '').trim();
+    if (!query && !content && !manualQuery) {
+      return NextResponse.json({ error: 'Başlık, içerik veya arama kelimesi gerekli' }, { status: 400 });
     }
 
     try {
       // 1. AI'a haber metnini ver, en uygun arama sorgusunu üret (İngilizce — Openverse daha çok İngilizce içerik)
+      //    Eğer manualQuery varsa, AI üretimini atla — kullanıcı kendi kelimelerini girdi
       const keys = getGeminiKeys();
-      let aiSearchQuery = query || content.slice(0, 200);
+      let aiSearchQuery = manualQuery || query || content.slice(0, 200);
 
-      if (keys.length > 0 && (content || query)) {
+      if (!manualQuery && keys.length > 0 && (content || query)) {
         const aiPrompt = [
           'You are an image search expert. I will search for images on Openverse (Creative Commons + Public Domain).',
           'Generate the BEST single search query (3-5 words, short and clear, in English) for finding relevant images for this news article.',
@@ -768,8 +771,8 @@ export async function POST(req: NextRequest) {
           source: item.source || item.foreign_landing_url || '',
         }));
 
-      // Openverse'de az sonuç varsa, Türkçe sorgu ile tekrar dene
-      if (items.length < 5 && aiSearchQuery !== query) {
+      // Openverse'de az sonuç varsa, manuel query yoksa fallback olarak orijinal query (Türkçe başlık) ile dene
+      if (items.length < 5 && !manualQuery && aiSearchQuery !== query) {
         const fallbackUrl = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&page_size=10&mature=false&license_type=all-cc`;
         const fbResp = await fetch(fallbackUrl, {
           headers: {
