@@ -690,12 +690,20 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     if (imageSearchTarget === 'custom') setCustomImage(url);
     else if (imageSearchTarget === 'edit') setEditImage(url);
     else if (imageSearchTarget === 'manual') setManualImage(url);
-    // Temizle — sonraki düzenlemede eski sonuçlar gelmesin
     setSelectedImageUrl(url);
     setSearchImages([]);
     setImageSearchInput('');
     setImageSearchTarget(null);
     setImageSearchQuery('');
+  };
+
+  // Görsel aramayı temizle — arama kutusu, sonuçlar ve seçili görsel
+  const handleClearImageSearch = () => {
+    setSearchImages([]);
+    setImageSearchInput('');
+    setImageSearchQuery('');
+    setImageSearchTarget(null);
+    setSelectedImageUrl(null);
   };
 
   // Türkçe → İngilizce gerçek zamanlı çeviri (500ms debounce)
@@ -1237,6 +1245,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             {searchingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                             Görsel Ara
                           </Button>
+                          {(searchImages.length > 0 || imageSearchInput || imageSearchQuery) && (
+                            <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1.5 h-8 text-xs">
+                              <X className="h-3.5 w-3.5" /> Temizle
+                            </Button>
+                          )}
                         </div>
                         <p className="text-[10px] text-muted-foreground">
                           {imageSearchInput.trim()
