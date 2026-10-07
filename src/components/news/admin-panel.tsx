@@ -701,7 +701,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     const title = target === 'custom' ? customTitle : target === 'edit' ? editTitle : manualTitle;
     const summary = target === 'custom' ? (customSummary || customContent) : target === 'edit' ? editSummary : manualContent;
     if (!title.trim() && !summary.trim() && !googleImageSearchInput.trim()) {
-      toast.error('Pexels arama kelimeleri girin veya başlık gerekli');
+      toast.error('Google arama kelimeleri girin veya başlık gerekli');
       return;
     }
     setSearchingGoogle(true);
@@ -713,24 +713,24 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          action: 'image-search-pexels',
+          action: 'image-search-google',
           query: title,
           content: summary,
           manualQuery: googleImageSearchInput.trim(),
         }),
       });
       const json = (await r.json()) as { ok?: boolean; query?: string; images?: {url: string; title: string; source: string}[]; error?: string };
-      if (!r.ok || !json.ok) throw new Error(json.error || 'Pexels görsel arama başarısız');
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Google görsel arama başarısız');
       const imgs = json.images ?? [];
       setGoogleImages(imgs);
       setGoogleImageQuery(json.query || '');
       if (imgs.length === 0) {
         toast.error('Pexels\'te telifsiz görsel bulunamadı');
       } else {
-        toast.success(`${imgs.length} Pexels görseli bulundu${json.query ? ` (sorgu: "${json.query}")` : ''}`);
+        toast.success(`${imgs.length} Google görseli bulundu${json.query ? ` (sorgu: "${json.query}")` : ''}`);
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Pexels görsel arama hatası');
+      toast.error(e instanceof Error ? e.message : 'Google görsel arama hatası');
     } finally {
       setSearchingGoogle(false);
     }
@@ -1256,12 +1256,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
                     {/* Görsel Ekle Google — 2. seçenek (Custom Search API) */}
                     <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
-                      <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Pexels (Telifsiz · Ücretsiz)</Label>
+                      <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Belirli Sitelerde)</Label>
                       <div className="flex gap-2">
                         <Input
                           value={googleImageSearchInput}
                           onChange={(e) => setGoogleImageSearchInput(e.target.value)}
-                          placeholder='Pexels arama kelimeleri (ör: "Cemil Tugay") — boş bırak AI üretsin'
+                          placeholder='Google arama kelimeleri (ör: "Cemil Tugay") — boş bırak AI üretsin'
                           className="flex-1 text-xs h-8"
                           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearchGoogle('custom'); } }}
                         />
@@ -1273,21 +1273,21 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           className="gap-2 bg-blue-600 hover:bg-blue-700 h-8"
                         >
                           {searchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                          Pexels Ara
+                          Google Ara
                         </Button>
                       </div>
                       <p className="text-[10px] text-muted-foreground">
-                        Pexels yüksek kaliteli ücretsiz stok görseller arar. <strong>Billing/ödeme YOK</strong> — sadece PEXELS_API_KEY .env'de olmalı.
+                        Google CSE 50 sitede arama yapar. <strong>Billing gerektirir</strong> — GOOGLE_API_KEY + GOOGLE_CSE_ID .env'de olmalı.
                       </p>
                       {googleImageQuery && googleImageTarget === 'custom' && (
-                        <p className="text-[10px] text-blue-700 dark:text-blue-300">Pexels sorgusu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
+                        <p className="text-[10px] text-blue-700 dark:text-blue-300">Google sorgusu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
                       )}
                     </div>
 
                     {/* Google görselleri — grid 5x2 (custom form için) */}
                     {googleImageTarget === 'custom' && googleImages.length > 0 && (
                       <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
-                        <p className="text-[10px] font-bold text-muted-foreground">PEXELS GÖRSELLERİ ({googleImages.length}) — tıkla seç</p>
+                        <p className="text-[10px] font-bold text-muted-foreground">GOOGLE GÖRSELLERİ ({googleImages.length}) — tıkla seç</p>
                         <div className="grid grid-cols-5 gap-1.5">
                           {googleImages.map((img, i) => (
                             <button
@@ -1597,12 +1597,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
                           {/* Görsel Ekle Google — 2. seçenek (manuel form için) */}
                           <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
-                            <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Pexels (Telifsiz · Ücretsiz)</Label>
+                            <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Belirli Sitelerde)</Label>
                             <div className="flex gap-2">
                               <Input
                                 value={googleImageSearchInput}
                                 onChange={(e) => setGoogleImageSearchInput(e.target.value)}
-                                placeholder='Pexels arama kelimeleri (ör: "Cemil Tugay") — boş bırak AI üretsin'
+                                placeholder='Google arama kelimeleri (ör: "Cemil Tugay") — boş bırak AI üretsin'
                                 className="flex-1 text-xs h-8"
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearchGoogle('manual'); } }}
                               />
@@ -1614,21 +1614,21 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                 className="gap-2 bg-blue-600 hover:bg-blue-700 h-8"
                               >
                                 {searchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                                Pexels Ara
+                                Google Ara
                               </Button>
                             </div>
                             <p className="text-[10px] text-muted-foreground">
-                              Pexels yüksek kaliteli ücretsiz stok görseller arar. <strong>Billing/ödeme YOK</strong>.
+                              Google CSE 50 sitede arama yapar. <strong>Billing gerektirir</strong>.
                             </p>
                             {googleImageQuery && googleImageTarget === 'manual' && (
-                              <p className="text-[10px] text-blue-700 dark:text-blue-300">Pexels sorgusu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
+                              <p className="text-[10px] text-blue-700 dark:text-blue-300">Google sorgusu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
                             )}
                           </div>
 
                           {/* Google görselleri — grid 5x2 (manuel form için) */}
                           {googleImageTarget === 'manual' && googleImages.length > 0 && (
                             <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
-                              <p className="text-[10px] font-bold text-muted-foreground">PEXELS GÖRSELLERİ ({googleImages.length}) — tıkla seç</p>
+                              <p className="text-[10px] font-bold text-muted-foreground">GOOGLE GÖRSELLERİ ({googleImages.length}) — tıkla seç</p>
                               <div className="grid grid-cols-5 gap-1.5">
                                 {googleImages.map((img, i) => (
                                   <button
@@ -1775,12 +1775,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
 
                                   {/* Görsel Ekle Google — 2. seçenek (edit formu için) */}
                                   <div className="rounded-md border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-2 space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Pexels (Telifsiz · Ücretsiz)</Label>
+                                    <Label className="text-[10px] font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Belirli Sitelerde)</Label>
                                     <div className="flex gap-1">
                                       <Input
                                         value={googleImageSearchInput}
                                         onChange={(e) => setGoogleImageSearchInput(e.target.value)}
-                                        placeholder='Pexels arama kelimeleri (ör: "Cemil Tugay")'
+                                        placeholder='Google arama kelimeleri (ör: "Cemil Tugay")'
                                         className="flex-1 text-xs h-7"
                                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearchGoogle('edit'); } }}
                                       />
@@ -1792,10 +1792,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                         className="gap-1.5 text-xs h-7 bg-blue-600 hover:bg-blue-700"
                                       >
                                         {searchingGoogle ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
-                                        Pexels Ara
+                                        Google Ara
                                       </Button>
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground">Pexels ücretsiz — PEXELS_API_KEY .env'de olmalı.</p>
+                                    <p className="text-[10px] text-muted-foreground">Google CSE — GOOGLE_API_KEY + GOOGLE_CSE_ID .env'de olmalı.</p>
                                     {googleImageQuery && googleImageTarget === 'edit' && (
                                       <p className="text-[10px] text-blue-700 dark:text-blue-300">Sorgu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
                                     )}

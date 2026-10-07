@@ -882,9 +882,9 @@ export async function POST(req: NextRequest) {
       }
 
       // Google Custom Search API ile görsel ara
-      // rights: cc_publicdomain + cc_attribute (CC BY) + cc_sharealike (CC BY-SA) + cc_nonderived (CC BY-ND)
-      const rights = 'cc_publicdomain,cc_attribute,cc_sharealike,cc_nonderived';
-      const cseUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&searchType=image&q=${encodeURIComponent(aiSearchQuery)}&num=10&rights=${encodeURIComponent(rights)}`;
+      // CSE 2026 itibarıyla "tüm web'de ara" kapatıldı — sadece belirli sitelerde arama
+      // rights parametresi kaldırıldı (CSE zaten belirli sitelerde arama yapıyor)
+      const cseUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&searchType=image&q=${encodeURIComponent(aiSearchQuery)}&num=10`;
       console.log('[image-search-google] CSE URL:', cseUrl.slice(0, 120) + '...');
       let cseResp;
       try {
