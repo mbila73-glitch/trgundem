@@ -1225,8 +1225,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                 </span>
                               )}
                               {img.source && (
-                                <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">
-                                  {img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}
+                                <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[8px] px-1 py-0.5 truncate ">
+                                  {img.source}
                                 </span>
                               )}
                             </button>
@@ -1481,7 +1481,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   >
                                     <img src={img.url} alt={img.title || ''} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
                                     {selectedImageUrl === img.url && <span className="absolute inset-0 bg-news/30 flex items-center justify-center"><Check className="h-5 w-5 text-white" /></span>}
-                                    {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">{img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}</span>}
+                                    {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[8px] px-1 py-0.5 truncate">{img.source}</span>}
                                   </button>
                                 ))}
                               </div>
@@ -1606,7 +1606,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                             >
                                               <img src={img.url} alt={img.title || ''} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
                                               {selectedImageUrl === img.url && <span className="absolute inset-0 bg-news/30 flex items-center justify-center"><Check className="h-4 w-4 text-white" /></span>}
-                                              {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">{img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}</span>}
+                                              {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[8px] px-1 py-0.5 truncate">{img.source}</span>}
                                             </button>
                                           ))}
                                         </div>

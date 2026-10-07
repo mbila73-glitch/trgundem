@@ -750,9 +750,31 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 2. Openverse API ile telifsiz görsel ara
-      //    Openverse: https://api.openverse.org/v1/images/
-      //    Creative Commons + Public Domain görseller (Wikimedia, Flickr, vs.)
+      // 2. Pexels API ile görsel ara (PEXELS_API_KEY varsa) — ÖNCE Pexels
+      const allImages: {url: string; title: string; source: string}[] = [];
+      const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
+      if (PEXELS_API_KEY) {
+        try {
+          const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(aiSearchQuery)}&per_page=10`;
+          const pexelsResp = await fetch(pexelsUrl, {
+            headers: { Authorization: PEXELS_API_KEY },
+            signal: AbortSignal.timeout(15000),
+          });
+          if (pexelsResp.ok) {
+            const pexelsData = await pexelsResp.json() as { photos?: Array<{ src?: { large?: string; original?: string }; alt?: string; photographer?: string }> };
+            const pexelsItems = (pexelsData.photos || [])
+              .filter(photo => photo.src?.large || photo.src?.original)
+              .map(photo => ({
+                url: photo.src?.large || photo.src?.original || '',
+                title: photo.alt || '',
+                source: `Pexels${photo.photographer ? ' · ' + photo.photographer : ''}`,
+              }));
+            allImages.push(...pexelsItems);
+          }
+        } catch { /* Pexels hatası — Openverse ile devam et */ }
+      }
+
+      // 3. Openverse API ile telifsiz görsel ara — SONRA Openverse
       const openverseUrl = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(aiSearchQuery)}&page_size=10&mature=false&license_type=all-cc`;
       const ovResp = await fetch(openverseUrl, {
         headers: {
@@ -761,23 +783,27 @@ export async function POST(req: NextRequest) {
         },
         signal: AbortSignal.timeout(15000),
       });
-      if (!ovResp.ok) {
+      if (ovResp.ok) {
+        const ovData = await ovResp.json() as { results?: Array<{ url?: string; title?: string; source?: string; foreign_landing_url?: string }> };
+        const ovItems = (ovData.results || [])
+          .filter(item => item.url && item.url.match(/\.(jpg|jpeg|png|webp|gif)/i))
+          .map(item => ({
+            url: item.url!,
+            title: item.title || '',
+            source: `Openverse${item.source ? ' · ' + item.source : ''}`,
+          }));
+        allImages.push(...ovItems);
+      } else if (allImages.length === 0) {
+        // Pexels de yoksa ve Openverse de hata veriyorsa
         const errText = await ovResp.text().catch(() => '');
         return NextResponse.json({
           error: `Openverse API hatası (HTTP ${ovResp.status}): ${errText.slice(0, 200)}`,
         }, { status: 502 });
       }
-      const ovData = await ovResp.json() as { results?: Array<{ url?: string; title?: string; source?: string; foreign_landing_url?: string; creator?: string; creator_url?: string; license?: string; license_version?: string }> };
-      const items = (ovData.results || [])
-        .filter(item => item.url && item.url.match(/\.(jpg|jpeg|png|webp|gif)/i))
-        .map(item => ({
-          url: item.url!,
-          title: item.title || '',
-          source: item.source || item.foreign_landing_url || '',
-        }));
 
-      // Openverse'de az sonuç varsa, manuel query yoksa fallback olarak orijinal query (Türkçe başlık) ile dene
-      if (items.length < 5 && !manualQuery && aiSearchQuery !== query) {
+      // Openverse'de az sonuç varsa, fallback (Türkçe başlık ile)
+      const openverseCount = allImages.filter(i => i.source.startsWith('Openverse')).length;
+      if (allImages.length < 10 && !manualQuery && aiSearchQuery !== query && openverseCount < 5) {
         const fallbackUrl = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&page_size=10&mature=false&license_type=all-cc`;
         const fbResp = await fetch(fallbackUrl, {
           headers: {
@@ -793,28 +819,24 @@ export async function POST(req: NextRequest) {
             .map(item => ({
               url: item.url!,
               title: item.title || '',
-              source: item.source || item.foreign_landing_url || '',
+              source: `Openverse${item.source ? ' · ' + item.source : ''}`,
             }));
-          // Openverse + fallback birleşimi, tekrar etmeyenler
-          const allItems = [...items, ...fbItems];
-          const seen = new Set<string>();
-          const unique = allItems.filter(i => {
-            if (seen.has(i.url)) return false;
-            seen.add(i.url);
-            return true;
-          });
-          return NextResponse.json({
-            ok: true,
-            query: aiSearchQuery,
-            images: unique.slice(0, 10),
-          });
+          allImages.push(...fbItems);
         }
       }
+
+      // Tekrar eden görselleri kaldır
+      const seen = new Set<string>();
+      const unique = allImages.filter(i => {
+        if (seen.has(i.url)) return false;
+        seen.add(i.url);
+        return true;
+      });
 
       return NextResponse.json({
         ok: true,
         query: aiSearchQuery,
-        images: items,
+        images: unique.slice(0, 20),
       });
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : 'Görsel arama hatası' }, { status: 500 });
