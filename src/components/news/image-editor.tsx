@@ -97,7 +97,8 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
     setErrorMsg(null);
     setZoom(1);
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    // crossOrigin kaldırıldı — proxyImageUrl aynı origin'dan serve ediyor, CORS gereksiz
+    // crossOrigin = 'anonymous' canvas tainted yapıyordu, kırpma çalışmıyordu
     img.onload = () => {
       imgRef.current = img;
       setImgLoaded(true);
