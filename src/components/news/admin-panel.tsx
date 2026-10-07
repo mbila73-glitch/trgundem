@@ -91,6 +91,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [imageSearchQuery, setImageSearchQuery] = useState('');
   const [imageSearchTarget, setImageSearchTarget] = useState<'custom' | 'edit' | 'manual' | null>(null);
   const [imageSearchInput, setImageSearchInput] = useState('');
+  // Google görsel arama state'leri (2. seçenek)
+  const [googleImages, setGoogleImages] = useState<{url: string; title: string; source: string}[]>([]);
+  const [searchingGoogle, setSearchingGoogle] = useState(false);
+  const [googleImageQuery, setGoogleImageQuery] = useState('');
+  const [googleImageTarget, setGoogleImageTarget] = useState<'custom' | 'edit' | 'manual' | null>(null);
   const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
   const [showTrustedSites, setShowTrustedSites] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
@@ -689,6 +694,55 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     else if (imageSearchTarget === 'manual') setManualImage(url);
   };
 
+  // Görsel Ekle Google — Google Custom Search API ile telifsiz görsel arama (2. seçenek)
+  // Aynı input alanını kullanır (imageSearchInput) ama ayrı state'ler
+  const handleImageSearchGoogle = async (target: 'custom' | 'edit' | 'manual') => {
+    const title = target === 'custom' ? customTitle : target === 'edit' ? editTitle : manualTitle;
+    const summary = target === 'custom' ? (customSummary || customContent) : target === 'edit' ? editSummary : manualContent;
+    if (!title.trim() && !summary.trim() && !imageSearchInput.trim()) {
+      toast.error('Arama kelimeleri girin veya başlık gerekli');
+      return;
+    }
+    setSearchingGoogle(true);
+    setGoogleImages([]);
+    setGoogleImageQuery('');
+    setGoogleImageTarget(target);
+    try {
+      const r = await fetch('/api/admin/custom-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          action: 'image-search-google',
+          query: title,
+          content: summary,
+          manualQuery: imageSearchInput.trim(),
+        }),
+      });
+      const json = (await r.json()) as { ok?: boolean; query?: string; images?: {url: string; title: string; source: string}[]; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'Google görsel arama başarısız');
+      const imgs = json.images ?? [];
+      setGoogleImages(imgs);
+      setGoogleImageQuery(json.query || '');
+      if (imgs.length === 0) {
+        toast.error('Google\'da telifsiz görsel bulunamadı');
+      } else {
+        toast.success(`${imgs.length} Google görseli bulundu${json.query ? ` (sorgu: "${json.query}")` : ''}`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Google görsel arama hatası');
+    } finally {
+      setSearchingGoogle(false);
+    }
+  };
+
+  // Google görsel seçimi
+  const handleSelectGoogleImage = (url: string) => {
+    setSelectedImageUrl(url);
+    if (googleImageTarget === 'custom') setCustomImage(url);
+    else if (googleImageTarget === 'edit') setEditImage(url);
+    else if (googleImageTarget === 'manual') setManualImage(url);
+  };
+
   // Güvenilen siteleri yükle
   const loadTrustedSites = useCallback(async () => {
     if (!token) return;
@@ -1197,6 +1251,51 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <p className="text-[10px] text-green-700 dark:text-green-300">Kullanılan sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
                         )}
                       </div>
+
+                      {/* Görsel Ekle Google — 2. seçenek (Custom Search API) */}
+                      <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
+                        <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Telifsiz · CSE)</Label>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => handleImageSearchGoogle('custom')}
+                            disabled={searchingGoogle || (!customTitle.trim() && !customSummary.trim() && !imageSearchInput.trim())}
+                            className="gap-2 bg-blue-600 hover:bg-blue-700 h-8"
+                          >
+                            {searchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                            Görsel Ekle Google
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          Yukarıdaki arama kelimeleri ile Google'da telifsiz (CC BY/BY-SA/BY-ND/PD) görseller arar. <strong>Billing gerektirir</strong> — GOOGLE_API_KEY + GOOGLE_CSE_ID .env'de olmalı.
+                        </p>
+                        {googleImageQuery && googleImageTarget === 'custom' && (
+                          <p className="text-[10px] text-blue-700 dark:text-blue-300">Google sorgusu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
+                        )}
+                      </div>
+
+                      {/* Google görselleri — grid 5x2 (custom form için) */}
+                      {googleImageTarget === 'custom' && googleImages.length > 0 && (
+                        <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
+                          <p className="text-[10px] font-bold text-muted-foreground">GOOGLE GÖRSELLERİ ({googleImages.length}) — tıkla seç</p>
+                          <div className="grid grid-cols-5 gap-1.5">
+                            {googleImages.map((img, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => handleSelectGoogleImage(img.url)}
+                                className={`relative aspect-square overflow-hidden rounded border-2 ${selectedImageUrl === img.url ? 'border-news' : 'border-transparent'} flex-shrink-0 group`}
+                                title={img.title || img.source || `Görsel ${i+1}`}
+                              >
+                                <img src={img.url} alt={img.title || ''} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                {selectedImageUrl === img.url && <span className="absolute inset-0 bg-news/30 flex items-center justify-center"><Check className="h-5 w-5 text-white" /></span>}
+                                {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">{img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}</span>}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     )}
 
                     {/* Bulunan görseller — grid 5x2 (custom form için) */}
@@ -1488,6 +1587,51 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             </div>
                           )}
 
+                          {/* Görsel Ekle Google — 2. seçenek (manuel form için) */}
+                          <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
+                            <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Telifsiz · CSE)</Label>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => handleImageSearchGoogle('manual')}
+                                disabled={searchingGoogle || (!manualTitle.trim() && !imageSearchInput.trim())}
+                                className="gap-2 bg-blue-600 hover:bg-blue-700 h-8"
+                              >
+                                {searchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                                Görsel Ekle Google
+                              </Button>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">
+                              Yukarıdaki arama kelimeleri ile Google'da telifsiz (CC BY/BY-SA/BY-ND/PD) görseller arar. <strong>Billing gerektirir</strong>.
+                            </p>
+                            {googleImageQuery && googleImageTarget === 'manual' && (
+                              <p className="text-[10px] text-blue-700 dark:text-blue-300">Google sorgusu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
+                            )}
+                          </div>
+
+                          {/* Google görselleri — grid 5x2 (manuel form için) */}
+                          {googleImageTarget === 'manual' && googleImages.length > 0 && (
+                            <div className="rounded-md border border-border bg-muted/30 p-2 space-y-2">
+                              <p className="text-[10px] font-bold text-muted-foreground">GOOGLE GÖRSELLERİ ({googleImages.length}) — tıkla seç</p>
+                              <div className="grid grid-cols-5 gap-1.5">
+                                {googleImages.map((img, i) => (
+                                  <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => handleSelectGoogleImage(img.url)}
+                                    className={`relative aspect-square overflow-hidden rounded border-2 ${selectedImageUrl === img.url ? 'border-news' : 'border-transparent'} flex-shrink-0 group`}
+                                    title={img.title || img.source || `Görsel ${i+1}`}
+                                  >
+                                    <img src={img.url} alt={img.title || ''} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                    {selectedImageUrl === img.url && <span className="absolute inset-0 bg-news/30 flex items-center justify-center"><Check className="h-5 w-5 text-white" /></span>}
+                                    {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">{img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}</span>}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Kategori multi-checkbox */}
                           <div className="space-y-1.5">
                             <Label className="text-xs">Kategori (birden fazla seçebilirsiniz)</Label>
@@ -1613,6 +1757,45 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       )}
                                     </div>
                                   )}
+
+                                  {/* Görsel Ekle Google — 2. seçenek (edit formu için) */}
+                                  <div className="rounded-md border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-2 space-y-1.5">
+                                    <Label className="text-[10px] font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Telifsiz · CSE)</Label>
+                                    <div className="flex gap-1">
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={() => handleImageSearchGoogle('edit')}
+                                        disabled={searchingGoogle || (!editTitle.trim() && !imageSearchInput.trim())}
+                                        className="gap-1.5 text-xs h-7 bg-blue-600 hover:bg-blue-700"
+                                      >
+                                        {searchingGoogle ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+                                        Google Ara
+                                      </Button>
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground">Arama kelimeleri yukarıdaki input'tan alınır. Billing gerekir.</p>
+                                    {googleImageQuery && googleImageTarget === 'edit' && (
+                                      <p className="text-[10px] text-blue-700 dark:text-blue-300">Sorgu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
+                                    )}
+                                    {googleImageTarget === 'edit' && googleImages.length > 0 && (
+                                      <div className="grid grid-cols-5 gap-1 mt-1">
+                                        {googleImages.map((img, i) => (
+                                          <button
+                                            key={i}
+                                            type="button"
+                                            onClick={() => handleSelectGoogleImage(img.url)}
+                                            className={`relative aspect-square overflow-hidden rounded border-2 ${selectedImageUrl === img.url ? 'border-news' : 'border-transparent'} flex-shrink-0 group`}
+                                            title={img.title || img.source || `Görsel ${i+1}`}
+                                          >
+                                            <img src={img.url} alt={img.title || ''} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                            {selectedImageUrl === img.url && <span className="absolute inset-0 bg-news/30 flex items-center justify-center"><Check className="h-4 w-4 text-white" /></span>}
+                                            {img.source && <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition">{img.source.replace(/^www\./, '').replace(/^https?:\/\//, '').split('/')[0]}</span>}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
                                   {/* Kategori seçimi — mevcut kategori işaretli */}
                                   <div className="space-y-1">
                                     <Label className="text-xs">Kategori (ilk seçili kayıt için kullanılır)</Label>
