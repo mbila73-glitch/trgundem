@@ -3,6 +3,11 @@ import { db } from '@/lib/db';
 import * as path from 'path';
 import * as fs from 'fs';
 import { slugify } from '@/lib/format';
+import dns from 'node:dns';
+
+// Node.js fetch IPv6 sorununu önlemek için DNS'i IPv4'e zorla
+// "fetch failed" hatası genelde IPv6 DNS çözümleme hatasından kaynaklanır
+dns.setDefaultResultOrder('ipv4first');
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
 
