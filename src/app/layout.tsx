@@ -46,6 +46,12 @@ export const metadata: Metadata = {
     title: "TÜRKİYEDEN HABER TRGUNDEM.NET",
     description: "Türkiye'nin gündeminden AI özetlenen haber sitesi",
   },
+  alternates: {
+    // RSS feed keşfi — tarayıcılar ve feed reader'lar otomatik algılar
+    types: {
+      "application/rss+xml": "https://trgundem.net/rss.xml",
+    },
+  },
 };
 
 export default function RootLayout({

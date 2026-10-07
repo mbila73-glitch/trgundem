@@ -19,8 +19,6 @@ const nextConfig: NextConfig = {
     "http://127.0.0.1:3000",
   ],
   // Preview penceresi (preview-chat-*.space-z.ai) açıldığında trgundem.net'e yönlendir
-  // Bu sayede chat arayüzündeki preview penceresi boş/hatalı sayfa yerine gerçek siteyi gösterir
-  // trgundem.net VPS'te ayrı bir deploy olduğu için bu redirect onu etkilemez
   async redirects() {
     return [
       {
@@ -31,6 +29,16 @@ const nextConfig: NextConfig = {
         destination: "https://trgundem.net/$1",
         permanent: false,
       },
+    ];
+  },
+  // RSS feed için standart URL'ler → /api/rss route'una yönlendir
+  // /rss.xml, /feed.xml, /feed, /rss — feed reader'lar bu URL'leri arar
+  async rewrites() {
+    return [
+      { source: "/rss.xml", destination: "/api/rss" },
+      { source: "/feed.xml", destination: "/api/rss" },
+      { source: "/feed", destination: "/api/rss" },
+      { source: "/rss", destination: "/api/rss" },
     ];
   },
 };
