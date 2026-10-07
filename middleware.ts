@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Node.js runtime — edge runtime'da process.env okunamıyor, nodejs zorunlu
+export const runtime = 'nodejs';
+
 const SITE_PASSWORD = process.env.SITE_PASSWORD || 'gundem2026';
 const COOKIE_NAME = 'trgundem_access';
 
