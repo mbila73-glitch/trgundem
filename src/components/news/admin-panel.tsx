@@ -1434,39 +1434,37 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           </div>
 
                           {/* Görsel Ara — AI destekli telifsiz görsel tarama (Openverse) */}
-                          {(manualTitle || imageSearchInput) && (
-                            <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-950/20 p-3 space-y-2">
-                              <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli · Openverse)</Label>
-                              <div className="flex gap-2">
-                                <Input
-                                  value={imageSearchInput}
-                                  onChange={(e) => setImageSearchInput(e.target.value)}
-                                  placeholder='Arama kelimeleri (opsiyonel) — ör: "Cemil Tugay" veya boş bırak AI üretsin'
-                                  className="flex-1 text-xs h-8"
-                                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('manual'); } }}
-                                />
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  onClick={() => handleImageSearch('manual')}
-                                  disabled={searchingImages || (!manualTitle.trim() && !imageSearchInput.trim())}
-                                  className="gap-2 bg-green-600 hover:bg-green-700 h-8"
-                                >
-                                  {searchingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                                  Görsel Ara
-                                </Button>
-                              </div>
-                              <p className="text-[10px] text-muted-foreground">
-                                {imageSearchInput.trim()
-                                  ? <>Manuel arama kelimeleri ile aranır — AI üretimini atlar.</>
-                                  : <>AI habere uygun arama sorgusu üretir ve Openverse'de (Creative Commons + Public Domain) <strong>telifsiz</strong> görseller arasından ilk 10 sonucu getirir.</>
-                                }
-                              </p>
-                              {imageSearchQuery && imageSearchTarget === 'manual' && (
-                                <p className="text-[10px] text-green-700 dark:text-green-300">Kullanılan sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
-                              )}
+                          <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-950/20 p-3 space-y-2">
+                            <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli · Openverse)</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                value={imageSearchInput}
+                                onChange={(e) => setImageSearchInput(e.target.value)}
+                                placeholder='Arama kelimeleri (opsiyonel) — ör: "Cemil Tugay" veya boş bırak AI üretsin'
+                                className="flex-1 text-xs h-8"
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('manual'); } }}
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => handleImageSearch('manual')}
+                                disabled={searchingImages || (!manualTitle.trim() && !imageSearchInput.trim())}
+                                className="gap-2 bg-green-600 hover:bg-green-700 h-8"
+                              >
+                                {searchingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                                Görsel Ara
+                              </Button>
                             </div>
-                          )}
+                            <p className="text-[10px] text-muted-foreground">
+                              {imageSearchInput.trim()
+                                ? <>Manuel arama kelimeleri ile aranır — AI üretimini atlar.</>
+                                : <>AI habere uygun arama sorgusu üretir ve Openverse'de (Creative Commons + Public Domain) <strong>telifsiz</strong> görseller arasından ilk 10 sonucu getirir.</>
+                              }
+                            </p>
+                            {imageSearchQuery && imageSearchTarget === 'manual' && (
+                              <p className="text-[10px] text-green-700 dark:text-green-300">Kullanılan sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
+                            )}
+                          </div>
 
                           {/* Bulunan görseller — grid 5x2 (manuel form için) */}
                           {imageSearchTarget === 'manual' && searchImages.length > 0 && (
