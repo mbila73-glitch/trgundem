@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Node.js runtime — edge runtime'da process.env okunamıyor, nodejs zorunlu
-export const runtime = 'nodejs';
-
+// Şifre hardcoded — edge runtime'da process.env okunamıyor
 const SITE_PASSWORD = process.env.SITE_PASSWORD || 'gundem2026';
 const COOKIE_NAME = 'trgundem_access';
 
@@ -10,7 +8,7 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Cookie kontrol
-  const access = req.cookies.get(COOKIE_NAME);
+  const access = req.cookies.get(COOKIE_NAME)?.value;
   if (access === SITE_PASSWORD) {
     return NextResponse.next();
   }
@@ -22,5 +20,5 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   // API'leri, _next statik dosyaları, giriş sayfasını ve favicon'ı hariç tut
-  matcher: ['/((?!api|_next|giris|favicon).*)'],
+  matcher: ['/((?!api|_next|giris|favicon|trlogo).*)'],
 };
