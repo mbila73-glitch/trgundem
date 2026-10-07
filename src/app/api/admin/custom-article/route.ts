@@ -885,13 +885,24 @@ export async function POST(req: NextRequest) {
       // rights: cc_publicdomain + cc_attribute (CC BY) + cc_sharealike (CC BY-SA) + cc_nonderived (CC BY-ND)
       const rights = 'cc_publicdomain,cc_attribute,cc_sharealike,cc_nonderived';
       const cseUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&searchType=image&q=${encodeURIComponent(aiSearchQuery)}&num=10&rights=${encodeURIComponent(rights)}`;
-      const cseResp = await fetch(cseUrl, {
-        signal: AbortSignal.timeout(15000),
-      });
+      console.log('[image-search-google] CSE URL:', cseUrl.slice(0, 120) + '...');
+      let cseResp;
+      try {
+        cseResp = await fetch(cseUrl, {
+          signal: AbortSignal.timeout(15000),
+          headers: { 'User-Agent': 'TRGundem/1.0 (https://trgundem.net)' },
+        });
+      } catch (fetchErr) {
+        console.error('[image-search-google] fetch error:', fetchErr instanceof Error ? fetchErr.message : fetchErr);
+        return NextResponse.json({
+          error: `Google API'ye erişilemedi: ${fetchErr instanceof Error ? fetchErr.message : 'bilinmeyen hata'}. VPS internet çıkışı veya TLS sorunu olabilir.`,
+        }, { status: 502 });
+      }
       if (!cseResp.ok) {
         const errText = await cseResp.text().catch(() => '');
+        console.error('[image-search-google] HTTP', cseResp.status, ':', errText.slice(0, 300));
         return NextResponse.json({
-          error: `Google API hatası (HTTP ${cseResp.status}): ${errText.slice(0, 200)}`,
+          error: `Google API hatası (HTTP ${cseResp.status}): ${errText.slice(0, 300)}`,
         }, { status: 502 });
       }
       const cseData = await cseResp.json() as { items?: Array<{ link?: string; title?: string; image?: { contextLink?: string }; displayLink?: string }> };
