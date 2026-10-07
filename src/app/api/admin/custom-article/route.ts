@@ -750,29 +750,34 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 2. Pexels API ile görsel ara (PEXELS_API_KEY varsa) — ÖNCE Pexels
+      // 2. Wikimedia Commons API ile görsel ara (ücretsiz, API key yok) — ÖNCE Wikimedia
       const allImages: {url: string; title: string; source: string}[] = [];
-      const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
-      if (PEXELS_API_KEY) {
-        try {
-          const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(aiSearchQuery)}&per_page=10`;
-          const pexelsResp = await fetch(pexelsUrl, {
-            headers: { Authorization: PEXELS_API_KEY },
-            signal: AbortSignal.timeout(15000),
-          });
-          if (pexelsResp.ok) {
-            const pexelsData = await pexelsResp.json() as { photos?: Array<{ src?: { large?: string; original?: string }; alt?: string; photographer?: string }> };
-            const pexelsItems = (pexelsData.photos || [])
-              .filter(photo => photo.src?.large || photo.src?.original)
-              .map(photo => ({
-                url: photo.src?.large || photo.src?.original || '',
-                title: photo.alt || '',
-                source: `Pexels${photo.photographer ? ' · ' + photo.photographer : ''}`,
-              }));
-            allImages.push(...pexelsItems);
-          }
-        } catch { /* Pexels hatası — Openverse ile devam et */ }
-      }
+      try {
+        const wmUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(aiSearchQuery)}&gsrnamespace=6&prop=imageinfo&iiprop=url|extmetadata&format=json&gsrlimit=10&iiurlwidth=800`;
+        const wmResp = await fetch(wmUrl, {
+          headers: {
+            'User-Agent': 'TRGundem/1.0 (contact@trgundem.net)',
+            'Accept': 'application/json',
+          },
+          signal: AbortSignal.timeout(15000),
+        });
+        if (wmResp.ok) {
+          const wmData = await wmResp.json() as { query?: { pages?: Record<string, { title?: string; imageinfo?: Array<{ thumburl?: string; url?: string; extmetadata?: { LicenseShortName?: { value?: string }; Artist?: { value?: string } } }> }> } };
+          const pages = wmData.query?.pages || {};
+          const wmItems = Object.values(pages).map(page => {
+            const info = page.imageinfo?.[0];
+            if (!info?.thumburl) return null;
+            const license = info.extmetadata?.LicenseShortName?.value || '';
+            const artist = (info.extmetadata?.Artist?.value || '').replace(/<[^>]+>/g, '').trim();
+            return {
+              url: info.thumburl,
+              title: (page.title || '').replace('File:', '').replace(/\.(jpg|jpeg|png|gif|webp|svg)$/i, ''),
+              source: `Wikimedia${artist ? ' · ' + artist.slice(0, 30) : ''}${license ? ' · ' + license : ''}`,
+            };
+          }).filter((item): item is {url: string; title: string; source: string} => item !== null);
+          allImages.push(...wmItems);
+        }
+      } catch { /* Wikimedia hatası — Openverse ile devam et */ }
 
       // 3. Openverse API ile telifsiz görsel ara — SONRA Openverse
       const openverseUrl = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(aiSearchQuery)}&page_size=10&mature=false&license_type=all-cc`;
