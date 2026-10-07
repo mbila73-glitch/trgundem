@@ -96,6 +96,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [searchingGoogle, setSearchingGoogle] = useState(false);
   const [googleImageQuery, setGoogleImageQuery] = useState('');
   const [googleImageTarget, setGoogleImageTarget] = useState<'custom' | 'edit' | 'manual' | null>(null);
+  const [googleImageSearchInput, setGoogleImageSearchInput] = useState('');
   const [trustedSites, setTrustedSites] = useState<{id: string; name: string; searchUrl: string}[]>([]);
   const [showTrustedSites, setShowTrustedSites] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
@@ -695,12 +696,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   };
 
   // Görsel Ekle Google — Google Custom Search API ile telifsiz görsel arama (2. seçenek)
-  // Aynı input alanını kullanır (imageSearchInput) ama ayrı state'ler
+  // Kendi input'unu kullanır (googleImageSearchInput) — Openverse'ten bağımsız
   const handleImageSearchGoogle = async (target: 'custom' | 'edit' | 'manual') => {
     const title = target === 'custom' ? customTitle : target === 'edit' ? editTitle : manualTitle;
     const summary = target === 'custom' ? (customSummary || customContent) : target === 'edit' ? editSummary : manualContent;
-    if (!title.trim() && !summary.trim() && !imageSearchInput.trim()) {
-      toast.error('Arama kelimeleri girin veya başlık gerekli');
+    if (!title.trim() && !summary.trim() && !googleImageSearchInput.trim()) {
+      toast.error('Google arama kelimeleri girin veya başlık gerekli');
       return;
     }
     setSearchingGoogle(true);
@@ -715,7 +716,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
           action: 'image-search-google',
           query: title,
           content: summary,
-          manualQuery: imageSearchInput.trim(),
+          manualQuery: googleImageSearchInput.trim(),
         }),
       });
       const json = (await r.json()) as { ok?: boolean; query?: string; images?: {url: string; title: string; source: string}[]; error?: string };
@@ -1257,19 +1258,26 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                     <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
                       <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Telifsiz · CSE)</Label>
                       <div className="flex gap-2">
+                        <Input
+                          value={googleImageSearchInput}
+                          onChange={(e) => setGoogleImageSearchInput(e.target.value)}
+                          placeholder='Google arama kelimeleri (ör: "Cemil Tugay") — boş bırak AI üretsin'
+                          className="flex-1 text-xs h-8"
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearchGoogle('custom'); } }}
+                        />
                         <Button
                           type="button"
                           size="sm"
                           onClick={() => handleImageSearchGoogle('custom')}
-                          disabled={searchingGoogle || (!customTitle.trim() && !customSummary.trim() && !imageSearchInput.trim())}
+                          disabled={searchingGoogle || (!customTitle.trim() && !googleImageSearchInput.trim())}
                           className="gap-2 bg-blue-600 hover:bg-blue-700 h-8"
                         >
                           {searchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                          Görsel Ekle Google
+                          Google Ara
                         </Button>
                       </div>
                       <p className="text-[10px] text-muted-foreground">
-                        Yukarıdaki arama kelimeleri ile Google'da telifsiz (CC BY/BY-SA/BY-ND/PD) görseller arar. <strong>Billing gerektirir</strong> — GOOGLE_API_KEY + GOOGLE_CSE_ID .env'de olmalı.
+                        Google'da telifsiz (CC BY/BY-SA/BY-ND/PD) görseller arar. <strong>Billing gerektirir</strong> — GOOGLE_API_KEY + GOOGLE_CSE_ID .env'de olmalı.
                       </p>
                       {googleImageQuery && googleImageTarget === 'custom' && (
                         <p className="text-[10px] text-blue-700 dark:text-blue-300">Google sorgusu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
@@ -1591,19 +1599,26 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-3 space-y-2">
                             <Label className="text-xs font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Telifsiz · CSE)</Label>
                             <div className="flex gap-2">
+                              <Input
+                                value={googleImageSearchInput}
+                                onChange={(e) => setGoogleImageSearchInput(e.target.value)}
+                                placeholder='Google arama kelimeleri (ör: "Cemil Tugay") — boş bırak AI üretsin'
+                                className="flex-1 text-xs h-8"
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearchGoogle('manual'); } }}
+                              />
                               <Button
                                 type="button"
                                 size="sm"
                                 onClick={() => handleImageSearchGoogle('manual')}
-                                disabled={searchingGoogle || (!manualTitle.trim() && !imageSearchInput.trim())}
+                                disabled={searchingGoogle || (!manualTitle.trim() && !googleImageSearchInput.trim())}
                                 className="gap-2 bg-blue-600 hover:bg-blue-700 h-8"
                               >
                                 {searchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                                Görsel Ekle Google
+                                Google Ara
                               </Button>
                             </div>
                             <p className="text-[10px] text-muted-foreground">
-                              Yukarıdaki arama kelimeleri ile Google'da telifsiz (CC BY/BY-SA/BY-ND/PD) görseller arar. <strong>Billing gerektirir</strong>.
+                              Google'da telifsiz (CC BY/BY-SA/BY-ND/PD) görseller arar. <strong>Billing gerektirir</strong>.
                             </p>
                             {googleImageQuery && googleImageTarget === 'manual' && (
                               <p className="text-[10px] text-blue-700 dark:text-blue-300">Google sorgusu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
@@ -1762,18 +1777,25 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   <div className="rounded-md border border-blue-300 bg-blue-50 dark:bg-blue-950/20 p-2 space-y-1.5">
                                     <Label className="text-[10px] font-bold text-blue-700 dark:text-blue-300">Görsel Ekle Google (Telifsiz · CSE)</Label>
                                     <div className="flex gap-1">
+                                      <Input
+                                        value={googleImageSearchInput}
+                                        onChange={(e) => setGoogleImageSearchInput(e.target.value)}
+                                        placeholder='Google arama kelimeleri (ör: "Cemil Tugay")'
+                                        className="flex-1 text-xs h-7"
+                                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearchGoogle('edit'); } }}
+                                      />
                                       <Button
                                         type="button"
                                         size="sm"
                                         onClick={() => handleImageSearchGoogle('edit')}
-                                        disabled={searchingGoogle || (!editTitle.trim() && !imageSearchInput.trim())}
+                                        disabled={searchingGoogle || (!editTitle.trim() && !googleImageSearchInput.trim())}
                                         className="gap-1.5 text-xs h-7 bg-blue-600 hover:bg-blue-700"
                                       >
                                         {searchingGoogle ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
                                         Google Ara
                                       </Button>
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground">Arama kelimeleri yukarıdaki input'tan alınır. Billing gerekir.</p>
+                                    <p className="text-[10px] text-muted-foreground">Billing gerektirir — GOOGLE_API_KEY + GOOGLE_CSE_ID .env'de olmalı.</p>
                                     {googleImageQuery && googleImageTarget === 'edit' && (
                                       <p className="text-[10px] text-blue-700 dark:text-blue-300">Sorgu: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded">{googleImageQuery}</code></p>
                                     )}
