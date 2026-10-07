@@ -924,5 +924,107 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 6. IMAGE-SEARCH-PEXELS — Pexels API ile telifsiz görsel arama (3. seçenek)
+  //    Ücretsiz, billing yok, 200 istek/saat, yüksek kaliteli görseller
+  //    PEXELS_API_KEY env gerektirir
+  if (data.action === 'image-search-pexels') {
+    const query = (data.query || '').trim();
+    const content = (data.content || '').trim();
+    const manualQuery = (data.manualQuery || '').trim();
+    if (!query && !content && !manualQuery) {
+      return NextResponse.json({ error: 'Başlık, içerik veya arama kelimesi gerekli' }, { status: 400 });
+    }
+
+    const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
+    if (!PEXELS_API_KEY) {
+      return NextResponse.json({
+        error: 'PEXELS_API_KEY eksik — .env dosyasına PEXELS_API_KEY ekleyin (https://www.pexels.com/api/)',
+      }, { status: 500 });
+    }
+
+    try {
+      // AI ile sorgu üret — Openverse ile aynı mantık
+      const keys = getGeminiKeys();
+      let aiSearchQuery = manualQuery || query || content.slice(0, 200);
+
+      if (!manualQuery && keys.length > 0 && (content || query)) {
+        const aiPrompt = [
+          'You are an image search expert. I will search for images on Pexels (free stock photos).',
+          'Generate the BEST single search query (3-5 words, short and clear, in English) for finding relevant photos for this news article.',
+          'Translate to English if needed. Use simple, generic terms that match the subject.',
+          'Examples: "politics announcement", "earthquake disaster", "financial market", "election results"',
+          'Write ONLY the search query, nothing else.',
+          '',
+          'TITLE: ' + query,
+          '',
+          'ARTICLE CONTENT:',
+          (content || query).slice(0, 3000),
+        ].join('\n');
+
+        for (let attempt = 0; attempt < keys.length; attempt++) {
+          const key = keys[attempt % keys.length];
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+          try {
+            const resp = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: aiPrompt }] }],
+                generationConfig: { maxOutputTokens: 50, temperature: 0.3 },
+              }),
+              signal: AbortSignal.timeout(15000),
+            });
+            const result = await resp.json();
+            if (result.error) {
+              if (result.error.code === 403 || result.error.code === 429) continue;
+              continue;
+            }
+            const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (aiText) {
+              aiSearchQuery = aiText.trim().replace(/^["'`]|["'`]$/g, '').split('\n')[0].trim();
+              if (aiSearchQuery.length > 0) break;
+            }
+          } catch { continue; }
+        }
+      }
+
+      // Pexels API ile görsel ara
+      const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(aiSearchQuery)}&per_page=10`;
+      let pexelsResp;
+      try {
+        pexelsResp = await fetch(pexelsUrl, {
+          headers: { Authorization: PEXELS_API_KEY },
+          signal: AbortSignal.timeout(15000),
+        });
+      } catch (fetchErr) {
+        return NextResponse.json({
+          error: `Pexels API'ye erişilemedi: ${fetchErr instanceof Error ? fetchErr.message : 'hata'}`,
+        }, { status: 502 });
+      }
+      if (!pexelsResp.ok) {
+        const errText = await pexelsResp.text().catch(() => '');
+        return NextResponse.json({
+          error: `Pexels API hatası (HTTP ${pexelsResp.status}): ${errText.slice(0, 300)}`,
+        }, { status: 502 });
+      }
+      const pexelsData = await pexelsResp.json() as { photos?: Array<{ src?: { large?: string; medium?: string; original?: string }; alt?: string; photographer?: string; photographer_url?: string }> };
+      const items = (pexelsData.photos || [])
+        .filter(photo => photo.src?.large || photo.src?.original)
+        .map(photo => ({
+          url: photo.src?.large || photo.src?.original || '',
+          title: photo.alt || '',
+          source: photo.photographer ? `Pexels · ${photo.photographer}` : 'Pexels',
+        }));
+
+      return NextResponse.json({
+        ok: true,
+        query: aiSearchQuery,
+        images: items,
+      });
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'Pexels görsel arama hatası' }, { status: 500 });
+    }
+  }
+
   return NextResponse.json({ error: 'Geçersiz action' }, { status: 400 });
 }
