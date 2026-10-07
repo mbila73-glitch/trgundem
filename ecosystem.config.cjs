@@ -46,6 +46,7 @@ module.exports = {
       script: 'server.js',
       cwd: '/var/www/.next/standalone',
       instances: 1,
+      exec_mode: 'fork',  // Next.js standalone cluster modda çöküyor — fork zorunlu
       autorestart: true,
       max_memory_restart: '1G',
       env: {
