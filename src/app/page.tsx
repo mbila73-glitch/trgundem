@@ -183,14 +183,8 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Mobil: Sol — Yıldız (gizli — zemin rengi) + İletişim düğmesi */}
-            <div className="absolute left-2 sm:hidden flex items-center gap-1 flex-shrink-0 z-10">
-              <Link
-                href="/veri"
-                aria-label="Veri sayfasına geç"
-                title="Veri sayfası"
-                className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-red-600 text-red-600 font-bold text-base leading-none hover:bg-red-600 hover:text-red-600 transition select-none"
-              >*</Link>
+            {/* Mobil: Sol — İletişim düğmesi (Yıldız görünmez olduğu için kaldırıldı, 36px boşluk açıyordu) */}
+            <div className="absolute left-2 sm:hidden flex items-center flex-shrink-0 z-10">
               <Button
                 variant="default"
                 size="sm"

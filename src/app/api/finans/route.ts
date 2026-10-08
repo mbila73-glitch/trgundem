@@ -1,12 +1,78 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
 
 // Finans verileri — güvenilir kaynaklar:
 // TCMB: https://www.tcmb.gov.tr/kurlar/today.xml (döviz kurları)
 // Yahoo Finance: BIST 100 (XU100.IS), Ons Altın (GC=F) — query1/query2 fallback
-// Gram Altın hesaplama: (Ons fiyatı × USD kuru) / 31.1035
+// Gram Altın: Harem Altın satış fiyatı (cache dosyasından, scripts/fetch-harem-altin-cache.js yazar)
+//             cache stale/missing ise hesaplanan değer: (Ons × USD) / 31.1035
 
 let cache: { data: Array<{ name: string; value: string; change: string; up: boolean }>; ts: number } | null = null;
 const CACHE_MS = 10 * 1000; // 10 saniye — kullanıcı talebi
+
+// Harem Altın cache dosyası — scripts/fetch-harem-altin-cache.js her 5 dakikada bir yazar
+const HAREM_CACHE_FILE = '/var/www/.harem-altin-cache.json';
+const HAREM_CACHE_MAX_AGE_MS = 15 * 60 * 1000; // 15 dakika — cache stale ise hesaplanan değere düş
+
+interface HaremCache {
+  fetchedAt: string;
+  timestamp: number;
+  satis: string;
+  alis: string | null;
+  kaynak: string;
+}
+
+function readHaremCache(): { satis: string; kaynak: string; fetchedAt: string } | null {
+  try {
+    if (!fs.existsSync(HAREM_CACHE_FILE)) return null;
+    const raw = fs.readFileSync(HAREM_CACHE_FILE, 'utf8');
+    const data: HaremCache = JSON.parse(raw);
+    if (!data || !data.satis || !data.timestamp) return null;
+    // Cache stale mi?
+    const age = Date.now() - data.timestamp;
+    if (age > HAREM_CACHE_MAX_AGE_MS) {
+      console.log('[finans] Harem Altın cache stale (' + Math.floor(age / 60000) + ' dk), hesaplanan değere düşüyor');
+      return null;
+    }
+    return { satis: data.satis, kaynak: data.kaynak, fetchedAt: data.fetchedAt };
+  } catch (e) {
+    console.log('[finans] Harem cache okuma hatası:', e instanceof Error ? e.message : e);
+    return null;
+  }
+}
+
+// Türkçe fiyat string'ini sayıya çevir ("5.234,56" -> 5234.56)
+function parseTrPrice(s: string): number | null {
+  if (!s) return null;
+  const cleaned = s.replace(/[^\d.,]/g, '').trim();
+  if (!cleaned) return null;
+  // Türkçe format: binlik ayraç ., ondalık ayraç ,
+  // "5.234,56" -> "5234.56"
+  const lastComma = cleaned.lastIndexOf(',');
+  const lastDot = cleaned.lastIndexOf('.');
+  const lastSep = Math.max(lastComma, lastDot);
+  if (lastSep === -1) {
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  }
+  // Son ayraç , ise ve 1-2 hane varsa → Türkçe ondalık
+  if (lastSep === lastComma && cleaned.substring(lastComma + 1).length <= 2) {
+    const intPart = cleaned.substring(0, lastComma).replace(/\./g, '');
+    const decPart = cleaned.substring(lastComma + 1);
+    const num = parseFloat(intPart + '.' + decPart);
+    return isNaN(num) ? null : num;
+  }
+  // Son ayraç . ise ve 1-2 hane varsa → Amerikan ondalık
+  if (lastSep === lastDot && cleaned.substring(lastDot + 1).length <= 2) {
+    const intPart = cleaned.substring(0, lastDot).replace(/,/g, '');
+    const decPart = cleaned.substring(lastDot + 1);
+    const num = parseFloat(intPart + '.' + decPart);
+    return isNaN(num) ? null : num;
+  }
+  // 3+ hane → binlik ayraç kabul et, ondalık yok
+  const num = parseFloat(cleaned.replace(/[.,]/g, ''));
+  return isNaN(num) ? null : num;
+}
 
 // TCMB'den döviz kurları çek
 async function fetchTcmbRates(): Promise<{ code: string; rate: number; prevRate: number | null }[]> {
@@ -152,9 +218,25 @@ export async function GET() {
       up: ch ? ch.up : true,
     });
 
-    // Gram Altın hesapla: (Ons × USD kuru) / 31.1035
+    // Gram Altın: önce Harem Altın satış fiyatını dene (cache dosyasından)
+    // scripts/fetch-harem-altin-cache.js her 5 dakikada bir günceller
+    // cache stale/missing ise hesaplanan değere düş: (Ons × USD) / 31.1035
+    const harem = readHaremCache();
     const usdRate = tcmbRates.find(c => c.code === 'USD');
-    if (usdRate) {
+    if (harem && harem.satis) {
+      // Harem Altın satış fiyatı direkt göster (kaynak Harem Altın)
+      const satisNum = parseTrPrice(harem.satis);
+      const formatted = satisNum !== null
+        ? `${satisNum.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₺`
+        : `${harem.satis} ₺`;
+      result.push({
+        name: 'GRAM ALTIN',
+        value: formatted,
+        change: ch ? ch.change : '—', // Ons değişimini referans al (Harem'in prev verisi yok)
+        up: ch ? ch.up : true,
+      });
+    } else if (usdRate) {
+      // Fallback: Hesaplanan gram altın (eski yöntem)
       const gramAltin = (onsData.current * usdRate.rate) / 31.1035;
       result.push({
         name: 'GRAM ALTIN',

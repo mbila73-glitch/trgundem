@@ -54,7 +54,7 @@ const finansItemRender = (item: FinansItem, keyPrefix: string, i: number) => {
     'CHF/TL': 'Kaynak: Türkiye Cumhuriyet Merkez Bankası (tcmb.gov.tr)',
     '100 JPY/TL': 'Kaynak: Türkiye Cumhuriyet Merkez Bankası (tcmb.gov.tr)',
     'ONS ALTIN': 'Kaynak: Yahoo Finance (finance.yahoo.com)',
-    'GRAM ALTIN': 'Hesaplanan: (Ons Altın × USD/TL) / 31,1035',
+    'GRAM ALTIN': 'Kaynak: Harem Altın (haremaltin.com) — kulçe satış fiyatı, her 5 dakikada bir güncellenir',
   };
   return (
     <span key={`${keyPrefix}-${i}`} className="inline-flex flex-shrink-0 items-center gap-2 text-sm" title={sourceMap[item.name] || ''}>
