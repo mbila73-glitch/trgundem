@@ -140,7 +140,12 @@ export function InfoBands() {
 
   const openArticle = (id: string) => {
     const url = new URL(window.location.href);
-    url.searchParams.set('article', id);
+    // KRİTİK: Ana sayfa (/) PublicMain kullanır → ?haber= parametresi
+    // /veri sayfası NewsScreen kullanır → ?article= parametresi
+    // Önceden hep ?article= set ediyordu, bu yüzden ana sayfada tıklayınca
+    // PublicMain'in popstate handler'ı ?haber='i okuyamadığı için haber açılmıyordu.
+    const param = window.location.pathname === '/veri' ? 'article' : 'haber';
+    url.searchParams.set(param, id);
     window.history.pushState({}, '', url.toString());
     window.dispatchEvent(new PopStateEvent('popstate'));
     window.scrollTo({ top: 0, behavior: 'smooth' });
