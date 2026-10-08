@@ -1210,7 +1210,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         value={translateInput}
                         onChange={(e) => setTranslateInput(e.target.value)}
                         placeholder='Türkçe yaz'
-                        className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
+                        className="flex-1 text-xs h-7 border-0 bg-white text-foreground focus-visible:ring-1 focus-visible:ring-red-500"
                       />
                       <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
                         <ArrowDown className="h-3 w-3 text-muted-foreground" />
@@ -1232,7 +1232,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             value={imageSearchInput}
                             onChange={(e) => setImageSearchInput(e.target.value)}
                             placeholder='Arama kelimeleri'
-                            className="flex-1 text-xs h-8"
+                            className="flex-1 text-xs h-8 bg-white text-foreground border-green-300 focus-visible:ring-1 focus-visible:ring-green-500"
                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('custom'); } }}
                           />
                           <Button
@@ -1246,7 +1246,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             Görsel Ara
                           </Button>
                         </div>
-                        <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1.5 h-7 text-xs w-full">
+                        <Button type="button" size="sm" onClick={handleClearImageSearch} className="gap-1.5 h-8 text-xs w-full bg-red-600 hover:bg-red-700 text-white border border-red-700 font-bold tracking-wide">
                           <X className="h-3.5 w-3.5" /> Temizle
                         </Button>
                         <p className="text-[10px] text-muted-foreground">
@@ -1501,7 +1501,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               value={translateInput}
                               onChange={(e) => setTranslateInput(e.target.value)}
                               placeholder='Türkçe yaz'
-                              className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
+                              className="flex-1 text-xs h-7 border-0 bg-white text-foreground focus-visible:ring-1 focus-visible:ring-red-500"
                             />
                             <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
                               <ArrowDown className="h-3 w-3 text-muted-foreground" />
@@ -1522,7 +1522,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                 value={imageSearchInput}
                                 onChange={(e) => setImageSearchInput(e.target.value)}
                                 placeholder='Arama kelimeleri'
-                                className="flex-1 text-xs h-8"
+                                className="flex-1 text-xs h-8 bg-white text-foreground border-green-300 focus-visible:ring-1 focus-visible:ring-green-500"
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('manual'); } }}
                               />
                               <Button
@@ -1546,7 +1546,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               <p className="text-[10px] text-green-700 dark:text-green-300">Kullanılan sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
                             )}
                           </div>
-                          <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1.5 h-7 text-xs w-full">
+                          <Button type="button" size="sm" onClick={handleClearImageSearch} className="gap-1.5 h-8 text-xs w-full bg-red-600 hover:bg-red-700 text-white border border-red-700 font-bold tracking-wide">
                             <X className="h-3.5 w-3.5" /> Temizle
                           </Button>
 
@@ -1658,7 +1658,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       value={translateInput}
                                       onChange={(e) => setTranslateInput(e.target.value)}
                                       placeholder='Türkçe yaz'
-                                      className="flex-1 text-xs h-7 border-0 bg-transparent focus-visible:ring-0"
+                                      className="flex-1 text-xs h-7 border-0 bg-white text-foreground focus-visible:ring-1 focus-visible:ring-red-500"
                                     />
                                     <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
                                       <ArrowDown className="h-3 w-3 text-muted-foreground" />
@@ -1680,7 +1680,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                           value={imageSearchInput}
                                           onChange={(e) => setImageSearchInput(e.target.value)}
                                           placeholder='Arama kelimeleri'
-                                          className="flex-1 text-xs h-7"
+                                          className="flex-1 text-xs h-7 bg-white text-foreground border-green-300 focus-visible:ring-1 focus-visible:ring-green-500"
                                           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearch('edit'); } }}
                                         />
                                         <Button
@@ -1697,7 +1697,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       {imageSearchQuery && imageSearchTarget === 'edit' && (
                                         <p className="text-[10px] text-green-700 dark:text-green-300">Sorgu: <code className="bg-green-100 dark:bg-green-900/30 px-1 rounded">{imageSearchQuery}</code></p>
                                       )}
-                                      <Button type="button" size="sm" variant="outline" onClick={handleClearImageSearch} className="gap-1 h-6 text-[10px] w-full">
+                                      <Button type="button" size="sm" onClick={handleClearImageSearch} className="gap-1 h-7 text-[11px] w-full bg-red-600 hover:bg-red-700 text-white border border-red-700 font-bold tracking-wide">
                                         <X className="h-3 w-3" /> Temizle
                                       </Button>
                                       {imageSearchTarget === 'edit' && searchImages.length > 0 && (

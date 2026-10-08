@@ -107,15 +107,34 @@ function checkAuth(req: NextRequest): boolean {
 // 5 Gemini API key
 function getGeminiKeys(): string[] {
   const keys: string[] = [];
-  const candidates = [
-    process.env.GEMINI_API_KEY,
-    process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3,
-    process.env.GEMINI_API_KEY_4,
-    process.env.GEMINI_API_KEY_5,
+  // 1. /var/www/.gemini-key* dosyalarından oku (pipeline ile aynı yöntem)
+  //    Bu, PM2'nin .env'i runtime'da doğru enjekte etmemesi durumunda çalışır
+  const keyFiles = [
+    '/var/www/.gemini-key',
+    '/var/www/.gemini-key2',
+    '/var/www/.gemini-key3',
+    '/var/www/.gemini-key4',
+    '/var/www/.gemini-key5',
   ];
-  for (const c of candidates) {
-    if (c && c.length > 0) keys.push(c);
+  for (const file of keyFiles) {
+    try {
+      const fs = require('fs');
+      const k = fs.readFileSync(file, 'utf8').trim();
+      if (k) keys.push(k);
+    } catch { /* dosya yok, atla */ }
+  }
+  // 2. env var fallback (.env doğru yüklendiyse)
+  if (keys.length === 0) {
+    const candidates = [
+      process.env.GEMINI_API_KEY,
+      process.env.GEMINI_API_KEY_2,
+      process.env.GEMINI_API_KEY_3,
+      process.env.GEMINI_API_KEY_4,
+      process.env.GEMINI_API_KEY_5,
+    ];
+    for (const c of candidates) {
+      if (c && c.length > 0) keys.push(c);
+    }
   }
   return keys;
 }
