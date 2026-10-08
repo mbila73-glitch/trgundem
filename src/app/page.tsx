@@ -104,7 +104,7 @@ export default function Home() {
             <div className="hidden sm:block">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
-                  <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition bg-red-400 hover:bg-red-500 text-white cursor-pointer">
+                  <button type="button" suppressHydrationWarning className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition bg-red-600 hover:bg-red-700 text-white cursor-pointer border border-red-700">
                     <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-white">
                       <Clock className="h-4 w-4 text-white" />
                       {mounted && now ? formatTime(now) : '--:--:--'}
@@ -195,7 +195,7 @@ export default function Home() {
                 variant="default"
                 size="sm"
                 onClick={() => setReaderFormOpen(true)}
-                className="gap-1 text-[10px] bg-red-400 hover:bg-red-500 text-white h-8 px-2 border border-red-300"
+                className="gap-1 text-[10px] bg-red-600 hover:bg-red-700 text-white h-8 px-2 border border-red-700"
                 aria-label="İletişim"
               >
                 <Mail className="h-3.5 w-3.5" />
@@ -215,7 +215,7 @@ export default function Home() {
                 variant="default"
                 size="sm"
                 onClick={() => setReaderFormOpen(true)}
-                className="hidden sm:inline-flex gap-1.5 text-xs bg-red-400 hover:bg-red-500 text-white h-9 px-3 border border-red-300"
+                className="hidden sm:inline-flex gap-1.5 text-xs bg-red-600 hover:bg-red-700 text-white h-9 px-3 border border-red-700"
               >
                 <Mail className="h-4 w-4" />
                 <span>İletişim</span>
