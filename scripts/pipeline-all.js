@@ -151,11 +151,11 @@ async function aiSummarize(title, contents, category) {
       '5. Kaynak metindeki İFADEYİ DEĞİL, ANLAMI aktar. Anlamı koru, ifadeyi değiştir.\n' +
       '6. Sayısal veriler (rakam, yüzde, tarih, saat) — ANLAMI KORU ANCAK FARKLI CÜMLEDE VER:\n' +
       '   Kaynakta "Borsa %2 yükseldi" yazıyorsa sen "Borsa endeksinde yüzde iki oranında artış gözlendi" yaz.\n' +
-      '   Kaynakta "5 Ekim 2026" yazıyorsa sen "Ekim ayının beşinci günü / 2026 yılının ekim ayında" yaz.\n' +
+      '   Kaynakta "5 Ekim 2026" yazıyorsa SEN DE "5 Ekim 2026" YAZ — tarihi olduğu gibi koru, değiştirme.\n' +
       '7. Alıntı yapılmış sözleri ("..." içindeki ifadeler) AYNEN KORUMAK ZORUNLU DEĞİL — kendi cümlenle aktar.\n' +
       '8. Kişi adları ve kurum adları korunabilir ANCAK cümle içinde farklı konumlandır.\n' +
       '9. Eğer kaynak metinle çok benzer çıkarsa, kendini düzelt — farklı bir cümle kur.\n' +
-      '10. 4+ kelimelik ardışık dizilim kaynak metinde varsa, bu bir kopyalama sayılır — DEĞİŞTİR.\n';
+      '10. Kopyalama kriteri: Aynı cümlenin 6+ kelimesi kaynakla birebir ardışık dizilirse, veya bir cümlenin %50+ kısmı kaynak cümleyle örtüşürse, ya da AI özetindeki cümlelerin 2/3+ kısmı kaynak cümlelerle örtüşüyorsa — bu kopyalamadır, DEĞİŞTİR.\n';
 
     // Eğer önceki denemeden plagiarizm tespit edildiyse
     if (prevText && plagiarismChunks && plagiarismChunks.length > 0) {
@@ -259,7 +259,7 @@ async function aiSummarize(title, contents, category) {
     return found;
   }
 
-  // Plagiarizm kontrolü — AI cevabında 4+ kelimelik ardışık dizilim kaynak metinde var mı?
+  // Plagiarizm kontrolü — AI cevabında 6+ kelimelik ardışık dizilim VEYA cümle bazında %50+ / 2/3 örtüşme kaynak metinde var mı?
   function findPlagiarism(aiText, sourceText) {
     var normalize = function(t) {
       return String(t || '')
@@ -272,6 +272,12 @@ async function aiSummarize(title, contents, category) {
         .replace(/\s+/g, ' ')
         .trim();
     };
+    var splitSentences = function(t) {
+      return String(t || '')
+        .split(/[.!?\n]+/)
+        .map(function(s) { return s.trim(); })
+        .filter(function(s) { return s.length > 0; });
+    };
     var ai = normalize(aiText);
     var src = normalize(sourceText);
     if (!ai || !src) return [];
@@ -279,15 +285,50 @@ async function aiSummarize(title, contents, category) {
     var aiWords = ai.split(' ');
     var found = [];
     var seen = new Set();
-    // 4 kelimelik ardışık dizilimleri kaynak metinde ara
-    for (var i = 0; i + 4 <= aiWords.length; i++) {
-      var chunk = aiWords.slice(i, i + 4).join(' ');
-      // 15+ karakter ve sadece jenerik olmayan (en az 1 meaningful kelime içersin)
-      if (chunk.length > 15 && src.indexOf(chunk) >= 0 && !seen.has(chunk)) {
+
+    // 6 kelimelik ardışık dizilimleri kaynak metinde ara (eski 4'ten 6'ya çıkarıldı — daha gevşek)
+    for (var i = 0; i + 6 <= aiWords.length; i++) {
+      var chunk = aiWords.slice(i, i + 6).join(' ');
+      // 20+ karakter ve sadece jenerik olmayan (en az 1 meaningful kelime içersin)
+      if (chunk.length > 20 && src.indexOf(chunk) >= 0 && !seen.has(chunk)) {
         seen.add(chunk);
         found.push(chunk);
       }
     }
+
+    // Cümle bazında %50+ örtüşme kontrolü — bir AI cümlesinin %50+ kısmı kaynak cümlede geçiyorsa kopyalama sayılır
+    var aiSentences = splitSentences(aiText);
+    var srcSentences = splitSentences(sourceText);
+    var sentenceOverlap = 0;
+    aiSentences.forEach(function(aSent) {
+      var aNorm = normalize(aSent);
+      if (!aNorm) return;
+      srcSentences.forEach(function(sSent) {
+        var sNorm = normalize(sSent);
+        if (!sNorm) return;
+        // Kaynak cümlenin %50+ kısmı AI cümlesinde geçiyor mu?
+        if (aNorm.length >= 20 && sNorm.length >= 20) {
+          var longer = aNorm.length >= sNorm.length ? aNorm : sNorm;
+          var shorter = aNorm.length >= sNorm.length ? sNorm : aNorm;
+          if (longer.indexOf(shorter) >= 0) {
+            sentenceOverlap++;
+            if (!seen.has(aNorm)) {
+              seen.add(aNorm);
+              found.push(aNorm.slice(0, 80));
+            }
+          }
+        }
+      });
+    });
+
+    // 2/3 cümle örtüşmesi kontrolü — AI'daki cümlelerin 2/3+ kısmı kaynakla örtüşüyorsa TOPLU kopyalama var
+    if (aiSentences.length >= 3 && sentenceOverlap >= Math.ceil(aiSentences.length * 2 / 3)) {
+      if (!seen.has('__overlap_2_3__')) {
+        seen.add('__overlap_2_3__');
+        found.push('2/3 cümle örtüşmesi: ' + sentenceOverlap + '/' + aiSentences.length + ' cümle kaynakla birebir örtüşüyor');
+      }
+    }
+
     return found;
   }
 
@@ -341,7 +382,7 @@ async function aiSummarize(title, contents, category) {
           text = text.trim();
           var wc = countWords(text);
 
-          // Plagiarizm kontrolü — kaynak metinle 4+ kelimelik ardışık dizilim ara
+          // Plagiarizm kontrolü — kaynak metinle 6+ kelimelik ardışık dizilim VEYA cümle bazında %50+ / 2/3 örtüşme ara
           var plagiarism = findPlagiarism(text, combinedContent);
 
           if (plagiarism.length > 0) {
@@ -882,6 +923,7 @@ async function main() {
 
         // "Son dakika" haberi tespiti — kaynak başlıkta "son dakika" geçiyorsa
         // AI özetinden "son dakika" kaldır, başına "Konu ile ilgili son bilgiler şu şekildedir:" ekle
+        // Ayrıca kaynak başlıktan da "SON DAKİKA |" ön ekini ve takip eden tüm noktalama işaretlerini temizle
         var titleLower = firstArticle.title.toLowerCase();
         if (titleLower.indexOf('son dakika') >= 0 || titleLower.indexOf('sondakika') >= 0) {
           // AI özetinden "son dakika" ifadelerini kaldır
@@ -890,6 +932,20 @@ async function main() {
           var sonBilgilerPrefix = 'Konu ile ilgili son bilgiler şu şekildedir: ';
           if (summaryText.toLowerCase().indexOf(sonBilgilerPrefix.toLowerCase()) !== 0) {
             summaryText = sonBilgilerPrefix + summaryText;
+          }
+          // BAŞLIK temizliği — "SON DAKİKA |", "SON DAKİKA:", "SON DAKİKA -", "SON DAKİKA•" vb.
+          // Başlığın başındaki "SON DAKİKA" önekini + takip eden tüm noktalama/bağlaç işaretlerini kaldır
+          // İşaretler: . ! ? … | : • - – — , ; ve boşluklar
+          var cleanedTitle = firstArticle.title
+            .replace(/^\s*son\s*dakika\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
+            .replace(/^\s*sondakika\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
+            .replace(/\bson\s*dakika\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
+            .replace(/\bsondakika\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+          if (cleanedTitle && cleanedTitle !== firstArticle.title) {
+            log('  [Son dakika haberi] Başlık temizlendi: "' + firstArticle.title + '" -> "' + cleanedTitle + '"');
+            firstArticle.title = cleanedTitle;
           }
           log('  [Son dakika haberi] Özet başına "Konu ile ilgili son bilgiler" eklendi');
         }
