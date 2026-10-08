@@ -42,7 +42,7 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
         </div>
       ) : (
         <div className="relative flex aspect-[16/9] w-full items-center justify-center bg-muted text-muted-foreground p-2">
-          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-60" />
+          <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-60" />
         </div>
       )}
 

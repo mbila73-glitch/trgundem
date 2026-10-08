@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "TRGUNDEM.NET" }],
   icons: {
-    icon: "/trlogo2.jpg",
-    apple: "/trlogo2.jpg",
+    icon: "/logo_TRG.jpg",
+    apple: "/logo_TRG.jpg",
   },
   openGraph: {
     title: "TÜRKİYEDEN HABER TRGUNDEM.NET",

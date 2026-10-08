@@ -38,7 +38,7 @@ export default function GirisPage() {
     <div className="min-h-screen flex items-center justify-center bg-red-600 p-4">
       <div className="bg-white rounded-lg shadow-2xl p-8 max-w-sm w-full">
         <div className="text-center mb-6">
-          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-16 mx-auto mb-4 rounded" />
+          <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-16 mx-auto mb-4 rounded" />
           <h1 className="text-xl font-bold text-gray-800">TRGUNDEM.NET</h1>
           <p className="text-sm text-gray-500 mt-1">Siteye erişim şifre korumalıdır</p>
         </div>

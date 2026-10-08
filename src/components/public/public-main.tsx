@@ -196,7 +196,7 @@ function NewsCardLarge({ article, onOpen }: { article: PublishedArticle; onOpen:
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
         {/* Logo her zaman arka planda — görsel yüklenemezse görünür */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+          <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
         </div>
         {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
         {article.imageUrl && (
@@ -239,7 +239,7 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted flex-shrink-0">
         {/* Logo her zaman arka planda — görsel yüklenemezse görünür */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+          <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
         </div>
         {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
         {article.imageUrl && (
@@ -384,7 +384,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted flex-shrink-0">
                 {/* Logo her zaman arka planda — görsel yüklenemezse görünür */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <img src="/trlogo2.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+                  <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
                 </div>
                 {/* Görsel varsa üstte — yüklenemezse gizlenir, logo görünür */}
                 {a.imageUrl && (
@@ -699,7 +699,7 @@ export function PublicMain() {
             ) : (
               <div className="mb-6 flex justify-center">
                 <div className="relative flex aspect-[16/9] w-full max-w-2xl items-center justify-center overflow-hidden rounded-xl bg-muted">
-                  <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-20 w-auto object-contain opacity-60" />
+                  <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-20 w-auto object-contain opacity-60" />
                 </div>
               </div>
             )}

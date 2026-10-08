@@ -135,7 +135,7 @@ export function dateTimeLong(date: string | Date | null | undefined): string {
 // F12'de orijinal kaynak URL görünmesin, trgundem.net üzerinden serve edilsin
 export function proxyImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
-  // Yerel görseller (/uploads/, /trlogo2.jpg) — proxy'siz direkt
+  // Yerel görseller (/uploads/, /logo_TRG.jpg) — proxy'siz direkt
   if (url.startsWith('/')) return url;
   // Dış URL — proxy et
   return `/api/img?url=${encodeURIComponent(url)}`;

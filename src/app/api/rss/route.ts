@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
     <generator>TRGUNDEM.NET RSS Generator v1.0</generator>
     <atom:link href="${SITE_URL}/api/rss" rel="self" type="application/rss+xml" />
     <image>
-      <url>${SITE_URL}/trlogo2.jpg</url>
+      <url>${SITE_URL}/logo_TRG.jpg</url>
       <title>${escapeXml(SITE_TITLE)}</title>
       <link>${SITE_URL}</link>
       <width>140</width>

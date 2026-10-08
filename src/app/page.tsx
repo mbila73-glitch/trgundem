@@ -129,7 +129,7 @@ export default function Home() {
                 title="Ana sayfaya dön"
                 className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
-                <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
+                <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>
 
               <button
@@ -179,7 +179,7 @@ export default function Home() {
                 title="Ana sayfaya dön"
                 className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
-                <img src="/trlogo2.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
+                <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>
             </div>
 
