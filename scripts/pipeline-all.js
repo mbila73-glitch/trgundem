@@ -263,11 +263,14 @@ async function aiSummarize(title, contents, category) {
   function findPlagiarism(aiText, sourceText) {
     var normalize = function(t) {
       return String(t || '')
+        // KRİTİK: Önce İ → i replace YAPILIR, sonra toLowerCase çağrılır.
+        // JavaScript toLowerCase() Türkçe İ (U+0130) → "i̇" (i + U+0307 combining dot) üretir
+        // Bu da ardışık dizilim eşleşmelerini bozar (chunk.length > 20 kontrolü yanlış çalışır)
+        .replace(/İ/g, 'i')
         .toLowerCase()
         .replace(/[''`]/g, "'")
-        .replace(/[İI]/g, 'i')
-        .replace(/Ş/g, 's').replace(/Ç/g, 'c').replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ö/g, 'o')
-        .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o')
+        .replace(/[ıI]/g, 'i')
+        .replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o')
         .replace(/[^\w\s]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -924,23 +927,27 @@ async function main() {
         // "Son dakika" haberi tespiti — kaynak başlıkta "son dakika" geçiyorsa
         // AI özetinden "son dakika" kaldır, başına "Konu ile ilgili son bilgiler şu şekildedir:" ekle
         // Ayrıca kaynak başlıktan da "SON DAKİKA |" ön ekini ve takip eden tüm noktalama işaretlerini temizle
-        var titleLower = firstArticle.title.toLowerCase();
+        // KRİTİK: JavaScript toLowerCase() Türkçe İ (U+0130) karakterini "i̇" (i + U+0307 combining dot) yapar
+        // Bu yüzden önce İ → i replace yap, sonra toLowerCase çağır — yoksa indexOf('son dakika') eşleşmez
+        var titleLower = firstArticle.title.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
         if (titleLower.indexOf('son dakika') >= 0 || titleLower.indexOf('sondakika') >= 0) {
-          // AI özetinden "son dakika" ifadelerini kaldır
-          summaryText = summaryText.replace(/son\s*dakika\.{0,3}/gi, '').replace(/sondakika\.{0,3}/gi, '').trim();
+          // AI özetinden "son dakika" ifadelerini kaldır (önce İ→i replace, sonra gi regex — gi flag de İ hatası var)
+          summaryText = summaryText.replace(/İ/g, 'i').replace(/son\s*dakika\.{0,3}/gi, '').replace(/sondakika\.{0,3}/gi, '').trim();
           // Başına "Konu ile ilgili son bilgiler şu şekildedir:" ekle
           var sonBilgilerPrefix = 'Konu ile ilgili son bilgiler şu şekildedir: ';
           if (summaryText.toLowerCase().indexOf(sonBilgilerPrefix.toLowerCase()) !== 0) {
             summaryText = sonBilgilerPrefix + summaryText;
           }
-          // BAŞLIK temizliği — "SON DAKİKA |", "SON DAKİKA:", "SON DAKİKA -", "SON DAKİKA•" vb.
-          // Başlığın başındaki "SON DAKİKA" önekini + takip eden tüm noktalama/bağlaç işaretlerini kaldır
+          // BAŞLIK temizliği — "SON DAKİKA |", "SON DAKİKA:", "SON DAKİKA -", "SON DAKİKA•", "SON DAKİKA HABERİ:" vb.
+          // Başlığın başındaki "SON DAKİKA" önekini + takip eden "HABERİ" kelimesi + tüm noktalama/bağlaç işaretlerini kaldır
           // İşaretler: . ! ? … | : • - – — , ; ve boşluklar
+          // Türkçe İ → i replace ÖNCE yapılır (gi flag Türkçe İ'yi yakalamıyor)
           var cleanedTitle = firstArticle.title
-            .replace(/^\s*son\s*dakika\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
-            .replace(/^\s*sondakika\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
-            .replace(/\bson\s*dakika\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
-            .replace(/\bsondakika\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
+            .replace(/İ/g, 'i')
+            .replace(/^\s*son\s*dakika\s*(haber[a-zçğıüşöç]*)?\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
+            .replace(/^\s*sondakika\s*(haber[a-zçğıüşöç]*)?\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
+            .replace(/\bson\s*dakika\s*(haber[a-zçğıüşöç]*)?\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
+            .replace(/\bsondakika\s*(haber[a-zçğıüşöç]*)?\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
             .replace(/\s{2,}/g, ' ')
             .trim();
           if (cleanedTitle && cleanedTitle !== firstArticle.title) {
