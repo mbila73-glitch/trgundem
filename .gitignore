@@ -52,3 +52,9 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Logo — VPS'te shell ile manuel yukleniyor (special version)
+# Local'de trlogo2.jpg'ten kopyalanmis placeholder var, git'e eklenmesin
+# (yoksa user'in VPS'teki ozel versiyonunu ezer)
+public/logo_TRG.jpg
+public/logo_TRG.png
