@@ -499,7 +499,7 @@ export function PublicMain() {
       const r = await fetch('/api/published-articles?layout=all&status=published', { cache: 'no-store' });
       if (!r.ok) throw new Error('Haberler yüklenemedi');
       const json = (await r.json()) as { articles: PublishedArticle[] };
-      const arts = json.articles ?? [];
+      const arts = (json.articles ?? []).filter(a => !a.isExcluded);
       setArticles(arts);
       setError(null);
       // localStorage'a kaydet — sayfa yenilenince bu veri gösterilir

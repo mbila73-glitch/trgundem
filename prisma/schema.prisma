@@ -71,6 +71,7 @@ model PublishedArticle {
   clickHearts     Int      @default(0)  // okuyucu tıklama sayısı (gerçek)
   isEdited        Boolean  @default(false)  // true = yeşil çerçeve (yayınlandı/düzenlendi), false = kırmızı çerçeve (bekliyor)
   editedAt        DateTime?  // isEdited=true olduğu an — audit için
+  isExcluded      Boolean  @default(false)  // true = Yayın Dışı (ana sayfaya aktarılmasın), false = normal
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

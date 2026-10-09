@@ -73,6 +73,7 @@ export type PublishedArticle = {
   clickHearts: number;    // okuyucu tıklama sayısı (gerçek)
   isEdited: boolean;     // true = yeşil çerçeve (yayınlandı), false = kırmızı çerçeve (bekliyor)
   editedAt: string | null; // düzenlenme zamanı
+  isExcluded: boolean;   // true = Yayın Dışı (ana sayfaya aktarılmasın)
   createdAt: string;
   updatedAt: string;
 };

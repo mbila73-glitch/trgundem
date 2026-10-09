@@ -262,6 +262,7 @@ export function NewsScreen() {
   const [translateOutput, setTranslateOutput] = useState('');
   const [translating, setTranslating] = useState(false);
   const [aiEditing, setAiEditing] = useState(false);
+  const [editExcluded, setEditExcluded] = useState(false);
 
   // Admin token'ı localStorage'dan oku — polling ile kontrol et
   // storage event sadece diğer sekmelerde çalışır, aynı sekmede admin panelde
@@ -283,6 +284,7 @@ export function NewsScreen() {
     setEditSummary(a.aiSummary);
     setEditImage(a.imageUrl || '');
     setEditCategory([a.category]);
+    setEditExcluded(a.isExcluded || false);
     setOpenArticleId(null); // detay view kapat, grid'e dön
   }, []);
 
@@ -312,6 +314,7 @@ export function NewsScreen() {
           imageUrl: editImage || null,
           category: firstCat,
           isEdited: true,
+          isExcluded: editExcluded,
         }),
       });
       if (!r.ok) {
@@ -342,6 +345,7 @@ export function NewsScreen() {
         imageUrl: editImage || null,
         category: firstCat,
         isEdited: true,
+        isExcluded: editExcluded,
         editedAt: new Date().toISOString(),
       } : a));
       toast.success(editCategory.length > 1
@@ -595,6 +599,17 @@ export function NewsScreen() {
         </div>
         {editCategory.length > 1 && <p className="text-[10px] text-blue-600 dark:text-blue-400">{editCategory.length} kategori seçili — her kategori için ayrı makale oluşturulur</p>}
       </div>
+      {/* Yayın Dışı — ana sayfaya aktarılmasın */}
+      <label className="flex items-center gap-2 cursor-pointer rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/20 px-3 py-2">
+        <input
+          type="checkbox"
+          checked={editExcluded}
+          onChange={(e) => setEditExcluded(e.target.checked)}
+          className="h-4 w-4"
+        />
+        <span className="text-xs font-bold text-amber-700 dark:text-amber-300">Yayın Dışı</span>
+        <span className="text-[10px] text-muted-foreground">— bu haber ana sayfaya aktarılmasın</span>
+      </label>
       <div className="flex gap-2 pt-2 border-t">
         <Button type="button" size="sm" onClick={() => handlePublishEdit(a.id)} disabled={savingEdit || !editTitle.trim() || !editSummary.trim() || editCategory.length === 0} className="flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
           {savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
