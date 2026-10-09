@@ -912,19 +912,12 @@ export async function POST(req: NextRequest) {
           const result = await resp.json();
           const choice = result.choices?.[0];
           if (choice) {
-            // 1. content alanı dolu mu?
-            let translated = choice.message?.content;
-            // 2. content boşsa reasoning'i fallback olarak kullan
-            if (!translated && choice.message?.reasoning) {
-              // Reasoning metni içinden gerçek çeviriyi çek
-              // Reasoning genelde düşünme süreci, son cümlesi çeviri olabilir
-              translated = choice.message.reasoning;
-            }
+            // SADECE content kullan — reasoning ASLA kullanma (AI düşünme metnidir)
+            const translated = choice.message?.content;
             if (translated && translated.trim()) {
-              // Reasoning modeli bazı "I need to translate..." tarzı düşünceleri de içerir
-              // Çeviri sadece — son cümleyi ya da tamamını döndür
               return NextResponse.json({ ok: true, translated: translated.trim(), provider: 'evren', model: evrenModel });
             }
+            // content boşsa fallback yok — Gemini'ye düş
           }
         }
       } catch { /* EVREN başarısız, Gemini'ye düş */ }

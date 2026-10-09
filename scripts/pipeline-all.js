@@ -100,18 +100,15 @@ async function callEvren(prompt, maxTokens) {
     throw e;
   }
   // OpenAI-uyumlu response: choices[0].message.content
-  // Reasoning modeli: content boşsa, reasoning alanına bak
+  // KRİTİK: reasoning alanını ASLA kullanma — o AI'nin düşünme sürecidir, özet değil
+  // Eğer content boşsa, çağrı başarısız sayılır (reasoning modeli düzgün cevap üretmedi)
   var choice = result.choices && result.choices[0];
   if (!choice) throw new Error('EVREN: choices boş');
   var msg = choice.message || {};
   var text = msg.content;
-  if (!text && msg.reasoning) {
-    // Reasoning modeli: düşünme aşamasını da döndür (AI özet için yeterli)
-    text = msg.reasoning;
-  }
-  if (!text) throw new Error('EVREN: response boş (content ve reasoning yok)');
-  // Eğer finish_reason "length" ise, cevap yarım kalmış olabilir
-  // ama yine de ne varsa döndür — pipeline retry mantığı yetersiz kelime durumunda tekrar deneyecek
+  // reasoning fallback KALDIRILDI — özet olarak AI düşünme metni yayınlanıyordu
+  // if (!text && msg.reasoning) { text = msg.reasoning; } ← BU SATIR SİLİNDİ
+  if (!text) throw new Error('EVREN: content boş (reasoning modeli düzgün cevap üretmedi, tekrar dene)');
   return text;
 }
 
