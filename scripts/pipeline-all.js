@@ -64,6 +64,74 @@ function wh(entry) {
   } catch (e) {}
 }
 
+// === TARİH BUG FIX — AI özetlerindeki "yılının ekim ayının sekizinci günü" formatını
+// "8 Ekim 2026" formatına çevirir. AI bazen bu formata kayıp tarihleri uzun yazıyor.
+// Pipeline her özeti kaydetmeden önce bu fonksiyonla temizler.
+var TURKISH_ORDINALS = {
+  'birinci': 1, 'ilk': 1, 'ikinci': 2, 'üçüncü': 3, 'ucuncu': 3,
+  'dördüncü': 4, 'dorduncu': 4, 'beşinci': 5, 'besinci': 5,
+  'altıncı': 6, 'altinci': 6, 'yedinci': 7, 'sekizinci': 8, 'dokuzuncu': 9,
+  'onuncu': 10, 'on birinci': 11, 'onbirinci': 11, 'on ikinci': 12, 'onikinci': 12,
+  'on üçüncü': 13, 'on ucuncu': 13, 'onucuncu': 13,
+  'on dördüncü': 14, 'on dorduncu': 14, 'on beşinci': 15, 'on besinci': 15,
+  'on altıncı': 16, 'on altinci': 16, 'on yedinci': 17, 'on sekizinci': 18, 'on dokuzuncu': 19,
+  'yirminci': 20, 'yirmi birinci': 21, 'yirmi ikinci': 22, 'yirmi üçüncü': 23,
+  'yirmi dördüncü': 24, 'yirmi beşinci': 25, 'yirmi altıncı': 26, 'yirmi yedinci': 27,
+  'yirmi sekizinci': 28, 'yirmi dokuzuncu': 29, 'otuzuncu': 30, 'otuz birinci': 31
+};
+var TURKISH_MONTHS = {
+  'ocak': 'Ocak', 'şubat': 'Şubat', 'subat': 'Şubat', 'mart': 'Mart', 'nisan': 'Nisan',
+  'mayıs': 'Mayıs', 'mayis': 'Mayıs', 'haziran': 'Haziran', 'temmuz': 'Temmuz',
+  'ağustos': 'Ağustos', 'agustos': 'Ağustos', 'eylül': 'Eylül', 'eylul': 'Eylül',
+  'ekim': 'Ekim', 'kasım': 'Kasım', 'kasim': 'Kasım', 'aralık': 'Aralık', 'aralik': 'Aralık'
+};
+var DATE_SUFFIX_MAP = { 'nde': ' tarihinde', 'nün': ' tarihinin', 'nden': ' tarihinden', 'n': '', '': '' };
+var MONTH_NAMES_ARR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+function turkishWordToNumber(word) {
+  if (!word) return null;
+  var w = word.toLowerCase().trim();
+  var keys = Object.keys(TURKISH_ORDINALS).sort(function(a, b) { return b.length - a.length; });
+  for (var i = 0; i < keys.length; i++) { if (w === keys[i]) return TURKISH_ORDINALS[keys[i]]; }
+  for (var i = 0; i < keys.length; i++) { if (w.indexOf(keys[i]) >= 0) return TURKISH_ORDINALS[keys[i]]; }
+  return null;
+}
+
+function buildDateReplacement(year, monthWord, ordinalWord, suffix) {
+  var month = TURKISH_MONTHS[monthWord.toLowerCase()];
+  if (!month) return null;
+  var day = turkishWordToNumber(ordinalWord);
+  if (day === null) return null;
+  var dateStr = (year ? day + ' ' + month + ' ' + year : day + ' ' + month);
+  return dateStr + (DATE_SUFFIX_MAP[suffix || ''] !== undefined ? DATE_SUFFIX_MAP[suffix || ''] : '');
+}
+
+// "2026 yılının ekim ayının sekizinci gününde" → "8 Ekim 2026 tarihinde"
+function fixDateBugs(text) {
+  if (!text) return text;
+  // Pattern 1: "[year ] yılının [month] ayının [ordinal] günü[suffix]"
+  text = text.replace(/(?:((?:19|20)\d{2})\s+)?yılının\s+([a-zA-ZçğıİöşüÇĞİÖŞÜ]+)\s+ayının\s+([a-zA-ZçğıİöşüÇĞİÖŞÜ\s]+?)\s+günü(nde|nün|nden|n)?/gi, function(match, year, monthWord, ordinalWord, suffix) {
+    var repl = buildDateReplacement(year, monthWord, ordinalWord, suffix || '');
+    return repl === null ? match : repl;
+  });
+  // Pattern 2: "yılın [monthOrdinal] ayının [dayOrdinal] günü[suffix]"
+  text = text.replace(/yılın\s+([a-zA-ZçğıİöşüÇĞİÖŞÜ]+)\s+ayının\s+([a-zA-ZçğıİöşüÇĞİÖŞÜ\s]+?)\s+günü(nde|nün|nden|n)?/gi, function(match, monthOrdinal, dayOrdinal, suffix) {
+    var monthNum = turkishWordToNumber(monthOrdinal);
+    if (monthNum === null || monthNum < 1 || monthNum > 12) return match;
+    var day = turkishWordToNumber(dayOrdinal);
+    if (day === null) return match;
+    return day + ' ' + MONTH_NAMES_ARR[monthNum - 1] + (DATE_SUFFIX_MAP[suffix || ''] !== undefined ? DATE_SUFFIX_MAP[suffix || ''] : '');
+  });
+  // Pattern 3: Standalone "[month] ayının [ordinal] günü[suffix]" (yıl yok)
+  var monthKeysPiped = Object.keys(TURKISH_MONTHS).join('|');
+  var p3 = new RegExp('(' + monthKeysPiped + ')\\s+ayının\\s+([a-zA-ZçğıİöşüÇĞİÖŞÜ\\s]+?)\\s+günü(nde|nün|nden|n)?', 'gi');
+  text = text.replace(p3, function(match, monthWord, ordinalWord, suffix) {
+    var repl = buildDateReplacement(null, monthWord, ordinalWord, suffix || '');
+    return repl === null ? match : repl;
+  });
+  return text;
+}
+
 // fetch — native http (Wasm yok)
 globalThis.fetch = function(url, options) {
   options = options || {};
@@ -976,6 +1044,8 @@ async function main() {
         try {
           var publishTime = new Date(Date.now() - i * 60000);
           // Tüm yeni haberler direkt PUBLISHED — pending_review KALDIRILDI
+          // AI özetinde tarih bug'ı varsa (yılının ekim ayının sekizinci günü) düzelt
+          summaryText = fixDateBugs(summaryText);
           var createdArticle = await globalThis.prisma.publishedArticle.create({
             data: {
               aiTitle: decodeHtmlEntities(firstArticle.title),
