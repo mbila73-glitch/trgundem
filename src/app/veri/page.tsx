@@ -360,55 +360,6 @@ export default function Home() {
             </Button>
           </div>
           <YayinIlkeleri onContactClick={() => setReaderFormOpen(true)} />
-
-          {/* Personel Listesi — tıklayınca açılır/kapanır */}
-          <div className="mt-6">
-            <button type="button" onClick={() => setPersonelOpen(!personelOpen)} className="flex w-full items-center justify-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition">
-              Yapay Zekâ Destek Ekibi
-              {personelOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-            {personelOpen && (
-            <div onClick={() => setPersonelOpen(false)} className="mt-4 cursor-pointer rounded-lg border border-border bg-card p-4">
-            <h3 className="text-sm font-bold text-center mb-3 text-foreground/80">Yapay Zekâ Destek Ekibi</h3>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 max-w-3xl mx-auto text-[11px]">
-              {/* Satır 1 Sol */}
-              <div className="flex items-center gap-1 overflow-hidden">
-                <button type="button" onClick={(e) => { e.stopPropagation(); setReaderFormOpen(true); }} className="flex-shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition">
-                  <Mail className="h-2 w-2" />
-                </button>
-                <span className="font-medium text-foreground/80 whitespace-nowrap">Gencay Mistek</span>
-                <span className="text-muted-foreground whitespace-nowrap truncate">— Haber Araştırma ve İçerik Geliştirme</span>
-              </div>
-              {/* Satır 1 Sağ */}
-              <div className="flex items-center gap-1 overflow-hidden">
-                <button type="button" onClick={(e) => { e.stopPropagation(); setReaderFormOpen(true); }} className="flex-shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition">
-                  <Mail className="h-2 w-2" />
-                </button>
-                <span className="font-medium text-foreground/80 whitespace-nowrap">Miray Nizce</span>
-                <span className="text-muted-foreground whitespace-nowrap truncate">— Haber Yazımı ve İçerik Düzenleme</span>
-              </div>
-              {/* Satır 2 Sol */}
-              <div className="flex items-center gap-1 overflow-hidden">
-                <button type="button" onClick={(e) => { e.stopPropagation(); setReaderFormOpen(true); }} className="flex-shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition">
-                  <Mail className="h-2 w-2" />
-                </button>
-                <span className="font-medium text-foreground/80 whitespace-nowrap">Nilay Gendir</span>
-                <span className="text-muted-foreground whitespace-nowrap truncate">— Dil, Yazım ve Editoryal Kontrol</span>
-              </div>
-              {/* Satır 2 Sağ */}
-              <div className="flex items-center gap-1 overflow-hidden">
-                <button type="button" onClick={(e) => { e.stopPropagation(); setReaderFormOpen(true); }} className="flex-shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition">
-                  <Mail className="h-2 w-2" />
-                </button>
-                <span className="font-medium text-foreground/80 whitespace-nowrap">Arven Gemin</span>
-                <span className="text-muted-foreground whitespace-nowrap truncate">— Kaynak Karşılaştırma ve İçerik Sınıflandırma</span>
-              </div>
-            </div>
-            <p className="text-[10px] text-muted-foreground/60 mt-3 leading-relaxed">* Yukarıda belirtilen isimler, TrGündem'in içerik üretim ve editoryal süreçlerinde kullanılan yapay zekâ sistemlerini insan tarafından kolayca tanımlanabilir biçimde ifade etmek amacıyla oluşturulmuş temsili persona isimleridir. Gerçek kişilere ait kimlik, özgeçmiş veya kişisel iletişim bilgilerini temsil etmezler.</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1 leading-relaxed">Yapay zekâ hizmetlerinin kullanımı karşılığında ilgili hizmet sağlayıcılarına ait ücretler ödenmiş ve bu hizmetlere ilişkin faturalar alınmıştır. Söz konusu hizmetlerin muhasebe ve vergi yükümlülükleri, hizmet sağlayıcıları ve işletmenin kendi mali yükümlülükleri bakımından yürürlükteki mevzuat çerçevesinde yerine getirilmektedir.</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1 leading-relaxed">Yapay zekâ sistemleri; haber araştırması, kaynakların karşılaştırılması, metin oluşturma, özetleme, dil ve yazım kontrolü ile içerik sınıflandırma gibi süreçlerde editoryal destek sağlar. Yayınlanan içeriklerin nihai sorumluluğu TrGündem'e aittir.</p>
-            </div>
-            )}
           </div>
 
           <div className="mt-4 flex justify-center">
