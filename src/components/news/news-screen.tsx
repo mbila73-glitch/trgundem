@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon } from 'lucide-react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon, ArrowDown, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -254,6 +254,13 @@ export function NewsScreen() {
   const [editorTitle, setEditorTitle] = useState('');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // Görsel arama + çeviri (edit form için)
+  const [imageSearchInput, setImageSearchInput] = useState('');
+  const [searchImages, setSearchImages] = useState<{url: string; title: string; source: string}[]>([]);
+  const [searchingImages, setSearchingImages] = useState(false);
+  const [translateInput, setTranslateInput] = useState('');
+  const [translateOutput, setTranslateOutput] = useState('');
+  const [translating, setTranslating] = useState(false);
 
   // Admin token'ı localStorage'dan oku — polling ile kontrol et
   // storage event sadece diğer sekmelerde çalışır, aynı sekmede admin panelde
@@ -373,6 +380,58 @@ export function NewsScreen() {
     setEditorOpen(false);
   }, []);
 
+  // Türkçe → İngilizce çeviri (edit form için, 500ms debounce)
+  useEffect(() => {
+    if (!translateInput.trim()) { setTranslateOutput(''); return; }
+    if (!adminToken) return;
+    const timer = setTimeout(async () => {
+      setTranslating(true);
+      try {
+        const r = await fetch('/api/admin/custom-article', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
+          body: JSON.stringify({ action: 'translate', text: translateInput.trim() }),
+        });
+        const json = await r.json();
+        if (json.ok) setTranslateOutput(json.translated || '');
+      } catch { /* sessiz */ }
+      finally { setTranslating(false); }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [translateInput, adminToken]);
+
+  // Görsel ara — Openverse telifsiz görseller (edit form için)
+  const handleImageSearchEdit = useCallback(async () => {
+    if (!adminToken) return;
+    if (!editTitle.trim() && !imageSearchInput.trim()) return;
+    setSearchingImages(true);
+    try {
+      const r = await fetch('/api/admin/custom-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
+        body: JSON.stringify({
+          action: 'image-search',
+          title: editTitle,
+          summary: editSummary,
+          manualQuery: imageSearchInput.trim(),
+        }),
+      });
+      const json = await r.json();
+      if (json.ok && json.images) {
+        setSearchImages(json.images.slice(0, 10));
+      } else {
+        toast.error(json.error || 'Görsel arama hatası');
+      }
+    } catch { toast.error('Görsel arama hatası'); }
+    finally { setSearchingImages(false); }
+  }, [adminToken, editTitle, editSummary, imageSearchInput]);
+
+  // Temizle — görsel arama sonuçlarını temizle
+  const handleClearImageSearchEdit = useCallback(() => {
+    setSearchImages([]);
+    setImageSearchInput('');
+  }, []);
+
   // === INLINE EDIT FORM — makale kartının yerine geçen düzenleme formu ===
   const renderEditForm = (a: PublishedArticle) => (
     <Card className="border-2 border-blue-500 shadow-lg shadow-blue-500/20 p-4 space-y-3 col-span-full sm:col-span-1">
@@ -389,10 +448,51 @@ export function NewsScreen() {
         <Textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} rows={6} className="text-sm resize-y" placeholder="Haber özeti" />
         <p className="text-[10px] text-muted-foreground">{editSummary.trim().split(/\s+/).filter(Boolean).length} kelime</p>
       </div>
+      {/* Türkçe → İngilizce çeviri (görsel arama için) */}
+      <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/30 p-1.5">
+        <Input value={translateInput} onChange={(e) => setTranslateInput(e.target.value)} placeholder="Türkçe yaz" className="flex-1 text-xs h-7 border-0 bg-white text-foreground focus-visible:ring-1 focus-visible:ring-red-500" />
+        <button type="button" onClick={() => setImageSearchInput(translateInput)} title="Türkçe metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
+          <ArrowDown className="h-3 w-3 text-muted-foreground" />
+        </button>
+        <button type="button" onClick={() => setImageSearchInput(translateOutput)} title="İngilizce metni arama kutusuna koy" className="p-1.5 rounded hover:bg-foreground/10 flex-shrink-0">
+          <ArrowDown className="h-3 w-3 text-muted-foreground" />
+        </button>
+        <div className="flex-1 min-w-0 text-xs h-7 flex items-center px-2 bg-background rounded overflow-hidden">
+          {translating ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : <span className="text-foreground/80 truncate">{translateOutput || '—'}</span>}
+        </div>
+      </div>
+      {/* Görsel Ara — telifsiz Openverse */}
+      {(editTitle || imageSearchInput) && (
+        <div className="rounded-lg border border-green-300 bg-green-50 dark:bg-green-950/20 p-3 space-y-2">
+          <Label className="text-xs font-bold text-green-700 dark:text-green-300">Görsel Ara (Telifsiz · AI destekli · Openverse)</Label>
+          <div className="flex gap-2">
+            <Input value={imageSearchInput} onChange={(e) => setImageSearchInput(e.target.value)} placeholder="Arama kelimeleri" className="flex-1 text-xs h-8 bg-white text-foreground border-green-300 focus-visible:ring-1 focus-visible:ring-green-500" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImageSearchEdit(); } }} />
+            <Button type="button" size="sm" onClick={handleImageSearchEdit} disabled={searchingImages || (!editTitle.trim() && !imageSearchInput.trim())} className="gap-2 bg-green-600 hover:bg-green-700 h-8">
+              {searchingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              Görsel Ara
+            </Button>
+          </div>
+          <Button type="button" size="sm" onClick={handleClearImageSearchEdit} className="gap-1.5 h-8 text-xs w-full bg-red-600 hover:bg-red-700 text-white border border-red-700 font-bold tracking-wide">
+            <X className="h-3.5 w-3.5" /> Temizle
+          </Button>
+          <p className="text-[10px] text-muted-foreground">
+            {imageSearchInput.trim() ? 'Manuel arama kelimeleri ile aranır — AI üretimini atlar.' : 'AI habere uygun arama sorgusu üretir ve Openverse\'de telifsiz görseller arasından ilk 10 sonucu getirir.'}
+          </p>
+          {searchImages.length > 0 && (
+            <div className="grid grid-cols-5 gap-1.5">
+              {searchImages.map((img, i) => (
+                <button key={i} type="button" onClick={() => setEditImage(img.url)} className={`relative aspect-square overflow-hidden rounded border-2 ${editImage === img.url ? 'border-news' : 'border-transparent'} flex-shrink-0 group`}>
+                  <img src={img.url} alt={img.title} className="h-full w-full object-cover" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       <div className="space-y-1.5">
         <Label className="text-xs">Görsel</Label>
         <div className="flex gap-1.5">
-          <Input value={editImage} onChange={(e) => setEditImage(e.target.value)} className="text-xs h-8 flex-1" placeholder="Görsel URL veya /uploads/..." />
+          <Input value={editImage} onChange={(e) => setEditImage(e.target.value)} className="text-xs h-8 flex-1 bg-white text-foreground" placeholder="Görsel URL veya /uploads/..." />
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, editTitle); }} />
           <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="h-8 w-8 p-0">
             {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
