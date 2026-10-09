@@ -1263,7 +1263,8 @@ async function main() {
               initialHearts: Math.floor(Math.random() * (413 - 223 + 1)) + 223, // random 223-413
               clickHearts: 0,
               status: 'published',
-              publishedAt: publishTime
+              publishedAt: publishTime,
+              isEdited: false  // yeni makale = kırmızı çerçeve (düzenlenmemiş)
             }
           });
           added++;

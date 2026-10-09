@@ -71,6 +71,8 @@ export type PublishedArticle = {
   publishedAt: string | null;
   initialHearts: number;  // yayına alınırken random atanır (223-413)
   clickHearts: number;    // okuyucu tıklama sayısı (gerçek)
+  isEdited: boolean;     // true = yeşil çerçeve (yayınlandı), false = kırmızı çerçeve (bekliyor)
+  editedAt: string | null; // düzenlenme zamanı
   createdAt: string;
   updatedAt: string;
 };

@@ -490,28 +490,77 @@ export function PublicMain() {
   // Haber detayı (?haber=ID)
   const [openArticleId, setOpenArticleId] = useState<string | null>(null);
 
-  // Mount'ta articles yükle
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/published-articles?layout=all&status=published', { cache: 'no-store' })
-      .then(async (r) => {
-        if (!r.ok) throw new Error('Haberler yüklenemedi');
-        const json = (await r.json()) as { articles: PublishedArticle[] };
-        return json;
-      })
-      .then((data) => {
-        if (cancelled) return;
-        setArticles(data.articles ?? []);
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : 'Bilinmeyen hata');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
+  // Haberleri yükle — ana sayfa SADECE :19, :39, :59 dakikalarında veri sayfasından haber çeker
+  // İlk açılışta mount'ta fetch, sonraki senkronlar zamanlanmış
+  const syncArticles = useCallback(async () => {
+    try {
+      const r = await fetch('/api/published-articles?layout=all&status=published', { cache: 'no-store' });
+      if (!r.ok) throw new Error('Haberler yüklenemedi');
+      const json = (await r.json()) as { articles: PublishedArticle[] };
+      setArticles(json.articles ?? []);
+      setError(null);
+    } catch (e) {
+      if (e instanceof Error) setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  // Zamanlayıcı — sıradaki :19/:39/:59 dakikaya kadar ms hesapla
+  const msUntilNextSync = useCallback((): number => {
+    const now = new Date();
+    const m = now.getMinutes();
+    const targets = [19, 39, 59];
+    let nextMin = targets.find(t => t > m);
+    if (nextMin === undefined) {
+      // Bu saatte tüm hedefler geçti — sonraki saatin :19'u
+      nextMin = 19;
+      // Sonraki saate geç + 60 dk ekle
+      return ((60 - m) + 19) * 60_000 - now.getSeconds() * 1000 - now.getMilliseconds();
+    }
+    return (nextMin - m) * 60_000 - now.getSeconds() * 1000 - now.getMilliseconds();
+  }, []);
+
+  // Mount'ta ilk yükleme + zamanlanmış senkron başlat
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    let mounted = true;
+
+    // İlk yükleme
+    syncArticles();
+
+    // Zamanlanmış senkron — :19, :39, :59'da haberleri yenile
+    const scheduleNextSync = () => {
+      if (!mounted) return;
+      const ms = msUntilNextSync();
+      timeoutId = setTimeout(async () => {
+        if (!mounted) return;
+        await syncArticles();
+        scheduleNextSync(); // sonraki senkronu planla
+      }, ms);
+    };
+    scheduleNextSync();
+
+    // Tab görünür olduğunda, kaçırılan senkron varsa yakala
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && mounted) {
+        // Son senkrondan 20+ dk geçtiyse hemen senkron yap
+        const ms = msUntilNextSync();
+        // Eğer sıradaki senkron 20 dakikadan uzaksa → çok beklemiş, hemen yap
+        // Aslında ms > 20*60*1000 olamaz (max 20 dk), ama visibility'de hemen tazele
+        syncArticles();
+        clearTimeout(timeoutId);
+        scheduleNextSync();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [syncArticles, msUntilNextSync]);
 
   // URL'de ?haber=ID varsa aç
   useEffect(() => {

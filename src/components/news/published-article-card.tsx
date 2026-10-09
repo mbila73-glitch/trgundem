@@ -10,12 +10,20 @@ import { useHeart } from '@/lib/use-heart';
 type Props = {
   article: PublishedArticle;
   onOpen: (id: string) => void;
+  isEdited?: boolean; // true = yeşil çerçeve, false = kırmızı çerçeve
 };
 
-export function PublishedArticleCard({ article, onOpen }: Props) {
+export function PublishedArticleCard({ article, onOpen, isEdited }: Props) {
   const [imgError, setImgError] = useState(false);
   const showImage = article.imageUrl && !imgError;
   const { hearts, userLiked, toggleHeart } = useHeart(article.id);
+
+  // Çerçeve rengi — isEdited true = yeşil (yayınlandı), false = kırmızı (bekliyor)
+  const borderClass = isEdited === true
+    ? 'border-2 border-green-500 shadow-sm shadow-green-500/20'
+    : isEdited === false
+    ? 'border-2 border-red-400 shadow-sm shadow-red-400/20'
+    : ''; // undefined = varsayılan (eski davranış)
 
   return (
     <Card
@@ -28,7 +36,7 @@ export function PublishedArticleCard({ article, onOpen }: Props) {
           onOpen(article.id);
         }
       }}
-      className="group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className={`group flex h-full cursor-pointer flex-col overflow-hidden p-0 transition hover:shadow-md hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${borderClass}`}
     >
       {showImage ? (
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">

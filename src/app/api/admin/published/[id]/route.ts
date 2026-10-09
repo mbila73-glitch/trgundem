@@ -21,7 +21,7 @@ export async function PATCH(
   const { id } = await params;
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Geçersiz gövde' }, { status: 400 }); }
-  const data = body as { aiTitle?: string; aiSummary?: string; imageUrl?: string | null; category?: string; status?: string; archiveOld?: boolean };
+  const data = body as { aiTitle?: string; aiSummary?: string; imageUrl?: string | null; category?: string; status?: string; archiveOld?: boolean; isEdited?: boolean };
   const update: Record<string, unknown> = {};
   if (typeof data.aiTitle === 'string') update.aiTitle = data.aiTitle.trim();
   if (typeof data.aiSummary === 'string') update.aiSummary = data.aiSummary.trim();
@@ -29,6 +29,11 @@ export async function PATCH(
   // Kategori desteği — string olarak güncelle
   if (typeof data.category === 'string' && data.category.trim().length > 0) {
     update.category = data.category.trim();
+  }
+  // isEdited — yeşil/kırmızı çerçeve kontrolü (veri sayfası "Yayınla" düğmesi)
+  if (typeof data.isEdited === 'boolean') {
+    update.isEdited = data.isEdited;
+    if (data.isEdited) update.editedAt = new Date();
   }
 
   // Pending → Published: pending_review → published (yeni yayınla)

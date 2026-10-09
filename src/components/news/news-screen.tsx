@@ -542,7 +542,7 @@ export function NewsScreen() {
             {/* Arama sonuçları grid */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {searchResults.map((a) => (
-                <PublishedArticleCard key={a.id} article={a} onOpen={(id) => openArticle(id)} />
+                <PublishedArticleCard key={a.id} article={a} onOpen={(id) => openArticle(id)} isEdited={a.isEdited} />
               ))}
             </div>
 
@@ -604,7 +604,7 @@ export function NewsScreen() {
                           </div>
                         </div>
                       ) : (
-                        <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} />
+                        <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} isEdited={a.isEdited} />
                       )}
                     </div>
                   ))}
@@ -661,7 +661,7 @@ export function NewsScreen() {
                     </div>
                   </div>
                 ) : (
-                  <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} />
+                  <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} isEdited={a.isEdited} />
                 )}
               </div>
             ))}

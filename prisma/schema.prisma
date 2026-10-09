@@ -69,6 +69,8 @@ model PublishedArticle {
   archivedAt      DateTime? // arşive alındığı tarih (status='archived' olduğunda)
   initialHearts   Int      @default(0)  // yayına alınırken random atanır (223-413)
   clickHearts     Int      @default(0)  // okuyucu tıklama sayısı (gerçek)
+  isEdited        Boolean  @default(false)  // true = yeşil çerçeve (yayınlandı/düzenlendi), false = kırmızı çerçeve (bekliyor)
+  editedAt        DateTime?  // isEdited=true olduğu an — audit için
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -76,6 +78,7 @@ model PublishedArticle {
   @@index([status])
   @@index([publishedAt])
   @@index([archivedAt])
+  @@index([isEdited])
 }
 
 // Beğeni logu — IP başına 1 kez beğenme kontrolü
