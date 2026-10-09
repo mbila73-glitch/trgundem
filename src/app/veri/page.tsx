@@ -153,7 +153,7 @@ export default function Home() {
                 onClick={handleHomeClick}
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfaya dön"
-                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer mr-[1cm]"
               >
                 <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>
@@ -205,7 +205,7 @@ export default function Home() {
                 onClick={handleHomeClick}
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfaya dön"
-                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer ml-[1cm]"
               >
                 <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>

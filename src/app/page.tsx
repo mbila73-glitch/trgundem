@@ -121,13 +121,15 @@ export default function Home() {
             </div>
 
             {/* Orta: Logo + Başlık + Logo */}
+            {/* Logo'lar yazıdan 1cm uzakta — mr-[1cm] sol logoyu sola, ml-[1cm] sağ logoyu sağa iter.
+                 Simetrik margin olduğu için ortadaki yazı header'da merkezde kalır. */}
             <div className="flex items-center justify-center gap-1 sm:gap-4 md:gap-6 sm:flex-initial">
               <button
                 type="button"
                 onClick={handleHomeClick}
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfaya dön"
-                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer mr-[1cm]"
               >
                 <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>
@@ -177,7 +179,7 @@ export default function Home() {
                 onClick={handleHomeClick}
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfaya dön"
-                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer ml-[1cm]"
               >
                 <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>
