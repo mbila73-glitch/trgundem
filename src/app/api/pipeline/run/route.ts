@@ -2,12 +2,16 @@ import { NextResponse } from 'next/server';
 import { spawn } from 'node:child_process';
 import { appendFile, readFile, writeFile, openSync } from 'node:fs/promises';
 import { existsSync, openSync as openSyncSync } from 'node:fs';
+import path from 'node:path';
 
-const LOG_FILE = '/var/www/pipeline-once.log';
-const STATUS_FILE = '/var/www/pipeline-status.json';
-const SPAWN_LOG = '/var/www/pipeline-spawn.log';
-const NODE_BIN = '/usr/bin/node';
-const SCRIPT = '/var/www/scripts/pipeline-all.js';
+// KRİTİK: Production'da /var/www/, local'de /home/z/my-project/
+// process.cwd() her ortamda doğru kökü verir (PM2 cwd = /var/www, dev = /home/z/my-project)
+const ROOT = process.cwd();
+const LOG_FILE = path.join(ROOT, 'pipeline-once.log');
+const STATUS_FILE = path.join(ROOT, 'pipeline-status.json');
+const SPAWN_LOG = path.join(ROOT, 'pipeline-spawn.log');
+const NODE_BIN = process.execPath; // çalışan node binary'si (PM2 ya da npx node)
+const SCRIPT = path.join(ROOT, 'scripts', 'pipeline-all.js');
 
 export async function POST() {
   const startedAt = new Date().toISOString();
@@ -19,7 +23,7 @@ export async function POST() {
     const out = openSyncSync(SPAWN_LOG, 'a');
     const err = openSyncSync(SPAWN_LOG, 'a');
     const child = spawn(NODE_BIN, ['--expose-gc', SCRIPT, '--once'], {
-      cwd: '/var/www',
+      cwd: ROOT,
       detached: true,
       stdio: ['ignore', out, err],
       shell: false,
