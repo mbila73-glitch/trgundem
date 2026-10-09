@@ -362,7 +362,7 @@ export default function Home() {
           <YayinIlkeleri onContactClick={() => setReaderFormOpen(true)} />
 
           <div className="mt-4 flex justify-center">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground text-center">
               <span className="font-semibold text-foreground/80">TRGUNDEM.NET</span> — Bağımsız, özgün ve çok kaynaklı haber platformu
             </p>
           </div>
