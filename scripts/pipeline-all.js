@@ -2,6 +2,9 @@
 var path = require('path');
 var fs = require('fs');
 
+// MARKA BLOK LİSTESİ — başlıkta bu markalardan biri geçerse haber yayınlanmaz
+var BRAND_BLOCKLIST = require('./brand-blocklist.js');
+
 // .env oku
 var envPath = path.join(__dirname, '..', '.env');
 try {
@@ -235,6 +238,41 @@ function fixDateBugs(text) {
     return repl === null ? match : repl;
   });
   return text;
+}
+
+// === MARKA BLOK LİSTESİ KONTROLÜ ===
+// Başlıkta marka adı geçerse → true döner (haber yayınlanmaz)
+// User: "tesla fabrikası yandı bile deseler yayınlamayalaım. iphone ile adam öldürdü haberini bile engelleyelim"
+// Tüm marka adları kelime sınırı (\b) ile aranır — "mini" → "mini etek" değil, "Mini Cooper" eşleşir
+var BRAND_PATTERNS = null;
+function getBrandPatterns() {
+  if (BRAND_PATTERNS) return BRAND_PATTERNS;
+  BRAND_PATTERNS = BRAND_BLOCKLIST.map(function(brand) {
+    // Marka adını normalize et (Türkçe → ASCII lowercase)
+    var normalized = brand
+      .replace(/İ/g, 'i').replace(/I/g, 'i').replace(/ı/g, 'i')
+      .replace(/Ş/g, 's').replace(/ş/g, 's').replace(/Ç/g, 'c').replace(/ç/g, 'c')
+      .replace(/Ğ/g, 'g').replace(/ğ/g, 'g').replace(/Ü/g, 'u').replace(/ü/g, 'u')
+      .replace(/Ö/g, 'o').replace(/ö/g, 'o')
+      .toLowerCase().trim();
+    // Regex özel karakterleri escape et, kelime sınırı ekle
+    var escaped = normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Çok kelimeli markalar için boşluğu \s+ ile değiştir (esnek match)
+    var flexible = escaped.replace(/ /g, '\\s+');
+    return { pattern: new RegExp('\\b' + flexible + '\\b', 'i'), brand: normalized };
+  });
+  return BRAND_PATTERNS;
+}
+
+function hasBrandInTitle(title) {
+  if (!title || !title.trim()) return false;
+  var patterns = getBrandPatterns();
+  for (var i = 0; i < patterns.length; i++) {
+    if (patterns[i].pattern.test(title)) {
+      return patterns[i].brand; // hangi marka bulundu (log için)
+    }
+  }
+  return false;
 }
 
 // fetch — native http (Wasm yok)
@@ -974,6 +1012,17 @@ async function main() {
         });
         var cat = bestCat;
         var sourceCount = group.sourceIds.size;
+
+        // === MARKA BLOK LİSTESİ KONTROLÜ — EN ÖNCE ===
+        // Başlıkta listedeki herhangi bir marka adı geçerse → haberi TAMAMEN ATLA
+        // AI özet üretme, API çağrısı yapma, zaman ve token tasarrufu
+        // User: "tesla fabrikası yandı bile deseler yayınlamayalaım. iphone ile adam öldürdü haberini bile engelleyelim"
+        var brandHit = hasBrandInTitle(firstArticle.title);
+        if (brandHit) {
+          log('  [MARKA BLOK] ' + brandHit + ' başlıkta — ATLANDI: ' + firstArticle.title.slice(0, 60));
+          skipped++;
+          continue;
+        }
 
         // REKLAM/TANITIM FILTRESI — başlıkta reklam/tanıtım ifadeleri varsa haberi ATLA
         var titleLowerCheck = firstArticle.title.toLowerCase();
