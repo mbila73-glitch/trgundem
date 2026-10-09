@@ -882,14 +882,21 @@ async function main() {
 
   if (globalThis.prisma) {
     try {
-      // Son 24 saat makaleler (tüm makaleler — take sınırı yok)
-      var since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      // Son N saat makaleler — .env'den WINDOW_HOURS ile ayarlanabilir (varsayılan: 6 saat)
+      // 24 saat çok yavaştı (5279 makale, 16 dk cycle). 6 saat önerilen optimum:
+      //   - Cycle süresi 16 dk → 9 dk (1.8x hızlanma)
+      //   - Duplicate tespit hâlâ çalışır (6 saatte 3+ kaynak gelebilir)
+      //   - Geç gelen haberler kaçmaz (RSS kaynakları 1-2 saat gecikmeli bile olsa)
+      // Değiştirmek için .env'e 'WINDOW_HOURS=4' (daha agresif) ya da 'WINDOW_HOURS=12' (daha güvenli) ekle
+      var WINDOW_HOURS = parseInt(process.env.WINDOW_HOURS || '6', 10);
+      if (isNaN(WINDOW_HOURS) || WINDOW_HOURS < 1) WINDOW_HOURS = 6;
+      var since = new Date(Date.now() - WINDOW_HOURS * 60 * 60 * 1000);
       var articles = await globalThis.prisma.article.findMany({
         where: { publishedAt: { gte: since } },
         orderBy: { publishedAt: 'desc' },
         select: { id: true, title: true, content: true, description: true, sourceId: true, category: true, imageUrl: true, publishedAt: true }
       });
-      log('Son 24 saat makale: ' + articles.length);
+      log('Son ' + WINDOW_HOURS + ' saat makale: ' + articles.length);
 
       // Grupla
       var groups = groupArticles(articles);
