@@ -80,6 +80,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [manualCategory, setManualCategory] = useState<string[]>(['Özel']);
   const [addSubtab, setAddSubtab] = useState<'auto' | 'manual'>('auto');
   const [generatingSummary, setGeneratingSummary] = useState(false);
+  // Manuel form için AI özet loading state
+  const [generatingManualSummary, setGeneratingManualSummary] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [summarizing, setSummarizing] = useState(false);
@@ -647,7 +649,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     }
   };
 
-  // AI özeti oluştur — çekilen tam metinden
+  // AI özeti oluştur — çekilen tam metinden (CUSTOM form için)
   const handleAiSummary = async () => {
     if (!customContent || customContent.length < 100) {
       toast.error('Önce URL\'den haber çekin');
@@ -668,6 +670,38 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       toast.error(e instanceof Error ? e.message : 'AI hatası');
     } finally {
       setGeneratingSummary(false);
+    }
+  };
+
+  // AI özeti oluştur — MANUEL form için (kullanıcının girdiği tam metni AI ile özetle)
+  // Pipeline ile AYNI prosedür: aiSummarize() fonksiyonu (EVREN öncelikli, Gemini fallback)
+  // Çağrı: POST /api/admin/custom-article { action: 'ai-summarize', title, content }
+  // Sonuç: manuel içeriğin yerine AI özeti yazılır (kullanıcı düzenleyebilir, sonra yayınlar)
+  const handleManualAiSummary = async () => {
+    if (!manualTitle.trim()) {
+      toast.error('Önce haber başlığını girin');
+      return;
+    }
+    if (!manualContent.trim() || manualContent.trim().length < 100) {
+      toast.error('Özet üretmek için en az 100 karakter içerik gerekir');
+      return;
+    }
+    setGeneratingManualSummary(true);
+    try {
+      const r = await fetch('/api/admin/custom-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'ai-summarize', title: manualTitle.trim(), content: manualContent.trim() }),
+      });
+      const json = (await r.json()) as { ok?: boolean; summary?: string; error?: string };
+      if (!r.ok || !json.ok) throw new Error(json.error || 'AI özet üretilemedi');
+      // AI özetini manuel içeriğin yerine yaz — kullanıcı düzenleyip yayınlar
+      setManualContent(json.summary || '');
+      toast.success('AI özeti hazır — içeriği AI özetiyle değiştirdik. Düzenleyip yayınlayabilirsiniz.');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'AI hatası');
+    } finally {
+      setGeneratingManualSummary(false);
     }
   };
 
@@ -1554,9 +1588,20 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             <Input value={manualTitle} onChange={(e) => setManualTitle(e.target.value)} placeholder="Haber başlığını girin" />
                           </div>
                           <div className="space-y-1.5">
-                            <Label>İçerik</Label>
-                            <Textarea value={manualContent} onChange={(e) => setManualContent(e.target.value)} rows={10} className="resize-y" placeholder="Haber içeriğini girin veya URL'den çekin" />
-                            <p className="text-[10px] text-muted-foreground">{manualContent.trim().split(/\s+/).filter(Boolean).length} kelime</p>
+                            <div className="flex items-center justify-between gap-2">
+                              <Label>İçerik</Label>
+                              <Button type="button" size="sm" variant="outline" onClick={handleManualAiSummary} disabled={generatingManualSummary || !manualTitle.trim() || manualContent.trim().length < 100} className="gap-1.5 text-xs h-7 bg-purple-600 hover:bg-purple-700 text-white border-purple-700">
+                                {generatingManualSummary ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                                AI ile Özetle
+                              </Button>
+                            </div>
+                            <Textarea value={manualContent} onChange={(e) => setManualContent(e.target.value)} rows={10} className="resize-y" placeholder="Haber içeriğini girin veya URL'den çekin. AI özet için 'AI ile Özetle' düğmesine basın — pipeline ile aynı prosedür (EVREN öncelikli)." />
+                            <p className="text-[10px] text-muted-foreground">
+                              {manualContent.trim().split(/\s+/).filter(Boolean).length} kelime
+                              {manualContent.trim().length >= 100 && (
+                                <span className="ml-2 text-purple-600 dark:text-purple-400">• AI özet için hazır</span>
+                              )}
+                            </p>
                           </div>
 
                           {/* Görsel URL + Yükle + Düzenle */}
