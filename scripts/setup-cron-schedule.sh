@@ -18,8 +18,9 @@ crontab -l 2>/dev/null || echo "(boş)"
 echo ""
 echo "=== YENİ CRON YAZILIOR ==="
 
-# Mevcut cron'u oku, pipeline/cleanup/altin satırlarını çıkar, gerisini koru
-(crontab -l 2>/dev/null | grep -v "pipeline-all" | grep -v "cleanup-duplicates" | grep -v "altin-takip" | grep -v "^CRON_TZ=" || true
+# Mevcut cron'u oku, tüm bizim cron satırlarımızı çıkar, gerisini koru
+# Bu filtreler olmadan her setup'ta cron'lar çoğalır (her satır bir kez daha eklenir)
+(crontab -l 2>/dev/null | grep -v "pipeline-all" | grep -v "cleanup-duplicates" | grep -v "altin-takip" | grep -v "fetch-harem-altin-cache" | grep -v "export-old-archives" | grep -v "^CRON_TZ=" || true
 
 # Istanbul zaman dilimi
 echo "CRON_TZ=Europe/Istanbul"
@@ -35,6 +36,9 @@ echo "5,25,45 * * * * cd /var/www && node scripts/cleanup-duplicates.js >> /var/
 
 # Altın takip — hafta içi 09:00'da
 echo "0 9 * * 1-5 cd /var/www && node scripts/altin-takip.js >> /var/www/altin-takip.log 2>&1"
+
+# Harem Altın fiyat çekme — her 5 dakikada 1 (InfoBands'da GRAM ALTIN için)
+echo "*/5 * * * * cd /var/www && node scripts/fetch-harem-altin-cache.js >> /var/www/harem-altin-fetch.log 2>&1"
 
 # Günlük arşiv sıkıştırma — 00:30'da önceki günün haberlerini gzip'e aktar + DB'den sil
 # (00:00 pipeline cycle'ı 16 dk sürer, çakışmayı önlemek için 00:30)
