@@ -112,7 +112,7 @@ function ArticleDetailInline({
     return (
       <div className="mx-auto max-w-3xl space-y-4 py-8">
         <Skeleton className="h-6 w-24" />
-        <Skeleton className="mx-auto h-[240px] w-full max-w-md rounded-xl" />
+        <Skeleton className="mx-auto h-[277px] w-full max-w-md rounded-xl" />
         <Skeleton className="h-8 w-3/4" />
         <Skeleton className="h-32 w-full" />
       </div>
@@ -160,10 +160,10 @@ function ArticleDetailInline({
         </Button>
       </div>
 
-      {/* Görsel: 10 satır yüksekliğinde (~240px), genişlik uygun oranda azaldı */}
+      {/* Görsel: 10 satır yüksekliğinde (~277px), genişlik aynı — aspect 16/9.9 (10% daha uzun) */}
       {article.imageUrl ? (
         <div className="mb-6 flex justify-center">
-          <div className="relative aspect-[16/9] w-full max-w-md overflow-hidden rounded-xl bg-muted">
+          <div className="relative aspect-[16/9.9] w-full max-w-md overflow-hidden rounded-xl bg-muted">
             <img
               src={proxyImageUrl(article.imageUrl) || undefined}
               alt={article.aiTitle}
@@ -176,7 +176,7 @@ function ArticleDetailInline({
         </div>
       ) : (
         <div className="mb-6 flex justify-center">
-          <div className="relative flex aspect-[16/9] w-full max-w-md items-center justify-center overflow-hidden rounded-xl bg-muted">
+          <div className="relative flex aspect-[16/9.9] w-full max-w-md items-center justify-center overflow-hidden rounded-xl bg-muted">
             <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-60" />
           </div>
         </div>

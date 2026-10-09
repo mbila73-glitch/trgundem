@@ -154,3 +154,30 @@
 h1, h2, h3, h4, h5, h6, button, label, a, th {
   text-transform: capitalize;
 }
+
+/* Tüm paragraf ve metin içeriği iki yana yasla (justify)
+   User: "tüm her yerdeki yazıların düzenini iki yana yasla şekline getir"
+   - p etiketleri (paragraflar)
+   - span etiketleri sadece block/inline-block seviyesinde (display:block)
+   - div'ler text içeren (line-clamp varsa justify etkili olmaz ama deneyelim)
+   BAŞLIKLAR (h1-h6) justify OLMAZ — başlıklar ortalanmış/sola yaslı kalmalı
+*/
+p, div, span {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+/* Başlıklar justify değil — sola yaslı kalsın */
+h1, h2, h3, h4, h5, h6 {
+  text-align: left;
+}
+
+/* Butonlar ve kısa etiketler — justify anlamı yok, sola yaslı */
+button, label, .badge, .text-\[10px\], .text-xs, .text-sm {
+  text-align: center;
+}
+
+/* Input/textarea — kullanıcı metin girişi, sola yaslı kalsın */
+input, textarea, select {
+  text-align: left !important;
+}
