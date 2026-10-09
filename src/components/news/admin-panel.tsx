@@ -1986,11 +1986,31 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                     : archivedArticles.length === 0 && messages.filter(m => m.status === 'archived').length === 0 ? (
                       <Card className="flex flex-col items-center gap-3 p-10 text-center">
                         <Archive className="h-10 w-10 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">Arşivde içerik yok</p>
-                        <p className="text-xs text-muted-foreground/70">Yayından kaldırılan haberler ve arşivlenen mesajlar burada listelenir.</p>
+                        <p className="text-sm text-muted-foreground">Son 24 saatte arşivlenen içerik yok</p>
+                        <p className="text-xs text-muted-foreground/70">Yayından kaldırılan haberler ve arşivlenen mesajlar son 24 saat burada listelenir. Eski kayıtlar DB'de delil amaçlı saklanır.</p>
                       </Card>
                     ) : (
                       <>
+                        {/* Arşiv özeti — son 24 saat / toplam kayıt + dışa aktar düğmesi */}
+                        {archivedSubtab === 'articles' && (
+                          <div className="mb-4 flex items-center justify-between gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 flex-wrap">
+                            <div className="flex items-center gap-2 text-xs">
+                              <Archive className="h-3.5 w-3.5 text-news" />
+                              <span className="text-muted-foreground">Arşiv kayıtları:</span>
+                              <Badge variant="secondary" className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">Son 24 saat: {archivedArticles.length}</Badge>
+                              <span className="text-muted-foreground/70 text-[10px]">Eski kayıtlar DB'de durur (delil) — sadece son 24 saat gösterilir</span>
+                            </div>
+                            <a
+                              href="https://trgundem.net"
+                              onClick={(e) => { e.preventDefault(); toast.info('Eski arşiv sıkıştırma için VPS\'teki scripti çalıştırın: node scripts/export-old-archives.js --days=1 --delete'); }}
+                              className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                              title="Dışa aktarma scripti VPS'te manuel çalıştırılır"
+                            >
+                              Eski Arşivleri Sıkıştır →
+                            </a>
+                          </div>
+                        )}
+
                         {/* Alt sekmeler — Arşivlenen Haberler | Arşivlenen Mesajlar */}
                         <div className="mb-4 flex gap-2 border-b border-border pb-2">
                           <button
