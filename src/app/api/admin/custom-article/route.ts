@@ -887,7 +887,7 @@ export async function POST(req: NextRequest) {
 
     // EVREN provider (öncelik 1)
     const evrenKey = getEvrenKey();
-    const evrenApiBase = process.env.EVREN_API_BASE || 'https://api.evren.ai/v1';
+    const evrenApiBase = process.env.EVREN_API_BASE || 'https://evren-llmapi.ssyz.org.tr/v1';
     const evrenModel = process.env.EVREN_MODEL || 'evren-llm';
     if (evrenKey) {
       try {

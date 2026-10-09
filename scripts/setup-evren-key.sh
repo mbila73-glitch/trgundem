@@ -66,7 +66,7 @@ if ! grep -q "EVREN_API_BASE" /var/www/.env 2>/dev/null; then
   cat >> /var/www/.env << 'EOF'
 
 # EVREN LLM API (öncelik 1 — Gemini'den önce denenir)
-EVREN_API_BASE=https://api.evren.ai/v1
+EVREN_API_BASE=https://evren-llmapi.ssyz.org.tr/v1
 EVREN_MODEL=evren-llm
 EOF
   echo "✓ .env'e EVREN_API_BASE + EVREN_MODEL eklendi"
