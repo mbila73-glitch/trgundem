@@ -15,13 +15,11 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-// KRİTİK: Production'da proje /var/www/ altında, local'de /home/z/my-project/ altında.
-// Hardcoded '/home/z/my-project/...' production'da ÇALIŞMAZ (dosya bulunamaz).
-// process.cwd() her ortamda doğru proje kökünü verir:
-//   - Local dev: /home/z/my-project/
-//   - Production PM2: /var/www/ (ecosystem.config.cjs cwd)
-// Pipeline script ve /api/pipeline/run DA bu konuma yazıyor — senkron.
-const STATUS_FILE = path.join(process.cwd(), 'pipeline-status.json');
+// KRİTİK: Production'da Next.js standalone server'ın cwd'i /var/www/.next/standalone/
+// olabilir. Pipeline script ise /var/www/pipeline-status.json'a yazar.
+// Bu yüzden önce /var/www/'yu dene, sonra cwd fallback (local dev için).
+const HARDCODED_PATH = '/var/www/pipeline-status.json';
+const STATUS_FILE = existsSync(HARDCODED_PATH) ? HARDCODED_PATH : path.join(process.cwd(), 'pipeline-status.json');
 
 type CycleStatus = {
   stage: string;

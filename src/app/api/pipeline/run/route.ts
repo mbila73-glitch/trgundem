@@ -4,13 +4,15 @@ import { appendFile, readFile, writeFile, openSync } from 'node:fs/promises';
 import { existsSync, openSync as openSyncSync } from 'node:fs';
 import path from 'node:path';
 
-// KRİTİK: Production'da /var/www/, local'de /home/z/my-project/
-// process.cwd() her ortamda doğru kökü verir (PM2 cwd = /var/www, dev = /home/z/my-project)
-const ROOT = process.cwd();
+// KRİTİK: Production'da Next.js standalone server'ın cwd'i /var/www/.next/standalone/
+// olabilir. Pipeline script ise /var/www/'ya yazar (ROOT = scripts/.. = /var/www).
+// Bu yüzden önce /var/www/'yu dene, sonra cwd fallback (local dev için).
+const HARDCODED_ROOT = '/var/www';
+const ROOT = existsSync(path.join(HARDCODED_ROOT, 'package.json')) ? HARDCODED_ROOT : process.cwd();
 const LOG_FILE = path.join(ROOT, 'pipeline-once.log');
 const STATUS_FILE = path.join(ROOT, 'pipeline-status.json');
 const SPAWN_LOG = path.join(ROOT, 'pipeline-spawn.log');
-const NODE_BIN = process.execPath; // çalışan node binary'si (PM2 ya da npx node)
+const NODE_BIN = process.execPath;
 const SCRIPT = path.join(ROOT, 'scripts', 'pipeline-all.js');
 
 export async function POST() {

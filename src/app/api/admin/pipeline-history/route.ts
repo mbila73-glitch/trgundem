@@ -12,7 +12,11 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const HISTORY_FILE = path.join(process.cwd(), 'pipeline-history.log');
+// KRİTİK: Production'da Next.js standalone server'ın cwd'i /var/www/.next/standalone/
+// olabilir. Pipeline script ise /var/www/pipeline-history.log'a yazar (ROOT = scripts/.. = /var/www).
+// Bu yüzden önce /var/www/'yu dene, sonra cwd fallback.
+const HARDCODED_PATH = '/var/www/pipeline-history.log';
+const HISTORY_FILE = existsSync(HARDCODED_PATH) ? HARDCODED_PATH : path.join(process.cwd(), 'pipeline-history.log');
 const HISTORY_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 saat
 
 // Admin auth — admin token kontrolü
