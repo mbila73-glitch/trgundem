@@ -605,6 +605,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         });
       }
       toast.success(`${customCategory.length} kategoride yayınlandı: ${customCategory.join(', ')}`);
+      // Ana sayfaya anında senkron sinyali gönder — yeni haberler hemen ana sayfada görünsün
+      try {
+        localStorage.setItem('trgundem_force_sync', Date.now().toString());
+        const channel = new BroadcastChannel('trgundem_sync');
+        channel.postMessage({ type: 'force_sync' });
+        channel.close();
+      } catch {}
       setFetchUrl(''); setCustomTitle(''); setCustomSummary(''); setCustomImage(''); setCustomContent(''); setFetchedImages([]);
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Hata'); }
     finally { setSaving(false); }
@@ -640,6 +647,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
         }
       }
       toast.success(`${manualCategory.length} kategoride yayınlandı: ${manualCategory.join(', ')}`);
+      // Ana sayfaya anında senkron sinyali gönder — yeni haberler hemen ana sayfada görünsün
+      try {
+        localStorage.setItem('trgundem_force_sync', Date.now().toString());
+        const channel = new BroadcastChannel('trgundem_sync');
+        channel.postMessage({ type: 'force_sync' });
+        channel.close();
+      } catch {}
       // Form temizle
       setManualTitle('');
       setManualContent('');

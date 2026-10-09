@@ -598,7 +598,7 @@ export function NewsScreen() {
       <div className="flex gap-2 pt-2 border-t">
         <Button type="button" size="sm" onClick={() => handlePublishEdit(a.id)} disabled={savingEdit || !editTitle.trim() || !editSummary.trim() || editCategory.length === 0} className="flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
           {savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-          Yayınla
+          Kaydet
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={handleCancelEdit} className="gap-1.5">
           <X className="h-3.5 w-3.5" /> İptal
