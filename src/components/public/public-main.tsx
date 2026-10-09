@@ -628,6 +628,34 @@ export function PublicMain() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Veri Aktar sinyali dinle — /veri sayfasından BroadcastChannel veya localStorage
+  useEffect(() => {
+    // Mount'ta localStorage'da force sync var mı kontrol et
+    const forceFlag = localStorage.getItem('trgundem_force_sync');
+    if (forceFlag) {
+      const forceTime = parseInt(forceFlag, 10);
+      if (!isNaN(forceTime) && Date.now() - forceTime < 30000) {
+        console.log('[ana sayfa] Veri Aktar tetiklendi — hemen senkron');
+        syncArticles();
+      }
+      localStorage.removeItem('trgundem_force_sync');
+    }
+
+    // BroadcastChannel — /veri sayfasından anında sinyal al
+    try {
+      const channel = new BroadcastChannel('trgundem_sync');
+      channel.onmessage = (e) => {
+        if (e.data && e.data.type === 'force_sync') {
+          console.log('[ana sayfa] Veri Aktar sinyali alındı — hemen senkron');
+          syncArticles();
+        }
+      };
+      return () => channel.close();
+    } catch {
+      return;
+    }
+  }, [syncArticles]);
+
   const openArticle = useCallback((id: string) => {
     const url = new URL(window.location.href);
     url.searchParams.set('haber', id);

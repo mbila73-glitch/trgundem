@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, ChevronDown, ChevronUp, Clock, Edit3, Lock, Loader2 } from 'lucide-react';
+import { Mail, ChevronDown, ChevronUp, Clock, Edit3, Lock, Loader2, Send } from 'lucide-react';
 import Link from 'next/link';
 import { NewsScreen } from '@/components/news/news-screen';
 import { InfoBands } from '@/components/news/info-bands';
@@ -116,6 +116,20 @@ export default function Home() {
   const handleEditLogout = () => {
     localStorage.removeItem('admin_token');
     setEditMode(false);
+  };
+
+  // Veri Aktar — ana sayfaya anında senkron sinyali gönder
+  // :19/:39/:59 beklemeden, tıklandığı an ana sayfa /veri'deki tüm haberleri çeker
+  const handleDataTransfer = () => {
+    // localStorage'a sinyal yaz — ana sayfa açılınca/mount'ta kontrol eder
+    localStorage.setItem('trgundem_force_sync', Date.now().toString());
+    // BroadcastChannel — ana sayfa başka sekmede açıksa anında alır
+    try {
+      const channel = new BroadcastChannel('trgundem_sync');
+      channel.postMessage({ type: 'force_sync' });
+      channel.close();
+    } catch {}
+    alert('Veri ana sayfaya aktarıldı!\n\nAna sayfayı yenileyin veya başka sekmede açıksa otomatik güncellenecek.');
   };
 
   useEffect(() => {
@@ -281,16 +295,16 @@ export default function Home() {
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => setReaderFormOpen(true)}
-                className="gap-1 text-[10px] bg-red-600 hover:bg-red-700 text-white h-8 px-2 border border-red-700"
-                aria-label="İletişim"
+                onClick={handleDataTransfer}
+                className="gap-1 text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white h-8 px-2 border border-emerald-700 font-bold"
+                aria-label="Veri Aktar"
               >
-                <Mail className="h-3.5 w-3.5" />
-                <span className="inline">İletişim</span>
+                <Send className="h-3.5 w-3.5" />
+                <span className="inline">Veri Aktar</span>
               </Button>
             </div>
 
-            {/* Sağ: Yıldız + Düzenle + İletişim + Plus + Tema (masaüstü) */}
+            {/* Sağ: Yıldız + Düzenle + Veri Aktar + Plus + Tema (masaüstü) */}
             <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0 z-10">
               <Link
                 href="/"
@@ -308,15 +322,15 @@ export default function Home() {
                   <Edit3 className="h-4 w-4" />
                 </button>
               )}
-              {/* İletişim düğmesi — sadece masaüstü (mobilde sola taşındı) */}
+              {/* Veri Aktar düğmesi — sadece masaüstü (mobilde sola taşındı) */}
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => setReaderFormOpen(true)}
-                className="hidden sm:inline-flex gap-1.5 text-xs bg-red-600 hover:bg-red-700 text-white h-9 px-3 border border-red-700"
+                onClick={handleDataTransfer}
+                className="hidden sm:inline-flex gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3 border border-emerald-700 font-bold"
               >
-                <Mail className="h-4 w-4" />
-                <span>İletişim</span>
+                <Send className="h-4 w-4" />
+                <span>Veri Aktar</span>
               </Button>
               <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
                 <span className="text-lg sm:text-xl">+</span>
