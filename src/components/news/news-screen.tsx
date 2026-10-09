@@ -1,15 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X } from 'lucide-react';
+import { useCallback, useEffect, useState, useRef } from 'react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PublishedArticleCard } from './published-article-card';
+import { ImageEditor } from './image-editor';
 import { useHeart } from '@/lib/use-heart';
-import { proxyImageUrl, dateTimeLong, dateTimeShort, colorForName, categoryBadgeText } from '@/lib/format';
+import { proxyImageUrl, dateTimeLong, dateTimeShort, colorForName, categoryBadgeText, normalizeTr } from '@/lib/format';
 import type { PublishedArticle } from '@/lib/types';
+import { toast } from 'sonner';
 const SUB_TABS: Array<{
   id: string;
   label: string;
@@ -235,6 +240,220 @@ export function NewsScreen() {
 
   // Track which article is open (from URL ?article=<id>)
   const [openArticleId, setOpenArticleId] = useState<string | null>(null);
+
+  // === INLINE EDITING — admin token + edit mode ===
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editSummary, setEditSummary] = useState('');
+  const [editImage, setEditImage] = useState('');
+  const [editCategory, setEditCategory] = useState('Siyaset');
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorImageUrl, setEditorImageUrl] = useState('');
+  const [editorTitle, setEditorTitle] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Admin token'ı localStorage'dan oku
+  useEffect(() => {
+    const t = localStorage.getItem('admin_token');
+    if (t) setAdminToken(t);
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'admin_token') {
+        setAdminToken(e.newValue);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  // Inline edit başlat
+  const handleStartEdit = useCallback((a: PublishedArticle) => {
+    setEditingId(a.id);
+    setEditTitle(a.aiTitle);
+    setEditSummary(a.aiSummary);
+    setEditImage(a.imageUrl || '');
+    setEditCategory(a.category);
+    setOpenArticleId(null); // detay view kapat, grid'e dön
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditTitle('');
+    setEditSummary('');
+    setEditImage('');
+  }, []);
+
+  // Yayınla — DB'ye PATCH + isEdited=true, yerinde kal (refetch YOK)
+  const handlePublishEdit = useCallback(async (id: string) => {
+    if (!adminToken) { toast.error('Yönetici girişi gerekli'); return; }
+    if (!editTitle.trim() || !editSummary.trim()) { toast.error('Başlık ve özet zorunlu'); return; }
+    setSavingEdit(true);
+    try {
+      const r = await fetch(`/api/admin/published/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
+        body: JSON.stringify({
+          aiTitle: editTitle.trim(),
+          aiSummary: editSummary.trim(),
+          imageUrl: editImage || null,
+          category: editCategory,
+          isEdited: true,
+        }),
+      });
+      if (!r.ok) {
+        if (r.status === 401) { toast.error('Oturum süresi doldu — yeniden giriş yapın'); localStorage.removeItem('admin_token'); setAdminToken(null); return; }
+        throw new Error(`HTTP ${r.status}`);
+      }
+      // LOCAL STATE GÜNCELLE — refetch YOK, makale yerinde kalır
+      setArticles(prev => prev.map(a => a.id === id ? {
+        ...a,
+        aiTitle: editTitle.trim(),
+        aiSummary: editSummary.trim(),
+        imageUrl: editImage || null,
+        category: editCategory,
+        isEdited: true,
+        editedAt: new Date().toISOString(),
+      } : a));
+      toast.success('Yayınlandı — yeşil çerçeve');
+      setEditingId(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Yayınlama hatası');
+    } finally {
+      setSavingEdit(false);
+    }
+  }, [adminToken, editTitle, editSummary, editImage, editCategory]);
+
+  // Arşive al — DELETE, makale listeden kaldır
+  const handleArchiveInline = useCallback(async (id: string) => {
+    if (!adminToken) return;
+    if (!confirm('Bu haberi arşive taşımak istediğinize emin misiniz?')) return;
+    try {
+      const r = await fetch(`/api/admin/published/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      setArticles(prev => prev.filter(a => a.id !== id));
+      toast.success('Arşive taşındı');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Arşiv hatası');
+    }
+  }, [adminToken]);
+
+  // Görsel yükle (bilgisayardan)
+  const handleFileUpload = useCallback(async (file: File, title: string) => {
+    if (!adminToken) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const r = await fetch(`/api/admin/upload${title ? `?title=${encodeURIComponent(title)}` : ''}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${adminToken}` },
+        body: formData,
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const json = await r.json();
+      if (json.ok) {
+        setEditImage(json.url);
+        toast.success('Görsel yüklendi');
+      } else throw new Error(json.error || 'Yükleme hatası');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Yükleme hatası');
+    } finally {
+      setUploading(false);
+    }
+  }, [adminToken]);
+
+  // ImageEditor save handler
+  const handleEditorSave = useCallback((url: string) => {
+    setEditImage(url);
+    setEditorOpen(false);
+  }, []);
+
+  // === INLINE EDIT FORM — makale kartının yerine geçen düzenleme formu ===
+  const renderEditForm = (a: PublishedArticle) => (
+    <Card className="border-2 border-blue-500 shadow-lg shadow-blue-500/20 p-4 space-y-3 col-span-full sm:col-span-1">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-bold text-blue-600">✎ Düzenleme Modu</span>
+        <Badge variant="secondary" className="text-[10px]">{a.category}</Badge>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs">Başlık</Label>
+        <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="text-sm" placeholder="Haber başlığı" />
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs">Özet</Label>
+        <Textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} rows={6} className="text-sm resize-y" placeholder="Haber özeti" />
+        <p className="text-[10px] text-muted-foreground">{editSummary.trim().split(/\s+/).filter(Boolean).length} kelime</p>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs">Görsel</Label>
+        <div className="flex gap-1.5">
+          <Input value={editImage} onChange={(e) => setEditImage(e.target.value)} className="text-xs h-8 flex-1" placeholder="Görsel URL veya /uploads/..." />
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, editTitle); }} />
+          <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="h-8 w-8 p-0">
+            {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+          </Button>
+          {editImage && (
+            <Button type="button" size="sm" variant="outline" onClick={() => { setEditorImageUrl(editImage); setEditorTitle(editTitle); setEditorOpen(true); }} className="h-8 w-8 p-0">
+              <CropIcon className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+        {editImage && <img src={proxyImageUrl(editImage) || undefined} alt="" className="max-h-32 w-full object-cover rounded" />}
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs">Kategori</Label>
+        <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-xs">
+          <option value="Siyaset">Siyaset</option>
+          <option value="Kamu / Resmi">Kamu / Resmi</option>
+          <option value="Ekonomi / Finans">Ekonomi / Finans</option>
+          <option value="Bilim / Teknoloji">Bilim / Teknoloji</option>
+          <option value="Kültür / Sanat">Kültür / Sanat</option>
+          <option value="Spor / Magazin">Spor / Magazin</option>
+          <option value="Özel">Özel</option>
+        </select>
+      </div>
+      <div className="flex gap-2 pt-2 border-t">
+        <Button type="button" size="sm" onClick={() => handlePublishEdit(a.id)} disabled={savingEdit || !editTitle.trim() || !editSummary.trim()} className="flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+          {savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+          Yayınla
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={handleCancelEdit} className="gap-1.5">
+          <X className="h-3.5 w-3.5" /> İptal
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => handleArchiveInline(a.id)} className="gap-1.5 text-amber-600 hover:text-amber-700 border-amber-300">
+          <Archive className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </Card>
+  );
+
+  // === KART RENDER — edit modunda edit form, normalde PublishedArticleCard ===
+  const renderCard = (a: PublishedArticle, i: number) => {
+    // Edit modunda → edit form göster
+    if (editingId === a.id) return renderEditForm(a);
+
+    // Admin giriş yapmış → "Düzenle" düğmesi overlay ile kart göster
+    return (
+      <div className="relative group">
+        {adminToken && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); handleStartEdit(a); }}
+            className="absolute -top-2 -right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white shadow-md opacity-0 group-hover:opacity-100 transition hover:bg-blue-700"
+            title="Düzenle"
+          >
+            <Edit3 className="h-3.5 w-3.5" />
+          </button>
+        )}
+        <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} isEdited={a.isEdited} />
+      </div>
+    );
+  };
 
   // On mount, check URL for ?article=<id>
   useEffect(() => {
@@ -542,7 +761,7 @@ export function NewsScreen() {
             {/* Arama sonuçları grid */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {searchResults.map((a) => (
-                <PublishedArticleCard key={a.id} article={a} onOpen={(id) => openArticle(id)} isEdited={a.isEdited} />
+                renderCard(a, 0)
               ))}
             </div>
 
@@ -604,7 +823,7 @@ export function NewsScreen() {
                           </div>
                         </div>
                       ) : (
-                        <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} isEdited={a.isEdited} />
+                        renderCard(a, i)
                       )}
                     </div>
                   ))}
@@ -661,7 +880,7 @@ export function NewsScreen() {
                     </div>
                   </div>
                 ) : (
-                  <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} isEdited={a.isEdited} />
+                  renderCard(a, i)
                 )}
               </div>
             ))}
@@ -670,6 +889,16 @@ export function NewsScreen() {
           {/* "Diğer Haberler" düğmesi kalktı — 50 haber tek batch yükleniyor */}
         </>
       )}
+
+      {/* Görsel Düzenle — kırpma/crop modal'ı */}
+      <ImageEditor
+        open={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        imageUrl={editorImageUrl}
+        title={editorTitle}
+        onSave={handleEditorSave}
+        token={adminToken}
+      />
     </section>
   );
 }
