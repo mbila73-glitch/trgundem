@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Mail, ChevronDown, ChevronUp, Clock, Edit3, Lock, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { NewsScreen } from '@/components/news/news-screen';
 import { InfoBands } from '@/components/news/info-bands';
@@ -9,8 +9,10 @@ import { AdminPanel } from '@/components/news/admin-panel';
 import { ReaderContactForm } from '@/components/news/reader-contact-form';
 import { ThemeToggle } from '@/components/news/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 function YayinIlkeleri({ onContactClick }: { onContactClick: () => void }) {
   const [open, setOpen] = useState(false);
@@ -67,6 +69,54 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [personelOpen, setPersonelOpen] = useState(false);
+  // Düzenle modu — şifre dialog'u
+  const [editLoginOpen, setEditLoginOpen] = useState(false);
+  const [editPassword, setEditPassword] = useState('');
+  const [editLogging, setEditLogging] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+
+  // Düzenle modu kontrol — localStorage'da admin_token varsa editMode=true
+  useEffect(() => {
+    const checkToken = () => {
+      const t = localStorage.getItem('admin_token');
+      setEditMode(!!t);
+    };
+    checkToken();
+    const interval = setInterval(checkToken, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Düzenle şifre giriş
+  const handleEditLogin = async () => {
+    if (!editPassword.trim()) return;
+    setEditLogging(true);
+    try {
+      const r = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: editPassword.trim() }),
+      });
+      const json = await r.json();
+      if (json.ok && json.token) {
+        localStorage.setItem('admin_token', json.token);
+        setEditMode(true);
+        setEditLoginOpen(false);
+        setEditPassword('');
+      } else {
+        alert('Şifre hatalı');
+      }
+    } catch {
+      alert('Giriş hatası');
+    } finally {
+      setEditLogging(false);
+    }
+  };
+
+  // Düzenle modundan çık
+  const handleEditLogout = () => {
+    localStorage.removeItem('admin_token');
+    setEditMode(false);
+  };
 
   useEffect(() => {
     // Hydration-safe mount: SSR renders placeholders (--:--:-- and '— — — —'),
@@ -211,14 +261,23 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Mobil: Sol — Yıldız + İletişim düğmesi */}
+            {/* Mobil: Sol — Yıldız + Düzenle + İletişim düğmesi */}
             <div className="absolute left-2 sm:hidden flex items-center gap-1 flex-shrink-0 z-10">
               <Link
                 href="/"
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfa"
-                className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-blue-500 text-white font-bold text-base leading-none hover:bg-blue-600 transition select-none"
+                className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-blue-500 text-white font-bold text-sm leading-none hover:bg-blue-600 transition select-none"
               >*</Link>
+              {editMode ? (
+                <button type="button" onClick={handleEditLogout} className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition" title="Düzenle modundan çık">
+                  <Edit3 className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                <button type="button" onClick={() => setEditLoginOpen(true)} className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition" title="Düzenle">
+                  <Edit3 className="h-3.5 w-3.5" />
+                </button>
+              )}
               <Button
                 variant="default"
                 size="sm"
@@ -231,14 +290,24 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Sağ: Yıldız + İletişim + Plus + Tema (masaüstü) */}
+            {/* Sağ: Yıldız + Düzenle + İletişim + Plus + Tema (masaüstü) */}
             <div className="absolute right-2 sm:right-0 sm:static flex items-center gap-1 sm:gap-1.5 flex-shrink-0 z-10">
               <Link
                 href="/"
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfa"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-md bg-blue-500 text-white font-bold text-base leading-none hover:bg-blue-600 transition select-none"
+                className="hidden sm:inline-flex items-center justify-center h-8 w-8 rounded-md bg-blue-500 text-white font-bold text-sm leading-none hover:bg-blue-600 transition select-none"
               >*</Link>
+              {/* Düzenle butonu — masaüstü */}
+              {editMode ? (
+                <button type="button" onClick={handleEditLogout} className="hidden sm:inline-flex items-center justify-center h-8 w-8 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition" title="Düzenle modundan çık">
+                  <Edit3 className="h-4 w-4" />
+                </button>
+              ) : (
+                <button type="button" onClick={() => setEditLoginOpen(true)} className="hidden sm:inline-flex items-center justify-center h-8 w-8 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition" title="Düzenle — şifre gerekli">
+                  <Edit3 className="h-4 w-4" />
+                </button>
+              )}
               {/* İletişim düğmesi — sadece masaüstü (mobilde sola taşındı) */}
               <Button
                 variant="default"
@@ -335,6 +404,34 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Düzenle şifre dialog'u — basit şifre giriş, admin panel açmaz */}
+      <Dialog open={editLoginOpen} onOpenChange={(o) => { if (!o) { setEditLoginOpen(false); setEditPassword(''); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-sm">
+              <Lock className="h-4 w-4 text-blue-600" />
+              Düzenle Modu — Şifre
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Input
+              type="password"
+              value={editPassword}
+              onChange={(e) => setEditPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleEditLogin(); } }}
+              placeholder="Yönetici şifresi"
+              autoFocus
+              className="text-sm"
+            />
+            <Button onClick={handleEditLogin} disabled={editLogging || !editPassword.trim()} className="w-full gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold">
+              {editLogging ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit3 className="h-4 w-4" />}
+              Düzenle Modunu Aç
+            </Button>
+            <p className="text-[10px] text-muted-foreground text-center">Şifre ile giriş yapınca tüm haberlerin üzerinde düzenle düğmeleri görünür.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} />
       <ReaderContactForm open={readerFormOpen} onClose={() => setReaderFormOpen(false)} />

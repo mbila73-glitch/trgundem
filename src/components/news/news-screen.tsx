@@ -825,10 +825,10 @@ export function NewsScreen() {
 
         {/* Ana Sayfa + Arama çubuğu — kategori sekmelerinin altında */}
         <div className="mt-1 flex items-center gap-1">
-          <a href="/" className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-8 px-3 flex-shrink-0 rounded">
+          <button type="button" onClick={() => { setSearchQuery(''); setSearchResults(null); setOpenArticleId(null); setActive('all'); window.history.pushState({}, '', '/veri'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-8 px-3 flex-shrink-0 rounded cursor-pointer">
             <Home className="h-3 w-3" />
             <span className="hidden sm:inline">Ana Sayfa</span>
-          </a>
+          </button>
           <form onSubmit={onSearchSubmit} className="flex-1 flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
             <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
             <Input
