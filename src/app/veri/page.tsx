@@ -360,7 +360,6 @@ export default function Home() {
             </Button>
           </div>
           <YayinIlkeleri onContactClick={() => setReaderFormOpen(true)} />
-          </div>
 
           <div className="mt-4 flex justify-center">
             <p className="text-xs text-muted-foreground">
