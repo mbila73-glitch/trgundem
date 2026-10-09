@@ -58,3 +58,14 @@ server.log
 # (yoksa user'in VPS'teki ozel versiyonunu ezer)
 public/logo_TRG.jpg
 public/logo_TRG.png
+# Çöp/Geçici — tekrar oluşmasın diye ignore edildi (temizlik sonrası)
+tool-results/
+upload/*
+!upload/.gitkeep
+backups/
+examples/
+mini-services/
+tests/
+download/
+Caddyfile
+.zscripts/dev.pid
