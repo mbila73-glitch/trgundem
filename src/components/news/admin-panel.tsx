@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop, ArrowDown, Activity
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop, ArrowDown, Activity, Wand2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeTr } from '@/lib/format';
@@ -82,6 +82,10 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [generatingSummary, setGeneratingSummary] = useState(false);
   // Manuel form için AI özet loading state
   const [generatingManualSummary, setGeneratingManualSummary] = useState(false);
+  // AI Düzenle — mevcut metni akıcı hale getir (plagiarizm/wordcount/ad filter YOK)
+  const [aiEditingPub, setAiEditingPub] = useState(false); // Yayında edit form
+  const [aiEditingManual, setAiEditingManual] = useState(false); // Manuel form
+  const [aiEditingCustom, setAiEditingCustom] = useState(false); // Custom (Otomatik) form
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [summarizing, setSummarizing] = useState(false);
@@ -703,6 +707,54 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     } finally {
       setGeneratingManualSummary(false);
     }
+  };
+
+  // AI Düzenle — mevcut metni AI ile akıcı hale getir (HİÇBİR kısıtlama yok)
+  // AI özet pipeline'ından FARKLI: plagiarizm/wordcount/ad filter YOK
+  // 3 formda kullanılır: Yayında edit, Manuel Haber Ekle, Custom (Otomatik)
+  const handleAiEditPub = async () => {
+    if (!token) return;
+    if (!editTitle.trim() && !editSummary.trim()) { toast.error('Düzenlenecek metin yok'); return; }
+    setAiEditingPub(true);
+    try {
+      const r = await fetch('/api/admin/ai-edit', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ title: editTitle, summary: editSummary }) });
+      const json = await r.json();
+      if (!r.ok || !json.ok) throw new Error(json.error || `HTTP ${r.status}`);
+      if (json.title) setEditTitle(json.title);
+      if (json.summary) setEditSummary(json.summary);
+      toast.success(`AI Düzenle tamam — ${json.provider || 'AI'}`);
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'AI Düzenle hatası'); }
+    finally { setAiEditingPub(false); }
+  };
+
+  const handleAiEditManual = async () => {
+    if (!token) return;
+    if (!manualTitle.trim() && !manualContent.trim()) { toast.error('Düzenlenecek metin yok'); return; }
+    setAiEditingManual(true);
+    try {
+      const r = await fetch('/api/admin/ai-edit', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ title: manualTitle, summary: manualContent }) });
+      const json = await r.json();
+      if (!r.ok || !json.ok) throw new Error(json.error || `HTTP ${r.status}`);
+      if (json.title) setManualTitle(json.title);
+      if (json.summary) setManualContent(json.summary);
+      toast.success(`AI Düzenle tamam — ${json.provider || 'AI'}`);
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'AI Düzenle hatası'); }
+    finally { setAiEditingManual(false); }
+  };
+
+  const handleAiEditCustom = async () => {
+    if (!token) return;
+    if (!customTitle.trim() && !customSummary.trim()) { toast.error('Düzenlenecek metin yok'); return; }
+    setAiEditingCustom(true);
+    try {
+      const r = await fetch('/api/admin/ai-edit', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ title: customTitle, summary: customSummary || customContent }) });
+      const json = await r.json();
+      if (!r.ok || !json.ok) throw new Error(json.error || `HTTP ${r.status}`);
+      if (json.title) setCustomTitle(json.title);
+      if (json.summary) setCustomSummary(json.summary);
+      toast.success(`AI Düzenle tamam — ${json.provider || 'AI'}`);
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'AI Düzenle hatası'); }
+    finally { setAiEditingCustom(false); }
   };
 
   // Konu ara — güvenilen sitelerde tara (özet üretmez, sadece kaynakları + görselleri listeler)
@@ -1456,6 +1508,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             </Button>
                           </div>
                           <Textarea value={customSummary} onChange={(e) => setCustomSummary(e.target.value)} rows={6} className="resize-none" />
+                          <Button type="button" size="sm" variant="outline" onClick={handleAiEditCustom} disabled={aiEditingCustom || (!customTitle.trim() && !customSummary.trim())} className="gap-1.5 text-xs h-7 w-full bg-purple-600 hover:bg-purple-700 text-white border-purple-700 font-bold">
+                            {aiEditingCustom ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} AI ile Düzenle
+                          </Button>
                         </div>
                         <div className="space-y-1.5"><Label>Görsel URL</Label><Input value={customImage} onChange={(e) => setCustomImage(e.target.value)} placeholder="https://..." />
                           <div className="flex items-center gap-2 mt-1">
@@ -1596,6 +1651,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               </Button>
                             </div>
                             <Textarea value={manualContent} onChange={(e) => setManualContent(e.target.value)} rows={10} className="resize-y" placeholder="Haber içeriğini girin veya URL'den çekin. AI özet için 'AI ile Özetle' düğmesine basın — pipeline ile aynı prosedür (EVREN öncelikli)." />
+                            <Button type="button" size="sm" variant="outline" onClick={handleAiEditManual} disabled={aiEditingManual || (!manualTitle.trim() && !manualContent.trim())} className="gap-1.5 text-xs h-7 w-full bg-purple-600 hover:bg-purple-700 text-white border-purple-700 font-bold">
+                              {aiEditingManual ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} AI ile Düzenle
+                            </Button>
                             <p className="text-[10px] text-muted-foreground">
                               {manualContent.trim().split(/\s+/).filter(Boolean).length} kelime
                               {manualContent.trim().length >= 100 && (
@@ -1799,6 +1857,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                 <div className="space-y-3">
                                   <div className="space-y-1"><Label className="text-xs">Başlık</Label><Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
                                   <div className="space-y-1"><Label className="text-xs">Özet</Label><Textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} rows={5} className="resize-none" /></div>
+                                  <Button type="button" size="sm" variant="outline" onClick={handleAiEditPub} disabled={aiEditingPub || (!editTitle.trim() && !editSummary.trim())} className="gap-1.5 text-xs h-7 w-full bg-purple-600 hover:bg-purple-700 text-white border-purple-700 font-bold">
+                                    {aiEditingPub ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} AI ile Düzenle
+                                  </Button>
                                   <div className="space-y-1"><Label className="text-xs">Görsel URL</Label><Input value={editImage} onChange={(e) => setEditImage(e.target.value)} />
                                   <div className="flex items-center gap-2 mt-1">
                                     <Label htmlFor="edit-file" className="cursor-pointer rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:bg-muted inline-flex items-center gap-1.5">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Bilgisayardan Yükle</Label>
