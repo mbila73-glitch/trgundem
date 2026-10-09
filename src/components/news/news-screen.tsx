@@ -555,6 +555,41 @@ export function NewsScreen() {
     );
   };
 
+  // === BAŞ HABER KART — edit modunda edit form, normalde featured card ===
+  const renderFeaturedCard = (a: PublishedArticle) => {
+    if (editingId === a.id) return renderEditForm(a);
+    const borderClass = a.isEdited ? 'border-2 border-green-500 shadow-sm shadow-green-500/20' : 'border-2 border-red-400 shadow-sm shadow-red-400/20';
+    return (
+      <div className={`relative group flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl ${borderClass} bg-card transition hover:shadow-md sm:flex-row`} onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
+        {adminToken && (
+          <button type="button" onClick={(e) => { e.stopPropagation(); handleStartEdit(a); }} className="absolute -top-2 -right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 hover:scale-110" title="Düzenle">
+            <Edit3 className="h-4 w-4" />
+          </button>
+        )}
+        {a.imageUrl ? (
+          <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px]">
+            <img src={proxyImageUrl(a.imageUrl) || undefined} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+          </div>
+        ) : (
+          <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">
+            <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+          </div>
+        )}
+        <div className="flex flex-1 flex-col gap-2 p-6">
+          <h3 className="text-xl font-bold leading-tight text-foreground hover:text-news">{a.aiTitle}</h3>
+          <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.aiSummary}</p>
+          <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
+            <HorizontalLikeBar articleId={a.id} />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-muted-foreground/60 font-bold tabular-nums">{categoryBadgeText(a.category, a.sourceCount)}</span>
+              <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeShort(a.latestPublishedAt)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // On mount, check URL for ?article=<id>
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -897,34 +932,7 @@ export function NewsScreen() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {articles.map((a, i) => (
                     <div key={a.id} className={i === 0 ? 'col-span-full' : ''}>
-                      {i === 0 ? (
-                        <div className="flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md hover:border-foreground/20 sm:flex-row" onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
-                          {a.imageUrl ? (
-                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px]">
-                              <img src={proxyImageUrl(a.imageUrl) || undefined} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-                            </div>
-                          ) : (
-                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">
-                              <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
-                            </div>
-                          )}
-                          <div className="flex flex-1 flex-col gap-2 p-6">
-                            <h3 className="text-xl font-bold leading-tight text-foreground hover:text-news">{a.aiTitle}</h3>
-                            <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.aiSummary}</p>
-                            <div className="mt-auto flex items-center justify-between pt-1 border-t border-border/50">
-                              <HorizontalLikeBar articleId={a.id} />
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] text-muted-foreground/60 font-bold tabular-nums">
-                                  {categoryBadgeText(a.category, a.sourceCount)}
-                                </span>
-                                <span className="text-[10px] text-muted-foreground tabular-nums">{dateTimeShort(a.latestPublishedAt)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        renderCard(a, i)
-                      )}
+                      {i === 0 ? renderFeaturedCard(a) : renderCard(a, i)}
                     </div>
                   ))}
                 </div>
@@ -962,26 +970,7 @@ export function NewsScreen() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {articles.map((a, i) => (
               <div key={a.id} className={i === 0 && !openArticleId ? 'col-span-full' : ''}>
-                {i === 0 && !openArticleId ? (
-                  <div className="flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md hover:border-foreground/20 sm:flex-row" onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
-                    {a.imageUrl ? (
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px]">
-                        <img src={proxyImageUrl(a.imageUrl) || undefined} alt={a.aiTitle} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-                      </div>
-                    ) : (
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">
-                        <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
-                      </div>
-                    )}
-                    <div className="flex flex-1 flex-col gap-2 p-6">
-                      <h3 className="text-xl font-bold leading-tight text-foreground hover:text-news">{a.aiTitle}</h3>
-                      <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{a.aiSummary}</p>
-                      <HorizontalLikeBar articleId={a.id} />
-                    </div>
-                  </div>
-                ) : (
-                  renderCard(a, i)
-                )}
+                {i === 0 && !openArticleId ? renderFeaturedCard(a) : renderCard(a, i)}
               </div>
             ))}
           </div>

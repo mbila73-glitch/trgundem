@@ -522,14 +522,19 @@ export function PublicMain() {
   }, []);
 
   // Mount'ta ilk yükleme + zamanlanmış senkron başlat
+  // User: "ana sayfa 20 dakikada sadece 1 kez veri sayfasındaki tüm haberleri
+  // düzenlenip düzenlenmediğine bakmaksızın çekecek"
+  // Akış: RSS :00'da → özetler :04-05'te /veri'ye düşer → kullanıcı :19'a kadar düzenler
+  // → :19'da ana sayfa tüm haberleri çeker (düzenli/düzenlenmemiş) → :39'ta tekrar → :59'ta tekrar
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
     let mounted = true;
 
-    // İlk yükleme
+    // İlk yükleme — mount'ta bir kez çek (DB'de ne varsa onu göster)
     syncArticles();
 
-    // Zamanlanmış senkron — :19, :39, :59'da haberleri yenile
+    // Zamanlanmış senkron — :19, :39, :59'da HABERLERI yenile
+    // Arada stale data göster — visibility catch-up YOK
     const scheduleNextSync = () => {
       if (!mounted) return;
       const ms = msUntilNextSync();
@@ -541,24 +546,9 @@ export function PublicMain() {
     };
     scheduleNextSync();
 
-    // Tab görünür olduğunda, kaçırılan senkron varsa yakala
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && mounted) {
-        // Son senkrondan 20+ dk geçtiyse hemen senkron yap
-        const ms = msUntilNextSync();
-        // Eğer sıradaki senkron 20 dakikadan uzaksa → çok beklemiş, hemen yap
-        // Aslında ms > 20*60*1000 olamaz (max 20 dk), ama visibility'de hemen tazele
-        syncArticles();
-        clearTimeout(timeoutId);
-        scheduleNextSync();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-
     return () => {
       mounted = false;
       clearTimeout(timeoutId);
-      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [syncArticles, msUntilNextSync]);
 
