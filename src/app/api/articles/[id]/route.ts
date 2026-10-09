@@ -49,5 +49,11 @@ export async function GET(
   if (!article) {
     return NextResponse.json({ error: 'Haber bulunamadı' }, { status: 404 });
   }
-  return NextResponse.json({ article });
+  // sanitize: sourceArticleIds + source alanlarını kaldır, imageUrl'yi proxy'ye çevir
+  const { sourceArticleIds: _ignored, source: _srcIgnored, ...publicArticle } = article as any;
+  const sanitized = publicArticle as any;
+  if (sanitized.imageUrl && typeof sanitized.imageUrl === 'string' && sanitized.imageUrl.startsWith('http')) {
+    sanitized.imageUrl = `/api/img?url=${encodeURIComponent(sanitized.imageUrl)}`;
+  }
+  return NextResponse.json({ article: sanitized });
 }

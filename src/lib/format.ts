@@ -178,3 +178,33 @@ export function slugify(s: string | null | undefined, maxLen: number = 50): stri
     .replace(/-+$/, '');
 }
 
+// === GİZLİLİK — Public API'lerden kaynak sızıntısını önle ===
+// User: 'rss çekip özet çıkardığımız ya da farklı kaynaklardan görsel/haber çektiğimiz belli olmasın'
+//
+// Public API'lerde sızdırılmaması gereken alanlar:
+//   - sourceArticleIds (CUID'ler — kaynak makale ID'leri)
+//   - source.id, source.name (RSS kaynak bilgileri)
+//
+// imageUrl proxy'e çevrilir (frontend zaten proxyImageUrl kullanıyor ama API de yapsın):
+//   - https://www.donanimhaber.com/... → /api/img?url=https%3A%2F%2F...
+//   - /uploads/... → koru (kendi görselimiz)
+//   - null/empty → null bırak
+
+// Tek makale sanitize — sourceArticleIds ve source alanlarını kaldır, imageUrl'yi proxy'ye çevir
+export function sanitizeArticle<T extends Record<string, any>>(a: T | null): Omit<T, 'sourceArticleIds' | 'source'> | null {
+  if (!a) return null;
+  // Gereksiz alanları çıkar (delete yerine spread)
+  const { sourceArticleIds, source, ...publicFields } = a;
+  // imageUrl proxy — dış kaynak URL'leri gizle
+  const result = publicFields as any;
+  if (result.imageUrl && typeof result.imageUrl === 'string' && result.imageUrl.startsWith('http')) {
+    result.imageUrl = `/api/img?url=${encodeURIComponent(result.imageUrl)}`;
+  }
+  return result;
+}
+
+// Array sanitize — birden fazla makale
+export function sanitizeArticles<T extends Record<string, any>>(articles: (T | null)[]): Array<Omit<T, 'sourceArticleIds' | 'source'> | null> {
+  return articles.map(a => sanitizeArticle(a));
+}
+

@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
       <category>${escapeXml(a.category)}</category>
       <description>${escapeXml(description)}</description>
       <content:encoded><![CDATA[
-        ${a.imageUrl ? `<img src="${escapeXml(a.imageUrl)}" alt="${escapeXml(a.aiTitle)}" style="max-width:100%;height:auto;" />` : ''}
+        ${a.imageUrl ? `<img src="${escapeXml(a.imageUrl.startsWith('http') ? '/api/img?url=' + encodeURIComponent(a.imageUrl) : a.imageUrl)}" alt="${escapeXml(a.aiTitle)}" style="max-width:100%;height:auto;" />` : ''}
         <h2>${escapeXml(a.aiTitle)}</h2>
         <p><strong>Kategori:</strong> ${escapeXml(a.category)}</p>
         <p><strong>Kaynak sayısı:</strong> ${a.sourceCount}</p>
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
         <hr />
         <p>${escapeXml(fullContent).replace(/\n/g, '</p><p>')}</p>
       ]]></content:encoded>
-      ${a.imageUrl ? `<enclosure url="${escapeXml(a.imageUrl)}" type="image/jpeg" />` : ''}
+      ${a.imageUrl ? `<enclosure url="${escapeXml(a.imageUrl.startsWith('http') ? '/api/img?url=' + encodeURIComponent(a.imageUrl) : a.imageUrl)}" type="image/jpeg" />` : ''}
     </item>`;
   }).join('\n');
 

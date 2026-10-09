@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { sanitizeArticles } from '@/lib/format';
 
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
@@ -48,5 +49,5 @@ export async function GET(req: NextRequest) {
     db.article.count({ where }),
   ]);
 
-  return NextResponse.json({ articles, total, limit, offset });
+  return NextResponse.json({ articles: sanitizeArticles(articles), total, limit, offset });
 }

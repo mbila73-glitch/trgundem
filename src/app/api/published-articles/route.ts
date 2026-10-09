@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { sanitizeArticle, sanitizeArticles } from '@/lib/format';
 
 // GET /api/published-articles
 //   ?category=Siyaset           -> filter by category
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
     const filtered = all
       .filter(a => normalizeTr(a.aiTitle).includes(normalizedSearch))
       .slice(0, 50);
-    return NextResponse.json({ articles: filtered, total: filtered.length, hasMore: false });
+    return NextResponse.json({ articles: sanitizeArticles(filtered), total: filtered.length, hasMore: false });
   }
 
   if (layout === 'all') {
@@ -119,7 +120,7 @@ export async function GET(req: NextRequest) {
     all = all.slice(0, 70);
 
     return NextResponse.json({
-      articles: all,
+      articles: sanitizeArticles(all),
       total: all.length,
       hasMore: false, // Tek batch — "Diğer Haberler" YOK
     });
@@ -142,7 +143,7 @@ export async function GET(req: NextRequest) {
     db.publishedArticle.count({ where }),
   ]);
 
-  return NextResponse.json({ articles, total, limit, offset });
+  return NextResponse.json({ articles: sanitizeArticles(articles), total, limit, offset });
 }
 
 // POST /api/published-articles
