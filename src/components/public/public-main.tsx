@@ -490,15 +490,23 @@ export function PublicMain() {
   // Haber detayı (?haber=ID)
   const [openArticleId, setOpenArticleId] = useState<string | null>(null);
 
-  // Haberleri yükle — ana sayfa SADECE :19, :39, :59 dakikalarında veri sayfasından haber çeker
-  // İlk açılışta mount'ta fetch, sonraki senkronlar zamanlanmış
+  // Haberleri yükle — ana sayfa SADECE :19, :39, :59 dakikalarında API'den haber çeker
+  // Mount'ta API'den ÇEKME — sadece localStorage önbellekten yükle (son senkron verisi)
+  // Bu sayede /veri'ye yeni gelen haberler anında ana sayfada görünmez
+  // User: "veri sayfasına haber gelir gelmez ana sayfa bu haberi çekiyor. bu bağı koparmamız lazım."
   const syncArticles = useCallback(async () => {
     try {
       const r = await fetch('/api/published-articles?layout=all&status=published', { cache: 'no-store' });
       if (!r.ok) throw new Error('Haberler yüklenemedi');
       const json = (await r.json()) as { articles: PublishedArticle[] };
-      setArticles(json.articles ?? []);
+      const arts = json.articles ?? [];
+      setArticles(arts);
       setError(null);
+      // localStorage'a kaydet — sayfa yenilenince bu veri gösterilir
+      try {
+        localStorage.setItem('trgundem_main_articles', JSON.stringify(arts));
+        localStorage.setItem('trgundem_main_synced_at', new Date().toISOString());
+      } catch { /* localStorage dolu olabilir, sessiz geç */ }
     } catch (e) {
       if (e instanceof Error) setError(e.message);
     } finally {
@@ -513,35 +521,45 @@ export function PublicMain() {
     const targets = [19, 39, 59];
     let nextMin = targets.find(t => t > m);
     if (nextMin === undefined) {
-      // Bu saatte tüm hedefler geçti — sonraki saatin :19'u
       nextMin = 19;
-      // Sonraki saate geç + 60 dk ekle
       return ((60 - m) + 19) * 60_000 - now.getSeconds() * 1000 - now.getMilliseconds();
     }
     return (nextMin - m) * 60_000 - now.getSeconds() * 1000 - now.getMilliseconds();
   }, []);
 
-  // Mount'ta ilk yükleme + zamanlanmış senkron başlat
-  // User: "ana sayfa 20 dakikada sadece 1 kez veri sayfasındaki tüm haberleri
-  // düzenlenip düzenlenmediğine bakmaksızın çekecek"
-  // Akış: RSS :00'da → özetler :04-05'te /veri'ye düşer → kullanıcı :19'a kadar düzenler
-  // → :19'da ana sayfa tüm haberleri çeker (düzenli/düzenlenmemiş) → :39'ta tekrar → :59'ta tekrar
+  // Mount'ta: SADECE localStorage'dan yükle (API çağrısı YOK)
+  // Sonra :19/:39/:59'da API'den çek
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
     let mounted = true;
 
-    // İlk yükleme — mount'ta bir kez çek (DB'de ne varsa onu göster)
-    syncArticles();
+    // localStorage'dan önbellek yükle — son senkron verisi
+    try {
+      const cached = localStorage.getItem('trgundem_main_articles');
+      if (cached) {
+        const arts = JSON.parse(cached) as PublishedArticle[];
+        setArticles(arts);
+        setLoading(false);
+        console.log('[ana sayfa] Önbellekten yüklendi:', arts.length, 'haber');
+      } else {
+        console.log('[ana sayfa] Önbellek yok — :19/:39/:59\'a kadar bekleniyor');
+        setLoading(false);
+      }
+    } catch {
+      setLoading(false);
+    }
 
-    // Zamanlanmış senkron — :19, :39, :59'da HABERLERI yenile
-    // Arada stale data göster — visibility catch-up YOK
+    // Zamanlanmış senkron — :19, :39, :59'da API'den HABERLERI yenile
     const scheduleNextSync = () => {
       if (!mounted) return;
       const ms = msUntilNextSync();
+      const nextTime = new Date(Date.now() + ms);
+      console.log('[ana sayfa] Sonraki senkron:', nextTime.toLocaleTimeString('tr-TR'));
       timeoutId = setTimeout(async () => {
         if (!mounted) return;
+        console.log('[ana sayfa] Senkron başlıyor...');
         await syncArticles();
-        scheduleNextSync(); // sonraki senkronu planla
+        scheduleNextSync();
       }, ms);
     };
     scheduleNextSync();
