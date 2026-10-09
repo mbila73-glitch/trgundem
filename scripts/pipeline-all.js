@@ -38,13 +38,15 @@ var LF = path.join(ROOT, 'pipeline-once.log');
 // History log — APPEND ONLY (truncate EDİLMEZ). Her cycle'ın başlangıç/bitiş zamanı burada saklanır.
 // /api/admin/pipeline-history bu dosyayı okuyup admin panelde "Akış Kontrol" sekmesinde gösterir.
 var HF = path.join(ROOT, 'pipeline-history.log');
-try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
+// LF truncate EDİLMEZ — cycle logları append edilir (cron >> redirect veya spawn stdio 'a' ile).
+// Her cycle "=== Cycle basladi ===" satırıyla başlar, sıralı okunabilir.
 
 function log(m) {
   var ts = new Date().toISOString();
   var line = '[' + ts + '] ' + m;
   console.log(line);
-  try { fs.appendFileSync(LF, line + '\n'); } catch (e) {}
+  // appendFileSync KALDIRILDI — cron >> redirect (pipeline-once.log) ve spawn stdio 'a' (pipeline-spawn.log)
+  // ile console.log çıktısı zaten dosyaya yazılıyor. Bu satır çift log yazımına sebep oluyordu.
 }
 
 function ws(s) {
@@ -240,12 +242,12 @@ async function aiSummarize(title, contents, category) {
     // Eğer önceki denemeden plagiarizm tespit edildiyse
     if (prevText && plagiarismChunks && plagiarismChunks.length > 0) {
       prompt += '\nÖNCEKİ DENEMENDE KOPYALAMA TESPİT EDİLDİ. Şu ifadeler kaynak metinle birebir aynı:\n';
-      plagiarismChunks.slice(0, 5).forEach(function(chunk, i) {
+      plagiarismChunks.slice(0, 3).forEach(function(chunk, i) {
         prompt += '  ' + (i+1) + '. "' + chunk + '"\n';
       });
       prompt += 'Bu ifadelerin hiçbirini yeniden yazdığın metinde aynen kullanma. ' +
         'Tamamen farklı cümle yapısı ve eş anlamlı kelimelerle yeniden yaz.\n';
-      prompt += '\nÖNCEKİ DENEMEN (referans için, kopyalama):\n' + prevText.slice(0, 1500) + '\n';
+      prompt += '\nÖNCEKİ DENEMEN (referans için, kopyalama):\n' + prevText.slice(0, 500) + '\n';
     }
 
     // Eğer önceki denemede yetersiz kelime ise
@@ -253,7 +255,7 @@ async function aiSummarize(title, contents, category) {
       prompt += '\nÖNCEKİ DENEMEN ' + prevWordCount + ' KELİME İDİ — YETERSİZ.\n';
       prompt += 'EN AZ ' + minW + ' kelime yazman ZORUNLU. Önceki denemeyi referans al ama ' +
         'DAHA UZUN ve detaylı yaz. Haberin tüm detaylarını, bağlamını, arka planını, sonuçlarını ekle.\n';
-      prompt += '\nÖNCEKİ DENEMEN (referans):\n' + prevText.slice(0, 1500) + '\n';
+      prompt += '\nÖNCEKİ DENEMEN (referans):\n' + prevText.slice(0, 500) + '\n';
     }
 
     // Eğer önceki denemede reklam tespit edildiyse
@@ -429,7 +431,7 @@ async function aiSummarize(title, contents, category) {
     if (deadKeys.has(currentKey)) { continue; }
 
     var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + currentKey;
-    var maxTokens = 4000;
+    var maxTokens = 1500; // 4000 → 1500: özetler 200-300 kelime, 1500 token yeterli. 2.5x hız artışı.
     try {
       var resp = await fetch(url, {
         method: 'POST',
@@ -728,7 +730,25 @@ async function main() {
 
   // RSS
   ws({ stage: 'rss' });
+  // console.log geçici olarak override et — trigger-refresh.js'in çıktısını yakala
+  // "İşlenen kaynak: 97" satırından rssRead sayısını parse edeceğiz
+  var _origLog = console.log;
+  var _capturedRss = [];
+  console.log = function() {
+    var args = Array.prototype.slice.call(arguments);
+    _origLog.apply(console, args);
+    _capturedRss.push(args.join(' '));
+  };
   await runScript(path.join(__dirname, 'trigger-refresh.js'), 'RSS');
+  console.log = _origLog;
+  // RSS istatistiklerini parse et
+  var rssRead = 0;
+  for (var ri = 0; ri < _capturedRss.length; ri++) {
+    var rssMatch = _capturedRss[ri].match(/İşlenen kaynak:\s*(\d+)/);
+    if (rssMatch) { rssRead = parseInt(rssMatch[1]); break; }
+  }
+  log('RSS stats: ' + rssRead + ' kaynak işlendi');
+  ws({ rssRead: rssRead });
   if (global.gc) { global.gc(); log('GC'); }
 
   // Gruplama + AI özet
@@ -777,6 +797,8 @@ async function main() {
         topGroups = topGroups.concat(catGroups);
       });
       log('Kategori limitlerine göre seçilen grup: ' + topGroups.length);
+      // History/stats: kaç grup bulundu (duplicatesFound = grup sayısı — her grup 2+ kaynaktan gelmiş duplicate)
+      ws({ duplicatesFound: topGroups.length });
 
       // Mevcut yayınlanan VE arşiv/duplicate haberleri al (birebir + benzer kontrol)
       // Tekrar kontrolü KATEGORİ BAĞIMSIZ — tüm kategorilerde aynı/benzer başlık ara
@@ -1200,7 +1222,8 @@ async function main() {
         log('Ana sayfa arşive taşındı: ' + toArchiveTotal.length + ' haber');
       }
 
-      ws({ summariesDone: aiOk });
+      ws({ summariesDone: aiOk, publishedCount: added, archivedCount: archived });
+      log('Publish özet: added=' + added + ', archived=' + archived + ', aiOk=' + aiOk + ', skipped=' + skipped);
     } catch (e) {
       log('Publish hatasi: ' + e.message);
     }
