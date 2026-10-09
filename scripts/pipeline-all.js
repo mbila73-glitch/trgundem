@@ -28,7 +28,7 @@ try {
 var EVREN_KEY = '';
 try { EVREN_KEY = fs.readFileSync('/var/www/.evren-key', 'utf8').trim(); } catch (e) {}
 var EVREN_API_BASE = process.env.EVREN_API_BASE || 'https://evren-llmapi.ssyz.org.tr/v1';
-var EVREN_MODEL = process.env.EVREN_MODEL || 'evren-llm';
+var EVREN_MODEL = process.env.EVREN_MODEL || 'deepseek-v4-flash';
 
 // Gemini key'ler (fallback)
 var GEMINI_KEYS = [];

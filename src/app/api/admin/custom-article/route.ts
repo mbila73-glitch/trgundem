@@ -888,7 +888,7 @@ export async function POST(req: NextRequest) {
     // EVREN provider (öncelik 1)
     const evrenKey = getEvrenKey();
     const evrenApiBase = process.env.EVREN_API_BASE || 'https://evren-llmapi.ssyz.org.tr/v1';
-    const evrenModel = process.env.EVREN_MODEL || 'evren-llm';
+    const evrenModel = process.env.EVREN_MODEL || 'deepseek-v4-flash';
     if (evrenKey) {
       try {
         const resp = await fetch(evrenApiBase.replace(/\/+$/, '') + '/chat/completions', {
