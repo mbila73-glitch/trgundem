@@ -70,22 +70,42 @@ const finansItemRender = (item: FinansItem, keyPrefix: string, i: number) => {
   );
 };
 
-export function InfoBands() {
+export function InfoBands({ cacheMode = false }: { cacheMode?: boolean }) {
   const [sonDakika, setSonDakika] = useState<SonDakikaItem[]>([]);
   const [finans, setFinans] = useState<FinansItem[]>([]);
   const [finansSource, setFinansSource] = useState('TCMB');
   const [havaFixed, setHavaFixed] = useState<HavaItem[]>(HAVA_FIXED_INIT);
   const [havaScroll, setHavaScroll] = useState<HavaItem[]>(HAVA_SCROLL_INIT);
 
+  // Son dakika haberleri — cacheMode=true ise localStorage'dan oku (ana sayfa senkron verisi)
+  // cacheMode=false ise API'den çek (/veri sayfası — her zaman güncel)
   useEffect(() => {
-    fetch('/api/published-articles?layout=all&status=published')
-      .then(async (r) => {
-        if (!r.ok) return;
-        const json = (await r.json()) as { articles: Array<{ id: string; aiTitle: string }> };
-        setSonDakika((json.articles ?? []).map(a => ({ id: a.id, title: a.aiTitle })).slice(0, 10));
-      })
-      .catch(() => {});
-  }, []);
+    if (cacheMode) {
+      // Ana sayfa — localStorage'dan oku (PublicMain :19/:39/:59'da yazıyor)
+      const loadFromCache = () => {
+        try {
+          const cached = localStorage.getItem('trgundem_main_articles');
+          if (cached) {
+            const arts = JSON.parse(cached) as Array<{ id: string; aiTitle: string }>;
+            setSonDakika((arts ?? []).slice(0, 10).map(a => ({ id: a.id, title: a.aiTitle })));
+          }
+        } catch {}
+      };
+      loadFromCache();
+      // 10 saniyede bir kontrol et — PublicMain senkron yapınca güncellensin
+      const interval = setInterval(loadFromCache, 10000);
+      return () => clearInterval(interval);
+    } else {
+      // /veri sayfası — API'den çek (her zaman güncel)
+      fetch('/api/published-articles?layout=all&status=published')
+        .then(async (r) => {
+          if (!r.ok) return;
+          const json = (await r.json()) as { articles: Array<{ id: string; aiTitle: string }> };
+          setSonDakika((json.articles ?? []).map(a => ({ id: a.id, title: a.aiTitle })).slice(0, 10));
+        })
+        .catch(() => {});
+    }
+  }, [cacheMode]);
 
   // Hava durumu — 10 dakikada bir polling
   useEffect(() => {

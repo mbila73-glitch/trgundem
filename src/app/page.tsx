@@ -228,7 +228,7 @@ export default function Home() {
       </header>
 
       <div className="sticky top-16 z-30 bg-background">
-        <InfoBands />
+        <InfoBands cacheMode={true} />
       </div>
 
       {/* ANA İÇERİK — Sözcü tarzı: arama + 4 kutu + ana pencere + 2 yan + 4 alt + kalan haberler */}
