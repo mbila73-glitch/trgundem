@@ -255,17 +255,17 @@ export function NewsScreen() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Admin token'ı localStorage'dan oku
+  // Admin token'ı localStorage'dan oku — polling ile kontrol et
+  // storage event sadece diğer sekmelerde çalışır, aynı sekmede admin panelde
+  // giriş yapınca algılamak için 2 saniyede bir localStorage kontrolü yap
   useEffect(() => {
-    const t = localStorage.getItem('admin_token');
-    if (t) setAdminToken(t);
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'admin_token') {
-        setAdminToken(e.newValue);
-      }
+    const checkToken = () => {
+      const t = localStorage.getItem('admin_token');
+      setAdminToken(prev => prev !== t ? t : prev);
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    checkToken(); // ilk kontrol
+    const interval = setInterval(checkToken, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   // Inline edit başlat
@@ -444,10 +444,10 @@ export function NewsScreen() {
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); handleStartEdit(a); }}
-            className="absolute -top-2 -right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white shadow-md opacity-0 group-hover:opacity-100 transition hover:bg-blue-700"
+            className="absolute -top-2 -right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 hover:scale-110"
             title="Düzenle"
           >
-            <Edit3 className="h-3.5 w-3.5" />
+            <Edit3 className="h-4 w-4" />
           </button>
         )}
         <PublishedArticleCard article={a} onOpen={(id) => openArticle(id)} isEdited={a.isEdited} />
