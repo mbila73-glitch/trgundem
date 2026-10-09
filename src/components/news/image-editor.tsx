@@ -120,7 +120,7 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
     if (imgLoaded) drawCanvas(null);
   }, [imgLoaded, zoom, drawCanvas]);
 
-  const getCanvasPos = (e: React.MouseEvent) => {
+  const getCanvasPos = (e: { clientX: number; clientY: number }) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
@@ -132,6 +132,45 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
     };
   };
 
+  // Window seviyesinde mouse event'leri dinle — canvas dışına çıkılsa bile
+  // sürükleme devam etsin. Bu olmadan crop yaparken mouse canvas dışına
+  // çıkarsa onMouseLeave çağrılıp dragging durduruluyor, crop yarım kalıyor.
+  useEffect(() => {
+    if (!open || !imgLoaded) return;
+
+    const handleWindowMouseMove = (e: MouseEvent) => {
+      if (!draggingRef.current) return;
+      e.preventDefault();
+      const pos = getCanvasPos(e);
+      const start = dragStartRef.current;
+      if (!start) return;
+      const newCrop: CropRect = {
+        x: Math.min(start.x, pos.x),
+        y: Math.min(start.y, pos.y),
+        w: Math.abs(pos.x - start.x),
+        h: Math.abs(pos.y - start.y),
+      };
+      cropRef.current = newCrop;
+      setCropDisplay(newCrop);
+      drawCanvas(newCrop);
+    };
+
+    const handleWindowMouseUp = () => {
+      draggingRef.current = false;
+      dragStartRef.current = null;
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, imgLoaded, drawCanvas]);
+
+  // Canvas üzerindeki mousedown — crop başlangıcı
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -142,33 +181,6 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
     cropRef.current = newCrop;
     setCropDisplay(newCrop);
     drawCanvas(newCrop);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!draggingRef.current) return;
-    e.preventDefault();
-    const pos = getCanvasPos(e);
-    const start = dragStartRef.current;
-    if (!start) return;
-    const newCrop: CropRect = {
-      x: Math.min(start.x, pos.x),
-      y: Math.min(start.y, pos.y),
-      w: Math.abs(pos.x - start.x),
-      h: Math.abs(pos.y - start.y),
-    };
-    cropRef.current = newCrop;
-    setCropDisplay(newCrop);
-    drawCanvas(newCrop);
-  };
-
-  const handleMouseUp = () => {
-    draggingRef.current = false;
-    dragStartRef.current = null;
-  };
-
-  const handleMouseLeave = () => {
-    draggingRef.current = false;
-    dragStartRef.current = null;
   };
 
   const handleReset = () => {
@@ -271,15 +283,10 @@ export function ImageEditor({ open, onClose, imageUrl, title, onSave, token }: P
           </div>
           <div
             className="flex justify-center bg-muted/30 rounded-md p-2 min-h-[300px] items-center select-none"
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
           >
             <canvas
               ref={canvasRef}
               onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
               className="cursor-crosshair max-w-full touch-none"
               style={{ display: imgLoaded ? 'block' : 'none' }}
             />
