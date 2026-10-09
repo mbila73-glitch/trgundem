@@ -539,7 +539,7 @@ export function NewsScreen() {
 
     // Admin giriş yapmış → "Düzenle" düğmesi overlay ile kart göster
     return (
-      <div className="relative group">
+      <div className="relative group h-full">
         {adminToken && (
           <button
             type="button"
@@ -558,7 +558,7 @@ export function NewsScreen() {
   // === BAŞ HABER KART — edit modunda edit form, normalde featured card ===
   const renderFeaturedCard = (a: PublishedArticle) => {
     if (editingId === a.id) return renderEditForm(a);
-    const borderClass = a.isEdited ? 'border-2 border-green-500 shadow-sm shadow-green-500/20' : 'border-2 border-red-400 shadow-sm shadow-red-400/20';
+    const borderClass = a.isEdited ? 'border-4 border-green-500 shadow-md shadow-green-500/30' : 'border-4 border-red-500 shadow-md shadow-red-500/30';
     return (
       <div className={`relative group flex h-full min-h-[200px] cursor-pointer flex-col overflow-hidden rounded-xl ${borderClass} bg-card transition hover:shadow-md sm:flex-row`} onClick={() => openArticle(a.id)} role="button" tabIndex={0}>
         {adminToken && (

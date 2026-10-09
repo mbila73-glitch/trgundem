@@ -19,10 +19,11 @@ export function PublishedArticleCard({ article, onOpen, isEdited }: Props) {
   const { hearts, userLiked, toggleHeart } = useHeart(article.id);
 
   // Çerçeve rengi — isEdited true = yeşil (yayınlandı), false = kırmızı (bekliyor)
+  // border-4 (4px) — daha kalın, daha belirgin
   const borderClass = isEdited === true
-    ? 'border-2 border-green-500 shadow-sm shadow-green-500/20'
+    ? 'border-4 border-green-500 shadow-md shadow-green-500/30'
     : isEdited === false
-    ? 'border-2 border-red-400 shadow-sm shadow-red-400/20'
+    ? 'border-4 border-red-500 shadow-md shadow-red-500/30'
     : ''; // undefined = varsayılan (eski davranış)
 
   return (
