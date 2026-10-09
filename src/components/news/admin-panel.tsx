@@ -117,6 +117,16 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [loadingPipelineHistory, setLoadingPipelineHistory] = useState(false);
   // Tüm sekmeleri yenileme durumu (en üstteki mavi Yenile düğmesi)
   const [refreshingAll, setRefreshingAll] = useState(false);
+  // Arşiv Deposu modal — /var/www/archives/ klasöründeki sıkıştırılmış dosyalar
+  const [archiveRepoOpen, setArchiveRepoOpen] = useState(false);
+  const [archiveRepoFiles, setArchiveRepoFiles] = useState<any[]>([]);
+  const [archiveRepoSummary, setArchiveRepoSummary] = useState<any>(null);
+  const [loadingArchiveRepo, setLoadingArchiveRepo] = useState(false);
+  const [archiveRepoSearch, setArchiveRepoSearch] = useState('');
+  const [archiveRepoSearchResults, setArchiveRepoSearchResults] = useState<any[] | null>(null);
+  const [searchingArchiveRepo, setSearchingArchiveRepo] = useState(false);
+  const [archiveRepoDetail, setArchiveRepoDetail] = useState<any | null>(null); // seçili dosyanın içeriği
+  const [loadingArchiveRepoDetail, setLoadingArchiveRepoDetail] = useState(false);
 
   // Restart tab state
   type PipelineStatus = {
@@ -349,6 +359,58 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, loadMessages, loadPublished, loadArchived, loadPending, loadPipelineHistory]);
+
+  // === Arşiv Deposu — /var/www/archives/ klasöründeki gzip dosyaları ===
+  const loadArchiveRepo = useCallback(async () => {
+    if (!token) return;
+    setLoadingArchiveRepo(true);
+    setArchiveRepoDetail(null);
+    setArchiveRepoSearchResults(null);
+    setArchiveRepoSearch('');
+    try {
+      const r = await fetch('/api/admin/archive-repository', { headers: { Authorization: `Bearer ${token}` } });
+      if (r.status === 401) { localStorage.removeItem('admin_token'); setToken(null); return; }
+      const json = await r.json();
+      setArchiveRepoFiles(json.files ?? []);
+      setArchiveRepoSummary(json.summary ?? null);
+    } catch { toast.error('Arşiv deposu yüklenemedi'); }
+    finally { setLoadingArchiveRepo(false); }
+  }, [token]);
+
+  const searchArchiveRepo = useCallback(async (keyword: string) => {
+    if (!token) return;
+    if (keyword.trim().length < 3) {
+      toast.error('Arama için en az 3 karakter gerekli');
+      return;
+    }
+    setSearchingArchiveRepo(true);
+    try {
+      const r = await fetch(`/api/admin/archive-repository?search=${encodeURIComponent(keyword.trim())}`, { headers: { Authorization: `Bearer ${token}` } });
+      const json = await r.json();
+      if (json.error) {
+        toast.error(json.error);
+        return;
+      }
+      setArchiveRepoSearchResults(json.results ?? []);
+      toast.success(`${json.totalCount} sonuç bulundu (${json.searchedFiles} dosyada)`);
+    } catch { toast.error('Arşiv arama hatası'); }
+    finally { setSearchingArchiveRepo(false); }
+  }, [token]);
+
+  const loadArchiveRepoDetailFn = useCallback(async (filename: string) => {
+    if (!token) return;
+    setLoadingArchiveRepoDetail(true);
+    try {
+      const r = await fetch(`/api/admin/archive-repository?file=${encodeURIComponent(filename)}`, { headers: { Authorization: `Bearer ${token}` } });
+      const json = await r.json();
+      if (json.error) {
+        toast.error(json.error);
+        return;
+      }
+      setArchiveRepoDetail(json);
+    } catch { toast.error('Arşiv dosyası okunamadı'); }
+    finally { setLoadingArchiveRepoDetail(false); }
+  }, [token]);
 
   useEffect(() => {
     if (open && token) {
@@ -2000,14 +2062,14 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                               <Badge variant="secondary" className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">Son 24 saat: {archivedArticles.length}</Badge>
                               <span className="text-muted-foreground/70 text-[10px]">Eski kayıtlar DB'de durur (delil) — sadece son 24 saat gösterilir</span>
                             </div>
-                            <a
-                              href="https://trgundem.net"
-                              onClick={(e) => { e.preventDefault(); toast.info('Eski arşiv sıkıştırma için VPS\'teki scripti çalıştırın: node scripts/export-old-archives.js --days=1 --delete'); }}
-                              className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                              title="Dışa aktarma scripti VPS'te manuel çalıştırılır"
+                            <button
+                              type="button"
+                              onClick={() => { setArchiveRepoOpen(true); void loadArchiveRepo(); }}
+                              className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1"
+                              title="Sıkıştırılmış günlük arşiv dosyalarını gör + ara"
                             >
-                              Eski Arşivleri Sıkıştır →
-                            </a>
+                              <Archive className="h-3 w-3" /> Arşiv Deposu Gör →
+                            </button>
                           </div>
                         )}
 
@@ -2462,6 +2524,181 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* Arşiv Deposu modal — /var/www/archives/ klasöründeki sıkıştırılmış dosyalar */}
+      <Dialog open={archiveRepoOpen} onOpenChange={(o) => { if (!o) { setArchiveRepoOpen(false); setArchiveRepoDetail(null); setArchiveRepoSearchResults(null); setArchiveRepoSearch(''); } }}>
+        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Archive className="h-5 w-5 text-news" />
+              Arşiv Deposu
+              {archiveRepoSummary && (
+                <Badge variant="secondary" className="text-[10px] ml-2">
+                  {archiveRepoSummary.totalFiles} dosya · {archiveRepoSummary.totalSizeMB} MB
+                </Badge>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto space-y-4 px-1">
+            {/* Arama çubuğu */}
+            <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
+              <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <Input
+                type="text"
+                value={archiveRepoSearch}
+                onChange={(e) => setArchiveRepoSearch(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void searchArchiveRepo(archiveRepoSearch); } }}
+                placeholder="Tüm arşiv dosyalarında ara (başlık, özet, kategori — en az 3 karakter)..."
+                className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-xs h-7 px-1"
+              />
+              <Button
+                size="sm"
+                onClick={() => void searchArchiveRepo(archiveRepoSearch)}
+                disabled={searchingArchiveRepo || archiveRepoSearch.trim().length < 3}
+                className="gap-1.5 text-xs h-7 bg-news hover:bg-news/90 text-news-foreground"
+              >
+                {searchingArchiveRepo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+                Ara
+              </Button>
+              {archiveRepoSearch && (
+                <button type="button" onClick={() => { setArchiveRepoSearch(''); setArchiveRepoSearchResults(null); }} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* İçerik: ya dosya listesi, ya arama sonuçları, ya da dosya detayı */}
+            {loadingArchiveRepo ? (
+              <div className="flex items-center justify-center gap-3 p-10">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Arşiv deposu yükleniyor...</p>
+              </div>
+            ) : archiveRepoSearchResults ? (
+              /* Arama sonuçları */
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold">Arama sonuçları ({archiveRepoSearchResults.length})</p>
+                  <Button size="sm" variant="outline" onClick={() => { setArchiveRepoSearchResults(null); setArchiveRepoSearch(''); }} className="text-[10px] h-7">
+                    Listeye dön
+                  </Button>
+                </div>
+                {archiveRepoSearchResults.length === 0 ? (
+                  <Card className="flex flex-col items-center gap-3 p-10 text-center">
+                    <Search className="h-10 w-10 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Eşleşen kayıt bulunamadı</p>
+                  </Card>
+                ) : (
+                  archiveRepoSearchResults.map((a, i) => (
+                    <Card key={i} className="p-3 border-l-4 border-l-blue-500">
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <Badge variant="secondary" className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                              {a.archiveDate}
+                            </Badge>
+                            {a.category && (
+                              <Badge variant="outline" className="text-[10px]">{a.category}</Badge>
+                            )}
+                            {a.sourceCount > 0 && (
+                              <span className="text-[10px] text-muted-foreground">{a.sourceCount} kaynak</span>
+                            )}
+                          </div>
+                          <h4 className="text-sm font-semibold text-foreground line-clamp-2">{a.aiTitle}</h4>
+                          <p className="text-xs text-muted-foreground line-clamp-3 mt-1">{a.aiSummary}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                )}
+              </div>
+            ) : archiveRepoDetail ? (
+              /* Tek dosyanın içeriği */
+              <div className="space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                      {archiveRepoDetail.file?.date}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {archiveRepoDetail.archive?.count || 0} kayıt · {archiveRepoDetail.file?.sizeKB} KB
+                    </span>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setArchiveRepoDetail(null)} className="text-[10px] h-7">
+                    ← Listeye dön
+                  </Button>
+                </div>
+                {loadingArchiveRepoDetail ? (
+                  <div className="flex items-center justify-center gap-3 p-10">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Dosya açılıyor (decompress)...</p>
+                  </div>
+                ) : (
+                  (archiveRepoDetail.archive?.articles || []).map((a: any, i: number) => (
+                    <Card key={i} className="p-3">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        {a.category && <Badge variant="outline" className="text-[10px]">{a.category}</Badge>}
+                        {a.sourceCount > 0 && <span className="text-[10px] text-muted-foreground">{a.sourceCount} kaynak</span>}
+                        {a.wordCount > 0 && <span className="text-[10px] text-muted-foreground">{a.wordCount} kelime</span>}
+                        {a.archivedAt && <span className="text-[10px] text-muted-foreground">arşiv: {new Date(a.archivedAt).toLocaleDateString('tr-TR')}</span>}
+                      </div>
+                      <h4 className="text-sm font-semibold text-foreground line-clamp-2">{a.aiTitle}</h4>
+                      <p className="text-xs text-muted-foreground line-clamp-4 mt-1">{a.aiSummary}</p>
+                    </Card>
+                  ))
+                )}
+              </div>
+            ) : archiveRepoFiles.length === 0 ? (
+              <Card className="flex flex-col items-center gap-3 p-10 text-center">
+                <Archive className="h-10 w-10 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Henüz arşiv dosyası yok</p>
+                <p className="text-xs text-muted-foreground/70">
+                  Günlük otomatik sıkıştırma her gece 00:30'da çalışır. İlk sıkıştırma sonraki gece 00:30'da yapılacak.
+                </p>
+                <p className="text-xs text-muted-foreground/70">
+                  Manuel çalıştırmak için VPS'te: <code className="bg-muted px-1.5 py-0.5 rounded text-[10px]">node scripts/export-old-archives.js --days=1 --delete</code>
+                </p>
+              </Card>
+            ) : (
+              /* Dosya listesi */
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">Günlük sıkıştırılmış arşiv dosyaları (en yeni üstte):</p>
+                {archiveRepoFiles.map((f, i) => (
+                  <Card key={i} className="p-3 hover:bg-muted/30 transition cursor-pointer" onClick={() => void loadArchiveRepoDetailFn(f.filename)}>
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                          <Archive className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{f.date}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {f.time ? f.time.slice(0,2) + ':' + f.time.slice(2,4) + ' · ' : ''}{f.thresholdDays} gün eşiği · {f.sizeKB} KB
+                          </p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="ghost" className="text-[10px] h-7 gap-1">
+                        <Search className="h-3 w-3" /> Görüntüle
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t border-border">
+            <p className="text-[10px] text-muted-foreground">
+              {archiveRepoSummary
+                ? `${archiveRepoSummary.totalFiles} dosya · ${archiveRepoSummary.totalSizeMB} MB · ${archiveRepoSummary.oldestDate || '-'} → ${archiveRepoSummary.newestDate || '-'}`
+                : 'Delil amaçlı saklanan günlük sıkıştırılmış arşivler'}
+            </p>
+            <Button variant="outline" size="sm" onClick={() => { setArchiveRepoOpen(false); setArchiveRepoDetail(null); setArchiveRepoSearchResults(null); }} className="text-xs h-7">
+              Kapat
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -36,6 +36,10 @@ echo "5,25,45 * * * * cd /var/www && node scripts/cleanup-duplicates.js >> /var/
 # Altın takip — hafta içi 09:00'da
 echo "0 9 * * 1-5 cd /var/www && node scripts/altin-takip.js >> /var/www/altin-takip.log 2>&1"
 
+# Günlük arşiv sıkıştırma — 00:30'da önceki günün haberlerini gzip'e aktar + DB'den sil
+# (00:00 pipeline cycle'ı 16 dk sürer, çakışmayı önlemek için 00:30)
+echo "30 0 * * * cd /var/www && node scripts/export-old-archives.js --days=1 --delete >> /var/www/archive-export.log 2>&1"
+
 ) | crontab -
 
 echo ""
