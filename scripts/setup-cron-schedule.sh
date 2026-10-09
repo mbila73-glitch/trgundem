@@ -31,8 +31,8 @@ echo "0 0-5 * * * cd /var/www && node --expose-gc scripts/pipeline-all.js --once
 # Pipeline — 06:00-23:40 her 20 dakika (gündüz yüksek trafik)
 echo "*/20 6-23 * * * cd /var/www && node --expose-gc scripts/pipeline-all.js --once >> /var/www/pipeline-once.log 2>&1"
 
-# Cleanup — her saatte 3 kez
-echo "5,25,45 * * * * cd /var/www && node scripts/cleanup-duplicates.js >> /var/www/cleanup.log 2>&1"
+# Cleanup — İPTAL EDİLDİ, artık pipeline sonrası otomatik çalışıyor
+# echo "5,25,45 * * * * cd /var/www && node scripts/cleanup-duplicates.js >> /var/www/cleanup.log 2>&1"
 
 # Altın takip — hafta içi 09:00'da
 echo "0 9 * * 1-5 cd /var/www && node scripts/altin-takip.js >> /var/www/altin-takip.log 2>&1"

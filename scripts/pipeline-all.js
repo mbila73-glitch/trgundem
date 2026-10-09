@@ -1434,6 +1434,113 @@ async function main() {
   } catch (e) {}
   wh(Object.assign({ event: 'done', startedAt: startedAtIso, finishedAt: new Date().toISOString(), durationMs: Date.now() - startedAtMs }, statsForHistory));
   log('=== Cycle tamam ===');
+
+  // === SIRALI ADIMLAR: Cleanup → AI Düzenle ===
+  // User: "clear ai si rss ai işlemi bittikten sonra beklemeden çalışsın.
+  //        clear ai işlemi bittikten sonra da hemen tüm yeni haberler için
+  //        aidüzenle çalışsın. bu sıralamayı bozma."
+
+  // 1. CLEANUP — duplicate temizleme (eski 5,25,45 cron yerine artık pipeline sonrası)
+  if (statsForHistory.publishedCount > 0 || statsForHistory.summariesDone > 0) {
+    log('>>> SIRALI ADIM 1: Cleanup (duplicate temizleme) >>>');
+    try {
+      await runScript(path.join(__dirname, 'cleanup-duplicates.js'), 'Cleanup');
+      if (global.gc) { global.gc(); log('GC (cleanup sonrası)'); }
+    } catch (e) { log('Cleanup hatası: ' + e.message); }
+  }
+
+  // 2. AI DÜZENLE — tüm yeni (isEdited=false) makaleler için
+  // AI özet'ten FARKLI: plagiarizm/wordcount/ad filter YOK
+  // Sadece mevcut metni akıcı, doğal yap — min 150 max 300 kelime
+  if (statsForHistory.publishedCount > 0 && globalThis.prisma) {
+    log('>>> SIRALI ADIM 2: AI Düzenle (yeni makaleler) >>>');
+    try {
+      var newArticles = await globalThis.prisma.publishedArticle.findMany({
+        where: { status: 'published', isEdited: false },
+        orderBy: { publishedAt: 'desc' },
+        take: 30, // max 30 makale (API kota koruması)
+        select: { id: true, aiTitle: true, aiSummary: true }
+      });
+      log('  Yeni (isEdited=false) makale sayısı: ' + newArticles.length);
+
+      var aiEditOk = 0;
+      for (var ei = 0; ei < newArticles.length; ei++) {
+        var ea = newArticles[ei];
+        log('  [AI Düzenle ' + (ei+1) + '/' + newArticles.length + '] ' + ea.aiTitle.slice(0, 40));
+
+        // AI Düzenle çağrısı — /api/admin/ai-edit endpoint'ini çağıramayız (pipeline = ayrı process)
+        // Bu yüzden AI çağrısını direkt burada yapıyoruz (callEvren → callGemini)
+        var editPrompt = 'Aşağıdaki haber metnini Türkçe olarak yeniden yaz. Kurallar:\n' +
+          '- Zorlama, yapay veya resmi ifadeleri doğal, günlük ve yaygın popüler ifadelerle değiştir\n' +
+          '- Metni akıcı ve okunabilir bir haber diline çevir\n' +
+          '- Anlamı koru, yeni bilgi ekleme\n' +
+          '- Başlığı kısa ve etkileyici yap\n' +
+          '- ÖZET MİNIMUM 150, MAKSİMUM 300 KELİME OLMALI\n' +
+          '- Kopyalama kontrolü, reklam filtresi YOK — sadece metni düzelt\n\n' +
+          'BAŞLIK: ' + (ea.aiTitle || '') + '\n\n' +
+          'ÖZET: ' + (ea.aiSummary || '') + '\n\n' +
+          'ÇIKTI FORMATI (kesinlikle bu formatta):\n' +
+          'BAŞLIK: [yeniden yazılmış başlık]\n' +
+          '---\n' +
+          'ÖZET: [yeniden yazılmış özet — 150-300 kelime]';
+
+        try {
+          var editedText = null;
+          var providers = getAiProviders();
+          for (var pi2 = 0; pi2 < providers.length && !editedText; pi2++) {
+            var prov = providers[pi2];
+            if (deadKeys.has(prov.key)) continue;
+            try {
+              if (prov.type === 'evren') {
+                editedText = await callEvren(editPrompt, 2000);
+              } else {
+                editedText = await callGemini(prov.key, editPrompt, 2000);
+              }
+            } catch (e2) {
+              log('    [' + prov.label + '] hata: ' + e2.message.slice(0, 60));
+              deadKeys.add(prov.key);
+            }
+          }
+
+          if (editedText) {
+            // Parse: "BAŞLIK: xxx --- ÖZET: xxx"
+            var editedTitle = ea.aiTitle;
+            var editedSummary = ea.aiSummary;
+            var m1 = editedText.match(/BAŞLIK:\s*(.+?)(?:\s*---|\s*\n---|\nÖZET:)\s*([\s\S]+)/);
+            if (m1) {
+              editedTitle = m1[1].trim();
+              editedSummary = m1[2].replace(/^ÖZET:\s*/i, '').trim();
+            } else {
+              var tm = editedText.match(/BAŞLIK:\s*(.+)/);
+              var sm = editedText.match(/ÖZET:\s*([\s\S]+)/);
+              if (tm) editedTitle = tm[1].trim();
+              if (sm) editedSummary = sm[1].trim();
+            }
+
+            // DB'ye kaydet — isEdited=false (kullanıcı henüz düzenlemedi)
+            // AI Düzenle metni düzeltti ama isEdited bayrağı KALMADI
+            // Çünkü kullanıcı /veri'de görmeli ve kendi düzenleyip Yayınla'ya basmalı
+            await globalThis.prisma.publishedArticle.update({
+              where: { id: ea.id },
+              data: { aiTitle: editedTitle, aiSummary: editedSummary }
+            });
+            aiEditOk++;
+            log('    ✓ AI Düzenle tamam — ' + editedTitle.slice(0, 40));
+          } else {
+            log('    ✗ AI Düzenle başarısız (tüm sağlayıcılar denendi)');
+          }
+        } catch (e3) {
+          log('    ✗ AI Düzenle hatası: ' + e3.message.slice(0, 60));
+        }
+      }
+      log('  AI Düzenle özet: ' + aiEditOk + '/' + newArticles.length + ' makale düzenlendi');
+      ws({ aiEditDone: aiEditOk, aiEditTotal: newArticles.length });
+    } catch (e) {
+      log('AI Düzenle toplu hata: ' + e.message);
+    }
+  }
+
+  log('=== Tüm adımlar tamam (pipeline + cleanup + AI düzenle) ===');
   process.exit = origExit;
   origExit(0);
 }

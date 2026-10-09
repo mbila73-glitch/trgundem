@@ -61,15 +61,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Başlık veya özet gerekli' }, { status: 400 });
   }
 
-  // AI Düzenle prompt — HİÇBİR kısıtlama yok
+  // AI Düzenle prompt — kısıtlama: min 150 max 300 KELIME
   // Amaç: zorlama ifadeleri doğal/popüler ifadelerle değiştir, akıcı yap
   const prompt = `Aşağıdaki haber metnini Türkçe olarak yeniden yaz. Kurallar:
 - Zorlama, yapay veya resmi ifadeleri doğal, günlük ve yaygın popüler ifadelerle değiştir
 - Metni akıcı ve okunabilir bir haber diline çevir
 - Anlamı koru, yeni bilgi ekleme
 - Başlığı kısa ve etkileyici yap
+- ÖZET MİNIMUM 150, MAKSİMUM 300 KELİME OLMALI — bu sınırlara mutlaka uy
 - Özeti 2-3 paragraf halinde akıcı yaz
-- Hiçbir kısıtlama yok: kelime sayısı, kopyalama kontrolü yok
+- Kopyalama kontrolü, reklam filtresi YOK — sadece metni düzelt
 - Sadece metni düzelt, haber içeriğini değiştirme
 
 BAŞLIK: ${title || '(boş)'}
@@ -79,7 +80,7 @@ BAŞLIK: ${title || '(boş)'}
 ÇIKTI FORMATI (kesinlikle bu formatta):
 BAŞLIK: [yeniden yazılmış başlık]
 ---
-ÖZET: [yeniden yazılmış özet]`;
+ÖZET: [yeniden yazılmış özet — 150-300 kelime]`;
 
   // 1. EVREN (öncelik)
   const evrenKey = getEvrenKey();
