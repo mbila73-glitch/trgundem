@@ -247,7 +247,7 @@ export function NewsScreen() {
   const [editTitle, setEditTitle] = useState('');
   const [editSummary, setEditSummary] = useState('');
   const [editImage, setEditImage] = useState('');
-  const [editCategory, setEditCategory] = useState('Siyaset');
+  const [editCategory, setEditCategory] = useState<string[]>(['Siyaset']);
   const [savingEdit, setSavingEdit] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorImageUrl, setEditorImageUrl] = useState('');
@@ -281,7 +281,7 @@ export function NewsScreen() {
     setEditTitle(a.aiTitle);
     setEditSummary(a.aiSummary);
     setEditImage(a.imageUrl || '');
-    setEditCategory(a.category);
+    setEditCategory([a.category]);
     setOpenArticleId(null); // detay view kapat, grid'e dön
   }, []);
 
