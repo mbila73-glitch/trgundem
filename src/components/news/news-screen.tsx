@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon, ArrowDown, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon, ArrowDown, Sparkles, Image as ImageIcon, Wand2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -261,6 +261,7 @@ export function NewsScreen() {
   const [translateInput, setTranslateInput] = useState('');
   const [translateOutput, setTranslateOutput] = useState('');
   const [translating, setTranslating] = useState(false);
+  const [aiEditing, setAiEditing] = useState(false);
 
   // Admin token'ı localStorage'dan oku — polling ile kontrol et
   // storage event sadece diğer sekmelerde çalışır, aynı sekmede admin panelde
@@ -471,6 +472,31 @@ export function NewsScreen() {
     setImageSearchInput('');
   }, []);
 
+  // AI Düzenle — mevcut başlık + özeti AI ile yeniden yaz (HİÇBİR kısıtlama yok)
+  // AI özet pipeline'ından FARKLI: plagiarizm/wordcount/ad filter YOK
+  // Sadece metni akıcı, doğal yap — zorlama ifadeleri değiştir
+  const handleAiEdit = useCallback(async () => {
+    if (!adminToken) { toast.error('Yönetici girişi gerekli'); return; }
+    if (!editTitle.trim() && !editSummary.trim()) { toast.error('Düzenlenecek metin yok'); return; }
+    setAiEditing(true);
+    try {
+      const r = await fetch('/api/admin/ai-edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
+        body: JSON.stringify({ title: editTitle, summary: editSummary }),
+      });
+      const json = await r.json();
+      if (!r.ok || !json.ok) throw new Error(json.error || `HTTP ${r.status}`);
+      if (json.title) setEditTitle(json.title);
+      if (json.summary) setEditSummary(json.summary);
+      toast.success(`AI Düzenle tamam — ${json.provider || 'AI'}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'AI Düzenle hatası');
+    } finally {
+      setAiEditing(false);
+    }
+  }, [adminToken, editTitle, editSummary]);
+
   // === INLINE EDIT FORM — makale kartının yerine geçen düzenleme formu ===
   const renderEditForm = (a: PublishedArticle) => (
     <Card className="border-2 border-blue-500 shadow-lg shadow-blue-500/20 p-4 space-y-3 col-span-full sm:col-span-1">
@@ -487,6 +513,11 @@ export function NewsScreen() {
         <Textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} rows={6} className="text-sm resize-y" placeholder="Haber özeti" />
         <p className="text-[10px] text-muted-foreground">{editSummary.trim().split(/\s+/).filter(Boolean).length} kelime</p>
       </div>
+      {/* AI Düzenle — mevcut metni AI ile akıcı hale getir (kısıtlama yok) */}
+      <Button type="button" size="sm" onClick={handleAiEdit} disabled={aiEditing || (!editTitle.trim() && !editSummary.trim())} className="w-full gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs h-8">
+        {aiEditing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+        AI ile Düzenle
+      </Button>
       {/* Türkçe → İngilizce çeviri (görsel arama için) */}
       <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/30 p-1.5">
         <Input value={translateInput} onChange={(e) => setTranslateInput(e.target.value)} placeholder="Türkçe yaz" className="flex-1 text-xs h-7 border-0 bg-white text-foreground focus-visible:ring-1 focus-visible:ring-red-500" />
