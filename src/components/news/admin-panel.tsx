@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop, ArrowDown
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop, ArrowDown, Activity
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeTr } from '@/lib/format';
@@ -29,7 +29,7 @@ import { ImageEditor } from '@/components/news/image-editor';
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; ip?: string | null; status: string; reply?: string | null; repliedAt?: string | null; createdAt: string };
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; initialHearts: number; clickHearts: number; };
-type AdminTab = 'messages' | 'custom' | 'published' | 'archived' | 'pending';
+type AdminTab = 'messages' | 'custom' | 'published' | 'archived' | 'pending' | 'pipeline';
 
 const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
 
@@ -112,6 +112,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [loadingPending, setLoadingPending] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  // Akış Kontrol sekmesi — pipeline çalışma geçmişi (son 24 saat)
+  const [pipelineHistory, setPipelineHistory] = useState<{ runs: any[]; summary: any; message?: string } | null>(null);
+  const [loadingPipelineHistory, setLoadingPipelineHistory] = useState(false);
 
   // Restart tab state
   type PipelineStatus = {
@@ -306,6 +309,19 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     }
   }, []);
 
+  // Akış Kontrol sekmesi — pipeline history yükle
+  const loadPipelineHistory = useCallback(async () => {
+    if (!token) return;
+    setLoadingPipelineHistory(true);
+    try {
+      const r = await fetch('/api/admin/pipeline-history', { headers: { Authorization: `Bearer ${token}` } });
+      if (r.status === 401) { localStorage.removeItem('admin_token'); setToken(null); return; }
+      const json = await r.json();
+      setPipelineHistory(json);
+    } catch { /* sessiz */ }
+    finally { setLoadingPipelineHistory(false); }
+  }, [token]);
+
   useEffect(() => {
     if (open && token) {
       if (adminTab === 'messages') void loadMessages();
@@ -313,8 +329,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       if (adminTab === 'archived') { void loadArchived(); void loadMessages(); }
       if (adminTab === 'pending') void loadPending();
       if (adminTab === 'custom') void loadTrustedSites();
+      if (adminTab === 'pipeline') void loadPipelineHistory();
     }
-  }, [open, token, adminTab, loadMessages, loadPublished, loadArchived, loadPending]);
+  }, [open, token, adminTab, loadMessages, loadPublished, loadArchived, loadPending, loadPipelineHistory]);
 
   // Restart polling — restarting iken her 2 saniyede bir status çek
   useEffect(() => {
@@ -934,7 +951,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <>
                 {/* Sub-tabs — sticky (scroll ederken kaybolmasın) */}
                 <div className="sticky top-0 z-10 mb-3 sm:mb-4 -mx-3 sm:-mx-6 px-2 sm:px-6 py-2 flex gap-0.5 sm:gap-1 overflow-x-auto rounded-lg border border-border bg-background/95 backdrop-blur shadow-sm">
-                  {([['messages', 'Mesajlar', Mail], ['custom', 'Haber Ekle', Star], ['published', 'Yayında', Newspaper], ['archived', 'Arşiv', Archive], ['pending', 'Tekrar', AlertCircle]] as const).map(([id, label, Icon]) => (
+                  {([['messages', 'Mesajlar', Mail], ['custom', 'Haber Ekle', Star], ['published', 'Yayında', Newspaper], ['archived', 'Arşiv', Archive], ['pending', 'Tekrar', AlertCircle], ['pipeline', 'Akış Kontrol', Activity]] as const).map(([id, label, Icon]) => (
                     <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex items-center justify-center gap-1 sm:gap-1.5 rounded-md px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-medium transition relative flex-shrink-0 ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Icon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{label}</span>
                       {id === 'pending' && pendingArticles.length > 0 && (
@@ -2246,6 +2263,126 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                             </div>
                           </Card>
                         ))}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Akış Kontrol sekmesi — pipeline çalışma geçmişi (son 24 saat) */}
+                {adminTab === 'pipeline' && (
+                  <div className="space-y-4">
+                    {loadingPipelineHistory ? (
+                      <Card className="flex items-center justify-center gap-3 p-10 text-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Pipeline geçmişi yükleniyor...</p>
+                      </Card>
+                    ) : !pipelineHistory ? (
+                      <Card className="flex flex-col items-center gap-3 p-10 text-center">
+                        <Activity className="h-10 w-10 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Geçmiş yüklenemedi</p>
+                      </Card>
+                    ) : pipelineHistory.message && (!pipelineHistory.runs || pipelineHistory.runs.length === 0) ? (
+                      <Card className="flex flex-col items-center gap-3 p-10 text-center">
+                        <Activity className="h-10 w-10 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">{pipelineHistory.message}</p>
+                        <p className="text-xs text-muted-foreground/70">Pipeline bir kez çalıştığında cycle geçmişi burada görünmeye başlayacak.</p>
+                        <Button size="sm" variant="outline" onClick={() => void loadPipelineHistory()} className="gap-1.5 mt-2">
+                          <RefreshCw className="h-3.5 w-3.5" /> Yeniden Dene
+                        </Button>
+                      </Card>
+                    ) : (
+                      <>
+                        {/* Özet kartı */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <Card className="p-3 text-center">
+                            <p className="text-[10px] text-muted-foreground">Toplam Cycle</p>
+                            <p className="text-2xl font-bold text-foreground">{pipelineHistory.summary?.totalRuns ?? 0}</p>
+                          </Card>
+                          <Card className="p-3 text-center">
+                            <p className="text-[10px] text-muted-foreground">Başarılı</p>
+                            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{pipelineHistory.summary?.successCount ?? 0}</p>
+                          </Card>
+                          <Card className="p-3 text-center">
+                            <p className="text-[10px] text-muted-foreground">Hatalı</p>
+                            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{pipelineHistory.summary?.errorCount ?? 0}</p>
+                          </Card>
+                          <Card className="p-3 text-center">
+                            <p className="text-[10px] text-muted-foreground">Yeni Haber</p>
+                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{pipelineHistory.summary?.totalNewArticles ?? 0}</p>
+                          </Card>
+                        </div>
+
+                        {/* Yenile düğmesi */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Activity className="h-4 w-4 text-news" />
+                            <p className="text-sm font-semibold text-foreground">Son 24 saatteki pipeline çalışmaları</p>
+                          </div>
+                          <Button size="sm" variant="outline" onClick={() => void loadPipelineHistory()} className="gap-1.5 h-8 text-xs">
+                            <RefreshCw className="h-3.5 w-3.5" /> Yenile
+                          </Button>
+                        </div>
+
+                        {/* Çalışma listesi */}
+                        {pipelineHistory.runs.length === 0 ? (
+                          <Card className="flex flex-col items-center gap-3 p-10 text-center">
+                            <Activity className="h-10 w-10 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Son 24 saatte tamamlanmış pipeline cycle'ı yok</p>
+                            <p className="text-xs text-muted-foreground/70">Cron veya manuel tetikleme bekleniyor. Tetiklemek için "Akışı Başlat" düğmesini kullanın.</p>
+                          </Card>
+                        ) : (
+                          <div className="space-y-2">
+                            {pipelineHistory.runs.map((run: any, i: number) => {
+                              const ts = run.ts || run.finishedAt || '';
+                              const finishedAt = run.finishedAt || '';
+                              const startedAt = run.startedAt || '';
+                              const isError = run.event === 'error';
+                              const durationSec = run.durationMs ? Math.round(run.durationMs / 1000) : null;
+                              const durationStr = durationSec !== null
+                                ? (durationSec >= 60 ? `${Math.floor(durationSec / 60)} dk ${durationSec % 60} sn` : `${durationSec} sn`)
+                                : '—';
+                              const tzTime = finishedAt
+                                ? new Date(finishedAt).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                                : '—';
+                              return (
+                                <Card key={i} className={`p-3 ${isError ? 'border-red-300 bg-red-50 dark:bg-red-950/10' : 'border-emerald-300 bg-emerald-50 dark:bg-emerald-950/10'}`}>
+                                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                                    <div className="flex items-start gap-2">
+                                      <div className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full ${isError ? 'bg-red-100 dark:bg-red-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'}`}>
+                                        {isError ? <AlertCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" /> : <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />}
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-semibold text-foreground">{tzTime}</p>
+                                        <p className="text-[10px] text-muted-foreground">
+                                          {isError ? 'HATA ile bitti' : 'Başarıyla tamamlandı'} · Süre: {durationStr}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 flex-wrap text-[10px]">
+                                      {typeof run.rssRead === 'number' && (
+                                        <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">RSS: {run.rssRead}</Badge>
+                                      )}
+                                      {typeof run.duplicatesFound === 'number' && run.duplicatesFound > 0 && (
+                                        <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">{run.duplicatesFound} grup</Badge>
+                                      )}
+                                      {typeof run.summariesDone === 'number' && run.summariesDone > 0 && (
+                                        <Badge variant="secondary" className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">{run.summariesDone} özet</Badge>
+                                      )}
+                                      {typeof run.publishedCount === 'number' && run.publishedCount > 0 && (
+                                        <Badge variant="secondary" className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">{run.publishedCount} yayın</Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {isError && run.error && (
+                                    <div className="mt-2 rounded bg-red-100 dark:bg-red-950/30 p-2 text-[11px] text-red-700 dark:text-red-300 font-mono break-all">
+                                      {run.error}
+                                    </div>
+                                  )}
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        )}
                       </>
                     )}
                   </div>

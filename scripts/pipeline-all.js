@@ -35,6 +35,9 @@ var deadKeys = new Set(); // bu cycle'da ölü key'ler (403/429) — atlanır
 var ROOT = path.resolve(__dirname, '..');
 var SF = path.join(ROOT, 'pipeline-status.json');
 var LF = path.join(ROOT, 'pipeline-once.log');
+// History log — APPEND ONLY (truncate EDİLMEZ). Her cycle'ın başlangıç/bitiş zamanı burada saklanır.
+// /api/admin/pipeline-history bu dosyayı okuyup admin panelde "Akış Kontrol" sekmesinde gösterir.
+var HF = path.join(ROOT, 'pipeline-history.log');
 try { fs.writeFileSync(LF, '', 'utf8'); } catch (e) {}
 
 function log(m) {
@@ -49,6 +52,15 @@ function ws(s) {
     var c = null;
     try { c = JSON.parse(fs.readFileSync(SF, 'utf8')); } catch (e) {}
     fs.writeFileSync(SF, JSON.stringify(Object.assign({}, c, s), null, 2), 'utf8');
+  } catch (e) {}
+}
+
+// History log'a JSON-line yazar (append-only, her cycle için bir kayıt)
+// Admin panel "Akış Kontrol" sekmesi bunu okuyup son 24 saati gösterir
+function wh(entry) {
+  try {
+    var line = JSON.stringify(Object.assign({ ts: new Date().toISOString() }, entry)) + '\n';
+    fs.appendFileSync(HF, line, 'utf8');
   } catch (e) {}
 }
 
@@ -640,7 +652,11 @@ function runScript(scriptPath, name) {
 async function main() {
   log('=== Cycle basladi ===');
   log('GEMINI keys: ' + GEMINI_KEYS.length + ' adet');
-  ws({ stage: 'started', startedAt: new Date().toISOString(), finishedAt: null });
+  var startedAtIso = new Date().toISOString();
+  var startedAtMs = Date.now();
+  ws({ stage: 'started', startedAt: startedAtIso, finishedAt: null });
+  // History: cycle başlangıcı (Akış Kontrol sekmesi için)
+  wh({ event: 'start', startedAt: startedAtIso });
 
   // RSS
   ws({ stage: 'rss' });
@@ -1132,6 +1148,19 @@ async function main() {
   } catch (e) {}
 
   ws({ stage: 'done', finishedAt: new Date().toISOString() });
+  // History: cycle başarıyla bitti (Akış Kontrol sekmesi için)
+  // Status dosyasından tüm stats'ı okuyup history'e yaz
+  var statsForHistory = { rssRead: null, duplicatesFound: null, summariesDone: null, publishedCount: null };
+  try {
+    var statusData = JSON.parse(fs.readFileSync(SF, 'utf8'));
+    statsForHistory = {
+      rssRead: statusData.rssRead || 0,
+      duplicatesFound: statusData.duplicatesFound || 0,
+      summariesDone: statusData.summariesDone || 0,
+      publishedCount: statusData.publishedCount || 0
+    };
+  } catch (e) {}
+  wh(Object.assign({ event: 'done', startedAt: startedAtIso, finishedAt: new Date().toISOString(), durationMs: Date.now() - startedAtMs }, statsForHistory));
   log('=== Cycle tamam ===');
   process.exit = origExit;
   origExit(0);
@@ -1139,6 +1168,11 @@ async function main() {
 
 main().catch(function(e) {
   log('FATAL: ' + (e && e.message || e));
+  // History: cycle hata ile bitti
+  try {
+    wh({ event: 'error', startedAt: startedAtIso, finishedAt: new Date().toISOString(), durationMs: Date.now() - startedAtMs, error: (e && e.message || String(e)).slice(0, 500) });
+  } catch (e2) {}
+  ws({ stage: 'error', error: (e && e.message || String(e)), finishedAt: new Date().toISOString() });
   process.exit = origExit;
   origExit(1);
 });
