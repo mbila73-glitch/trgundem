@@ -104,6 +104,16 @@ function checkAuth(req: NextRequest): boolean {
   } catch { return false; }
 }
 
+// EVREN API key — /var/www/.evren-key dosyasından oku
+// EVREN: Türk LLM API hizmeti, OpenAI-uyumlu, 15M token/gün kota
+function getEvrenKey(): string | null {
+  try {
+    const fs = require('fs');
+    const k = fs.readFileSync('/var/www/.evren-key', 'utf8').trim();
+    return k || null;
+  } catch { return null; }
+}
+
 // 5 Gemini API key
 function getGeminiKeys(): string[] {
   const keys: string[] = [];
@@ -867,17 +877,49 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 5. TRANSLATE — Türkçe → İngilizce çeviri (Gemini API, gerçek zamanlı)
+  // 5. TRANSLATE — Türkçe → İngilizce çeviri
+  // Önce EVREN (öncelik), sonra Gemini fallback
   if (data.action === 'translate' && typeof data.text === 'string') {
     const text = data.text.trim();
     if (!text) return NextResponse.json({ ok: true, translated: '' });
 
-    const keys = getGeminiKeys();
-    if (keys.length === 0) {
-      return NextResponse.json({ error: 'Gemini API key yok' }, { status: 500 });
+    const prompt = `Translate the following Turkish text to English. Write ONLY the translation, nothing else.\n\nTurkish: ${text}`;
+
+    // EVREN provider (öncelik 1)
+    const evrenKey = getEvrenKey();
+    const evrenApiBase = process.env.EVREN_API_BASE || 'https://api.evren.ai/v1';
+    const evrenModel = process.env.EVREN_MODEL || 'evren-llm';
+    if (evrenKey) {
+      try {
+        const resp = await fetch(evrenApiBase.replace(/\/+$/, '') + '/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${evrenKey}`,
+          },
+          body: JSON.stringify({
+            model: evrenModel,
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 200,
+            temperature: 0.3,
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+        if (resp.ok) {
+          const result = await resp.json();
+          const translated = result.choices?.[0]?.message?.content;
+          if (translated && translated.trim()) {
+            return NextResponse.json({ ok: true, translated: translated.trim(), provider: 'evren' });
+          }
+        }
+      } catch { /* EVREN başarısız, Gemini'ye düş */ }
     }
 
-    const prompt = `Translate the following Turkish text to English. Write ONLY the translation, nothing else.\n\nTurkish: ${text}`;
+    // Gemini fallback
+    const keys = getGeminiKeys();
+    if (keys.length === 0) {
+      return NextResponse.json({ error: 'AI key yok (EVREN + Gemini boş)' }, { status: 500 });
+    }
 
     for (let attempt = 0; attempt < keys.length; attempt++) {
       const key = keys[attempt % keys.length];
@@ -899,11 +941,11 @@ export async function POST(req: NextRequest) {
         }
         const translated = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (translated) {
-          return NextResponse.json({ ok: true, translated: translated.trim() });
+          return NextResponse.json({ ok: true, translated: translated.trim(), provider: 'gemini' });
         }
       } catch { continue; }
     }
-    return NextResponse.json({ error: 'Çeviri başarısız' }, { status: 502 });
+    return NextResponse.json({ error: 'Çeviri başarısız (EVREN + Gemini)' }, { status: 502 });
   }
 
   return NextResponse.json({ error: 'Geçersiz action' }, { status: 400 });

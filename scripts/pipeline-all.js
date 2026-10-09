@@ -14,23 +14,115 @@ try {
   });
 } catch (e) {}
 
-// 5 Gemini API Key — sırayla dener
+// === AI PROVIDERS — EVREN (öncelik 1) + Gemini (fallback) ===
+// EVREN: OpenAI-uyumlu API, tek key, 15M token/gün kota
+// Gemini: 4 key (eski 5 key vardı, 429'lar nedeniyle bazıları ölü)
+//
+// Key sırası (öncelik):
+//   1. EVREN (.evren-key dosyası)
+//   2. Gemini key3 (.gemini-key3 dosyası)
+//   3. Gemini key4 (.gemini-key4 dosyası)
+//   4. Gemini key5 (.gemini-key5 dosyası)
+//   5. Gemini key6 (.gemini-key6 dosyası)
+
+var EVREN_KEY = '';
+try { EVREN_KEY = fs.readFileSync('/var/www/.evren-key', 'utf8').trim(); } catch (e) {}
+var EVREN_API_BASE = process.env.EVREN_API_BASE || 'https://api.evren.ai/v1';
+var EVREN_MODEL = process.env.EVREN_MODEL || 'evren-llm';
+
+// Gemini key'ler (fallback)
 var GEMINI_KEYS = [];
 try { var k1 = fs.readFileSync('/var/www/.gemini-key', 'utf8').trim(); if (k1) GEMINI_KEYS.push(k1); } catch (e) {}
 try { var k2 = fs.readFileSync('/var/www/.gemini-key2', 'utf8').trim(); if (k2) GEMINI_KEYS.push(k2); } catch (e) {}
 try { var k3 = fs.readFileSync('/var/www/.gemini-key3', 'utf8').trim(); if (k3) GEMINI_KEYS.push(k3); } catch (e) {}
 try { var k4 = fs.readFileSync('/var/www/.gemini-key4', 'utf8').trim(); if (k4) GEMINI_KEYS.push(k4); } catch (e) {}
 try { var k5 = fs.readFileSync('/var/www/.gemini-key5', 'utf8').trim(); if (k5) GEMINI_KEYS.push(k5); } catch (e) {}
+try { var k6 = fs.readFileSync('/var/www/.gemini-key6', 'utf8').trim(); if (k6) GEMINI_KEYS.push(k6); } catch (e) {}
 if (GEMINI_KEYS.length === 0) {
   var ek1 = process.env.GEMINI_API_KEY || ''; if (ek1) GEMINI_KEYS.push(ek1);
   var ek2 = process.env.GEMINI_API_KEY_2 || ''; if (ek2) GEMINI_KEYS.push(ek2);
   var ek3 = process.env.GEMINI_API_KEY_3 || ''; if (ek3) GEMINI_KEYS.push(ek3);
   var ek4 = process.env.GEMINI_API_KEY_4 || ''; if (ek4) GEMINI_KEYS.push(ek4);
   var ek5 = process.env.GEMINI_API_KEY_5 || ''; if (ek5) GEMINI_KEYS.push(ek5);
+  var ek6 = process.env.GEMINI_API_KEY_6 || ''; if (ek6) GEMINI_KEYS.push(ek6);
 }
 var GEMINI_MODEL = 'gemini-flash-lite-latest';
 var keyIndex = 0;
 var deadKeys = new Set(); // bu cycle'da ölü key'ler (403/429) — atlanır
+
+// AI provider listesi — sırayla denenir
+// type: 'evren' (OpenAI-uyumlu) veya 'gemini' (Gemini formatı)
+function getAiProviders() {
+  var providers = [];
+  // 1. EVREN (öncelik)
+  if (EVREN_KEY) providers.push({ type: 'evren', key: EVREN_KEY, label: 'EVREN(' + EVREN_MODEL + ')' });
+  // 2-5. Gemini key'ler (fallback)
+  GEMINI_KEYS.forEach(function(gk, i) {
+    providers.push({ type: 'gemini', key: gk, label: 'Gemini#' + (i+1) + '(' + GEMINI_MODEL + ')' });
+  });
+  return providers;
+}
+
+// EVREN API çağrısı — OpenAI-uyumlu /v1/chat/completions formatı
+// Body: { model, messages: [{role, content}], max_tokens, temperature }
+// Response: { choices: [{ message: { content: "..." } }] }
+async function callEvren(prompt, maxTokens) {
+  var url = EVREN_API_BASE.replace(/\/+$/, '') + '/chat/completions';
+  var resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + EVREN_KEY,
+    },
+    body: JSON.stringify({
+      model: EVREN_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: Math.min(maxTokens, 4000),
+      temperature: 0.7,
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!resp.ok) {
+    var errText = '';
+    try { errText = await resp.text(); } catch (e) {}
+    var err = new Error('EVREN HTTP ' + resp.status + ': ' + errText.slice(0, 200));
+    err.statusCode = resp.status;
+    throw err;
+  }
+  var result = await resp.json();
+  if (result.error) {
+    var e = new Error('EVREN API error: ' + (result.error.message || JSON.stringify(result.error)));
+    e.statusCode = result.error.code || 500;
+    throw e;
+  }
+  // OpenAI-uyumlu response: choices[0].message.content
+  var text = result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content;
+  if (!text) throw new Error('EVREN: response boş (choices[0].message.content yok)');
+  return text;
+}
+
+// Gemini API çağrısı — mevcut format
+async function callGemini(key, prompt, maxTokens) {
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + key;
+  var resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+  var result = await resp.json();
+  if (result.error) {
+    var e = new Error('Gemini error: ' + result.error.message);
+    e.statusCode = result.error.code;
+    throw e;
+  }
+  var text = result.candidates && result.candidates[0] && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts[0] && result.candidates[0].content.parts[0].text;
+  if (!text) throw new Error('Gemini: response boş');
+  return text;
+}
 
 var ROOT = path.resolve(__dirname, '..');
 var SF = path.join(ROOT, 'pipeline-status.json');
@@ -424,98 +516,120 @@ async function aiSummarize(title, contents, category) {
   var prevWordCount = 0;
   var prevAds = null;
 
-  for (var attempt = 1; attempt <= GEMINI_KEYS.length; attempt++) {
-    var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
-    keyIndex++;
+  // AI provider listesi — EVREN önce (öncelik 1), sonra Gemini'ler (fallback)
+  // Retry mantığı: hata → sonraki provider; plagiarizm/reklam/kısa → aynı provider ile retry
+  var providers = getAiProviders();
+  var providerIndex = 0;
+  // Bir provider'a max 3 kez retry yapılır (plagiarizm/reklam/kısa için)
+  // Sonra sıradaki provider'a geç
+  var maxRetriesPerProvider = 3;
+  var currentRetryCount = 0;
 
-    if (deadKeys.has(currentKey)) { continue; }
-
-    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + currentKey;
-    var maxTokens = 1500; // 4000 → 1500: özetler 200-300 kelime, 1500 token yeterli. 2.5x hız artışı.
-    try {
-      var resp = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: buildPrompt(minWords, prevAttemptText, prevPlagiarism, prevWordCount, prevAds) }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } })
-      });
-      var result = await resp.json();
-      if (result.error && result.error.code === 403) {
-        deadKeys.add(currentKey);
-        log('  AI 403 — key ölü (bu cycle atlanacak)');
-        continue;
-      }
-      if (result.error && result.error.code === 429) {
-        deadKeys.add(currentKey);
-        log('  AI 429 kota dolu — key ölü (bu cycle atlanacak)');
-        continue;
-      }
-      if (result.error && result.error.code === 503) {
-        log('  AI 503 — 5 sn bekle');
-        await new Promise(function(r) { setTimeout(r, 5000); });
-        attempt--; keyIndex--;
-        continue;
-      }
-      if (result.error) {
-        log('  AI error ' + result.error.code + ': ' + (result.error.message || '').slice(0, 80));
-        deadKeys.add(currentKey);
-        continue;
-      }
-      deadKeys.delete(currentKey);
-      if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-        var text = result.candidates[0].content.parts[0].text;
-        if (text) {
-          text = text.trim();
-          var wc = countWords(text);
-
-          // Plagiarizm kontrolü — kaynak metinle 6+ kelimelik ardışık dizilim VEYA cümle bazında %50+ / 2/3 örtüşme ara
-          var plagiarism = findPlagiarism(text, combinedContent);
-
-          if (plagiarism.length > 0) {
-            log('  AI özet: ' + wc + ' kelime — ' + plagiarism.length + ' kopyalama tespit edildi (örn: "' + plagiarism[0].slice(0, 50) + '")');
-            // bestText olarak kabul et ama retry için geri bildirim ver
-            if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
-            prevAttemptText = text;
-            prevPlagiarism = plagiarism;
-            prevWordCount = wc;
-            prevAds = null;  // reklam temizle, sadece plagiarizm retry
-            // Yeniden deneme yapılacak (return etme)
-            continue;
-          }
-
-          // Reklam tespiti — AI cevabında reklam/CTA ifadeleri var mı?
-          var ads = findAds(text);
-          if (ads.length > 0) {
-            log('  AI özet: ' + wc + ' kelime — ' + ads.length + ' reklam tespit edildi (örn: "' + ads[0] + '")');
-            if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
-            prevAttemptText = text;
-            prevPlagiarism = null;  // plagiarizm temizle, sadece reklam retry
-            prevWordCount = wc;
-            prevAds = ads;
-            continue;
-          }
-
-          // Yetersiz kelime kontrolü — min'den azsa retry yap (AI'a "daha uzun yaz" geri bildirimi)
-          if (wc < minWords) {
-            log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ') — YETERSİZ, tekrar denenecek');
-            if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
-            prevAttemptText = text;
-            prevPlagiarism = null;  // plagiarizm temizle, sadece kelime retry
-            prevWordCount = wc;
-            continue;
-          }
-
-          log('  AI özet: ' + wc + ' kelime (min: ' + minWords + ') — kopyalama YOK, kelime YETERLİ');
-          if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
-          if (wc >= minWords) return text;
-          continue;
-        }
-      }
-      continue;
-    } catch (e) {
-      log('  AI hata: ' + e.message);
-      deadKeys.add(currentKey);
+  while (providerIndex < providers.length) {
+    var provider = providers[providerIndex];
+    // deadKeys kontrolü — bu provider'ı atla
+    if (deadKeys.has(provider.key)) {
+      providerIndex++;
+      currentRetryCount = 0;
       continue;
     }
+
+    var maxTokens = 1500;
+    var promptText = buildPrompt(minWords, prevAttemptText, prevPlagiarism, prevWordCount, prevAds);
+    var text = null;
+    try {
+      if (provider.type === 'evren') {
+        text = await callEvren(promptText, maxTokens);
+      } else {
+        text = await callGemini(provider.key, promptText, maxTokens);
+      }
+    } catch (e) {
+      var statusCode = e.statusCode || 0;
+      if (statusCode === 403 || statusCode === 429) {
+        deadKeys.add(provider.key);
+        log('  AI ' + statusCode + ' [' + provider.label + '] — ölü, sonraki provider');
+        providerIndex++;
+        currentRetryCount = 0;
+        continue;
+      }
+      if (statusCode === 503) {
+        log('  AI 503 [' + provider.label + '] — 5 sn bekle');
+        await new Promise(function(r) { setTimeout(r, 5000); });
+        continue; // aynı provider ile tekrar dene
+      }
+      log('  AI hata [' + provider.label + ']: ' + e.message.slice(0, 100));
+      deadKeys.add(provider.key);
+      providerIndex++;
+      currentRetryCount = 0;
+      continue;
+    }
+
+    if (!text) {
+      log('  AI [' + provider.label + '] boş cevap — sonraki provider');
+      providerIndex++;
+      currentRetryCount = 0;
+      continue;
+    }
+    text = text.trim();
+    deadKeys.delete(provider.key); // bu provider çalışıyor, dead list'ten çıkar
+    var wc = countWords(text);
+
+    // Plagiarizm kontrolü
+    var plagiarism = findPlagiarism(text, combinedContent);
+    if (plagiarism.length > 0) {
+      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime — ' + plagiarism.length + ' kopyalama (retry)');
+      if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
+      prevAttemptText = text;
+      prevPlagiarism = plagiarism;
+      prevWordCount = wc;
+      prevAds = null;
+      currentRetryCount++;
+      if (currentRetryCount >= maxRetriesPerProvider) {
+        log('  [' + provider.label + '] max retry aşıldı, sonraki provider');
+        providerIndex++;
+        currentRetryCount = 0;
+      }
+      continue;
+    }
+
+    // Reklam kontrolü
+    var ads = findAds(text);
+    if (ads.length > 0) {
+      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime — ' + ads.length + ' reklam (retry)');
+      if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
+      prevAttemptText = text;
+      prevPlagiarism = null;
+      prevWordCount = wc;
+      prevAds = ads;
+      currentRetryCount++;
+      if (currentRetryCount >= maxRetriesPerProvider) {
+        log('  [' + provider.label + '] max retry aşıldı, sonraki provider');
+        providerIndex++;
+        currentRetryCount = 0;
+      }
+      continue;
+    }
+
+    // Yetersiz kelime kontrolü
+    if (wc < minWords) {
+      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime (min: ' + minWords + ') — YETERSİZ (retry)');
+      if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
+      prevAttemptText = text;
+      prevPlagiarism = null;
+      prevWordCount = wc;
+      currentRetryCount++;
+      if (currentRetryCount >= maxRetriesPerProvider) {
+        log('  [' + provider.label + '] max retry aşıldı, sonraki provider');
+        providerIndex++;
+        currentRetryCount = 0;
+      }
+      continue;
+    }
+
+    log('  AI özet [' + provider.label + ']: ' + wc + ' kelime — kopyalama YOK, kelime YETERLİ');
+    if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
+    if (wc >= minWords) return text;
+    continue;
   }
   return bestText;
 }
