@@ -528,6 +528,7 @@ export function PublicMain() {
   }, []);
 
   // Mount'ta: SADECE localStorage'dan yükle (API çağrısı YOK)
+  // Ama kaçırılan sync varsa catch-up yap
   // Sonra :19/:39/:59'da API'den çek
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -549,20 +550,63 @@ export function PublicMain() {
       setLoading(false);
     }
 
-    // Zamanlanmış senkron — :19, :39, :59'da API'den HABERLERI yenile
-    const scheduleNextSync = () => {
-      if (!mounted) return;
-      const ms = msUntilNextSync();
-      const nextTime = new Date(Date.now() + ms);
-      console.log('[ana sayfa] Sonraki senkron:', nextTime.toLocaleTimeString('tr-TR'));
-      timeoutId = setTimeout(async () => {
-        if (!mounted) return;
-        console.log('[ana sayfa] Senkron başlıyor...');
-        await syncArticles();
-        scheduleNextSync();
-      }, ms);
+    // KAÇIRILAN SYNC CATCH-UP
+    // Eğer sayfa açıldığında bir sync hedefi (:19/:39/:59) geçmişse
+    // ve son sync'tan bu yana yeni bir hedef geçmişse → hemen sync yap
+    const checkMissedSync = () => {
+      const now = new Date();
+      const m = now.getMinutes();
+      const targets = [19, 39, 59];
+      const lastSyncStr = localStorage.getItem('trgundem_main_synced_at');
+      const lastSync = lastSyncStr ? new Date(lastSyncStr) : null;
+
+      // Bu saatte geçen son hedefi bul
+      const lastTarget = targets.filter(t => t <= m).pop();
+      if (lastTarget !== undefined) {
+        const targetTime = new Date(now);
+        targetTime.setMinutes(lastTarget, 0, 0);
+        // Son sync yoksa veya son sync'tan sonra bu hedef geçtiyse → sync şimdi
+        if (!lastSync || lastSync < targetTime) {
+          console.log('[ana sayfa] Kaçırılan sync yakalandı — hemen senkron yapılıyor');
+          syncArticles();
+          return true;
+        }
+      }
+      return false;
     };
-    scheduleNextSync();
+
+    const missedSync = checkMissedSync();
+
+    if (!missedSync) {
+      // Zamanlanmış senkron — :19, :39, :59'da API'den HABERLERI yenile
+      const scheduleNextSync = () => {
+        if (!mounted) return;
+        const ms = msUntilNextSync();
+        const nextTime = new Date(Date.now() + ms);
+        console.log('[ana sayfa] Sonraki senkron:', nextTime.toLocaleTimeString('tr-TR'));
+        timeoutId = setTimeout(async () => {
+          if (!mounted) return;
+          console.log('[ana sayfa] Senkron başlıyor...');
+          await syncArticles();
+          scheduleNextSync();
+        }, ms);
+      };
+      scheduleNextSync();
+    } else {
+      // Catch-up sync yapıldı, sonraki senkronu planla
+      const scheduleNextSync = () => {
+        if (!mounted) return;
+        const ms = msUntilNextSync();
+        const nextTime = new Date(Date.now() + ms);
+        console.log('[ana sayfa] Sonraki senkron:', nextTime.toLocaleTimeString('tr-TR'));
+        timeoutId = setTimeout(async () => {
+          if (!mounted) return;
+          await syncArticles();
+          scheduleNextSync();
+        }, ms);
+      };
+      scheduleNextSync();
+    }
 
     return () => {
       mounted = false;
@@ -606,7 +650,7 @@ export function PublicMain() {
   }, []);
 
   // Arama yap
-  const handleSearch = useCallback(async (q: string) => {
+  const handleSearch = useCallback((q: string) => {
     const query = q.trim();
     if (!query) {
       setSearchResults(null);
@@ -614,17 +658,19 @@ export function PublicMain() {
       return;
     }
     setSearching(true);
-    try {
-      const r = await fetch(`/api/published-articles?search=${encodeURIComponent(query)}&status=published`, { cache: 'no-store' });
-      if (!r.ok) throw new Error('Arama yapılamadı');
-      const json = (await r.json()) as { articles?: PublishedArticle[] };
-      setSearchResults(json.articles ?? []);
-    } catch {
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
-    }
-  }, []);
+    // Ana sayfa araması — API'YE GİTMEZ
+    // Sadece LOCAL senkron verisinde (localStorage'dan yüklenen articles state) ara
+    // Bu sayede /veri'deki henüz senkronlanmamış haberler aramada ÇIKMAZ
+    const normalizedQuery = normalizeTr(query);
+    const results = articles.filter(a => {
+      const title = normalizeTr(a.aiTitle || '');
+      const summary = normalizeTr(a.aiSummary || '');
+      return title.includes(normalizedQuery) || summary.includes(normalizedQuery);
+    });
+    setSearchResults(results);
+    setSearching(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [articles]);
 
   const onSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
