@@ -293,11 +293,15 @@ export function NewsScreen() {
   }, []);
 
   // Yayınla — DB'ye PATCH + isEdited=true, yerinde kal (refetch YOK)
+  // Çoklu kategori: ilk kategori PATCH (mevcut makale), ek kategoriler için yeni makale oluştur
   const handlePublishEdit = useCallback(async (id: string) => {
     if (!adminToken) { toast.error('Yönetici girişi gerekli'); return; }
     if (!editTitle.trim() || !editSummary.trim()) { toast.error('Başlık ve özet zorunlu'); return; }
+    if (editCategory.length === 0) { toast.error('En az bir kategori seçin'); return; }
     setSavingEdit(true);
     try {
+      // 1. Mevcut makaleyi PATCH et — ilk seçili kategori ile
+      const firstCat = editCategory[0];
       const r = await fetch(`/api/admin/published/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
@@ -305,7 +309,7 @@ export function NewsScreen() {
           aiTitle: editTitle.trim(),
           aiSummary: editSummary.trim(),
           imageUrl: editImage || null,
-          category: editCategory,
+          category: firstCat,
           isEdited: true,
         }),
       });
@@ -313,17 +317,35 @@ export function NewsScreen() {
         if (r.status === 401) { toast.error('Oturum süresi doldu — yeniden giriş yapın'); localStorage.removeItem('admin_token'); setAdminToken(null); return; }
         throw new Error(`HTTP ${r.status}`);
       }
+      // 2. Ek kategoriler için yeni makale oluştur (POST /api/admin/custom-article action=save)
+      for (let i = 1; i < editCategory.length; i++) {
+        try {
+          await fetch('/api/admin/custom-article', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
+            body: JSON.stringify({
+              action: 'save',
+              title: editTitle.trim(),
+              summary: editSummary.trim(),
+              imageUrl: editImage || null,
+              category: editCategory[i],
+            }),
+          });
+        } catch {}
+      }
       // LOCAL STATE GÜNCELLE — refetch YOK, makale yerinde kalır
       setArticles(prev => prev.map(a => a.id === id ? {
         ...a,
         aiTitle: editTitle.trim(),
         aiSummary: editSummary.trim(),
         imageUrl: editImage || null,
-        category: editCategory,
+        category: firstCat,
         isEdited: true,
         editedAt: new Date().toISOString(),
       } : a));
-      toast.success('Yayınlandı — yeşil çerçeve');
+      toast.success(editCategory.length > 1
+        ? `Yayınlandı — ${editCategory.length} kategoride (yeşil çerçeve)`
+        : 'Yayınlandı — yeşil çerçeve');
       setEditingId(null);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Yayınlama hatası');
@@ -331,6 +353,23 @@ export function NewsScreen() {
       setSavingEdit(false);
     }
   }, [adminToken, editTitle, editSummary, editImage, editCategory]);
+
+  // Kalıcı sil — DELETE ?hard=true, makale DB'den tamamen silinir
+  const handleHardDeleteInline = useCallback(async (id: string) => {
+    if (!adminToken) return;
+    if (!confirm('Bu haberi KALICI OLARAK SİLMEK istediğinize emin misiniz?\nBu işlem geri alınamaz!')) return;
+    try {
+      const r = await fetch(`/api/admin/published/${id}?hard=true`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      setArticles(prev => prev.filter(a => a.id !== id));
+      toast.success('Haber kalıcı olarak silindi');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Silme hatası');
+    }
+  }, [adminToken]);
 
   // Arşive al — DELETE, makale listeden kaldır
   const handleArchiveInline = useCallback(async (id: string) => {
@@ -506,27 +545,38 @@ export function NewsScreen() {
         {editImage && <img src={proxyImageUrl(editImage) || undefined} alt="" className="max-h-32 w-full object-cover rounded" />}
       </div>
       <div className="space-y-1.5">
-        <Label className="text-xs">Kategori</Label>
-        <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-xs">
-          <option value="Siyaset">Siyaset</option>
-          <option value="Kamu / Resmi">Kamu / Resmi</option>
-          <option value="Ekonomi / Finans">Ekonomi / Finans</option>
-          <option value="Bilim / Teknoloji">Bilim / Teknoloji</option>
-          <option value="Kültür / Sanat">Kültür / Sanat</option>
-          <option value="Spor / Magazin">Spor / Magazin</option>
-          <option value="Özel">Özel</option>
-        </select>
+        <Label className="text-xs">Kategoriler (çoklu seçim)</Label>
+        <div className="grid grid-cols-2 gap-1">
+          {['Siyaset', 'Kamu / Resmi', 'Ekonomi / Finans', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Özel'].map(cat => (
+            <label key={cat} className="flex items-center gap-1.5 text-[10px] cursor-pointer rounded border border-border px-2 py-1 hover:bg-muted/30">
+              <input
+                type="checkbox"
+                checked={editCategory.includes(cat)}
+                onChange={(e) => {
+                  if (e.target.checked) setEditCategory(prev => [...prev, cat]);
+                  else setEditCategory(prev => prev.filter(c => c !== cat));
+                }}
+                className="h-3 w-3"
+              />
+              {cat}
+            </label>
+          ))}
+        </div>
+        {editCategory.length > 1 && <p className="text-[10px] text-blue-600 dark:text-blue-400">{editCategory.length} kategori seçili — her kategori için ayrı makale oluşturulur</p>}
       </div>
       <div className="flex gap-2 pt-2 border-t">
-        <Button type="button" size="sm" onClick={() => handlePublishEdit(a.id)} disabled={savingEdit || !editTitle.trim() || !editSummary.trim()} className="flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+        <Button type="button" size="sm" onClick={() => handlePublishEdit(a.id)} disabled={savingEdit || !editTitle.trim() || !editSummary.trim() || editCategory.length === 0} className="flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
           {savingEdit ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
           Yayınla
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={handleCancelEdit} className="gap-1.5">
           <X className="h-3.5 w-3.5" /> İptal
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => handleArchiveInline(a.id)} className="gap-1.5 text-amber-600 hover:text-amber-700 border-amber-300">
+        <Button type="button" size="sm" variant="outline" onClick={() => handleArchiveInline(a.id)} className="gap-1.5 text-amber-600 hover:text-amber-700 border-amber-300" title="Arşive Taşı">
           <Archive className="h-3.5 w-3.5" />
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => handleHardDeleteInline(a.id)} className="gap-1.5 text-red-600 hover:text-red-700 border-red-300" title="Kalıcı Sil">
+          <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
     </Card>
