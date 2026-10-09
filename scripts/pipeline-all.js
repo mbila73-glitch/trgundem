@@ -878,7 +878,7 @@ async function main() {
 
   // Gruplama + AI özet
   ws({ stage: 'publish' });
-  log('Gruplama + AI özet (Siyaset/Ekonomi 3+ kaynak, diğerleri 2+)');
+  log('Gruplama + AI özet (tüm kategoriler min 2 kaynak, EVREN öncelikli)');
 
   if (globalThis.prisma) {
     try {
