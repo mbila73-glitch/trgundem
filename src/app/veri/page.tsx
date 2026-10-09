@@ -188,7 +188,7 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-2 sm:px-4 md:px-6">
           {/* Mobil: tek satır, başlık tam ortada, + / tema sağda */}
           {/* Masaüstü: 3 bölüm — sol saat, orta logo+başlık, sağ düğmeler */}
-          <div className="relative flex h-14 sm:h-16 items-center justify-center sm:justify-between py-1 gap-1 sm:gap-2">
+          <div className="relative flex h-14 sm:h-16 items-center justify-center py-1 gap-1 sm:gap-2">
             {/* Sol: Saat + Tarih — mobilde TAMAMEN gizli (div sararak) */}
             <div className="hidden sm:block">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>

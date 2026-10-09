@@ -99,7 +99,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-red-800 bg-red-600 backdrop-blur">
         <div className="mx-auto max-w-6xl px-2 sm:px-4 md:px-6">
-          <div className="relative flex h-14 sm:h-16 items-center justify-center sm:justify-between py-1 gap-1 sm:gap-2">
+          <div className="relative flex h-14 sm:h-16 items-center justify-center py-1 gap-1 sm:gap-2">
             {/* Sol: Saat + Tarih — mobilde gizli */}
             <div className="hidden sm:block">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
