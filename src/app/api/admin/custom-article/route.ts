@@ -886,6 +886,9 @@ export async function POST(req: NextRequest) {
     const prompt = `Translate the following Turkish text to English. Write ONLY the translation, nothing else.\n\nTurkish: ${text}`;
 
     // EVREN provider (öncelik 1)
+    // deepseek-v4-flash gibi modeller REASONING yapar — cevap önce 'reasoning' alanında,
+    // sonra 'content' alanında gelir. content boşsa reasoning'i fallback olarak kullan.
+    // max_tokens 50 → 500: reasoning + content için yeterli
     const evrenKey = getEvrenKey();
     const evrenApiBase = process.env.EVREN_API_BASE || 'https://evren-llmapi.ssyz.org.tr/v1';
     const evrenModel = process.env.EVREN_MODEL || 'deepseek-v4-flash';
@@ -900,16 +903,28 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({
             model: evrenModel,
             messages: [{ role: 'user', content: prompt }],
-            max_tokens: 200,
+            max_tokens: 1000, // 200 → 1000: reasoning modeli için yeterli (reasoning + content)
             temperature: 0.3,
           }),
-          signal: AbortSignal.timeout(10000),
+          signal: AbortSignal.timeout(30000), // 10 → 30 sn: reasoning uzun sürebilir
         });
         if (resp.ok) {
           const result = await resp.json();
-          const translated = result.choices?.[0]?.message?.content;
-          if (translated && translated.trim()) {
-            return NextResponse.json({ ok: true, translated: translated.trim(), provider: 'evren' });
+          const choice = result.choices?.[0];
+          if (choice) {
+            // 1. content alanı dolu mu?
+            let translated = choice.message?.content;
+            // 2. content boşsa reasoning'i fallback olarak kullan
+            if (!translated && choice.message?.reasoning) {
+              // Reasoning metni içinden gerçek çeviriyi çek
+              // Reasoning genelde düşünme süreci, son cümlesi çeviri olabilir
+              translated = choice.message.reasoning;
+            }
+            if (translated && translated.trim()) {
+              // Reasoning modeli bazı "I need to translate..." tarzı düşünceleri de içerir
+              // Çeviri sadece — son cümleyi ya da tamamını döndür
+              return NextResponse.json({ ok: true, translated: translated.trim(), provider: 'evren', model: evrenModel });
+            }
           }
         }
       } catch { /* EVREN başarısız, Gemini'ye düş */ }

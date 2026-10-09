@@ -64,8 +64,9 @@ function getAiProviders() {
 }
 
 // EVREN API çağrısı — OpenAI-uyumlu /v1/chat/completions formatı
-// Body: { model, messages: [{role, content}], max_tokens, temperature }
-// Response: { choices: [{ message: { content: "..." } }] }
+// deepseek-v4-flash gibi modeller REASONING yapar — cevap önce 'reasoning' alanında gelir,
+// sonra 'content' alanında. content boşsa reasoning'i fallback olarak kullan.
+// max_tokens yüksek tut: reasoning + content için yeterli
 async function callEvren(prompt, maxTokens) {
   var url = EVREN_API_BASE.replace(/\/+$/, '') + '/chat/completions';
   var resp = await fetch(url, {
@@ -77,10 +78,10 @@ async function callEvren(prompt, maxTokens) {
     body: JSON.stringify({
       model: EVREN_MODEL,
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: Math.min(maxTokens, 4000),
+      max_tokens: Math.min(Math.max(maxTokens, 1500), 4000), // en az 1500 (reasoning için), max 4000
       temperature: 0.7,
     }),
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(60000), // 30 → 60 sn: reasoning modeli yavaş olabilir
   });
   if (!resp.ok) {
     var errText = '';
@@ -96,8 +97,18 @@ async function callEvren(prompt, maxTokens) {
     throw e;
   }
   // OpenAI-uyumlu response: choices[0].message.content
-  var text = result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content;
-  if (!text) throw new Error('EVREN: response boş (choices[0].message.content yok)');
+  // Reasoning modeli: content boşsa, reasoning alanına bak
+  var choice = result.choices && result.choices[0];
+  if (!choice) throw new Error('EVREN: choices boş');
+  var msg = choice.message || {};
+  var text = msg.content;
+  if (!text && msg.reasoning) {
+    // Reasoning modeli: düşünme aşamasını da döndür (AI özet için yeterli)
+    text = msg.reasoning;
+  }
+  if (!text) throw new Error('EVREN: response boş (content ve reasoning yok)');
+  // Eğer finish_reason "length" ise, cevap yarım kalmış olabilir
+  // ama yine de ne varsa döndür — pipeline retry mantığı yetersiz kelime durumunda tekrar deneyecek
   return text;
 }
 
