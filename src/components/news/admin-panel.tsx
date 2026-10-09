@@ -115,6 +115,8 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   // Akış Kontrol sekmesi — pipeline çalışma geçmişi (son 24 saat)
   const [pipelineHistory, setPipelineHistory] = useState<{ runs: any[]; summary: any; message?: string } | null>(null);
   const [loadingPipelineHistory, setLoadingPipelineHistory] = useState(false);
+  // Tüm sekmeleri yenileme durumu (en üstteki mavi Yenile düğmesi)
+  const [refreshingAll, setRefreshingAll] = useState(false);
 
   // Restart tab state
   type PipelineStatus = {
@@ -321,6 +323,32 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     } catch { /* sessiz */ }
     finally { setLoadingPipelineHistory(false); }
   }, [token]);
+
+  // Tüm sekmeleri yenile — sekmelerden bağımsız, en üstteki mavi "Yenile" düğmesi
+  // Mesajlar + Yayında + Arşiv + Tekrar + Haber Ekle (trusted sites) + Akış Kontrol'ü paralel yeniler
+  // loadTrustedSites daha aşağıda tanımlı (TDZ) — deps'ta değil, çağrı anında lookup olur
+  const handleRefreshAll = useCallback(async () => {
+    if (!token) return;
+    setRefreshingAll(true);
+    toast.info('Tüm sekmeler yenileniyor...');
+    try {
+      // Hepsini paralel başlat — Promise.allSettled ile hata olsa bile devam et
+      await Promise.allSettled([
+        loadMessages(),
+        loadPublished(),
+        loadArchived(),
+        loadPending(),
+        loadTrustedSites(),
+        loadPipelineHistory(),
+      ]);
+      toast.success('Yenileme tamamlandı');
+    } catch (e) {
+      toast.error('Yenileme hatası: ' + (e instanceof Error ? e.message : 'bilinmeyen'));
+    } finally {
+      setRefreshingAll(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, loadMessages, loadPublished, loadArchived, loadPending, loadPipelineHistory]);
 
   useEffect(() => {
     if (open && token) {
@@ -908,11 +936,17 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <span className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base"><Lock className="h-4 w-4 sm:h-5 sm:w-5" /> <span className="hidden sm:inline">Yönetici Paneli</span><span className="sm:hidden">Panel</span></span>
               {token && (
                 <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
-                  <Button variant="outline" size="sm" onClick={() => setResetOpen(true)} className="gap-1 text-[10px] sm:text-xs text-destructive hover:text-destructive border-destructive/30 px-2 sm:px-3">
-                    <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" /><span className="hidden sm:inline">Siteyi</span><span className="sm:hidden">Sıfırla</span>
+                  {/* Siteyi Sıfırla — kırmızı, büyütülmüş */}
+                  <Button variant="outline" size="sm" onClick={() => setResetOpen(true)} className="gap-1.5 text-xs sm:text-sm font-bold text-white bg-red-600 hover:bg-red-700 border-red-700 px-3 sm:px-4 h-9 sm:h-10">
+                    <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" /><span>Siteyi Sıfırla</span>
                   </Button>
-                  <Button variant="default" size="sm" onClick={() => setRestartConfirmOpen(true)} disabled={restarting} className="gap-1 text-[10px] sm:text-xs bg-news hover:bg-news/90 text-news-foreground border-blue-500 px-2 sm:px-3">
-                    {restarting ? <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" /> : <RefreshCw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}<span className="hidden sm:inline">Akışı</span><span className="sm:hidden">Akış</span>
+                  {/* Yenile — mavi, tüm sekmeleri yeniler, sekmelerden bağımsız */}
+                  <Button variant="default" size="sm" onClick={handleRefreshAll} disabled={refreshingAll} className="gap-1.5 text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white border-blue-700 px-3 sm:px-4 h-9 sm:h-10">
+                    {refreshingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}<span>Yenile</span>
+                  </Button>
+                  {/* Akışı Başlat — yeşil, büyütülmüş */}
+                  <Button variant="default" size="sm" onClick={() => setRestartConfirmOpen(true)} disabled={restarting} className="gap-1.5 text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700 px-3 sm:px-4 h-9 sm:h-10">
+                    {restarting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}<span>Akışı Başlat</span>
                   </Button>
                   <Button
                     variant="ghost"
