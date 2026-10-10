@@ -934,14 +934,13 @@ async function main() {
 
   if (globalThis.prisma) {
     try {
-      // Son N saat makaleler — .env'den WINDOW_HOURS ile ayarlanabilir (varsayılan: 6 saat)
-      // 24 saat çok yavaştı (5279 makale, 16 dk cycle). 6 saat önerilen optimum:
-      //   - Cycle süresi 16 dk → 9 dk (1.8x hızlanma)
-      //   - Duplicate tespit hâlâ çalışır (6 saatte 3+ kaynak gelebilir)
-      //   - Geç gelen haberler kaçmaz (RSS kaynakları 1-2 saat gecikmeli bile olsa)
-      // Değiştirmek için .env'e 'WINDOW_HOURS=4' (daha agresif) ya da 'WINDOW_HOURS=12' (daha güvenli) ekle
-      var WINDOW_HOURS = parseInt(process.env.WINDOW_HOURS || '6', 10);
-      if (isNaN(WINDOW_HOURS) || WINDOW_HOURS < 1) WINDOW_HOURS = 6;
+      // Son N saat makaleler — .env'den WINDOW_HOURS ile ayarlanabilir (varsayılan: 24 saat)
+      // User: "önceden rss ler son 24 saatte bunu 6 saate düşürdük ama 6 saat az bir süre,
+      //        bunu tekrar 24 saat yapalım."
+      // 6 saat çok kısıtlı — eski haberler kaçıyor, kullanıcı 24 saat istedi.
+      // Değiştirmek için .env'e 'WINDOW_HOURS=12' (daha kısıtlı) ya da 'WINDOW_HOURS=48' (daha geniş) ekle
+      var WINDOW_HOURS = parseInt(process.env.WINDOW_HOURS || '24', 10);
+      if (isNaN(WINDOW_HOURS) || WINDOW_HOURS < 1) WINDOW_HOURS = 24;
       var since = new Date(Date.now() - WINDOW_HOURS * 60 * 60 * 1000);
       var articles = await globalThis.prisma.article.findMany({
         where: { publishedAt: { gte: since } },
@@ -1474,6 +1473,16 @@ async function main() {
   //        aidüzenle çalışsın. bu sıralamayı bozma."
 
   // 1. CLEANUP — duplicate temizleme (eski 5,25,45 cron yerine artık pipeline sonrası)
+  // DEBUG: statsForHistory değerlerini logla — Clear/AI Düzenle neden atlandı anlamak için
+  log('  [DEBUG] statsForHistory: rssRead=' + statsForHistory.rssRead +
+      ', duplicatesFound=' + statsForHistory.duplicatesFound +
+      ', summariesDone=' + statsForHistory.summariesDone +
+      ', publishedCount=' + statsForHistory.publishedCount);
+  log('  [DEBUG] Clear koşulu: publishedCount > 0 || summariesDone > 0 = ' +
+      ((statsForHistory.publishedCount > 0 || statsForHistory.summariesDone > 0) ? 'TRUE (çalışmalı)' : 'FALSE (atlandı)'));
+  log('  [DEBUG] AI Düzenle koşulu: publishedCount > 0 && prisma var = ' +
+      ((statsForHistory.publishedCount > 0 && globalThis.prisma) ? 'TRUE (çalışmalı)' : 'FALSE (atlandı)'));
+  log('  [DEBUG] globalThis.prisma: ' + (globalThis.prisma ? 'VAR' : 'YOK'));
   if (statsForHistory.publishedCount > 0 || statsForHistory.summariesDone > 0) {
     phaseTimes.cleanupStartedAt = new Date().toISOString();
     ws({ cleanupStartedAt: phaseTimes.cleanupStartedAt });
