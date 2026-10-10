@@ -1500,6 +1500,17 @@ async function main() {
   // AI özet'ten FARKLI: plagiarizm/wordcount/ad filter YOK
   // Sadece mevcut metni akıcı, doğal yap — min 100 max 300 kelime (user: düzenleme ai alt limit 100)
   if (statsForHistory.publishedCount > 0 && globalThis.prisma) {
+    // CRITICAL: deadKeys'i SIFIRLA — AI Özet tüm key'leri tüketmiş olabilir (rate limit)
+    // User: "ai düzenlemeler neden 0 saniye? tüm sağlayıcılar denendi ama hepsi başarısız"
+    // Sebep: AI Özet 6 dk boyunca API çağrıları yapar, sonunda tüm key'ler 429 (rate limit) olur.
+    // AI Düzenle başlayınca tüm key'ler deadKeys'te olduğu için anında 0/15 başarısız olur.
+    // Çözüm: deadKeys'i temizle + 60 sn bekle (rate limit penceresi resetlensin)
+    log('  [AI Düzenle] deadKeys sıfırlanıyor (önceki: ' + deadKeys.size + ' ölü key)');
+    deadKeys = new Set();
+    log('  [AI Düzenle] 60 sn bekleniyor — rate limit penceresi resetlensin...');
+    await new Promise(function(r) { setTimeout(r, 60000); });
+    log('  [AI Düzenle] Bekleme bitti, başlıyor');
+
     phaseTimes.duzenleStartedAt = new Date().toISOString();
     ws({ duzenleStartedAt: phaseTimes.duzenleStartedAt });
     log('>>> SIRALI ADIM 2: AI Düzenle (yeni makaleler) — başladı ' + phaseTimes.duzenleStartedAt + ' >>>');
