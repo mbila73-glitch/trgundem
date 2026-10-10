@@ -1451,7 +1451,7 @@ async function main() {
 
   // 2. AI DÜZENLE — tüm yeni (isEdited=false) makaleler için
   // AI özet'ten FARKLI: plagiarizm/wordcount/ad filter YOK
-  // Sadece mevcut metni akıcı, doğal yap — min 150 max 300 kelime
+  // Sadece mevcut metni akıcı, doğal yap — min 100 max 300 kelime (user: düzenleme ai alt limit 100)
   if (statsForHistory.publishedCount > 0 && globalThis.prisma) {
     log('>>> SIRALI ADIM 2: AI Düzenle (yeni makaleler) >>>');
     try {
@@ -1475,14 +1475,14 @@ async function main() {
           '- Metni akıcı ve okunabilir bir haber diline çevir\n' +
           '- Anlamı koru, yeni bilgi ekleme\n' +
           '- Başlığı kısa ve etkileyici yap\n' +
-          '- ÖZET MİNIMUM 150, MAKSİMUM 300 KELİME OLMALI\n' +
+          '- ÖZET MİNIMUM 100, MAKSİMUM 300 KELİME OLMALI\n' +
           '- Kopyalama kontrolü, reklam filtresi YOK — sadece metni düzelt\n\n' +
           'BAŞLIK: ' + (ea.aiTitle || '') + '\n\n' +
           'ÖZET: ' + (ea.aiSummary || '') + '\n\n' +
           'ÇIKTI FORMATI (kesinlikle bu formatta):\n' +
           'BAŞLIK: [yeniden yazılmış başlık]\n' +
           '---\n' +
-          'ÖZET: [yeniden yazılmış özet — 150-300 kelime]';
+          'ÖZET: [yeniden yazılmış özet — 100-300 kelime]';
 
         try {
           var editedText = null;
