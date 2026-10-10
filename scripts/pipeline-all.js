@@ -870,23 +870,64 @@ var exitListeners = [];
 var origExit = process.exit;
 process.exit = function(code) { exitListeners.forEach(function(fn) { try { fn(code); } catch (e) {} }); exitListeners = []; };
 
+var { spawn } = require('child_process');
+
 function runScript(scriptPath, name) {
   log('> ' + name);
   return new Promise(function(resolve) {
     var done = false;
     function finish(r) { if (done) return; done = true; log('✓ ' + name + ' (' + r + ')'); resolve(); }
-    exitListeners.push(finish);
+
+    // child_process.spawn ile çalıştır — require() yerine
+    // Sebep: require() ile module.exports Promise olsa bile bazen .then() fonksiyon olarak
+    // algılanmıyor, 60 sn timeout'a düşüyordu. spawn ile script ayrı process olarak çalışır,
+    // 'exit' event'i ile gerçek bitiş anı tespit edilir.
+    var child;
     try {
-      delete require.cache[require.resolve(scriptPath)];
-      var result = require(scriptPath);
-      if (result && typeof result.then === 'function') {
-        result.then(function() { finish('ok'); }).catch(function(e) { log('✗ ' + name + ': ' + e.message); finish('err'); });
+      child = spawn('node', [scriptPath], {
+        cwd: process.cwd(),
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: process.env
+      });
+    } catch (e) {
+      log('✗ ' + name + ': spawn hatası: ' + e.message);
+      finish('exc');
+      return;
+    }
+
+    // stdout/stderr yakala — log'la
+    if (child.stdout) {
+      child.stdout.on('data', function(data) {
+        var lines = data.toString().split('\n').filter(Boolean);
+        lines.forEach(function(line) { log('  ' + line); });
+      });
+    }
+    if (child.stderr) {
+      child.stderr.on('data', function(data) {
+        var lines = data.toString().split('\n').filter(Boolean);
+        lines.forEach(function(line) { log('  [stderr] ' + line); });
+      });
+    }
+
+    // Exit event — script bitince resolve
+    child.on('exit', function(code, signal) {
+      if (done) return;
+      if (code === 0) {
+        finish('ok');
+      } else if (signal) {
+        log('✗ ' + name + ': signal ' + signal);
+        finish('signal:' + signal);
       } else {
-        // Script Promise döndürmüyor — fallback: 60 sn timeout
-        // (cleanup-duplicates.js artık module.exports = main() döndürdüğü için bu branch'e düşmemeli)
-        setTimeout(function() { finish('timeout'); }, 60000);
+        log('✗ ' + name + ': exit code ' + code);
+        finish('exit:' + code);
       }
-    } catch (e) { log('✗ ' + name + ': ' + e.message); finish('exc'); }
+    });
+
+    child.on('error', function(e) {
+      if (done) return;
+      log('✗ ' + name + ': error: ' + e.message);
+      finish('err');
+    });
   });
 }
 
