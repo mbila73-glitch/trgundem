@@ -278,6 +278,20 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       }
       setLiveArticles(a => a.filter(x => x.id !== id));
       toast.success(hard ? 'Haber ana sayfadan kalıcı olarak silindi' : 'Haber arşive gönderildi (ana sayfadan kaldırıldı)');
+
+      // ANA SAYFAYA OTOMATİK SENKRON SİNYALİ GÖNDER
+      // User: "yayında sekmesinden silince sekmede siliniyor ama sayfadan silinmiyor, ctrl shift r yapma"
+      // Ana sayfa (public-main.tsx) localStorage'tan haberleri yüklüyor — eski veriyi gösteriyor.
+      // Bu sinyal ana sayfaya "API'den yeniden çek" diyor:
+      //   1. localStorage.trgundem_force_sync = timestamp (ana sayfa açılınca kontrol eder)
+      //   2. BroadcastChannel('trgundem_sync').postMessage({type: 'force_sync'}) — açık ana sayfa sekmesi anında çeker
+      try {
+        localStorage.setItem('trgundem_force_sync', String(Date.now()));
+        const channel = new BroadcastChannel('trgundem_sync');
+        channel.postMessage({ type: 'force_sync' });
+        channel.close();
+      } catch (e) { /* BroadcastChannel desteklenmiyorsa sessiz geç */ }
+
       void loadArchived();
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Bilinmeyen hata';
