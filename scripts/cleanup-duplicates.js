@@ -372,4 +372,7 @@ async function main() {
   await db.$disconnect();
 }
 
-main().catch(e => { console.error('Hata:', e.message); process.exit(1); });
+// CRITICAL: module.exports = main() — pipeline-all.js runScript() bunu gerektirir.
+// Aksi halde runScript() Promise dönmüyor sanıp 60 sn sabit bekler (script 5 sn'de bitse bile).
+// User: "clear ai si neden tam 1 dakika 0 saniye çalışıyor sürekli? garip değil mi?"
+module.exports = main().catch(e => { console.error('Hata:', e.message); process.exit(1); });

@@ -881,7 +881,11 @@ function runScript(scriptPath, name) {
       var result = require(scriptPath);
       if (result && typeof result.then === 'function') {
         result.then(function() { finish('ok'); }).catch(function(e) { log('✗ ' + name + ': ' + e.message); finish('err'); });
-      } else { setTimeout(function() { finish('timeout'); }, 60000); }
+      } else {
+        // Script Promise döndürmüyor — fallback: 60 sn timeout
+        // (cleanup-duplicates.js artık module.exports = main() döndürdüğü için bu branch'e düşmemeli)
+        setTimeout(function() { finish('timeout'); }, 60000);
+      }
     } catch (e) { log('✗ ' + name + ': ' + e.message); finish('exc'); }
   });
 }
