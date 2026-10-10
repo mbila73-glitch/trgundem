@@ -265,15 +265,15 @@ async function main() {
   console.log('=== ANA SAYFA TEKRAR TEMİZLİĞİ (AI) ===');
   console.log('Tarih:', new Date().toISOString());
 
-  // Tüm published'ları getir (en yeniden eskiye) — take: 50 limit
-  // User: "clean up temizleme deki haber sayısını 50 yapalım"
+  // Tüm published'ları getir (en yeniden eskiye) — take: 100 limit
+  // User: "clean up temizleme deki haber sayısını 100 yapalım"
   const allPublished = await db.publishedArticle.findMany({
     where: { status: 'published' },
     select: { id: true, aiTitle: true, aiSummary: true, category: true, latestPublishedAt: true },
     orderBy: { latestPublishedAt: 'desc' },
-    take: 50  // en yeni 50 haber — eski haberler zaten daha önce temizlenmiş
+    take: 100  // önceki 50 idi — user: "50'yi 100'e çıkaralım"
   });
-  console.log('Toplam published (max 50):', allPublished.length);
+  console.log('Toplam published (max 100):', allPublished.length);
 
   if (allPublished.length < 2) {
     console.log('2\'den az haber, cik');

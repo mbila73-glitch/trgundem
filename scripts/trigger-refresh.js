@@ -242,7 +242,7 @@ async function main() {
       let fetched = 0;
       let added = 0;
       try {
-        const items = (await fetchRss(src)).slice(0, 50);
+        const items = (await fetchRss(src)).slice(0, 200);
         fetched = items.length;
 
         for (const item of items) {
