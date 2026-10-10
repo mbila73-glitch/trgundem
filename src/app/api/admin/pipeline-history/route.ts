@@ -31,7 +31,7 @@ function checkAuth(req: Request): boolean {
 
 type HistoryEntry = {
   ts: string;
-  event: 'start' | 'done' | 'error';
+  event: 'start' | 'done' | 'error' | 'phases-update';
   startedAt?: string;
   finishedAt?: string;
   durationMs?: number;
@@ -40,6 +40,15 @@ type HistoryEntry = {
   summariesDone?: number | null;
   publishedCount?: number | null;
   error?: string | null;
+  // Faz zamanları (pipeline-all.js her fazın başlangıç/bitişini yazar)
+  rssStartedAt?: string | null;
+  rssFinishedAt?: string | null;
+  ozetStartedAt?: string | null;
+  ozetFinishedAt?: string | null;
+  cleanupStartedAt?: string | null;
+  cleanupFinishedAt?: string | null;
+  duzenleStartedAt?: string | null;
+  duzenleFinishedAt?: string | null;
 };
 
 export async function GET(req: Request) {
@@ -87,6 +96,7 @@ export async function GET(req: Request) {
   const recent = entries.filter(e => new Date(e.ts).getTime() >= cutoff);
 
   // start + done/error ciftlerini birlestir — her cycle icin tek kayit
+  // Sonra phases-update event'leriyle faz zamanlarını merge eder
   const cyclesByStartedAt = new Map<string, HistoryEntry>();
   for (const e of recent) {
     if (e.event === 'start' && e.startedAt) {
@@ -101,6 +111,26 @@ export async function GET(req: Request) {
         cyclesByStartedAt.set(e.startedAt, { ...startEntry, ...e });
       } else {
         cyclesByStartedAt.set(e.startedAt, { ...e });
+      }
+    }
+  }
+  // phases-update event'leriyle faz zamanlarını merge et (Cleanup + AI Düzenle bitince yazılır)
+  for (const e of recent) {
+    if (e.event === 'phases-update' && e.startedAt) {
+      const cycle = cyclesByStartedAt.get(e.startedAt);
+      if (cycle) {
+        // Sadece faz zamanlarını merge et — event durumunu değiştirme
+        cyclesByStartedAt.set(e.startedAt, {
+          ...cycle,
+          rssStartedAt: e.rssStartedAt ?? cycle.rssStartedAt,
+          rssFinishedAt: e.rssFinishedAt ?? cycle.rssFinishedAt,
+          ozetStartedAt: e.ozetStartedAt ?? cycle.ozetStartedAt,
+          ozetFinishedAt: e.ozetFinishedAt ?? cycle.ozetFinishedAt,
+          cleanupStartedAt: e.cleanupStartedAt ?? cycle.cleanupStartedAt,
+          cleanupFinishedAt: e.cleanupFinishedAt ?? cycle.cleanupFinishedAt,
+          duzenleStartedAt: e.duzenleStartedAt ?? cycle.duzenleStartedAt,
+          duzenleFinishedAt: e.duzenleFinishedAt ?? cycle.duzenleFinishedAt,
+        });
       }
     }
   }

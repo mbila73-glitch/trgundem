@@ -2595,6 +2595,60 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       )}
                                     </div>
                                   </div>
+
+                                  {/* Faz zamanları — her fazın başlangıç ve bitişi */}
+                                  {(() => {
+                                    const fmtTime = (iso: string | null | undefined) => {
+                                      if (!iso) return null;
+                                      try {
+                                        return new Date(iso).toLocaleTimeString('tr-TR', { timeZone: 'Europe/Istanbul', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                      } catch { return null; }
+                                    };
+                                    const fmtDur = (startIso: string | null | undefined, endIso: string | null | undefined) => {
+                                      if (!startIso || !endIso) return null;
+                                      try {
+                                        const ms = new Date(endIso).getTime() - new Date(startIso).getTime();
+                                        const s = Math.round(ms / 1000);
+                                        if (s < 60) return s + ' sn';
+                                        return Math.floor(s / 60) + ' dk ' + (s % 60) + ' sn';
+                                      } catch { return null; }
+                                    };
+
+                                    const phases = [
+                                      { label: 'RSS', color: 'text-blue-600 dark:text-blue-400', start: run.rssStartedAt, end: run.rssFinishedAt },
+                                      { label: 'AI Özet', color: 'text-amber-600 dark:text-amber-400', start: run.ozetStartedAt, end: run.ozetFinishedAt },
+                                      { label: 'Clear', color: 'text-purple-600 dark:text-purple-400', start: run.cleanupStartedAt, end: run.cleanupFinishedAt },
+                                      { label: 'AI Düzenle', color: 'text-emerald-600 dark:text-emerald-400', start: run.duzenleStartedAt, end: run.duzenleFinishedAt },
+                                    ];
+                                    const hasAny = phases.some(p => p.start || p.end);
+                                    if (!hasAny) return null;
+                                    return (
+                                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px] border-t border-border/50 pt-2">
+                                        {phases.map((p, idx) => {
+                                          const start = fmtTime(p.start);
+                                          const end = fmtTime(p.end);
+                                          const dur = fmtDur(p.start, p.end);
+                                          return (
+                                            <div key={idx} className={`rounded px-2 py-1 ${p.start || p.end ? 'bg-muted/40' : 'opacity-40'}`}>
+                                              <p className={`font-semibold ${p.color}`}>{p.label}</p>
+                                              {start && end ? (
+                                                <>
+                                                  <p className="text-muted-foreground tabular-nums">{start} → {end}</p>
+                                                  {dur && <p className="text-muted-foreground/70">({dur})</p>}
+                                                </>
+                                              ) : start ? (
+                                                <p className="text-muted-foreground tabular-nums">{start} → ...</p>
+                                              ) : end ? (
+                                                <p className="text-muted-foreground tabular-nums">... → {end}</p>
+                                              ) : (
+                                                <p className="text-muted-foreground italic">atlandı</p>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    );
+                                  })()}
                                   {isError && run.error && (
                                     <div className="mt-2 rounded bg-red-100 dark:bg-red-950/30 p-2 text-[11px] text-red-700 dark:text-red-300 font-mono break-all">
                                       {run.error}

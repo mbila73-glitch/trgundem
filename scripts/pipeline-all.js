@@ -884,12 +884,20 @@ async function main() {
   log('GEMINI keys: ' + GEMINI_KEYS.length + ' adet');
   var startedAtIso = new Date().toISOString();
   var startedAtMs = Date.now();
+  // Her faz için start/finished zamanları (Akış Kontrol sekmesinde gösterilecek)
+  var phaseTimes = {
+    rssStartedAt: null, rssFinishedAt: null,
+    ozetStartedAt: null, ozetFinishedAt: null,
+    cleanupStartedAt: null, cleanupFinishedAt: null,
+    duzenleStartedAt: null, duzenleFinishedAt: null
+  };
   ws({ stage: 'started', startedAt: startedAtIso, finishedAt: null });
   // History: cycle başlangıcı (Akış Kontrol sekmesi için)
   wh({ event: 'start', startedAt: startedAtIso });
 
   // RSS
-  ws({ stage: 'rss' });
+  phaseTimes.rssStartedAt = new Date().toISOString();
+  ws({ stage: 'rss', rssStartedAt: phaseTimes.rssStartedAt });
   // console.log geçici olarak override et — trigger-refresh.js'in çıktısını yakala
   // "İşlenen kaynak: 97" satırından rssRead sayısını parse edeceğiz
   var _origLog = console.log;
@@ -908,11 +916,13 @@ async function main() {
     if (rssMatch) { rssRead = parseInt(rssMatch[1]); break; }
   }
   log('RSS stats: ' + rssRead + ' kaynak işlendi');
-  ws({ rssRead: rssRead });
+  phaseTimes.rssFinishedAt = new Date().toISOString();
+  ws({ rssRead: rssRead, rssFinishedAt: phaseTimes.rssFinishedAt });
   if (global.gc) { global.gc(); log('GC'); }
 
   // Gruplama + AI özet
-  ws({ stage: 'publish' });
+  phaseTimes.ozetStartedAt = new Date().toISOString();
+  ws({ stage: 'publish', ozetStartedAt: phaseTimes.ozetStartedAt });
   log('Gruplama + AI özet (tüm kategoriler min 2 kaynak, EVREN öncelikli)');
 
   if (globalThis.prisma) {
@@ -1419,7 +1429,8 @@ async function main() {
     log('Aktif kaynak: ' + failedSources.length);
   } catch (e) {}
 
-  ws({ stage: 'done', finishedAt: new Date().toISOString() });
+  phaseTimes.ozetFinishedAt = new Date().toISOString();
+  ws({ stage: 'done', ozetFinishedAt: phaseTimes.ozetFinishedAt, finishedAt: phaseTimes.ozetFinishedAt });
   // History: cycle başarıyla bitti (Akış Kontrol sekmesi için)
   // Status dosyasından tüm stats'ı okuyup history'e yaz
   var statsForHistory = { rssRead: null, duplicatesFound: null, summariesDone: null, publishedCount: null };
@@ -1432,7 +1443,22 @@ async function main() {
       publishedCount: statusData.publishedCount || 0
     };
   } catch (e) {}
-  wh(Object.assign({ event: 'done', startedAt: startedAtIso, finishedAt: new Date().toISOString(), durationMs: Date.now() - startedAtMs }, statsForHistory));
+  wh(Object.assign({
+    event: 'done',
+    startedAt: startedAtIso,
+    finishedAt: phaseTimes.ozetFinishedAt,
+    durationMs: Date.now() - startedAtMs,
+    rssStartedAt: phaseTimes.rssStartedAt,
+    rssFinishedAt: phaseTimes.rssFinishedAt,
+    ozetStartedAt: phaseTimes.ozetStartedAt,
+    ozetFinishedAt: phaseTimes.ozetFinishedAt,
+    cleanupStartedAt: phaseTimes.cleanupStartedAt,
+    cleanupFinishedAt: phaseTimes.cleanupFinishedAt,
+    duzenleStartedAt: phaseTimes.duzenleStartedAt,
+    duzenleFinishedAt: phaseTimes.duzenleFinishedAt
+  }, statsForHistory));
+  log('  ⏱ RSS:    ' + (phaseTimes.rssStartedAt || '—') + ' → ' + (phaseTimes.rssFinishedAt || '—'));
+  log('  ⏱ AI ÖZET: ' + (phaseTimes.ozetStartedAt || '—') + ' → ' + (phaseTimes.ozetFinishedAt || '—'));
   log('=== Cycle tamam ===');
 
   // === SIRALI ADIMLAR: Cleanup → AI Düzenle ===
@@ -1442,18 +1468,25 @@ async function main() {
 
   // 1. CLEANUP — duplicate temizleme (eski 5,25,45 cron yerine artık pipeline sonrası)
   if (statsForHistory.publishedCount > 0 || statsForHistory.summariesDone > 0) {
-    log('>>> SIRALI ADIM 1: Cleanup (duplicate temizleme) >>>');
+    phaseTimes.cleanupStartedAt = new Date().toISOString();
+    ws({ cleanupStartedAt: phaseTimes.cleanupStartedAt });
+    log('>>> SIRALI ADIM 1: Cleanup (duplicate temizleme) — başladı ' + phaseTimes.cleanupStartedAt + ' >>>');
     try {
       await runScript(path.join(__dirname, 'cleanup-duplicates.js'), 'Cleanup');
       if (global.gc) { global.gc(); log('GC (cleanup sonrası)'); }
     } catch (e) { log('Cleanup hatası: ' + e.message); }
+    phaseTimes.cleanupFinishedAt = new Date().toISOString();
+    ws({ cleanupFinishedAt: phaseTimes.cleanupFinishedAt });
+    log('  ⏱ Cleanup: ' + phaseTimes.cleanupStartedAt + ' → ' + phaseTimes.cleanupFinishedAt);
   }
 
   // 2. AI DÜZENLE — tüm yeni (isEdited=false) makaleler için
   // AI özet'ten FARKLI: plagiarizm/wordcount/ad filter YOK
   // Sadece mevcut metni akıcı, doğal yap — min 100 max 300 kelime (user: düzenleme ai alt limit 100)
   if (statsForHistory.publishedCount > 0 && globalThis.prisma) {
-    log('>>> SIRALI ADIM 2: AI Düzenle (yeni makaleler) >>>');
+    phaseTimes.duzenleStartedAt = new Date().toISOString();
+    ws({ duzenleStartedAt: phaseTimes.duzenleStartedAt });
+    log('>>> SIRALI ADIM 2: AI Düzenle (yeni makaleler) — başladı ' + phaseTimes.duzenleStartedAt + ' >>>');
     try {
       var newArticles = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published', isEdited: false },
@@ -1538,6 +1571,27 @@ async function main() {
     } catch (e) {
       log('AI Düzenle toplu hata: ' + e.message);
     }
+    phaseTimes.duzenleFinishedAt = new Date().toISOString();
+    ws({ duzenleFinishedAt: phaseTimes.duzenleFinishedAt });
+    log('  ⏱ Cleanup:    ' + (phaseTimes.cleanupStartedAt || '—') + ' → ' + (phaseTimes.cleanupFinishedAt || '—'));
+    log('  ⏱ AI Düzenle: ' + (phaseTimes.duzenleStartedAt || '—') + ' → ' + (phaseTimes.duzenleFinishedAt || '—'));
+
+    // History'ye faz zamanlarını GÜNCELLE — done event'ine fazları ekle
+    wh({
+      event: 'phases-update',
+      startedAt: startedAtIso,
+      rssStartedAt: phaseTimes.rssStartedAt,
+      rssFinishedAt: phaseTimes.rssFinishedAt,
+      ozetStartedAt: phaseTimes.ozetStartedAt,
+      ozetFinishedAt: phaseTimes.ozetFinishedAt,
+      cleanupStartedAt: phaseTimes.cleanupStartedAt,
+      cleanupFinishedAt: phaseTimes.cleanupFinishedAt,
+      duzenleStartedAt: phaseTimes.duzenleStartedAt,
+      duzenleFinishedAt: phaseTimes.duzenleFinishedAt
+    });
+  } else {
+    log('  ⏱ Cleanup:    atlandı (yeni haber yok)');
+    log('  ⏱ AI Düzenle: atlandı (yeni haber yok)');
   }
 
   log('=== Tüm adımlar tamam (pipeline + cleanup + AI düzenle) ===');
