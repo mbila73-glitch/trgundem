@@ -843,13 +843,15 @@ var CATEGORY_MIN_SOURCES = {
 };
 
 // Kategori bazlı yayın limiti (en çok tekrar eden ilk N haber)
+// User: "rss özet haber sayısını 50 yapalım"
+// Total: 17+11+6+5+5+6 = 50 (önceki: 15+10+5+5+5+5 = 45)
 var CATEGORY_PUBLISH_LIMITS = {
-  'Siyaset': 15,
-  'Ekonomi / Finans': 10,
-  'Kamu / Resmi': 5,
+  'Siyaset': 17,
+  'Ekonomi / Finans': 11,
+  'Kamu / Resmi': 6,
   'Bilim / Teknoloji': 5,
   'Kültür / Sanat': 5,
-  'Spor / Magazin': 5
+  'Spor / Magazin': 6
 };
 
 // Ana sayfa sıralaması: 3 Siyaset, 2 Ekonomi, 1 Kamu, 1 Kültür, 1 Spor = 8
@@ -1563,7 +1565,7 @@ async function main() {
       var newArticles = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published', isEdited: false },
         orderBy: { publishedAt: 'desc' },
-        take: 30, // max 30 makale (API kota koruması)
+        take: 50, // max 50 makale (önceki 30 idi — user: "50 yapalım")
         select: { id: true, aiTitle: true, aiSummary: true }
       });
       log('  Yeni (isEdited=false) makale sayısı: ' + newArticles.length);
@@ -1628,12 +1630,20 @@ async function main() {
               if (sm) editedSummary = sm[1].trim();
             }
 
-            // DB'ye kaydet — isEdited=false (kullanıcı henüz düzenlemedi)
-            // AI Düzenle metni düzeltti ama isEdited bayrağı KALMADI
-            // Çünkü kullanıcı /veri'de görmeli ve kendi düzenleyip Yayınla'ya basmalı
+            // DB'ye kaydet — isEdited=true YAP (tekrar işlenmesin)
+            // User: "tekrar gelen haberler için tekrar işlem yapmayalım"
+            // Önceki tasarım: isEdited=false KALMALI idi (kullanıcı /veri'de görecek, Yayınla'ya basacak)
+            // Sorun: aynı makaleler her cycle'da tekrar tekrar AI Düzenle'den geçiyordu (API kotası boşa)
+            // Çözüm: AI Düzenle yapınca isEdited=true yap — bir daha işlenmez
+            // Kullanıcı hâlâ /veri'de manuel düzenleyebilir (manuel düzenleyince de isEdited=true kalır)
             await globalThis.prisma.publishedArticle.update({
               where: { id: ea.id },
-              data: { aiTitle: editedTitle, aiSummary: editedSummary }
+              data: {
+                aiTitle: editedTitle,
+                aiSummary: editedSummary,
+                isEdited: true,         // ARTIK TRUE — tekrar işlenmesin
+                editedAt: new Date()    // AI Düzenle zamanı (audit için)
+              }
             });
             aiEditOk++;
             log('    ✓ AI Düzenle tamam — ' + editedTitle.slice(0, 40));
