@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { spawn } from 'node:child_process';
-import { resolve } from 'node:path';
+import { resolve, join } from 'node:path';
+import { existsSync } from 'node:fs';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Trgundem123';
 
@@ -18,7 +19,7 @@ function checkAuth(req: NextRequest): boolean {
   }
 }
 
-// POST /api/admin/reset — delete ALL content and restart pipeline
+// POST /api/admin/reset — delete ALL content, clear logs, restart full pipeline
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     // 3. Delete all ReaderMessage records
     const messagesDeleted = await db.readerMessage.deleteMany({});
 
-    // 4. Delete output files (rss_icerik.md, rss_kaynak_sayi.md, rss_ozet.md)
+    // 4. Delete output files (rss_icerik.md, rss_ozet.md, rss_kaynak_sayi.md)
     const fs = await import('node:fs');
     const downloadDir = resolve(process.cwd(), 'download');
     for (const f of ['rss_icerik.md', 'rss_ozet.md', 'rss_kaynak_sayi.md']) {
@@ -45,11 +46,32 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 5. Spawn the full pipeline in background (RSS refresh + build + AI summarize)
-    const scriptPath = resolve(process.cwd(), 'scripts/trigger-refresh.ts');
+    // 4b. Akış ekranını + log dosyalarını da temizle
+    // User: "akış ekranını ve tüm makaleleri temizleyelim. siteyi sıfırlayınca akışlar sıfırlanmıyor"
+    // pipeline-history.log → Akış Kontrol sekmesinin verisi (append-only, truncate)
+    // pipeline-once.log + pipeline-spawn.log → cycle logları (truncate)
+    // pipeline-status.json → status dosyası (sil, yeniden oluşturulur)
+    const ROOT = existsSync('/var/www/package.json') ? '/var/www' : process.cwd();
+    for (const f of ['pipeline-history.log', 'pipeline-once.log', 'pipeline-spawn.log']) {
+      try {
+        fs.writeFileSync(join(ROOT, f), '', 'utf8'); // truncate (içini boşalt)
+      } catch {
+        // ignore
+      }
+    }
+    try {
+      fs.unlinkSync(join(ROOT, 'pipeline-status.json'));
+    } catch {
+      // ignore
+    }
+
+    // 5. Spawn the FULL pipeline in background (RSS + AI özet + Clear + AI Düzenle)
+    // Önceki: sadece trigger-refresh.ts çağırıyordu (sadece RSS çeker, AI özet ÜRETMEZ)
+    // User: "siteyi sıfırlayınca haberler düzelmemiş" — Reset sonrası tam pipeline lazım
+    const scriptPath = resolve(process.cwd(), 'scripts/pipeline-all.js');
     const child = spawn(
       'setsid',
-      ['bash', '-c', `exec bun run ${scriptPath}`],
+      ['bash', '-c', `exec node --expose-gc ${scriptPath} --once`],
       { detached: true, stdio: 'ignore', cwd: process.cwd() },
     );
     child.unref();
@@ -61,8 +83,9 @@ export async function POST(req: NextRequest) {
         articles: articlesDeleted.count,
         readerMessages: messagesDeleted.count,
       },
+      logsCleared: ['pipeline-history.log', 'pipeline-once.log', 'pipeline-spawn.log', 'pipeline-status.json'],
       pipelineStarted: true,
-      message: 'Tüm içerik silindi, RSS yenileme başlatıldı',
+      message: 'Tüm içerik + akış geçmişi temizlendi, tam pipeline başlatıldı (RSS + AI özet + Clear + Düzenle)',
     });
   } catch (e) {
     return NextResponse.json(
