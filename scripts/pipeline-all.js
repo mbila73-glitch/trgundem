@@ -443,6 +443,13 @@ async function aiSummarize(title, contents, category) {
       '   - Kaynak site adı, "için tıklayın", "detaylar için" gibi yönlendirme → KALDIR\n' +
       '   Eğer haberin ana konusu reklam değilse, reklam benzeri ifadeleri tamamen çıkar.\n';
 
+    prompt += '\nGÜNCEL BİLGİLER VE TARİH DOĞRULUĞU (ÇOK ÖNEMLİ — bu haberi yazarken tarih: ' + new Date().toLocaleDateString('tr-TR') + '):\n' +
+      '1. Donald Trump: ABD\'nin 47. ve ŞU ANKİ Başkanı (20 Ocak 2025\'ten beri görevde). "Eski başkan" DEĞİL. Biden: ABD\'nin 46. Başkanı (eski, 2021-2025).\n' +
+      '2. Recep Tayyip Erdoğan: Türkiye Cumhurbaşkanı (şu an görevde). "Eski cumhurbaşkanı" DEĞİL.\n' +
+      '3. Kişilerin güncel görevlerini DOĞRU ver. Bir kişi şu an görevdeyse "eski" demeyin. Görevden ayrılmışsa "eski" deyin.\n' +
+      '4. Kaynak metinde "eski başkan" gibi hatalı ifade varsa DÜZELT — Trump için "ABD Başkanı Trump" yaz.\n' +
+      '5. Tarihleri doğru ver. "Bugün" ifadesi şu anki tarihtir. Önceki olayları geçmiş zaman, şu anki olayları şimdiki zaman ile yaz.\n';
+
     prompt += '\nUZUNLUK:\n' +
       'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
       'EN ÇOK 300 kelime olmalı — daha uzun yazma. 300 kelime yeterli, haberi tamamla. ' +
@@ -1510,6 +1517,12 @@ async function main() {
           '- Başlığı kısa ve etkileyici yap\n' +
           '- ÖZET MİNIMUM 100, MAKSİMUM 300 KELİME OLMALI\n' +
           '- Kopyalama kontrolü, reklam filtresi YOK — sadece metni düzelt\n\n' +
+          'GÜNCEL BİLGİLER VE TARİH DOĞRULUĞU (ÇOK ÖNEMLİ — bugün: ' + new Date().toLocaleDateString('tr-TR') + '):\n' +
+          '- Donald Trump: ABD\'nin 47. ve ŞU ANKİ Başkanı (20 Ocak 2025\'ten beri görevde). "Eski başkan" DEĞİL.\n' +
+          '- Biden: ABD\'nin 46. Başkanı (ESKİ, 2021-2025 arasında görevde idi).\n' +
+          '- Recep Tayyip Erdoğan: Türkiye Cumhurbaşkanı (şu an görevde).\n' +
+          '- Kişilerin güncel görevlerini DOĞRU ver. Görevde olanı "eski" deme, ayrılanı "eski" de.\n' +
+          '- Eğer kaynak metinde Trump için "eski başkan" yazıyorsa DÜZELT — "ABD Başkanı Trump" yaz.\n\n' +
           'BAŞLIK: ' + (ea.aiTitle || '') + '\n\n' +
           'ÖZET: ' + (ea.aiSummary || '') + '\n\n' +
           'ÇIKTI FORMATI (kesinlikle bu formatta):\n' +
