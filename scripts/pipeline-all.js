@@ -1634,20 +1634,24 @@ async function main() {
 
         try {
           var editedText = null;
-          var providers = getAiProviders();
-          for (var pi2 = 0; pi2 < providers.length && !editedText; pi2++) {
-            var prov = providers[pi2];
-            if (deadKeys.has(prov.key)) continue;
+          // User: "özellikle son işlem olan ai düzenleme işini evrene yaptıralım.
+          //        gerekirse biraz zaman alabilir."
+          // AI Düzenle SADECE EVREN kullanır — Gemini'ye fallback YOK
+          // Sebep: AI Özet ve Clear zaten Gemini kotasını tüketiyor,
+          //        AI Düzenle devreye girince Gemini 429 olur.
+          //        EVREN kotası ayrı (15M token/gün), bolca yer var.
+          //        Bekleme süresi önemli değil, kalitesi önemli.
+          if (EVREN_KEY) {
             try {
-              if (prov.type === 'evren') {
-                editedText = await callEvren(editPrompt, 2000);
-              } else {
-                editedText = await callGemini(prov.key, editPrompt, 2000);
-              }
+              editedText = await callEvren(editPrompt, 2000);
+              log('    [EVREN] ✓ başarılı');
             } catch (e2) {
-              log('    [' + prov.label + '] hata: ' + e2.message.slice(0, 60));
-              deadKeys.add(prov.key);
+              log('    [EVREN] hata: ' + e2.message.slice(0, 80));
+              // EVREN başarısız — Gemini'ye DÜŞME, bu makaleyi atla
+              // Sonraki cycle'da tekrar denenecek (isEdited hâlâ false)
             }
+          } else {
+            log('    [EVREN] key yok — atlanıyor');
           }
 
           if (editedText) {
