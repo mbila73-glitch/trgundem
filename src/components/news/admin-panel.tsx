@@ -1070,6 +1070,19 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       const d = json.deleted!;
       setResetResult(`Silindi: ${d.articles} makale, ${d.publishedArticles} özet, ${d.readerMessages} mesaj. Yenileme başlatıldı.`);
       setMessages([]); setSelectedIds(new Set()); setPubArticles([]);
+
+      // ANA SAYFAYA SENKRON SİNYALİ GÖNDER — ana sayfa localStorage'ı temizleyip API'den yeniden çeksin
+      // User: "siteyi sıfırlayınca ana sayfada haber yok"
+      // Sebep: ana sayfa localStorage'tan eski (boş) veriyi gösteriyor, API'den yeniden çekmiyor
+      try {
+        localStorage.removeItem('trgundem_main_articles');
+        localStorage.removeItem('trgundem_main_synced_at');
+        localStorage.setItem('trgundem_force_sync', String(Date.now()));
+        const channel = new BroadcastChannel('trgundem_sync');
+        channel.postMessage({ type: 'force_sync' });
+        channel.close();
+      } catch (e) { /* BroadcastChannel desteklenmiyorsa sessiz geç */ }
+
       setTimeout(() => window.location.reload(), 3000);
     } catch (e) { setResetResult(e instanceof Error ? e.message : 'Hata'); }
     finally { setResetting(false); }
