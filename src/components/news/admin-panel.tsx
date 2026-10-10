@@ -5,7 +5,7 @@ import {
   Lock, Trash2, Mail, Clock, Loader2, CheckSquare, Square, CheckCheck,
   AlertTriangle, RotateCcw, ArrowLeft, ExternalLink, Save, Globe, Star,
   Newspaper, FileText, FolderTree, Edit3, X, Upload, Archive, RefreshCw, Check, XCircle,
-  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop, ArrowDown, Activity, Wand2
+  AlertCircle, Maximize2, Minimize2, Send, MessageSquare, Heart, Search, Sparkles, Plus, Image as ImageIcon, Crop, ArrowDown, Activity, Wand2, Radio
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeTr } from '@/lib/format';
@@ -29,7 +29,7 @@ import { ImageEditor } from '@/components/news/image-editor';
 
 type Message = { id: string; name: string; email: string; subject: string; message: string; ip?: string | null; status: string; reply?: string | null; repliedAt?: string | null; createdAt: string };
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; initialHearts: number; clickHearts: number; };
-type AdminTab = 'messages' | 'custom' | 'published' | 'archived' | 'pending' | 'pipeline';
+type AdminTab = 'messages' | 'custom' | 'published' | 'live' | 'archived' | 'pending' | 'pipeline';
 
 const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
 
@@ -113,6 +113,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [pubArticles, setPubArticles] = useState<PubArticle[]>([]);
   const [archivedArticles, setArchivedArticles] = useState<PubArticle[]>([]);
   const [pendingArticles, setPendingArticles] = useState<PubArticle[]>([]);
+  // Yayında (live) — ana sayfada yayınlanan haberler (status='published' only)
+  const [liveArticles, setLiveArticles] = useState<PubArticle[]>([]);
+  const [liveSearch, setLiveSearch] = useState('');
+  const [loadingLive, setLoadingLive] = useState(false);
+  const [liveAction, setLiveAction] = useState<string | null>(null); // 'archive' | 'delete' | article id
   const [loadingArchived, setLoadingArchived] = useState(false);
   const [loadingPub, setLoadingPub] = useState(false);
   const [loadingPending, setLoadingPending] = useState(false);
@@ -245,6 +250,44 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     finally { setLoadingArchived(false); }
   }, [token]);
 
+  // === YAYINDA (LIVE) — ana sayfada yayınlanan haberler ===
+  // /api/published-articles?layout=all&status=published — public API, ana sayfanın gösterdiği haberler
+  // Bu sekmede düzenleme YOK — sadece Sil veya Arşive gönder
+  const loadLive = useCallback(async () => {
+    if (!token) return;
+    setLoadingLive(true);
+    try {
+      const r = await fetch('/api/published-articles?layout=all&status=published', { cache: 'no-store' });
+      const json = (await r.json()) as { articles?: PubArticle[] };
+      setLiveArticles(json.articles ?? []);
+    } catch { toast.error('Yayındaki haberler yüklenemedi'); }
+    finally { setLoadingLive(false); }
+  }, [token]);
+
+  // Yayındaki haberi SİL (ana sayfadan kaldır)
+  const deleteLive = useCallback(async (id: string, hard: boolean = false) => {
+    setLiveAction(id + (hard ? '-hard' : '-archive'));
+    try {
+      const r = await fetch(`/api/admin/published/${id}${hard ? '?hard=true' : ''}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!r.ok) {
+        const err = (await r.json().catch(() => ({})) as { error?: string; detail?: string });
+        throw new Error(err.detail || err.error || `HTTP ${r.status}`);
+      }
+      setLiveArticles(a => a.filter(x => x.id !== id));
+      toast.success(hard ? 'Haber ana sayfadan kalıcı olarak silindi' : 'Haber arşive gönderildi (ana sayfadan kaldırıldı)');
+      void loadArchived();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      toast.error(`İşlem başarısız: ${msg}`);
+      console.error('[deleteLive]', e);
+    } finally {
+      setLiveAction(null);
+    }
+  }, [token, loadArchived]);
+
   // Duplicate (Tekrarlar) haberleri yükle — eski birebir aynı başlıklar
   const loadPending = useCallback(async () => {
     if (!token) return;
@@ -352,6 +395,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       await Promise.allSettled([
         loadMessages(),
         loadPublished(),
+        loadLive(),
         loadArchived(),
         loadPending(),
         loadTrustedSites(),
@@ -364,7 +408,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       setRefreshingAll(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, loadMessages, loadPublished, loadArchived, loadPending, loadPipelineHistory]);
+  }, [token, loadMessages, loadPublished, loadLive, loadArchived, loadPending, loadPipelineHistory]);
 
   // === Arşiv Deposu — /var/www/archives/ klasöründeki gzip dosyaları ===
   const loadArchiveRepo = useCallback(async () => {
@@ -422,12 +466,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
     if (open && token) {
       if (adminTab === 'messages') void loadMessages();
       if (adminTab === 'published') void loadPublished();
+      if (adminTab === 'live') void loadLive();
       if (adminTab === 'archived') { void loadArchived(); void loadMessages(); }
       if (adminTab === 'pending') void loadPending();
       if (adminTab === 'custom') void loadTrustedSites();
       if (adminTab === 'pipeline') void loadPipelineHistory();
     }
-  }, [open, token, adminTab, loadMessages, loadPublished, loadArchived, loadPending, loadPipelineHistory]);
+  }, [open, token, adminTab, loadMessages, loadPublished, loadLive, loadArchived, loadPending, loadPipelineHistory]);
 
   // Restart polling — restarting iken her 2 saniyede bir status çek
   useEffect(() => {
@@ -1133,7 +1178,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <>
                 {/* Sub-tabs — sticky (scroll ederken kaybolmasın) */}
                 <div className="sticky top-0 z-10 mb-3 sm:mb-4 -mx-3 sm:-mx-6 px-2 sm:px-6 py-2 flex gap-0.5 sm:gap-1 overflow-x-auto rounded-lg border border-border bg-background/95 backdrop-blur shadow-sm">
-                  {([['messages', 'Mesajlar', Mail], ['custom', 'Haber Ekle', Star], ['published', 'Yayında', Newspaper], ['archived', 'Arşiv', Archive], ['pending', 'Tekrar', AlertCircle], ['pipeline', 'Akış Kontrol', Activity]] as const).map(([id, label, Icon]) => (
+                  {([['messages', 'Mesajlar', Mail], ['custom', 'Haber Ekle', Star], ['published', 'Yayına Hazır', Newspaper], ['live', 'Yayında', Radio], ['archived', 'Arşiv', Archive], ['pending', 'Tekrar', AlertCircle], ['pipeline', 'Akış Kontrol', Activity]] as const).map(([id, label, Icon]) => (
                     <button key={id} type="button" onClick={() => setAdminTab(id)} className={`flex items-center justify-center gap-1 sm:gap-1.5 rounded-md px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-medium transition relative flex-shrink-0 ${adminTab === id ? 'bg-secondary text-secondary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Icon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{label}</span>
                       {id === 'pending' && pendingArticles.length > 0 && (
@@ -2143,6 +2188,127 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           </>
                         )}
                       </>
+                    )}
+                  </div>
+                )}
+
+                {/* YAYINDA (LIVE) — ana sayfada yayınlanan haberler. Düzenleme YOK — sadece Sil/Arşive. */}
+                {adminTab === 'live' && (
+                  <div className="space-y-3">
+                    {/* Arama çubuğu + Yenile */}
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          value={liveSearch}
+                          onChange={(e) => setLiveSearch(e.target.value)}
+                          placeholder="Ana sayfada ara (başlık)... "
+                          className="pl-8 h-9 text-sm"
+                        />
+                        {liveSearch && (
+                          <button type="button" onClick={() => setLiveSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => void loadLive()} disabled={loadingLive} className="gap-1.5 h-9 text-xs flex-shrink-0">
+                        {loadingLive ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Yenile
+                      </Button>
+                    </div>
+
+                    {/* Bilgi banner'ı */}
+                    <div className="flex items-center gap-2 rounded-md border border-news/30 bg-news/5 p-2 text-[11px] text-foreground/80">
+                      <Radio className="h-3.5 w-3.5 text-news flex-shrink-0" />
+                      <span><b>{liveArticles.length}</b> haber şu an ana sayfada yayında. Sil veya Arşive gönder butonları ile ana sayfadan kaldırabilirsiniz.</span>
+                    </div>
+
+                    {/* Loading */}
+                    {loadingLive ? (
+                      <div className="space-y-2">{[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}</div>
+                    ) : liveArticles.length === 0 ? (
+                      <Card className="flex flex-col items-center gap-3 p-10 text-center">
+                        <Radio className="h-10 w-10 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Ana sayfada yayınlanan haber yok</p>
+                      </Card>
+                    ) : (
+                      <div className="space-y-2">
+                        {(() => {
+                          // Filtre — başlıkta arama (Türkçe karakter duyarsız)
+                          const q = liveSearch.trim().toLowerCase();
+                          const filtered = q
+                            ? liveArticles.filter(a => normalizeTr(a.aiTitle).includes(normalizeTr(q)))
+                            : liveArticles;
+                          if (filtered.length === 0) {
+                            return (
+                              <Card className="flex flex-col items-center gap-3 p-8 text-center">
+                                <Search className="h-8 w-8 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">"<b>{liveSearch}</b>" için sonuç yok</p>
+                                <Button size="sm" variant="ghost" onClick={() => setLiveSearch('')} className="text-xs">Temizle</Button>
+                              </Card>
+                            );
+                          }
+                          return filtered.map((a, idx) => {
+                            const isActing = liveAction === a.id + '-archive' || liveAction === a.id + '-hard';
+                            return (
+                              <Card key={a.id} className="p-2.5 flex items-start gap-3">
+                                {/* Görsel */}
+                                <div className="flex-shrink-0">
+                                  {a.imageUrl ? (
+                                    <img src={a.imageUrl} alt={a.aiTitle} className="h-14 w-20 rounded object-cover" />
+                                  ) : (
+                                    <div className="h-14 w-20 rounded bg-muted flex items-center justify-center">
+                                      <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                                    </div>
+                                  )}
+                                </div>
+                                {/* İçerik */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-foreground line-clamp-2">{a.aiTitle}</p>
+                                      <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground flex-wrap">
+                                        <Badge variant="secondary" className="text-[9px] py-0 px-1.5 h-4">{a.category}</Badge>
+                                        {a.wordCount > 0 && <span>· {a.wordCount} kelime</span>}
+                                        {a.sourceCount > 0 && <span>· {a.sourceCount} kaynak</span>}
+                                        <span>· sıra {idx + 1}</span>
+                                      </div>
+                                    </div>
+                                    {/* Butonlar */}
+                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => void deleteLive(a.id, false)}
+                                        disabled={isActing}
+                                        className="gap-1 h-7 text-[11px] px-2 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30"
+                                        title="Haberi arşive gönder (ana sayfadan kaldır)"
+                                      >
+                                        {liveAction === a.id + '-archive' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Archive className="h-3 w-3" />}
+                                        <span className="hidden sm:inline">Arşive</span>
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                          if (confirm(`"${a.aiTitle.slice(0, 50)}" haberi KALICI olarak silinsin mi?\n\nBu işlem geri alınamaz — arşive de GITMEZ.`)) {
+                                            void deleteLive(a.id, true);
+                                          }
+                                        }}
+                                        disabled={isActing}
+                                        className="gap-1 h-7 text-[11px] px-2 border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
+                                        title="Haberi kalıcı olarak sil (geri alınamaz)"
+                                      >
+                                        {liveAction === a.id + '-hard' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                                        <span className="hidden sm:inline">Sil</span>
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Card>
+                            );
+                          });
+                        })()}
+                      </div>
                     )}
                   </div>
                 )}
