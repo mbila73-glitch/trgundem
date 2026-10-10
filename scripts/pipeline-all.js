@@ -71,45 +71,80 @@ function getAiProviders() {
 // sonra 'content' alanında. content boşsa reasoning'i fallback olarak kullan.
 // max_tokens yüksek tut: reasoning + content için yeterli
 async function callEvren(prompt, maxTokens) {
-  var url = EVREN_API_BASE.replace(/\/+$/, '') + '/chat/completions';
-  var resp = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + EVREN_KEY,
-    },
-    body: JSON.stringify({
-      model: EVREN_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: Math.min(Math.max(maxTokens, 1500), 4000), // en az 1500 (reasoning için), max 4000
-      temperature: 0.7,
-    }),
-    signal: AbortSignal.timeout(60000), // 30 → 60 sn: reasoning modeli yavaş olabilir
-  });
-  if (!resp.ok) {
-    var errText = '';
-    try { errText = await resp.text(); } catch (e) {}
-    var err = new Error('EVREN HTTP ' + resp.status + ': ' + errText.slice(0, 200));
-    err.statusCode = resp.status;
-    throw err;
+  // EVREN retry mekanizması — deepseek-v4-flash bazen content boş döndürür
+  // (sadece reasoning üretir). 3 kez deneyip sonra hata fırlat.
+  // User: "AI hata [EVREN(deepseek-v4-flash)]: EVREN: content boş (reasoning modeli düzgün cevap üretmedi)"
+  var MAX_EVREN_RETRIES = 3;
+  var lastError = null;
+
+  for (var evrenAttempt = 0; evrenAttempt < MAX_EVREN_RETRIES; evrenAttempt++) {
+    var url = EVREN_API_BASE.replace(/\/+$/, '') + '/chat/completions';
+    var resp;
+    try {
+      resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + EVREN_KEY,
+        },
+        body: JSON.stringify({
+          model: EVREN_MODEL,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: Math.min(Math.max(maxTokens, 1500), 4000), // en az 1500 (reasoning için), max 4000
+          temperature: 0.7,
+        }),
+        signal: AbortSignal.timeout(60000), // 60 sn: reasoning modeli yavaş olabilir
+      });
+    } catch (e) {
+      lastError = new Error('EVREN fetch hatası: ' + e.message);
+      if (evrenAttempt < MAX_EVREN_RETRIES - 1) {
+        await new Promise(function(r) { setTimeout(r, 2000); }); // 2 sn bekle, retry
+        continue;
+      }
+      throw lastError;
+    }
+
+    if (!resp.ok) {
+      var errText = '';
+      try { errText = await resp.text(); } catch (e) {}
+      var err = new Error('EVREN HTTP ' + resp.status + ': ' + errText.slice(0, 200));
+      err.statusCode = resp.status;
+      // 429/403 retry değil — hemen fırlat (key'i dead yap)
+      throw err;
+    }
+    var result = await resp.json();
+    if (result.error) {
+      var e = new Error('EVREN API error: ' + (result.error.message || JSON.stringify(result.error)));
+      e.statusCode = result.error.code || 500;
+      throw e;
+    }
+    // OpenAI-uyumlu response: choices[0].message.content
+    var choice = result.choices && result.choices[0];
+    if (!choice) {
+      lastError = new Error('EVREN: choices boş');
+      if (evrenAttempt < MAX_EVREN_RETRIES - 1) {
+        await new Promise(function(r) { setTimeout(r, 2000); });
+        continue;
+      }
+      throw lastError;
+    }
+    var msg = choice.message || {};
+    var text = msg.content;
+    // KRİTİK: reasoning alanını ASLA kullanma — o AI'nin düşünme sürecidir, özet değil
+    // Eğer content boşsa, çağrı başarısız sayılır (reasoning modeli düzgün cevap üretmedi)
+    if (!text) {
+      lastError = new Error('EVREN: content boş (reasoning modeli düzgün cevap üretmedi, tekrar dene)');
+      if (evrenAttempt < MAX_EVREN_RETRIES - 1) {
+        log('  EVREN content boş — deneme ' + (evrenAttempt + 1) + '/' + MAX_EVREN_RETRIES + ', 2 sn bekle');
+        await new Promise(function(r) { setTimeout(r, 2000); }); // 2 sn bekle, retry
+        continue;
+      }
+      throw lastError;
+    }
+    return text;
   }
-  var result = await resp.json();
-  if (result.error) {
-    var e = new Error('EVREN API error: ' + (result.error.message || JSON.stringify(result.error)));
-    e.statusCode = result.error.code || 500;
-    throw e;
-  }
-  // OpenAI-uyumlu response: choices[0].message.content
-  // KRİTİK: reasoning alanını ASLA kullanma — o AI'nin düşünme sürecidir, özet değil
-  // Eğer content boşsa, çağrı başarısız sayılır (reasoning modeli düzgün cevap üretmedi)
-  var choice = result.choices && result.choices[0];
-  if (!choice) throw new Error('EVREN: choices boş');
-  var msg = choice.message || {};
-  var text = msg.content;
-  // reasoning fallback KALDIRILDI — özet olarak AI düşünme metni yayınlanıyordu
-  // if (!text && msg.reasoning) { text = msg.reasoning; } ← BU SATIR SİLİNDİ
-  if (!text) throw new Error('EVREN: content boş (reasoning modeli düzgün cevap üretmedi, tekrar dene)');
-  return text;
+  // Tüm retry'lar başarısız
+  throw lastError || new Error('EVREN: tüm denemeler başarısız');
 }
 
 // Gemini API çağrısı — mevcut format
