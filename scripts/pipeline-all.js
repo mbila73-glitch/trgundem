@@ -344,6 +344,53 @@ try {
   globalThis.prisma = _prisma;
 } catch (e) { console.error('Prisma: ' + e.message); }
 
+// === TARİH FİLTRESİ — sadece bugün ve dün makaleleri işle ===
+// User: "3 gün olmasın, dün ve bugün olsun ve haberde buna değinelim"
+// Sebep: RSS kaynakları bazen eski makaleleri (örn: 21 Ağustos) yeni pubDate ile yolluyor
+// Çözüm: Başlıktan veya publishedAt'den tarihi çıkar, > 1 gün eskiyse ATLA
+//        Bugün/dün ise AI'a "BUGÜN (X Ekim) / DÜN (Y Ekim)" bilgi olarak geç
+var TR_MONTHS_LOWER = {
+  'ocak': 0, 'şubat': 1, 'mart': 2, 'nisan': 3, 'mayıs': 4, 'haziran': 5,
+  'temmuz': 6, 'ağustos': 7, 'eylül': 8, 'ekim': 9, 'kasım': 10, 'aralık': 11
+};
+var TR_MONTHS_UPPER = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+// Başlıktan tarih çıkar: "21 Ağustos 2026", "9 Eylül 2026", "10 Ekim 2026" gibi
+// Bulamazsa publishedAt'i kullan
+function extractArticleDate(title, publishedAt) {
+  if (title) {
+    var titleLower = title.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
+    var dateMatch = titleLower.match(/(\d{1,2})\s+(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)\s+(\d{4})/);
+    if (dateMatch) {
+      var day = parseInt(dateMatch[1], 10);
+      var month = TR_MONTHS_LOWER[dateMatch[2]];
+      var year = parseInt(dateMatch[3], 10);
+      var d = new Date(year, month, day);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  if (publishedAt) {
+    var d2 = new Date(publishedAt);
+    if (!isNaN(d2.getTime())) return d2;
+  }
+  return null;
+}
+
+// Tarih bilgisini string'e çevir: "BUGÜN (11 Ekim 2026)" veya "DÜN (10 Ekim 2026)"
+// Eğer > 1 gün eskiyse null döner (çağıran skip yapmalı)
+function dateInfoString(articleDate) {
+  if (!articleDate) return null;
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var artDate = new Date(articleDate);
+  artDate.setHours(0, 0, 0, 0);
+  var diffDays = Math.round((today.getTime() - artDate.getTime()) / (1000 * 60 * 60 * 24));
+  var dateStr = artDate.getDate() + ' ' + TR_MONTHS_UPPER[artDate.getMonth()] + ' ' + artDate.getFullYear();
+  if (diffDays === 0) return 'BUGÜN (' + dateStr + ')';
+  if (diffDays === 1) return 'DÜN (' + dateStr + ')';
+  return null; // 2+ gün eski
+}
+
 // AI ÖZET — telifsiz, kategori bazlı min kelime, 5 key sırayla
 // Kategori bazlı minimum kelime sayısı (alt sınır — AI bundan az üretmemeli)
 // Tüm kategoriler için 150 kelime alt sınır
@@ -377,7 +424,7 @@ function countWords(text) {
   return text.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
 }
 
-async function aiSummarize(title, contents, category) {
+async function aiSummarize(title, contents, category, dateInfo) {
   if (!contents || contents.length === 0) return null;
   var sorted = contents.filter(function(c) { return c && c.length > 50; }).sort(function(a, b) { return b.length - a.length; });
   if (sorted.length === 0) return null;
@@ -387,8 +434,19 @@ async function aiSummarize(title, contents, category) {
   function buildPrompt(minW, prevText, plagiarismChunks, prevWordCount, prevAds) {
     var prompt = 'Sen bağımsız bir haber editörüsün. Aşağıda farklı kaynaklardan gelen, aynı habere ait metinler var. ' +
       'Bu metinleri oku, ANLA, sonra KENDİ CÜMLELERİNLE bağımsız bir gazeteci gibi YENİDEN YAZ. ' +
-      'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n' +
-      'TELİF GÜVENLİĞİ KURALLARI — ZORUNLU:\n' +
+      'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n';
+
+    // HABER TARİHİ — User: "haberde buna değinelim. dün ise dün desin, bugünse bugün desin"
+    if (dateInfo) {
+      prompt += 'HABERİN TARİHİ: ' + dateInfo + '\n';
+      prompt += 'Bu haberin tarihini özette DOĞAL şekilde belirt:\n';
+      prompt += '  - Eğer BUGÜN ise: "bugün" kelimesini kullan (örn: "Bugün İstanbul\'da...")\n';
+      prompt += '  - Eğer DÜN ise: "dün" kelimesini kullan (örn: "Dün açıklanan karara göre...")\n';
+      prompt += '  - Tarihi "X Ekim" formatında da yazabilirsin ama "bugün/dün" öncelikli\n';
+      prompt += '  - Özetin başında veya uygun bir cümle içinde belirt\n\n';
+    }
+
+    prompt += 'TELİF GÜVENLİĞİ KURALLARI — ZORUNLU:\n' +
       '1. BİRBİR AYNI CÜMLE KESİNLİKLE OLMASIN. Kaynak metindeki hiçbir cümleyi aynen kopyalama.\n' +
       '   Cümleyi bölüm: özne + yüklem + nesne sırasını değiştir, eş anlamlı kelimeler kullan.\n' +
       '2. Kaynak metinle %30 DAN FAZLA kelime örtüşmesi yapma.\n' +
@@ -1296,8 +1354,26 @@ async function main() {
         var maxSources = (cat === 'Siyaset' || cat === 'Ekonomi / Finans') ? 5 : 2;
         var contents = groupArticlesList.slice(0, maxSources).map(function(a) { return a.content || a.description || ''; });
 
-        // AI özet
-        var aiText = await aiSummarize(firstArticle.title, contents, cat);
+        // === TARİH FİLTRESİ — sadece bugün ve dün makaleleri ===
+        // User: "3 gün olmasın, dün ve bugün olsun ve haberde buna değinelim"
+        // Eski makaleler (21 Ağustos gibi) yeni pubDate ile gelirse ATLA
+        var articleDate = extractArticleDate(firstArticle.title, firstArticle.publishedAt);
+        var dateInfo = dateInfoString(articleDate);
+        if (articleDate && !dateInfo) {
+          // > 1 gün eski — ATLA
+          var today0 = new Date(); today0.setHours(0,0,0,0);
+          var art0 = new Date(articleDate); art0.setHours(0,0,0,0);
+          var diffDays = Math.round((today0.getTime() - art0.getTime()) / (1000 * 60 * 60 * 24));
+          log('  [ESKİ HABER] Tarih: ' + art0.toLocaleDateString('tr-TR') + ' — ' + diffDays + ' gün önce, ATLANDI: ' + firstArticle.title.slice(0, 50));
+          skipped++;
+          continue;
+        }
+        if (dateInfo) {
+          log('  [Tarih] ' + dateInfo);
+        }
+
+        // AI özet (dateInfo parametresi ile — AI "bugün/dün" kullanacak)
+        var aiText = await aiSummarize(firstArticle.title, contents, cat, dateInfo);
         // AI null ise haberi atla — fallback description KULLANMA (kısa özet oluşur)
         if (!aiText || aiText.trim().length < 100) {
           log('  AI cevap vermedi veya çok kısa, haber ATLANDI: ' + firstArticle.title.slice(0, 50));
