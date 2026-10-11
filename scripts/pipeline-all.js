@@ -72,9 +72,11 @@ function getAiProviders() {
 // max_tokens yüksek tut: reasoning + content için yeterli
 async function callEvren(prompt, maxTokens) {
   // EVREN retry mekanizması — deepseek-v4-flash bazen content boş döndürür
-  // (sadece reasoning üretir). 3 kez deneyip sonra hata fırlat.
-  // User: "AI hata [EVREN(deepseek-v4-flash)]: EVREN: content boş (reasoning modeli düzgün cevap üretmedi)"
-  var MAX_EVREN_RETRIES = 3;
+  // User: "ai özette dün yaptığın değişiklik buna sebep oldu. orada 3 tur yapıyorsun"
+  // Sebep: 3 retry × 15 sn = 45 sn/makale × 30 makale = 22.5 dk boşuna
+  // Çözüm: MAX_EVREN_RETRIES = 1 (tek deneme, retry yok)
+  // gemma-4-31b'de content boş her zaman boş gelir — retry faydasız
+  var MAX_EVREN_RETRIES = 1;
   var lastError = null;
 
   for (var evrenAttempt = 0; evrenAttempt < MAX_EVREN_RETRIES; evrenAttempt++) {

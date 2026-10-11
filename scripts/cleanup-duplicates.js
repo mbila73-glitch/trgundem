@@ -36,7 +36,7 @@ if (EVREN_KEY === '') EVREN_KEY = process.env.EVREN_API_KEY || process.env.EVREN
 // EVREN çağrısı — OpenAI-uyumlu /v1/chat/completions formatı
 // Retry mekanizması: content boş dönerse 3 kez dene (deepseek-v4-flash bazen boş döner)
 async function callEvren(prompt, maxTokens) {
-  var MAX_EVREN_RETRIES = 3;
+  var MAX_EVREN_RETRIES = 1; // 3→1: retry faydasız (gemma-4-31b content boş her zaman boş)
   var lastError = null;
   for (var attempt = 0; attempt < MAX_EVREN_RETRIES; attempt++) {
     var url = EVREN_API_BASE.replace(/\/+$/, '') + '/chat/completions';
