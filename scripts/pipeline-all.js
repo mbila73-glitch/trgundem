@@ -395,16 +395,15 @@ function dateInfoString(articleDate) {
 
 // AI ÖZET — telifsiz, kategori bazlı min kelime, 5 key sırayla
 // Kategori bazlı minimum kelime sayısı (alt sınır — AI bundan az üretmemeli)
-// Tüm kategoriler için 150 kelime alt sınır
-// 'Özel' kategoride AI çağrılmaz (admin panelinden manuel eklenir) — listede YOK
-// ÜST SINIR YOK — AI'a "haberin tamamını anlat" talimatı verilir
+// User: "gerekirse 2-5 kaynaktan gelen ilk özet basamağını 200-400 kelime yapalım"
+// Önceki: 150 kelime → 200'e yükseltildi (daha çok kaynak materyali → AI Düzenle'de daha çok işlenecek veri)
 var CATEGORY_MIN_WORDS = {
-  'Siyaset': 150,
-  'Ekonomi / Finans': 150,
-  'Kamu / Resmi': 150,
-  'Bilim / Teknoloji': 150,
-  'Kültür / Sanat': 150,
-  'Spor / Magazin': 150
+  'Siyaset': 200,
+  'Ekonomi / Finans': 200,
+  'Kamu / Resmi': 200,
+  'Bilim / Teknoloji': 200,
+  'Kültür / Sanat': 200,
+  'Spor / Magazin': 200
 };
 
 // HTML entity decode — publishedArticle.aiTitle temiz olsun
@@ -547,9 +546,9 @@ async function aiSummarize(title, contents, category, dateInfo) {
 
     prompt += '\nUZUNLUK:\n' +
       'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
-      'EN ÇOK 300 kelime olmalı — daha uzun yazma. 300 kelime yeterli, haberi tamamla. ' +
+      'EN ÇOK 400 kelime olmalı — daha uzun yazma. 400 kelime yeterli, haberi tamamla. ' +
       'Cümleni yarıda kesme, haber doğal bir sonuca ulaşmalı. ' +
-      'ASLA 300 kelimeyi geçme — kısa ve öz tut.\n';
+      'ASLA 400 kelimeyi geçme — kısa ve öz tut.\n';
 
     prompt += '\nÇIKTI FORMATI:\n' +
       'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme ' +
@@ -1664,7 +1663,8 @@ async function main() {
 
   // 2. AI DÜZENLE — tüm yeni (isEdited=false) makaleler için
   // AI özet'ten FARKLI: plagiarizm/wordcount/ad filter YOK
-  // Sadece mevcut metni akıcı, doğal yap — min 100 max 300 kelime (user: düzenleme ai alt limit 100)
+  // Sadece mevcut metni akıcı, doğal yap — min 150 max 300 kelime
+  // User: 'son düzenleme ve özete 150-300 kelimelik veri oluşsun'
   if (statsForHistory.publishedCount > 0 && globalThis.prisma) {
     // CRITICAL: deadKeys'i SIFIRLA — AI Özet tüm key'leri tüketmiş olabilir (rate limit)
     // User: "ai düzenlemeler neden 0 saniye? tüm sağlayıcılar denendi ama hepsi başarısız"
@@ -1701,7 +1701,7 @@ async function main() {
           '- Metni akıcı ve okunabilir bir haber diline çevir\n' +
           '- Anlamı koru, yeni bilgi ekleme\n' +
           '- Başlığı kısa ve etkileyici yap\n' +
-          '- ÖZET MİNIMUM 100, MAKSİMUM 300 KELİME OLMALI\n' +
+          '- ÖZET MİNIMUM 150, MAKSİMUM 300 KELİME OLMALI\n' +
           '- Kopyalama kontrolü, reklam filtresi YOK — sadece metni düzelt\n\n' +
           'GÜNCEL BİLGİLER VE TARİH DOĞRULUĞU (ÇOK ÖNEMLİ — bugün: ' + new Date().toLocaleDateString('tr-TR') + '):\n' +
           '- Donald Trump: ABD\'nin 47. ve ŞU ANKİ Başkanı (20 Ocak 2025\'ten beri görevde). "Eski başkan" DEĞİL.\n' +
@@ -1714,7 +1714,7 @@ async function main() {
           'ÇIKTI FORMATI (kesinlikle bu formatta):\n' +
           'BAŞLIK: [yeniden yazılmış başlık]\n' +
           '---\n' +
-          'ÖZET: [yeniden yazılmış özet — 100-300 kelime]';
+          'ÖZET: [yeniden yazılmış özet — 150-300 kelime]';
 
         try {
           var editedText = null;
