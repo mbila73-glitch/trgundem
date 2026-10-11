@@ -26,7 +26,74 @@ try {
   });
 } catch (e) {}
 
-// 5 Gemini API key
+// === EVREN API — öncelik (pipeline-all.js ve cleanup-duplicates.js ile aynı mantık) ===
+// User: "tüm ai çalışmalarında evren i başa alalım"
+var EVREN_API_BASE = process.env.EVREN_API_BASE || 'https://evren-llmapi.ssyz.org.tr/v1';
+var EVREN_MODEL = process.env.EVREN_MODEL || 'gemma-4-31b';
+var EVREN_KEY = '';
+try { EVREN_KEY = fs.readFileSync('/var/www/.evren-key', 'utf8').trim(); } catch (e) {}
+if (EVREN_KEY === '') EVREN_KEY = process.env.EVREN_API_KEY || process.env.EVREN_KEY || '';
+
+// EVREN çağrısı — 3 kez retry (content boş dönerse)
+async function callEvren(prompt, maxTokens) {
+  var MAX_EVREN_RETRIES = 3;
+  var lastError = null;
+  for (var attempt = 0; attempt < MAX_EVREN_RETRIES; attempt++) {
+    var url = EVREN_API_BASE.replace(/\/+$/, '') + '/chat/completions';
+    var resp;
+    try {
+      resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + EVREN_KEY },
+        body: JSON.stringify({
+          model: EVREN_MODEL,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: Math.min(Math.max(maxTokens, 1500), 4000),
+          temperature: 0.7
+        }),
+        signal: AbortSignal.timeout(60000)
+      });
+    } catch (e) {
+      lastError = new Error('EVREN fetch hatası: ' + e.message);
+      if (attempt < MAX_EVREN_RETRIES - 1) { await new Promise(r => setTimeout(r, 2000)); continue; }
+      throw lastError;
+    }
+    if (!resp.ok) {
+      var errText = '';
+      try { errText = await resp.text(); } catch (e) {}
+      var err = new Error('EVREN HTTP ' + resp.status + ': ' + errText.slice(0, 200));
+      err.statusCode = resp.status;
+      throw err;
+    }
+    var result = await resp.json();
+    if (result.error) {
+      var e = new Error('EVREN API error: ' + (result.error.message || JSON.stringify(result.error)));
+      e.statusCode = result.error.code || 500;
+      throw e;
+    }
+    var choice = result.choices && result.choices[0];
+    if (!choice) {
+      lastError = new Error('EVREN: choices bos');
+      if (attempt < MAX_EVREN_RETRIES - 1) { await new Promise(r => setTimeout(r, 2000)); continue; }
+      throw lastError;
+    }
+    var msg = choice.message || {};
+    var text = msg.content;
+    if (!text) {
+      lastError = new Error('EVREN: content bos (reasoning modeli duzgun cevap uretmedi)');
+      if (attempt < MAX_EVREN_RETRIES - 1) {
+        console.log('  EVREN content bos - deneme ' + (attempt + 1) + '/' + MAX_EVREN_RETRIES + ', 2 sn bekle');
+        await new Promise(r => setTimeout(r, 2000));
+        continue;
+      }
+      throw lastError;
+    }
+    return text;
+  }
+  throw lastError || new Error('EVREN: tum denemeler basarisiz');
+}
+
+// 5 Gemini API key (fallback — EVREN basarisiz olursa)
 var GEMINI_KEYS = [];
 try { var k1 = fs.readFileSync('/var/www/.gemini-key', 'utf8').trim(); if (k1) GEMINI_KEYS.push(k1); } catch (e) {}
 try { var k2 = fs.readFileSync('/var/www/.gemini-key2', 'utf8').trim(); if (k2) GEMINI_KEYS.push(k2); } catch (e) {}
@@ -147,12 +214,33 @@ async function aiEdit(title, summary) {
   var cleanSummary = decodeHtmlEntities(summary).trim();
   var cleanTitle = decodeHtmlEntities(title).trim();
   if (cleanSummary.length < 50) return null;
+
+  var promptText = buildPrompt(cleanTitle, cleanSummary);
+
+  // === EVREN ÖNCELİK (Gemini fallback) ===
+  // User: "tüm ai çalışmalarında evren i başa alalım"
+  if (EVREN_KEY) {
+    try {
+      var evrenText = await callEvren(promptText, MAX_TOKENS);
+      if (evrenText) {
+        var clean = evrenText.trim();
+        var wc = countWords(clean);
+        if (wc >= MIN_WORDS) {
+          console.log('  ✓ [EVREN] başarılı — ' + wc + ' kelime');
+          return { text: clean, wordCount: wc };
+        }
+        console.log('  ⚠ [EVREN] yetersiz kelime: ' + wc + ' (min: ' + MIN_WORDS + ')');
+      }
+    } catch (e) {
+      console.log('  ✗ [EVREN] hata: ' + e.message.slice(0, 80) + ' — Geminiye geçiliyor');
+    }
+  }
+
+  // === GEMINI FALLBACK ===
   if (GEMINI_KEYS.length === 0) {
     console.log('  ✗ Gemini key yok — atla');
     return null;
   }
-
-  var promptText = buildPrompt(cleanTitle, cleanSummary);
 
   for (var attempt = 0; attempt < GEMINI_KEYS.length * 2; attempt++) {
     var keyIdx = attempt % GEMINI_KEYS.length;
