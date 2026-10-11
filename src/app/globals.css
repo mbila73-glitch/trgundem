@@ -150,10 +150,12 @@
   }
 }
 
-/* Başlıklar, butonlar, etiketler — büyük baş harf */
-h1, h2, h3, h4, h5, h6, button, label, a, th {
-  text-transform: capitalize;
-}
+/* text-transform: capitalize KALDIRILDI.
+   Sebep: CSS text-transform: capitalize Türkçe İ'yi yanlış işliyor.
+   - AI 'i' yazıyor → CSS 'I' (noktasız) yapıyor → 'Istanbul' (YANLIŞ)
+   - Olması gereken: 'İ' (noktalı) → 'İstanbul' (DOĞRU)
+   User: 'başlıklardaki bazı büyük i harfleri I olarak çıkıyor'
+   Çözüm: capitalize'i kaldır — AI zaten doğru büyük harfle yazıyor. */
 
 /* Global "iki yana yasla (justify)" kuralı KALDIRILDI.
    User: "2 yana yasla komutunu kaldırman lazım önce. header'da tüm yazıların ortada olmasını istiyorum"
