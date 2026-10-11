@@ -847,13 +847,14 @@ export function PublicMain() {
               <p className="text-base leading-relaxed text-foreground/90 whitespace-pre-wrap">{article.aiSummary}</p>
             </div>
 
-            <div className="mt-6 flex items-center justify-between border-t border-border/50 pt-4">
+            <div className="mt-6 flex items-center gap-2 border-t border-border/50 pt-4">
               <HeartCounter articleId={article.id} />
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={closeArticle} className="gap-1.5 text-sm">
-                  <ArrowLeft className="h-4 w-4" /> Geri
-                </Button>
-              </div>
+              <Button variant="ghost" size="sm" onClick={closeArticle} className="gap-1.5 text-sm">
+                <ArrowLeft className="h-4 w-4" /> Geri
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { closeArticle(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5 text-sm">
+                <Home className="h-4 w-4" /> Ana Sayfa
+              </Button>
             </div>
           </div>
         </main>

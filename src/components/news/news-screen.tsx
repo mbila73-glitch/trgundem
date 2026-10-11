@@ -69,7 +69,7 @@ function HorizontalLikeBar({ articleId }: { articleId: string }) {
   const { hearts, userLiked, toggleHeart } = useHeart(articleId);
 
   return (
-    <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
+    <div className="flex items-center gap-3">
       <button type="button" onClick={toggleHeart} className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${userLiked ? 'text-rose-600' : 'text-muted-foreground hover:text-rose-600'}`}>
         <Heart className={`h-4 w-4 ${userLiked ? 'fill-rose-600' : ''}`} />
         <span className="tabular-nums">{hearts}</span>
@@ -202,11 +202,9 @@ function ArticleDetailInline({
         </p>
       </div>
 
-      {/* Like / Dislike bar — haberin altında */}
-      <HorizontalLikeBar articleId={article.id} />
-
-      {/* Geri + Ana Sayfa — haber sonunda */}
+      {/* Kalp + Geri + Ana Sayfa — haber sonunda, tek satırda */}
       <div className="mt-6 flex items-center gap-2 border-t border-border/50 pt-4">
+        <HorizontalLikeBar articleId={article.id} />
         <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 text-sm">
           <ArrowLeft className="h-4 w-4" />
           Geri
