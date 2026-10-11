@@ -1,7 +1,13 @@
-// Ana sayfa tekrar temizliği — AI (Gemini) ile
-// 3, 18, 33, 48. dakikalarda cron tetikler
-// Pipeline (0,15,30,45) bittikten 1-2 dk sonra çalışır
-// AI 50 başlığı okur, tekrar olan eskileri siler
+// Ana sayfa tekrar temizliği — AI (EVREN öncelik + Gemini fallback) ile
+// Pipeline bittikten sonra çalışır (pipeline-all.js içinde runScript ile çağrılır)
+// AI 100 başlığı okur, tekrar olan eskileri siler
+//
+// ÖNCEKİ SORUN: Sadece Gemini kullanıyordu. Gemini key'ler 429 (kota dolu) olunca
+// AI duplicate check ÇALIŞMIYORDU — sadece birebir başlık eşleşmesi yakalanıyordu.
+// Benzer ama farklı başlıklı makaleler (örn: "Borsa - 21 Ağustos" vs "Borsa - 9 Eylül")
+// YAKALANMIYORDU → ikisi de yayınlanıyordu.
+//
+// ÇÖZÜM: EVREN'i öncelikli yap, Gemini fallback kalsın. EVREN kotası ayrı (15M token/gün).
 
 const path = require('path');
 const fs = require('fs');
@@ -20,7 +26,74 @@ try {
   });
 } catch (e) {}
 
-// 5 Gemini API key
+// === EVREN API — öncelik (pipeline-all.js ile aynı mantık) ===
+var EVREN_API_BASE = process.env.EVREN_API_BASE || 'https://evren-llmapi.ssyz.org.tr/v1';
+var EVREN_MODEL = process.env.EVREN_MODEL || 'gemma-4-31b';
+var EVREN_KEY = '';
+try { EVREN_KEY = fs.readFileSync('/var/www/.evren-key', 'utf8').trim(); } catch (e) {}
+if (EVREN_KEY === '') EVREN_KEY = process.env.EVREN_API_KEY || process.env.EVREN_KEY || '';
+
+// EVREN çağrısı — OpenAI-uyumlu /v1/chat/completions formatı
+// Retry mekanizması: content boş dönerse 3 kez dene (deepseek-v4-flash bazen boş döner)
+async function callEvren(prompt, maxTokens) {
+  var MAX_EVREN_RETRIES = 3;
+  var lastError = null;
+  for (var attempt = 0; attempt < MAX_EVREN_RETRIES; attempt++) {
+    var url = EVREN_API_BASE.replace(/\/+$/, '') + '/chat/completions';
+    var resp;
+    try {
+      resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + EVREN_KEY },
+        body: JSON.stringify({
+          model: EVREN_MODEL,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: Math.min(Math.max(maxTokens, 1500), 4000),
+          temperature: 0.7
+        }),
+        signal: AbortSignal.timeout(60000)
+      });
+    } catch (e) {
+      lastError = new Error('EVREN fetch hatası: ' + e.message);
+      if (attempt < MAX_EVREN_RETRIES - 1) { await new Promise(r => setTimeout(r, 2000)); continue; }
+      throw lastError;
+    }
+    if (!resp.ok) {
+      var errText = '';
+      try { errText = await resp.text(); } catch (e) {}
+      var err = new Error('EVREN HTTP ' + resp.status + ': ' + errText.slice(0, 200));
+      err.statusCode = resp.status;
+      throw err;
+    }
+    var result = await resp.json();
+    if (result.error) {
+      var e = new Error('EVREN API error: ' + (result.error.message || JSON.stringify(result.error)));
+      e.statusCode = result.error.code || 500;
+      throw e;
+    }
+    var choice = result.choices && result.choices[0];
+    if (!choice) {
+      lastError = new Error('EVREN: choices boş');
+      if (attempt < MAX_EVREN_RETRIES - 1) { await new Promise(r => setTimeout(r, 2000)); continue; }
+      throw lastError;
+    }
+    var msg = choice.message || {};
+    var text = msg.content;
+    if (!text) {
+      lastError = new Error('EVREN: content boş (reasoning modeli düzgün cevap üretmedi)');
+      if (attempt < MAX_EVREN_RETRIES - 1) {
+        console.log('  EVREN content boş — deneme ' + (attempt + 1) + '/' + MAX_EVREN_RETRIES + ', 2 sn bekle');
+        await new Promise(r => setTimeout(r, 2000));
+        continue;
+      }
+      throw lastError;
+    }
+    return text;
+  }
+  throw lastError || new Error('EVREN: tüm denemeler başarısız');
+}
+
+// 5 Gemini API key (fallback)
 var GEMINI_KEYS = [];
 try { var k1 = fs.readFileSync('/var/www/.gemini-key', 'utf8').trim(); if (k1) GEMINI_KEYS.push(k1); } catch (e) {}
 try { var k2 = fs.readFileSync('/var/www/.gemini-key2', 'utf8').trim(); if (k2) GEMINI_KEYS.push(k2); } catch (e) {}
@@ -119,6 +192,31 @@ async function aiFindDuplicates(titles) {
 
   prompt += '\nSadece JSON array döndür, başka hiçbir şey yazma.';
 
+  // === EVREN ÖNCELİK (Gemini fallback) ===
+  // Önce EVREN dene — kotası ayrı, 15M token/gün, Gemini kotası dolu olsa bile çalışır
+  if (EVREN_KEY) {
+    try {
+      var evrenText = await callEvren(prompt, 2000);
+      if (evrenText) {
+        evrenText = evrenText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        var evrenMatch = evrenText.match(/\[[\s\S]*\]/);
+        if (evrenMatch) {
+          try {
+            var evrenGroups = JSON.parse(evrenMatch[0]);
+            if (Array.isArray(evrenGroups)) {
+              console.log('AI (EVREN) duplicate kontrol: başarılı — ' + evrenGroups.length + ' grup');
+              return evrenGroups;
+            }
+          } catch (e) { console.log('EVREN JSON parse hatası:', e.message); }
+        }
+      }
+    } catch (e) {
+      console.log('EVREN hata (Geminiye geciliyor):', e.message.slice(0, 80));
+      // EVREN başarısız — Gemini'ye düş
+    }
+  }
+
+  // === GEMINI FALLBACK ===
   for (var attempt = 1; attempt <= GEMINI_KEYS.length; attempt++) {
     var currentKey = GEMINI_KEYS[keyIndex % GEMINI_KEYS.length];
     keyIndex++;
