@@ -646,7 +646,13 @@ async function aiSummarize(title, contents, category) {
         continue; // aynı provider ile tekrar dene
       }
       log('  AI hata [' + provider.label + ']: ' + e.message.slice(0, 100));
-      deadKeys.add(provider.key);
+      // SADECE HTTP 4xx/5xx hatalarında deadKeys'e ekle (kalıcı hata — key ölü)
+      // "content boş" gibi geçici hatalarda deadKeys'e EKLEME — sonraki makalede EVREN tekrar denenecek
+      // User: "evren de çalışıyor aslında neden 1 haber" — sebep: ilk content boş'tan sonra EVREN ölü sayılıyordu
+      if (e.statusCode === 403 || e.statusCode === 429 || e.statusCode === 401) {
+        deadKeys.add(provider.key);
+      }
+      // "content boş" (statusCode yok) → deadKeys'e EKLEME, sadece sonraki provider'a geç
       providerIndex++;
       currentRetryCount = 0;
       continue;
@@ -1648,7 +1654,12 @@ async function main() {
               }
             } catch (e2) {
               log('    [' + prov.label + '] hata: ' + e2.message.slice(0, 60));
-              deadKeys.add(prov.key);
+              // SADECE HTTP 4xx hatalarında deadKeys'e ekle (kalıcı — key ölü)
+              // "content boş" geçici hata — deadKeys'e EKLEME, sonraki makalede tekrar dene
+              if (e2.statusCode === 403 || e2.statusCode === 429 || e2.statusCode === 401) {
+                deadKeys.add(prov.key);
+              }
+              // "content boş" hatası → deadKeys'e EKLEME
             }
           }
 
