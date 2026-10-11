@@ -139,7 +139,7 @@ export default function Home() {
                 onClick={handleHomeClick}
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfaya dön"
-                className="flex flex-col leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded text-center"
+                className="flex flex-col items-center justify-center leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded text-center"
               >
                 <span
                   className="font-bold tracking-tight uppercase text-white whitespace-nowrap"
