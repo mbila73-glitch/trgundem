@@ -64,8 +64,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [resetConfirm, setResetConfirm] = useState('');
   const [resetting, setResetting] = useState(false);
   const [resetResult, setResetResult] = useState<string | null>(null);
-  const [resetArticles, setResetArticles] = useState(true);
-  const [resetArchive, setResetArchive] = useState(true);
+  const [resetArticles, setResetArticles] = useState(false);
+  const [resetArchive, setResetArchive] = useState(false);
+  const [resetMessages, setResetMessages] = useState(false);
 
   // Custom article state
   const [fetchUrl, setFetchUrl] = useState('');
@@ -1069,7 +1070,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       const r = await fetch('/api/admin/reset', { 
         method: 'POST', 
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resetArticles, resetArchive })
+        body: JSON.stringify({ resetArticles, resetArchive, resetMessages })
       });
       const json = (await r.json()) as { ok?: boolean; deleted?: { publishedArticles: number; archivedArticles: number; articles: number; readerMessages: number }; error?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Sıfırlama başarısız');
@@ -1078,8 +1079,13 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
       if (resetArticles) parts.push(`${d.publishedArticles || 0} makale`);
       if (resetArchive) parts.push(`${d.archivedArticles || 0} arşiv`);
       parts.push(`${d.articles || 0} RSS kaydı`);
-      parts.push(`${d.readerMessages || 0} mesaj`);
-      setResetResult(`Silindi: ${parts.join(', ')}. ${resetArticles ? 'Yenileme başlatıldı.' : 'Makaleler korundu.'}`);
+      if (resetMessages) parts.push(`${d.readerMessages || 0} mesaj`);
+      const noneSelected = !resetArticles && !resetArchive && !resetMessages;
+      if (noneSelected) {
+        setResetResult('Hiçbir şey seçilmedi — sadece RSS kayıtları silindi.');
+      } else {
+        setResetResult(`Silindi: ${parts.join(', ')}. ${resetArticles ? 'Pipeline başlatıldı.' : 'Pipeline başlatılmadı.'}`);
+      }
       if (resetArticles) setPubArticles([]); else void loadPublished();
       setMessages([]); setSelectedIds(new Set());
 
@@ -3077,19 +3083,24 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
               <div className="text-center">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"><AlertTriangle className="h-8 w-8 text-destructive" /></div>
                 <h2 className="text-xl font-bold text-destructive">SİTE SİFIRLAMA</h2>
-                <p className="mt-2 text-sm text-muted-foreground">Aşağıdaki seçeneklerden sıfırlanacak alanları seçin. Bu işlem geri alınamaz.</p>
+                <p className="mt-2 text-sm text-muted-foreground">Aşağıdakilerden silinecek olanları seçin. Seçilmeyenler korunur. Bu işlem geri alınamaz.</p>
               </div>
-              {/* Sıfırlama seçenekleri — User: "makaleleri de sıfırla ve arşivi de sıfırla diye 2 kutu olsun" */}
+              {/* Sıfırlama seçenekleri — 3 kutu, default BOŞ */}
+              {/* User: "bu 3 seçme kutusu default olarak boş gelsin ben seçersem silinsinler" */}
               <div className="space-y-2 rounded-lg border border-border p-3 bg-muted/30">
                 <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer hover:bg-muted/50 rounded px-2 py-1.5 transition">
                   <Checkbox checked={resetArticles} onCheckedChange={(v) => setResetArticles(!!v)} />
-                  <span>Makaleleri sıfırla <span className="text-muted-foreground font-normal">(yayındaki + draft haberler)</span></span>
+                  <span>Makaleleri sıfırla <span className="text-muted-foreground font-normal">(ana sayfa + veri sayfası yayındaki + draft haberler)</span></span>
                 </label>
                 <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer hover:bg-muted/50 rounded px-2 py-1.5 transition">
                   <Checkbox checked={resetArchive} onCheckedChange={(v) => setResetArchive(!!v)} />
                   <span>Arşivi sıfırla <span className="text-muted-foreground font-normal">(arşivlenmiş + duplicate haberler)</span></span>
                 </label>
-                <p className="text-[11px] text-muted-foreground px-2 pt-1">RSS kayıtları ve okuyucu mesajları her zaman silinir. Pipeline otomatik başlatılır.</p>
+                <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer hover:bg-muted/50 rounded px-2 py-1.5 transition">
+                  <Checkbox checked={resetMessages} onCheckedChange={(v) => setResetMessages(!!v)} />
+                  <span>Mesajları sıfırla <span className="text-muted-foreground font-normal">(okuyucu temsilcisine gelen mesajlar)</span></span>
+                </label>
+                <p className="text-[11px] text-muted-foreground px-2 pt-1">RSS kayıtları her zaman silinir. Pipeline sadece makaleler seçiliyse başlatılır.</p>
               </div>
               <div className="space-y-2"><p className="text-center text-sm font-medium">Onaylamak için <span className="text-destructive font-bold">evet</span> yazın:</p><Input value={resetConfirm} onChange={(e) => setResetConfirm(e.target.value)} placeholder="evet" className="text-center text-lg font-semibold" autoFocus /></div>
               <div className="flex gap-3"><Button variant="outline" className="flex-1" onClick={() => { setResetOpen(false); setResetConfirm(''); }} disabled={resetting}>İptal</Button><Button variant="destructive" className="flex-1 gap-2" onClick={handleReset} disabled={!resetConfirmed || resetting}>{resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}Onayla</Button></div>

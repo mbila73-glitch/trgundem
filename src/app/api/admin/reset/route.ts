@@ -27,15 +27,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
   }
 
-  // Parse body — checkbox değerleri
-  let resetArticles = true;
-  let resetArchive = true;
+  // Parse body — checkbox değerleri (default false — seçilmezse silinmez)
+  let resetArticles = false;
+  let resetArchive = false;
+  let resetMessages = false;
   try {
-    const body = await req.json() as { resetArticles?: boolean; resetArchive?: boolean };
-    if (body.resetArticles === false) resetArticles = false;
-    if (body.resetArchive === false) resetArchive = false;
+    const body = await req.json() as { resetArticles?: boolean; resetArchive?: boolean; resetMessages?: boolean };
+    if (body.resetArticles === true) resetArticles = true;
+    if (body.resetArchive === true) resetArchive = true;
+    if (body.resetMessages === true) resetMessages = true;
   } catch {
-    // body yoksa default true
+    // body yoksa hepsi false
   }
 
   try {
@@ -59,8 +61,11 @@ export async function POST(req: NextRequest) {
     // 2. Delete all Article records (raw RSS items) — her zaman sil
     const articlesDeleted = await db.article.deleteMany({});
 
-    // 3. Delete all ReaderMessage records — her zaman sil
-    const messagesDeleted = await db.readerMessage.deleteMany({});
+    // 3. Delete ReaderMessage records — sadece checkbox seçiliyse
+    let messagesDeleted = { count: 0 };
+    if (resetMessages) {
+      messagesDeleted = await db.readerMessage.deleteMany({});
+    }
 
     // 4. Delete output files
     const fs = await import('node:fs');
