@@ -616,32 +616,42 @@ async function aiSummarize(title, contents, category, dateInfo) {
     // ESKİ: 6 kelimelik ardışık dizilim kontrolü — KALDIRILDI
     // User: "kelimelerin 2/3'ünü kullan 1/3 farklı" → ardışık dizilim kontrolü yok artık
 
-    // YENİ: Cümle bazında kontrol — bir cümlenin %80+ kısmı kaynakla birebir örtüşüyorsa kopyalama
-    // 2/3 (67%) izin → sadece %80+ örtüşme plagiarism sayılır (çok gevşek)
+    // YENİ: Cümle bazında KELİME örtüşmesi kontrolü
+    // User: "10 kelime varsa 6'sı aynı → GEÇER, 7'si aynı → PLAGIARİZM"
+    // Her cümle için: kaynakla aynı kelime oranı >67% ise plagiarism
     var aiSentences = splitSentences(aiText);
     var srcSentences = splitSentences(sourceText);
     var sentenceOverlap = 0;
     aiSentences.forEach(function(aSent) {
       var aNorm = normalize(aSent);
-      if (!aNorm) return;
+      if (!aNorm || aNorm.length < 20) return;
+      var aWords = aNorm.split(' ');
+      if (aWords.length < 5) return; // çok kısa cümleleri atla
+
+      var maxOverlapRatio = 0;
       srcSentences.forEach(function(sSent) {
         var sNorm = normalize(sSent);
-        if (!sNorm) return;
-        // Sadece TAM cümle örtüşmesi kontrol et (birebir aynı cümle)
-        if (aNorm.length >= 30 && sNorm.length >= 30) {
-          if (aNorm === sNorm || aNorm.indexOf(sNorm) >= 0 || sNorm.indexOf(aNorm) >= 0) {
-            sentenceOverlap++;
-            if (!seen.has(aNorm)) {
-              seen.add(aNorm);
-              found.push('Birebir cümle: ' + aNorm.slice(0, 80));
-            }
-          }
-        }
+        if (!sNorm || sNorm.length < 20) return;
+        var sWords = sNorm.split(' ');
+        // AI cümlesindeki kelimelerden kaç tanesi kaynak cümlesinde var?
+        var sWordSet = new Set(sWords);
+        var matchCount = 0;
+        aWords.forEach(function(w) { if (sWordSet.has(w)) matchCount++; });
+        var ratio = matchCount / aWords.length;
+        if (ratio > maxOverlapRatio) maxOverlapRatio = ratio;
       });
+
+      // Bu cümlenin >67% kelimesi kaynakla aynı → plagiarism
+      if (maxOverlapRatio > 0.67) {
+        sentenceOverlap++;
+        if (!seen.has(aNorm)) {
+          seen.add(aNorm);
+          found.push('Yüksek örtüşme (%' + Math.round(maxOverlapRatio * 100) + '): ' + aNorm.slice(0, 80));
+        }
+      }
     });
 
-    // Sadece tüm cümlelerin 2/3+ (67%) birebir örtüşüyorsa plagiarism
-    // User: "67 dedim ben" — 2/3 izin, fazlası plagiarism
+    // Eğer cümlelerin 2/3+ kısmında >67% kelime örtüşmesi varsa → toplu plagiarism
     if (aiSentences.length >= 3 && sentenceOverlap >= Math.ceil(aiSentences.length * 2 / 3)) {
       if (!seen.has('__overlap__')) {
         seen.add('__overlap__');
