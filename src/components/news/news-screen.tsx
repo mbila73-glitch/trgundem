@@ -214,7 +214,7 @@ function ArticleDetailInline({
       ) : (
         <div className="mb-6 flex justify-center">
           <div className="relative flex aspect-[16/9.9] w-full max-w-md items-center justify-center overflow-hidden rounded-xl bg-muted">
-            <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-60" />
+            <img src="/TRG_Logo.png" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-60" />
           </div>
         </div>
       )}
@@ -720,7 +720,7 @@ export function NewsScreen() {
           </div>
         ) : (
           <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">
-            <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+            <img src="/TRG_Logo.png" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
           </div>
         )}
         <div className="flex flex-1 flex-col gap-2 p-6">
