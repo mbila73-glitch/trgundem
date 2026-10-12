@@ -1714,7 +1714,13 @@ async function main() {
   // AI özet'ten FARKLI: plagiarizm/wordcount/ad filter YOK
   // Sadece mevcut metni akıcı, doğal yap — min 150 max 300 kelime
   // User: 'son düzenleme ve özete 150-300 kelimelik veri oluşsun'
-  if (statsForHistory.publishedCount > 0 && globalThis.prisma) {
+  // 2. AI DÜZENLE — ŞİMDİLİK DURDURULDU
+  // User: "ai düzenleme operasyonunu şimdilik komple durduralım.
+  //        evrenin yaptığı ai özet geminiden daha kaliteli görünüyor.
+  //        bir süre son ai düzenlemesini durdurup gidişata bakalım.
+  //        olmazsa tekrar başlatırız aidüzenlemeyi"
+  // Tekrar açmak için: if (false && → if (statsForHistory.publishedCount > 0 && globalThis.prisma)
+  if (false && statsForHistory.publishedCount > 0 && globalThis.prisma) {
     // CRITICAL: deadKeys'i SIFIRLA — AI Özet tüm key'leri tüketmiş olabilir (rate limit)
     // User: "ai düzenlemeler neden 0 saniye? tüm sağlayıcılar denendi ama hepsi başarısız"
     // Sebep: AI Özet 6 dk boyunca API çağrıları yapar, sonunda tüm key'ler 429 (rate limit) olur.
