@@ -91,6 +91,8 @@ function ArticleDetailInline({
 }) {
   const [article, setArticle] = useState<PublishedArticle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sourceLinks, setSourceLinks] = useState<{ title: string; link: string; source: string }[]>([]);
+  const [sourcesLoading, setSourcesLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +106,33 @@ function ArticleDetailInline({
       .then((a) => {
         if (cancelled) return;
         setArticle(a);
+        // Kaynakları yükle
+        if (a && a.sourceArticleIds) {
+          setSourcesLoading(true);
+          try {
+            const ids = JSON.parse(a.sourceArticleIds) as string[];
+            if (Array.isArray(ids) && ids.length > 0 && ids[0] !== 'custom') {
+              Promise.all(ids.map(async (id) => {
+                try {
+                  const r2 = await fetch(`/api/articles/${id}`, { cache: 'no-store' });
+                  if (!r2.ok) return null;
+                  const j2 = await r2.json() as { article: { title: string; link: string; source: { name: string } } };
+                  return { title: j2.article.title, link: j2.article.link, source: j2.article.source.name };
+                } catch { return null; }
+              })).then(results => {
+                if (cancelled) return;
+                setSourceLinks(results.filter((r2): r2 is { title: string; link: string; source: string } => r2 !== null));
+                setSourcesLoading(false);
+              });
+            } else {
+              setSourceLinks([]);
+              setSourcesLoading(false);
+            }
+          } catch {
+            setSourceLinks([]);
+            setSourcesLoading(false);
+          }
+        }
       })
       .catch(() => {
         if (!cancelled) setArticle(null);
@@ -208,7 +237,29 @@ function ArticleDetailInline({
       {/* Kalp + Geri + Ana Sayfa — haber sonunda, tek satırda */}
       <div className="mt-6 flex items-center gap-2 border-t border-border/50 pt-4">
         <HorizontalLikeBar articleId={article.id} />
-        <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 text-sm">
+
+      {/* Kaynaklar — haberin altında */}
+      <div className="mt-4 rounded-lg border border-border/50 bg-muted/20 p-3">
+        <p className="text-xs font-semibold text-foreground/80 mb-2">Bu haber {article.sourceCount} kaynaktan derlenmiştir:</p>
+        {sourcesLoading ? (
+          <p className="text-xs text-muted-foreground">Kaynaklar yükleniyor...</p>
+        ) : sourceLinks.length > 0 ? (
+          <ul className="space-y-1">
+            {sourceLinks.map((s, i) => (
+              <li key={i} className="text-xs flex items-start gap-1.5">
+                <span className="text-muted-foreground/60 font-bold flex-shrink-0">{i + 1}.</span>
+                <a href={s.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400 truncate">
+                  {s.source}: {s.title.slice(0, 60)}{s.title.length > 60 ? '...' : ''}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-muted-foreground">Kaynak bilgisi bulunamadı</p>
+        )}
+      </div>
+
+      <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 text-sm">
           <ArrowLeft className="h-4 w-4" />
           Geri
         </Button>
