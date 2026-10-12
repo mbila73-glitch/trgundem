@@ -1838,24 +1838,27 @@ async function main() {
     ws({ duzenleFinishedAt: phaseTimes.duzenleFinishedAt });
     log('  ⏱ Cleanup:    ' + (phaseTimes.cleanupStartedAt || '—') + ' → ' + (phaseTimes.cleanupFinishedAt || '—'));
     log('  ⏱ AI Düzenle: ' + (phaseTimes.duzenleStartedAt || '—') + ' → ' + (phaseTimes.duzenleFinishedAt || '—'));
-
-    // History'ye faz zamanlarını GÜNCELLE — done event'ine fazları ekle
-    wh({
-      event: 'phases-update',
-      startedAt: startedAtIso,
-      rssStartedAt: phaseTimes.rssStartedAt,
-      rssFinishedAt: phaseTimes.rssFinishedAt,
-      ozetStartedAt: phaseTimes.ozetStartedAt,
-      ozetFinishedAt: phaseTimes.ozetFinishedAt,
-      cleanupStartedAt: phaseTimes.cleanupStartedAt,
-      cleanupFinishedAt: phaseTimes.cleanupFinishedAt,
-      duzenleStartedAt: phaseTimes.duzenleStartedAt,
-      duzenleFinishedAt: phaseTimes.duzenleFinishedAt
-    });
   } else {
     log('  ⏱ Cleanup:    atlandı (yeni haber yok)');
     log('  ⏱ AI Düzenle: atlandı (yeni haber yok)');
   }
+
+  // phases-update event'ini HER ZAMAN yaz — Clear veya AI Düzenle çalışsın/çalışmasın
+  // Önceki bug: phases-update sadece AI Düzenle if bloğu içinde yazılıyordu
+  // → Clear çalışır ama AI Düzenle çalışmazsa phases-update yazılmıyor → UI "atlandı" diyor
+  // User: "bu süreleri neden düzeltemiyoruz? Clear atlandı, AI Düzenle atlandı"
+  wh({
+    event: 'phases-update',
+    startedAt: startedAtIso,
+    rssStartedAt: phaseTimes.rssStartedAt,
+    rssFinishedAt: phaseTimes.rssFinishedAt,
+    ozetStartedAt: phaseTimes.ozetStartedAt,
+    ozetFinishedAt: phaseTimes.ozetFinishedAt,
+    cleanupStartedAt: phaseTimes.cleanupStartedAt,
+    cleanupFinishedAt: phaseTimes.cleanupFinishedAt,
+    duzenleStartedAt: phaseTimes.duzenleStartedAt,
+    duzenleFinishedAt: phaseTimes.duzenleFinishedAt
+  });
 
   log('=== Tüm adımlar tamam (pipeline + cleanup + AI düzenle) ===');
   process.exit = origExit;
