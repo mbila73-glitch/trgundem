@@ -640,9 +640,9 @@ async function aiSummarize(title, contents, category, dateInfo) {
       });
     });
 
-    // Sadece tüm cümlelerin 80%+ birebir örtüşüyorsa plagiarism
-    // Önceki: 2/3 (67%) → Şimdi: 80% (çok daha gevşek)
-    if (aiSentences.length >= 5 && sentenceOverlap >= Math.ceil(aiSentences.length * 0.8)) {
+    // Sadece tüm cümlelerin 2/3+ (67%) birebir örtüşüyorsa plagiarism
+    // User: "67 dedim ben" — 2/3 izin, fazlası plagiarism
+    if (aiSentences.length >= 3 && sentenceOverlap >= Math.ceil(aiSentences.length * 2 / 3)) {
       if (!seen.has('__overlap__')) {
         seen.add('__overlap__');
         found.push('Toplu örtüşme: ' + sentenceOverlap + '/' + aiSentences.length + ' cümle birebir kaynakla aynı');
