@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon, ArrowDown, Sparkles, Image as ImageIcon, Wand2 } from 'lucide-react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon, ArrowDown, Sparkles, Image as ImageIcon, Wand2, Globe } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ const SUB_TABS: Array<{
   { id: 'bilim', label: 'Bilim / Teknoloji', icon: FolderTree },
   { id: 'kultur', label: 'Kültür / Sanat', icon: FolderTree },
   { id: 'spor', label: 'Spor / Magazin', icon: FolderTree },
+  { id: 'dunya', label: 'Dünya', icon: Globe },
   { id: 'ozel', label: 'Özel Haber', icon: Star },
 ];
 
@@ -37,6 +38,7 @@ const CATEGORY_MAP: Record<string, string> = {
   bilim: 'Bilim / Teknoloji',
   spor: 'Spor / Magazin',
   kultur: 'Kültür / Sanat',
+  dunya: 'Dünya',
   ozel: 'Özel',
 };
 
@@ -47,6 +49,7 @@ const CATEGORY_LIMITS: Record<string, number> = {
   'Spor / Magazin': 8,
   'Bilim / Teknoloji': 5,
   'Kültür / Sanat': 8,
+  'Dünya': 8,
   'Özel': 30,
 };
 

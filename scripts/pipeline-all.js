@@ -403,7 +403,8 @@ var CATEGORY_MIN_WORDS = {
   'Kamu / Resmi': 200,
   'Bilim / Teknoloji': 200,
   'Kültür / Sanat': 200,
-  'Spor / Magazin': 200
+  'Spor / Magazin': 200,
+  'Dünya': 200
 };
 
 // HTML entity decode — publishedArticle.aiTitle temiz olsun
@@ -939,19 +940,21 @@ var CATEGORY_MIN_SOURCES = {
   'Kamu / Resmi': 2,
   'Bilim / Teknoloji': 2,
   'Kültür / Sanat': 2,
-  'Spor / Magazin': 2
+  'Spor / Magazin': 2,
+  'Dünya': 2
 };
 
 // Kategori bazlı yayın limiti (en çok tekrar eden ilk N haber)
 // User: "rss özet haber sayısını 50 yapalım"
 // Total: 17+11+6+5+5+6 = 50 (önceki: 15+10+5+5+5+5 = 45)
 var CATEGORY_PUBLISH_LIMITS = {
-  'Siyaset': 17,
-  'Ekonomi / Finans': 11,
-  'Kamu / Resmi': 6,
+  'Siyaset': 15,
+  'Ekonomi / Finans': 10,
+  'Kamu / Resmi': 5,
   'Bilim / Teknoloji': 5,
   'Kültür / Sanat': 5,
-  'Spor / Magazin': 6
+  'Spor / Magazin': 5,
+  'Dünya': 5
 };
 
 // Ana sayfa sıralaması: 3 Siyaset, 2 Ekonomi, 1 Kamu, 1 Kültür, 1 Spor = 8

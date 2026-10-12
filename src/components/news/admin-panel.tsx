@@ -31,7 +31,7 @@ type Message = { id: string; name: string; email: string; subject: string; messa
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; initialHearts: number; clickHearts: number; };
 type AdminTab = 'messages' | 'custom' | 'published' | 'live' | 'archived' | 'pending' | 'pipeline';
 
-const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
+const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Dünya'];
 
 export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [token, setToken] = useState<string | null>(null);
@@ -1634,7 +1634,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         <div className="space-y-1.5">
                           <Label className="text-xs">Kategori (birden fazla seçebilirsiniz)</Label>
                           <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
-                            {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
+                            {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Dünya'].map(cat => (
                               <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
                                 <Checkbox
                                   checked={customCategory.includes(cat)}
@@ -1876,7 +1876,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <div className="space-y-1.5">
                             <Label className="text-xs">Kategori (birden fazla seçebilirsiniz)</Label>
                             <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
-                              {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
+                              {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Dünya'].map(cat => (
                                 <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
                                   <Checkbox
                                     checked={manualCategory.includes(cat)}
@@ -2027,7 +2027,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   <div className="space-y-1">
                                     <Label className="text-xs">Kategori (ilk seçili kayıt için kullanılır)</Label>
                                     <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
-                                      {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
+                                      {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Dünya'].map(cat => (
                                         <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
                                           <Checkbox
                                             checked={editCategory.includes(cat)}
@@ -2152,7 +2152,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       <div className="space-y-1">
                                         <Label className="text-xs">Kategori (ilk seçili kayıt için kullanılır)</Label>
                                         <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
-                                          {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
+                                          {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Dünya'].map(cat => (
                                             <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
                                               <Checkbox
                                                 checked={editCategory.includes(cat)}
