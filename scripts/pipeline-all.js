@@ -1086,14 +1086,42 @@ async function main() {
   console.log = _origLog;
   // RSS istatistiklerini parse et
   var rssRead = 0;
+  var rssAdded = 0;
   for (var ri = 0; ri < _capturedRss.length; ri++) {
     var rssMatch = _capturedRss[ri].match(/İşlenen kaynak:\s*(\d+)/);
     if (rssMatch) { rssRead = parseInt(rssMatch[1]); break; }
   }
-  log('RSS stats: ' + rssRead + ' kaynak işlendi');
+  for (var ri = 0; ri < _capturedRss.length; ri++) {
+    var addedMatch = _capturedRss[ri].match(/Eklenen makale:\s*(\d+)/);
+    if (addedMatch) { rssAdded = parseInt(addedMatch[1]); break; }
+  }
+  log('RSS stats: ' + rssRead + ' kaynak işlendi, ' + rssAdded + ' yeni makale eklendi');
   phaseTimes.rssFinishedAt = new Date().toISOString();
   ws({ rssRead: rssRead, rssFinishedAt: phaseTimes.rssFinishedAt });
   if (global.gc) { global.gc(); log('GC'); }
+
+  // Eğer RSS'ten yeni makale gelmediyse AI Özet'i ATLA — tekrar özetlemeyi önle
+  // User: "aynı haberi tekrar tekrar özetliyor olabilir miyiz?"
+  // Sebep: RSS: 0 ise 24h makaleleri yeniden işliyordu, eski arşivler take limiti dışında kalınca tekrar özetleniyordu
+  if (rssAdded === 0) {
+    log('⚠ RSS\'ten yeni makale gelmedi (Eklenen: 0) — AI Özet ATLANIYOR (tekrar özetlemeyi önlemek için)');
+    phaseTimes.ozetFinishedAt = new Date().toISOString();
+    ws({ stage: 'done', ozetFinishedAt: phaseTimes.ozetFinishedAt, finishedAt: phaseTimes.ozetFinishedAt });
+    wh(Object.assign({
+      event: 'done',
+      startedAt: startedAtIso,
+      finishedAt: phaseTimes.ozetFinishedAt,
+      durationMs: Date.now() - startedAtMs,
+      rssStartedAt: phaseTimes.rssStartedAt,
+      rssFinishedAt: phaseTimes.rssFinishedAt,
+      ozetStartedAt: null,
+      ozetFinishedAt: phaseTimes.ozetFinishedAt,
+    }, { rssRead: rssRead, duplicatesFound: 0, summariesDone: 0, publishedCount: 0 }));
+    log('=== Cycle tamam (RSS yok, AI özet atlandı) ===');
+    process.exit = origExit;
+    origExit(0);
+    return;
+  }
 
   // Gruplama + AI özet
   phaseTimes.ozetStartedAt = new Date().toISOString();
@@ -1162,7 +1190,7 @@ async function main() {
         where: { status: { in: ['archived', 'duplicate'] } },
         select: { id: true, aiTitle: true, aiSummary: true, category: true, sourceCount: true, status: true },
         orderBy: { archivedAt: 'desc' },
-        take: 200  // önceki 500 idi — user: "500'ü 200'e düşürelim"
+        take: 2000  // 200→2000: daha çok arşiv kaydı kontrol et, tekrar özetlemeyi önle
       });
       // Birleşik liste (yayında + arşiv + duplicate) — kategori farkı gözetmeksizin aynı başlık ara
       var existing = existingPublished.concat(existingArchived);
