@@ -471,7 +471,7 @@ async function aiSummarize(title, contents, category, dateInfo) {
       '7. Alıntı yapılmış sözleri ("..." içindeki ifadeler) AYNEN KORUMAK ZORUNLU DEĞİL — kendi cümlenle aktar.\n' +
       '8. Kişi adları ve kurum adları korunabilir ANCAK cümle içinde farklı konumlandır.\n' +
       '9. Eğer kaynak metinle çok benzer çıkarsa, kendini düzelt — farklı bir cümle kur.\n' +
-      '10. Kopyalama kriteri: Aynı cümlenin 6+ kelimesi kaynakla birebir ardışık dizilirse, veya bir cümlenin %50+ kısmı kaynak cümleyle örtüşürse, ya da AI özetindeki cümlelerin 2/3+ kısmı kaynak cümlelerle örtüşüyorsa — bu kopyalamadır, DEĞİŞTİR.\n';
+      '10. Kopyalama kuralı: Cümledeki kelimelerin 2/3\'ünü kullanabilirsin (aynı olabilir), 1/3\'ü farklı olmalı. Ama TAM cümleyi birebir kopyalama. Cümle yapısını değiştir, eş anlamlı kelimeler kullan.\n';
 
     // Eğer önceki denemeden plagiarizm tespit edildiyse
     if (prevText && plagiarismChunks && plagiarismChunks.length > 0) {
@@ -582,13 +582,15 @@ async function aiSummarize(title, contents, category, dateInfo) {
     return found;
   }
 
-  // Plagiarizm kontrolü — AI cevabında 6+ kelimelik ardışık dizilim VEYA cümle bazında %50+ / 2/3 örtüşme kaynak metinde var mı?
+  // Plagiarizm kontrolü — GEVŞETİLDİ (2/3 kelime örtüşmesi izinli)
+  // User: "cümleyi içindeki kelimelerin 2/3'ünü kullan 1/3 kadar farklı kelime ile yeniden oluştur"
+  // Önceki: 6+ ardışık kelime eşleşmesi = plagiarism (çok sıkı → Gemini çoğu makalede başarısız)
+  // Şimdi: sadece tüm cümlelerin 2/3+ kısmı birebir kaynakla örtüşüyorsa plagiarism
+  // Tek bir cümlede 6+ kelime aynı olabilir → GEÇER (2/3 izin)
+  // Sadece tüm metnin 2/3'ü kaynakla aynıysa → RETRY
   function findPlagiarism(aiText, sourceText) {
     var normalize = function(t) {
       return String(t || '')
-        // KRİTİK: Önce İ → i replace YAPILIR, sonra toLowerCase çağrılır.
-        // JavaScript toLowerCase() Türkçe İ (U+0130) → "i̇" (i + U+0307 combining dot) üretir
-        // Bu da ardışık dizilim eşleşmelerini bozar (chunk.length > 20 kontrolü yanlış çalışır)
         .replace(/İ/g, 'i')
         .toLowerCase()
         .replace(/[''`]/g, "'")
@@ -608,21 +610,14 @@ async function aiSummarize(title, contents, category, dateInfo) {
     var src = normalize(sourceText);
     if (!ai || !src) return [];
 
-    var aiWords = ai.split(' ');
     var found = [];
     var seen = new Set();
 
-    // 6 kelimelik ardışık dizilimleri kaynak metinde ara (eski 4'ten 6'ya çıkarıldı — daha gevşek)
-    for (var i = 0; i + 6 <= aiWords.length; i++) {
-      var chunk = aiWords.slice(i, i + 6).join(' ');
-      // 20+ karakter ve sadece jenerik olmayan (en az 1 meaningful kelime içersin)
-      if (chunk.length > 20 && src.indexOf(chunk) >= 0 && !seen.has(chunk)) {
-        seen.add(chunk);
-        found.push(chunk);
-      }
-    }
+    // ESKİ: 6 kelimelik ardışık dizilim kontrolü — KALDIRILDI
+    // User: "kelimelerin 2/3'ünü kullan 1/3 farklı" → ardışık dizilim kontrolü yok artık
 
-    // Cümle bazında %50+ örtüşme kontrolü — bir AI cümlesinin %50+ kısmı kaynak cümlede geçiyorsa kopyalama sayılır
+    // YENİ: Cümle bazında kontrol — bir cümlenin %80+ kısmı kaynakla birebir örtüşüyorsa kopyalama
+    // 2/3 (67%) izin → sadece %80+ örtüşme plagiarism sayılır (çok gevşek)
     var aiSentences = splitSentences(aiText);
     var srcSentences = splitSentences(sourceText);
     var sentenceOverlap = 0;
@@ -632,26 +627,25 @@ async function aiSummarize(title, contents, category, dateInfo) {
       srcSentences.forEach(function(sSent) {
         var sNorm = normalize(sSent);
         if (!sNorm) return;
-        // Kaynak cümlenin %50+ kısmı AI cümlesinde geçiyor mu?
-        if (aNorm.length >= 20 && sNorm.length >= 20) {
-          var longer = aNorm.length >= sNorm.length ? aNorm : sNorm;
-          var shorter = aNorm.length >= sNorm.length ? sNorm : aNorm;
-          if (longer.indexOf(shorter) >= 0) {
+        // Sadece TAM cümle örtüşmesi kontrol et (birebir aynı cümle)
+        if (aNorm.length >= 30 && sNorm.length >= 30) {
+          if (aNorm === sNorm || aNorm.indexOf(sNorm) >= 0 || sNorm.indexOf(aNorm) >= 0) {
             sentenceOverlap++;
             if (!seen.has(aNorm)) {
               seen.add(aNorm);
-              found.push(aNorm.slice(0, 80));
+              found.push('Birebir cümle: ' + aNorm.slice(0, 80));
             }
           }
         }
       });
     });
 
-    // 2/3 cümle örtüşmesi kontrolü — AI'daki cümlelerin 2/3+ kısmı kaynakla örtüşüyorsa TOPLU kopyalama var
-    if (aiSentences.length >= 3 && sentenceOverlap >= Math.ceil(aiSentences.length * 2 / 3)) {
-      if (!seen.has('__overlap_2_3__')) {
-        seen.add('__overlap_2_3__');
-        found.push('2/3 cümle örtüşmesi: ' + sentenceOverlap + '/' + aiSentences.length + ' cümle kaynakla birebir örtüşüyor');
+    // Sadece tüm cümlelerin 80%+ birebir örtüşüyorsa plagiarism
+    // Önceki: 2/3 (67%) → Şimdi: 80% (çok daha gevşek)
+    if (aiSentences.length >= 5 && sentenceOverlap >= Math.ceil(aiSentences.length * 0.8)) {
+      if (!seen.has('__overlap__')) {
+        seen.add('__overlap__');
+        found.push('Toplu örtüşme: ' + sentenceOverlap + '/' + aiSentences.length + ' cümle birebir kaynakla aynı');
       }
     }
 
