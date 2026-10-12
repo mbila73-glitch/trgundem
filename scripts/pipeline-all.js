@@ -57,12 +57,14 @@ var deadKeys = new Set(); // bu cycle'da ölü key'ler (403/429) — atlanır
 // type: 'evren' (OpenAI-uyumlu) veya 'gemini' (Gemini formatı)
 function getAiProviders() {
   var providers = [];
-  // 1. EVREN (öncelik)
+  // 1. EVREN (öncelik — TEK sağlayıcı)
   if (EVREN_KEY) providers.push({ type: 'evren', key: EVREN_KEY, label: 'EVREN(' + EVREN_MODEL + ')' });
-  // 2-5. Gemini key'ler (fallback)
-  GEMINI_KEYS.forEach(function(gk, i) {
-    providers.push({ type: 'gemini', key: gk, label: 'Gemini#' + (i+1) + '(' + GEMINI_MODEL + ')' });
-  });
+  // 2-5. Gemini key'ler — ŞİMDİLİK DURDURULDU
+  // User: "gemini keyleri de durduralım evren tek çalışsın"
+  // Tekrar açmak için: aşağıdaki 3 satırın yorumunu kaldır
+  // GEMINI_KEYS.forEach(function(gk, i) {
+  //   providers.push({ type: 'gemini', key: gk, label: 'Gemini#' + (i+1) + '(' + GEMINI_MODEL + ')' });
+  // });
   return providers;
 }
 
