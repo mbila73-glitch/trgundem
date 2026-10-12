@@ -683,7 +683,7 @@ async function aiSummarize(title, contents, category, dateInfo) {
       continue;
     }
 
-    var maxTokens = 1500;
+    var maxTokens = 4000; // 1500→4000: 1500 token Türkçe 400 kelime için yetmiyordu, metin yarım kalıyordu
     var promptText = buildPrompt(minWords, prevAttemptText, prevPlagiarism, prevWordCount, prevAds);
     var text = null;
     try {
