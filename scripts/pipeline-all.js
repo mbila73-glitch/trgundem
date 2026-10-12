@@ -1776,16 +1776,22 @@ async function main() {
 
         try {
           var editedText = null;
-          // User: "evren sadece son aşamada aidüzenleme işini yapsın"
-          // AI Düzenle: SADECE EVREN (Gemini YOK)
+          // AI Düzenle: SADECE EVREN — 3 kez retry
+          // User: "evren hata verirse tekrar denesin"
           if (EVREN_KEY) {
-            try {
-              editedText = await callEvren(editPrompt, 2000);
-              log('    [EVREN] başarılı');
-            } catch (e2) {
-              log('    [EVREN] hata: ' + e2.message.slice(0, 80));
-              // EVREN başarısız — Gemini'ye DÜŞME (user isteği: evren tek)
-              // Sonraki cycle'da tekrar denenecek (isEdited hâlâ false)
+            for (var duzenleAttempt = 0; duzenleAttempt < 3 && !editedText; duzenleAttempt++) {
+              try {
+                editedText = await callEvren(editPrompt, 2000);
+                if (editedText) {
+                  log('    [EVREN] başarılı (deneme ' + (duzenleAttempt + 1) + '/3)');
+                }
+              } catch (e2) {
+                log('    [EVREN] hata (deneme ' + (duzenleAttempt + 1) + '/3): ' + e2.message.slice(0, 80));
+                if (duzenleAttempt < 2) {
+                  log('    [EVREN] 5 sn bekle, tekrar dene...');
+                  await new Promise(function(r) { setTimeout(r, 5000); });
+                }
+              }
             }
           } else {
             log('    [EVREN] key yok — atlanıyor');

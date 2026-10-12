@@ -49,8 +49,9 @@ export async function GET(
   if (!article) {
     return NextResponse.json({ error: 'Haber bulunamadı' }, { status: 404 });
   }
-  // sanitize: sourceArticleIds + source alanlarını kaldır, imageUrl'yi proxy'ye çevir
-  const { sourceArticleIds: _ignored, source: _srcIgnored, ...publicArticle } = article as any;
+  // sanitize: sourceArticleIds alanını kaldır, source KALSIN (kaynak adı gerekli)
+  // User: "kaynak bulunamadı diyor hala" — sebep: source alanı siliniyordu
+  const { sourceArticleIds: _ignored, ...publicArticle } = article as any;
   const sanitized = publicArticle as any;
   if (sanitized.imageUrl && typeof sanitized.imageUrl === 'string' && sanitized.imageUrl.startsWith('http')) {
     sanitized.imageUrl = `/api/img?url=${encodeURIComponent(sanitized.imageUrl)}`;
