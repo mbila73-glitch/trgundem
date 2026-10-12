@@ -57,14 +57,13 @@ var deadKeys = new Set(); // bu cycle'da ölü key'ler (403/429) — atlanır
 // type: 'evren' (OpenAI-uyumlu) veya 'gemini' (Gemini formatı)
 function getAiProviders() {
   var providers = [];
-  // 1. EVREN (öncelik — TEK sağlayıcı)
+  // User: "geri kalan tüm işleri gemini keyler yapsın"
+  // AI Özet: Gemini öncelikli (hızlı), EVREN fallback
+  GEMINI_KEYS.forEach(function(gk, i) {
+    providers.push({ type: 'gemini', key: gk, label: 'Gemini#' + (i+1) + '(' + GEMINI_MODEL + ')' });
+  });
+  // EVREN fallback (Gemini'nin hepsi başarısız olursa)
   if (EVREN_KEY) providers.push({ type: 'evren', key: EVREN_KEY, label: 'EVREN(' + EVREN_MODEL + ')' });
-  // 2-5. Gemini key'ler — ŞİMDİLİK DURDURULDU
-  // User: "gemini keyleri de durduralım evren tek çalışsın"
-  // Tekrar açmak için: aşağıdaki 3 satırın yorumunu kaldır
-  // GEMINI_KEYS.forEach(function(gk, i) {
-  //   providers.push({ type: 'gemini', key: gk, label: 'Gemini#' + (i+1) + '(' + GEMINI_MODEL + ')' });
-  // });
   return providers;
 }
 
@@ -1716,13 +1715,11 @@ async function main() {
   // AI özet'ten FARKLI: plagiarizm/wordcount/ad filter YOK
   // Sadece mevcut metni akıcı, doğal yap — min 150 max 300 kelime
   // User: 'son düzenleme ve özete 150-300 kelimelik veri oluşsun'
-  // 2. AI DÜZENLE — ŞİMDİLİK DURDURULDU
-  // User: "ai düzenleme operasyonunu şimdilik komple durduralım.
-  //        evrenin yaptığı ai özet geminiden daha kaliteli görünüyor.
-  //        bir süre son ai düzenlemesini durdurup gidişata bakalım.
-  //        olmazsa tekrar başlatırız aidüzenlemeyi"
-  // Tekrar açmak için: if (false && → if (statsForHistory.publishedCount > 0 && globalThis.prisma)
-  if (false && statsForHistory.publishedCount > 0 && globalThis.prisma) {
+  // 2. AI DÜZENLE — SADECE EVREN
+  // User: "evren sadece son aşamada aidüzenleme işini yapsın"
+  // AI Özet: Gemini (hızlı) → AI Düzenle: EVREN (kaliteli)
+  // Sadece isEdited=false makaleler (ilk sefer 50, sonrasında sadece yeni)
+  if (statsForHistory.publishedCount > 0 && globalThis.prisma) {
     // CRITICAL: deadKeys'i SIFIRLA — AI Özet tüm key'leri tüketmiş olabilir (rate limit)
     // User: "ai düzenlemeler neden 0 saniye? tüm sağlayıcılar denendi ama hepsi başarısız"
     // Sebep: AI Özet 6 dk boyunca API çağrıları yapar, sonunda tüm key'ler 429 (rate limit) olur.
@@ -1775,27 +1772,19 @@ async function main() {
 
         try {
           var editedText = null;
-          // AI Düzenle: önce EVREN, başarısız olursa Gemini'ye fallback
-          // User: "evren başarısız olursa gemini kullanılsın"
-          var providers = getAiProviders();
-          for (var pi2 = 0; pi2 < providers.length && !editedText; pi2++) {
-            var prov = providers[pi2];
-            if (deadKeys.has(prov.key)) continue;
+          // User: "evren sadece son aşamada aidüzenleme işini yapsın"
+          // AI Düzenle: SADECE EVREN (Gemini YOK)
+          if (EVREN_KEY) {
             try {
-              if (prov.type === 'evren') {
-                editedText = await callEvren(editPrompt, 2000);
-              } else {
-                editedText = await callGemini(prov.key, editPrompt, 2000);
-              }
+              editedText = await callEvren(editPrompt, 2000);
+              log('    [EVREN] başarılı');
             } catch (e2) {
-              log('    [' + prov.label + '] hata: ' + e2.message.slice(0, 60));
-              // SADECE HTTP 4xx hatalarında deadKeys'e ekle (kalıcı — key ölü)
-              // "content boş" geçici hata — deadKeys'e EKLEME, sonraki makalede tekrar dene
-              if (e2.statusCode === 403 || e2.statusCode === 429 || e2.statusCode === 401) {
-                deadKeys.add(prov.key);
-              }
-              // "content boş" hatası → deadKeys'e EKLEME
+              log('    [EVREN] hata: ' + e2.message.slice(0, 80));
+              // EVREN başarısız — Gemini'ye DÜŞME (user isteği: evren tek)
+              // Sonraki cycle'da tekrar denenecek (isEdited hâlâ false)
             }
+          } else {
+            log('    [EVREN] key yok — atlanıyor');
           }
 
           if (editedText) {
