@@ -669,7 +669,7 @@ async function aiSummarize(title, contents, category, dateInfo) {
   var providerIndex = 0;
   // Bir provider'a max 3 kez retry yapılır (plagiarizm/reklam/kısa için)
   // Sonra sıradaki provider'a geç
-  var maxRetriesPerProvider = 3;
+  var maxRetriesPerProvider = 1; // 3→1: plagiarizm/kısa cevapta retry yapma, atla geç
   var currentRetryCount = 0;
 
   while (providerIndex < providers.length) {
@@ -1034,6 +1034,28 @@ function runScript(scriptPath, name) {
 }
 
 async function main() {
+  // === LOCK MEKANİZMASI — önceki cycle bitmeden yenisi başlamasın ===
+  // User: "5 cycle aynı anda çalışıyordu — 5× token tüketimi"
+  // Çözüm: pipeline-once.lock dosyası varsa çık, yoksa oluştur
+  var LOCK_FILE = path.join(ROOT, 'pipeline-once.lock');
+  try {
+    var lockStat = fs.statSync(LOCK_FILE);
+    var lockAge = Date.now() - lockStat.mtimeMs;
+    if (lockAge < 120 * 60 * 1000) { // 120 dk'dan yeni ise — hâlâ çalışıyor
+      console.log('[' + new Date().toISOString() + '] ÖNCEKİ CYCLE HÂLÂ ÇALIŞIYOR (' + Math.round(lockAge / 60000) + ' dk) — ÇIK');
+      process.exit(0);
+    } else {
+      console.log('[' + new Date().toISOString() + '] Eski lock bulundu (' + Math.round(lockAge / 60000) + ' dk) — silindi, devam');
+      fs.unlinkSync(LOCK_FILE);
+    }
+  } catch (e) {
+    // Lock dosyası yok — bu ilk çalışma
+  }
+  // Lock oluştur
+  try { fs.writeFileSync(LOCK_FILE, String(process.pid), 'utf8'); } catch (e) {}
+  // Çıkışta lock'u sil
+  exitListeners.push(function() { try { fs.unlinkSync(LOCK_FILE); } catch (e) {} });
+
   log('=== Cycle basladi ===');
   log('GEMINI keys: ' + GEMINI_KEYS.length + ' adet');
   var startedAtIso = new Date().toISOString();
