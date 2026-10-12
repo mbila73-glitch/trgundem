@@ -671,7 +671,7 @@ async function aiSummarize(title, contents, category, dateInfo) {
   var providerIndex = 0;
   // Bir provider'a max 3 kez retry yapılır (plagiarizm/reklam/kısa için)
   // Sonra sıradaki provider'a geç
-  var maxRetriesPerProvider = 1; // 3→1: plagiarizm/kısa cevapta retry yapma, atla geç
+  var maxRetriesPerProvider = 2; // 1→2: Gemini 2 kez denesin, EVREN'e daha az düşer → hız artar
   var currentRetryCount = 0;
 
   while (providerIndex < providers.length) {
