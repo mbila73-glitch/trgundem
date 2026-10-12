@@ -37,17 +37,27 @@ function getMainSlider(articles: PublishedArticle[]): PublishedArticle[] {
   return articles.slice(0, 20);
 }
 
-// Üst 4 kutu: Siyaset[0], Siyaset[1], Ekonomi[0], Ekonomi[1]
-// Eksikse articles'dan tamamla (4 kutu hep dolu)
+// Üst 4 kutu: Dünya[0] (yoksa Siyaset[0]), Siyaset[1], Ekonomi[0], Ekonomi[1]
+// User: "dünya kategorisinin ilk haberi 4'lü grubun en solundaki kutuya gelsin.
+//        bu kategoride haber yoksa siyasetin ilk haberi olsun o kutuda."
 function getTopBoxes(articles: PublishedArticle[]): (PublishedArticle | null)[] {
+  const dunya = filterByCategory(articles, 'Dünya');
   const siyaset = filterByCategory(articles, 'Siyaset');
   const ekonomi = filterByCategory(articles, 'Ekonomi / Finans');
 
   const boxes: (PublishedArticle | null)[] = [];
   const usedIds = new Set<string>();
 
-  // Önce: Siyaset[0], Siyaset[1], Ekonomi[0], Ekonomi[1]
-  const candidates = [siyaset[0], siyaset[1], ekonomi[0], ekonomi[1]];
+  // Box 0 (en sol): Dünya[0] varsa onu, yoksa Siyaset[0]
+  // Box 1: Siyaset[0] (dedup atlar ise Siyaset[1] fallback'ten gelir)
+  // Box 2: Ekonomi[0]
+  // Box 3: Ekonomi[1]
+  const candidates = [
+    dunya[0] ?? siyaset[0],  // Box 0: Dünya[0] or Siyaset[0]
+    siyaset[0] ?? siyaset[1], // Box 1: Siyaset[0] (dedup skip → fallback)
+    ekonomi[0],               // Box 2
+    ekonomi[1],               // Box 3
+  ];
   for (const c of candidates) {
     if (c && !usedIds.has(c.id)) {
       boxes.push(c);
