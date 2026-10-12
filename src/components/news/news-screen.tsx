@@ -43,12 +43,12 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 const CATEGORY_LIMITS: Record<string, number> = {
-  'Siyaset': 15,
+  'Siyaset': 20,
   'Kamu / Resmi': 8,
   'Ekonomi / Finans': 10,
   'Spor / Magazin': 8,
   'Bilim / Teknoloji': 5,
-  'Kültür / Sanat': 8,
+  'Kültür / Sanat': 5,
   'Dünya': 8,
   'Özel': 30,
 };

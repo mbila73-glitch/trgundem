@@ -50,9 +50,13 @@ export async function GET(req: NextRequest) {
 
   if (layout === 'all') {
     // ====== ANA SAYFA 50 HABER (TEK BATCH) ======
+    // User: "baş haber kaynak sayısına göre en fazla olan haber olacak.
+    //        baştan itibaren: Siyaset 5, Ekonomi 5, Dünya 2, Kamu 3, Kültür 2, Spor 2, Bilim 2
+    //        = 22 (baş dahil). Sonra aynı sıra ile 50'ye tamamla."
+
     const excludeIds: string[] = [];
 
-    // 1. Baş haber seçimi
+    // 1. Baş haber: en yüksek sourceCount'lu (kategori bağımsız)
     let basHaber: any = null;
     const ozel = await db.publishedArticle.findMany({
       where: { category: 'Özel', status },
@@ -69,60 +73,51 @@ export async function GET(req: NextRequest) {
     }
     if (basHaber) excludeIds.push(basHaber.id);
 
-    // 2. Kategori kotaları — baş hariç 69 koltuk
-    //    Siyaset 20 + Ekonomi 15 + Kamu 12 + Kültür 8 + Spor 8 + Bilim 6 = 69
-    //    Eğer Özel baş varsa 69 + 1 = 70
-    //    Eğer Özel baş yoksa 69 + 1 (Siyaset'in başı) = 70
-    const quotas: Array<{ cat: string; limit: number }> = [
-      { cat: 'Siyaset', limit: 20 },
-      { cat: 'Ekonomi / Finans', limit: 15 },
-      { cat: 'Kamu / Resmi', limit: 12 },
-      { cat: 'Kültür / Sanat', limit: 8 },
-      { cat: 'Spor / Magazin', limit: 8 },
-      { cat: 'Bilim / Teknoloji', limit: 6 },
-    ];
+    // 2. Kategori sıralaması ve her turda alınacak sayı
+    const cats = ['Siyaset', 'Ekonomi / Finans', 'Dünya', 'Kamu / Resmi', 'Kültür / Sanat', 'Spor / Magazin', 'Bilim / Teknoloji'];
+    const perRound = [5, 5, 2, 3, 2, 2, 2]; // her turda her kategoriden kaç tane
+    const catArticles: Record<string, any[]> = {};
 
-    let all: any[] = basHaber ? [basHaber] : [];
-    const extrasByCat: Record<string, any[]> = {};
-
-    for (const { cat, limit } of quotas) {
+    // Her kategoriden makaleleri al (son bilgiler önce)
+    for (let i = 0; i < cats.length; i++) {
+      const cat = cats[i];
       const items = await db.publishedArticle.findMany({
         where: { category: cat, status, id: { notIn: excludeIds } },
         orderBy: { latestPublishedAt: 'desc' },
-        take: limit + 30,
+        take: 50,
       });
-      // "Konu ile ilgili son bilgiler şu şekildedir:" içeren haberleri öncelikli sırala
+      // "Konu ile ilgili son bilgiler" öncelikli
       const sonBilgiler = items.filter((a: any) => a.aiSummary?.includes('Konu ile ilgili son bilgiler şu şekildedir:'));
       const normal = items.filter((a: any) => !a.aiSummary?.includes('Konu ile ilgili son bilgiler şu şekildedir:'));
-      const reordered = [...sonBilgiler, ...normal];
-      const kota = reordered.slice(0, limit);
-      kota.forEach((i: any) => { all.push(i); excludeIds.push(i.id); });
-      extrasByCat[cat] = reordered.slice(limit);
+      catArticles[cat] = [...sonBilgiler, ...normal];
     }
 
-    // 3. Round-robin: 70'ye tamamla
-    let roundIndex = 0;
-    while (all.length < 70 && roundIndex < 100) {
-      let added = false;
-      for (const { cat } of quotas) {
-        if (extrasByCat[cat] && extrasByCat[cat][roundIndex]) {
-          all.push(extrasByCat[cat][roundIndex]);
-          excludeIds.push(extrasByCat[cat][roundIndex].id);
-          added = true;
+    // 3. Round-robin: baş + kategori sırası ile 50'ye tamamla
+    let all: any[] = basHaber ? [basHaber] : [];
+    const catPointers: Record<string, number> = {};
+    cats.forEach(cat => { catPointers[cat] = 0; });
+
+    while (all.length < 50) {
+      let addedThisRound = false;
+      for (let i = 0; i < cats.length; i++) {
+        const cat = cats[i];
+        const count = perRound[i];
+        for (let j = 0; j < count; j++) {
+          if (catPointers[cat] < catArticles[cat].length && all.length < 50) {
+            all.push(catArticles[cat][catPointers[cat]]);
+            catPointers[cat]++;
+            addedThisRound = true;
+          }
         }
-        if (all.length >= 70) break;
+        if (all.length >= 50) break;
       }
-      roundIndex++;
-      if (!added) break;
+      if (!addedThisRound) break; // kategorilerde makale kalmadı
     }
-
-    // 70 ile sınırla
-    all = all.slice(0, 70);
 
     return NextResponse.json({
       articles: sanitizeArticles(all),
       total: all.length,
-      hasMore: false, // Tek batch — "Diğer Haberler" YOK
+      hasMore: false,
     });
   }
 
