@@ -57,12 +57,12 @@ var deadKeys = new Set(); // bu cycle'da ölü key'ler (403/429) — atlanır
 // type: 'evren' (OpenAI-uyumlu) veya 'gemini' (Gemini formatı)
 function getAiProviders() {
   var providers = [];
-  // User: "geri kalan tüm işleri gemini keyler yapsın"
-  // AI Özet: Gemini öncelikli (hızlı), EVREN fallback
+  // User: "sadece geminilerin tamamı hata verince evren çalışsın diğer aşamalarda"
+  // AI Özet: Gemini öncelikli (3 key, hızlı), EVREN son çare (tüm Gemini'ler ölünce)
   GEMINI_KEYS.forEach(function(gk, i) {
     providers.push({ type: 'gemini', key: gk, label: 'Gemini#' + (i+1) + '(' + GEMINI_MODEL + ')' });
   });
-  // EVREN fallback (Gemini'nin hepsi başarısız olursa)
+  // EVREN son çare — sadece tüm Gemini key'ler 429/403 olunca devreye girer
   if (EVREN_KEY) providers.push({ type: 'evren', key: EVREN_KEY, label: 'EVREN(' + EVREN_MODEL + ')' });
   return providers;
 }
