@@ -1192,7 +1192,7 @@ async function main() {
         where: { status: { in: ['archived', 'duplicate'] } },
         select: { id: true, aiTitle: true, aiSummary: true, category: true, sourceCount: true, status: true },
         orderBy: { archivedAt: 'desc' },
-        take: 2000  // 200→2000: daha çok arşiv kaydı kontrol et, tekrar özetlemeyi önle
+        take: 500  // 2000→500: user: 'arşiv taramasını 2000 demişiz onu da 500 yapalım'
       });
       // Birleşik liste (yayında + arşiv + duplicate) — kategori farkı gözetmeksizin aynı başlık ara
       var existing = existingPublished.concat(existingArchived);
@@ -1741,7 +1741,7 @@ async function main() {
       var newArticles = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published', isEdited: false },
         orderBy: { publishedAt: 'desc' },
-        take: 100, // max 100 makale (önceki 50 idi — user: "50'yi 100'e çıkaralım")
+        take: 50, // 100→50: user: 'clear için 100 demişiz onu 50 yapalım'
         select: { id: true, aiTitle: true, aiSummary: true }
       });
       log('  Yeni (isEdited=false) makale sayısı: ' + newArticles.length);
