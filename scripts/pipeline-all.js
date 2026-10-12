@@ -918,18 +918,20 @@ function groupArticles(articles) {
   var groups = [], used = new Set();
   for (var i = 0; i < articles.length; i++) {
     if (used.has(i)) continue;
-    var group = { articles: [articles[i]], sourceIds: new Set([articles[i].sourceId]) };
+    var group = {
+      articles: [articles[i]],
+      sourceIds: new Set([articles[i].sourceId]),
+      sourceRoots: new Set([articles[i].sourceRoot || articles[i].sourceId])
+    };
     used.add(i);
     for (var j = i + 1; j < articles.length; j++) {
       if (used.has(j)) continue;
-      // Kategori BAĞIMSIZ — aynı haber farklı kategori etiketiyle gelirse yine eşleşir
       var titleSim = titleSimilar(articles[i].title, articles[j].title);
       var contentSim = contentSimilar(articles[i].content || articles[i].description || '', articles[j].content || articles[j].description || '');
-      // Eşik: title >= 0.5 (yüksek) VEYA (title >= 0.3 + content >= 0.5)
-      // Bu, alakasız haberlerin aynı grupta olmasını kesin önler
       if (titleSim >= 0.5 || (titleSim >= 0.3 && contentSim >= 0.5)) {
         group.articles.push(articles[j]);
         group.sourceIds.add(articles[j].sourceId);
+        group.sourceRoots.add(articles[j].sourceRoot || articles[j].sourceId);
         used.add(j);
       }
     }
@@ -1150,20 +1152,55 @@ async function main() {
       });
       log('Son ' + WINDOW_HOURS + ' saat makale: ' + articles.length);
 
+      // === KÖK KAYNAK EŞLEMEME — aynı yayıncının farklı RSS'lerini 1 kaynak say ===
+      // User: "milliyet 7 kaynak sayılıyor aslında aynı kaynak bunları 1 sayalım"
+      // sourceId → kök domain eşlemesi yap (milliyet.com.tr, hurriyet.com.tr, vb.)
+      var sourceRoots = {}; // sourceId → 'milliyet.com.tr'
+      try {
+        var allSources = await globalThis.prisma.source.findMany({
+          select: { id: true, url: true }
+        });
+        allSources.forEach(function(s) {
+          try {
+            var u = new URL(s.url);
+            // www. varsa kaldır, sadece domain kalsın
+            var root = u.hostname.replace(/^www\./, '');
+            // google news, feedburner gibi proxy'ler için path kontrolü
+            if (root.indexOf('news.google.com') >= 0) {
+              // Google News — site: parametresinden asıl siteyi çıkar
+              var match = s.url.match(/site%3A([a-z0-9.-]+)/i);
+              root = match ? match[1] : 'google-news';
+            }
+            if (root.indexOf('feedburner.com') >= 0 || root.indexOf('flipboard.com') >= 0) {
+              root = s.url; // benzersiz yap
+            }
+            sourceRoots[s.id] = root;
+          } catch (e) {
+            sourceRoots[s.id] = s.id; // URL parse edilemezse sourceId kullan
+          }
+        });
+      } catch (e) {}
+
+      // Her makaleye sourceRoot ekle
+      articles.forEach(function(a) {
+        a.sourceRoot = sourceRoots[a.sourceId] || a.sourceId;
+      });
+      log('Kök kaynak eşlememe: ' + Object.keys(sourceRoots).length + ' kaynak → ' + new Set(Object.values(sourceRoots)).size + ' kök');
+
       // Grupla
       var groups = groupArticles(articles);
       log('Grup sayisi: ' + groups.length);
 
-      // Kategori bazlı min kaynak filtrele
+      // Kategori bazlı min kaynak filtrele — sourceRoots kullanır (kök domain bazlı)
       var multiSource = groups.filter(function(g) {
         var cat = g.articles[0].category || 'Siyaset';
         var minSources = CATEGORY_MIN_SOURCES[cat] || 2;
-        return g.sourceIds.size >= minSources;
+        return g.sourceRoots.size >= minSources;
       });
       log('Min kaynakli grup: ' + multiSource.length);
 
-      // En çok kaynaklı gruptan en aza doğru sırala
-      multiSource.sort(function(a, b) { return b.sourceIds.size - a.sourceIds.size; });
+      // En çok kaynaklı gruptan en aza doğru sırala — sourceRoots kullanır
+      multiSource.sort(function(a, b) { return b.sourceRoots.size - a.sourceRoots.size; });
 
       // Kategori bazlı limitlere göre grupları ayır
       // Her kategori için en çok kaynaklı ilk N grup (Siyaset:15, Ekonomi:10, diğerleri:5)
@@ -1225,7 +1262,7 @@ async function main() {
           }
         });
         var cat = bestCat;
-        var sourceCount = group.sourceIds.size;
+        var sourceCount = group.sourceRoots.size; // kök domain bazlı kaynak sayısı
 
         // === MARKA BLOK LİSTESİ KONTROLÜ — EN ÖNCE ===
         // Başlıkta listedeki herhangi bir marka adı geçerse → haberi TAMAMEN ATLA
