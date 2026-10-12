@@ -2190,7 +2190,26 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                             {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
                                           </span>
                                         )}
+                                        {a.sourceCount >= 1 && (
+                                          <button type="button" onClick={() => toggleSources(a.id, a.sourceArticleIds)} className="inline-flex items-center gap-0.5 text-news hover:underline">
+                                            {a.sourceCount} kaynak {expandedSources === a.id ? '▲' : '▼'}
+                                          </button>
+                                        )}
                                       </div>
+                                      {expandedSources === a.id && (
+                                        <div className="mt-2 rounded-md border border-border bg-muted/30 p-2">
+                                          {loadingSources ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
+                                           sourceLinks[a.id]?.length ? (
+                                            <div className="space-y-1">
+                                              {sourceLinks[a.id].map((s, i) => (
+                                                <a key={i} href={s.link} target="_blank" rel="noopener noreferrer" className="block text-[11px] text-muted-foreground hover:text-news">
+                                                  {i + 1}. {s.title.slice(0, 60)} — <span className="font-medium">{s.source}</span>
+                                                </a>
+                                              ))}
+                                            </div>
+                                          ) : <p className="text-[11px] text-muted-foreground">Kaynak bulunamadı</p>}
+                                        </div>
+                                      )}
                                     </div>
                                     <div className="flex flex-shrink-0 items-center gap-1">
                                       <Button variant="ghost" size="icon" onClick={() => startEdit(a)} title="Düzenle" className="h-8 w-8 text-muted-foreground hover:text-news"><Edit3 className="h-4 w-4" /></Button>
