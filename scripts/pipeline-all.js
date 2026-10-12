@@ -1039,25 +1039,21 @@ function runScript(scriptPath, name) {
 async function main() {
   // === LOCK MEKANİZMASI — önceki cycle bitmeden yenisi başlamasın ===
   // User: "5 cycle aynı anda çalışıyordu — 5× token tüketimi"
-  // Çözüm: pipeline-once.lock dosyası varsa çık, yoksa oluştur
-  var LOCK_FILE = path.join(ROOT, 'pipeline-once.lock');
+  // Çözüm: pgrep ile başka pipeline-all.js süreci var mı kontrol et
+  var isAlreadyRunning = false;
   try {
-    var lockStat = fs.statSync(LOCK_FILE);
-    var lockAge = Date.now() - lockStat.mtimeMs;
-    if (lockAge < 120 * 60 * 1000) { // 120 dk'dan yeni ise — hâlâ çalışıyor
-      console.log('[' + new Date().toISOString() + '] ÖNCEKİ CYCLE HÂLÂ ÇALIŞIYOR (' + Math.round(lockAge / 60000) + ' dk) — ÇIK');
+    var { execSync } = require('child_process');
+    // pgrep: bu PID DIŞINDA pipeline-all.js süreci var mı?
+    var pgrepOutput = execSync('pgrep -f "pipeline-all.js" 2>/dev/null || true', { encoding: 'utf8' });
+    var pids = pgrepOutput.trim().split('\n').filter(function(p) { return p && p !== String(process.pid); });
+    if (pids.length > 0) {
+      isAlreadyRunning = true;
+      console.log('[' + new Date().toISOString() + '] ÖNCEKİ CYCLE HÂLÂ ÇALIŞIYOR (PID: ' + pids.join(', ') + ') — ÇIK');
       process.exit(0);
-    } else {
-      console.log('[' + new Date().toISOString() + '] Eski lock bulundu (' + Math.round(lockAge / 60000) + ' dk) — silindi, devam');
-      fs.unlinkSync(LOCK_FILE);
     }
   } catch (e) {
-    // Lock dosyası yok — bu ilk çalışma
+    // pgrep yoksa veya hata verirse — devam et
   }
-  // Lock oluştur
-  try { fs.writeFileSync(LOCK_FILE, String(process.pid), 'utf8'); } catch (e) {}
-  // Çıkışta lock'u sil
-  exitListeners.push(function() { try { fs.unlinkSync(LOCK_FILE); } catch (e) {} });
 
   log('=== Cycle basladi ===');
   log('GEMINI keys: ' + GEMINI_KEYS.length + ' adet');
