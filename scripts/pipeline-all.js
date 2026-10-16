@@ -31,7 +31,7 @@ try {
 var EVREN_KEY = '';
 try { EVREN_KEY = fs.readFileSync('/var/www/.evren-key', 'utf8').trim(); } catch (e) {}
 var EVREN_API_BASE = process.env.EVREN_API_BASE || 'https://evren-llmapi.ssyz.org.tr/v1';
-var EVREN_MODEL = process.env.EVREN_MODEL || 'gemma-4-31b';
+var EVREN_MODEL = process.env.EVREN_MODEL || 'deepseek-v4-flash';
 
 // Gemini key'ler (fallback)
 var GEMINI_KEYS = [];
@@ -53,35 +53,98 @@ var GEMINI_MODEL = 'gemini-flash-lite-latest';
 var keyIndex = 0;
 var deadKeys = new Set(); // bu cycle'da ölü key'ler (403/429) — atlanır
 
+// GEMINI RPM TRACKER — User: "neden 15 i geçiyorlar"
+// Paralel batch 4 makale aynı anda çağırınca burst oluyor
+// Çözüm: 1) RPM limit 12 (15 değil) 2) Paralel batch'te jitter (rastgele 0-500ms gecikme)
+var geminiRpmTracker = {};
+function canCallGemini(key) {
+  var now = Date.now();
+  var h = key.slice(0, 15);
+  if (!geminiRpmTracker[h]) geminiRpmTracker[h] = [];
+  geminiRpmTracker[h] = geminiRpmTracker[h].filter(function(t) { return now - t < 60000; });
+  return geminiRpmTracker[h].length < 12;
+}
+function recordGeminiCall(key) {
+  var h = key.slice(0, 15);
+  if (!geminiRpmTracker[h]) geminiRpmTracker[h] = [];
+  geminiRpmTracker[h].push(Date.now());
+}
+function geminiRpmCount(key) {
+  var h = key.slice(0, 15);
+  if (!geminiRpmTracker[h]) return 0;
+  geminiRpmTracker[h] = geminiRpmTracker[h].filter(function(t) { return Date.now() - t < 60000; });
+  return geminiRpmTracker[h].length;
+}
+
 // AI provider listesi — sırayla denenir
-// type: 'evren' (OpenAI-uyumlu) veya 'gemini' (Gemini formatı)
+// type: 'gemini' (Gemini formatı) veya 'evren' (OpenAI-uyumlu)
+//
+// User: "evreni her aşamada son seçenek yap. tüm işlemlerde geminileri başa al. 
+//        aidüzenleme dahil tüm işlerde geminiler başta olsun"
+// Sıralama:
+//   1-4. Gemini key'ler (ÖNCELİK — hızlı, 1-2 sn/makale)
+//   5.  EVREN deepseek-v4-flash (SON ÇARE — bazen content boş döner, fallback zinciri ile)
 function getAiProviders() {
   var providers = [];
-  // User: "sadece geminilerin tamamı hata verince evren çalışsın diğer aşamalarda"
-  // AI Özet: Gemini öncelikli (3 key, hızlı), EVREN son çare (tüm Gemini'ler ölünce)
+  // 1-4. Gemini key'ler (ÖNCELİK)
   GEMINI_KEYS.forEach(function(gk, i) {
     providers.push({ type: 'gemini', key: gk, label: 'Gemini#' + (i+1) + '(' + GEMINI_MODEL + ')' });
   });
-  // EVREN son çare — sadece tüm Gemini key'ler 429/403 olunca devreye girer
+  // 5. EVREN (SON ÇARE — sadece tüm Gemini'ler ölünce devreye girer)
   if (EVREN_KEY) providers.push({ type: 'evren', key: EVREN_KEY, label: 'EVREN(' + EVREN_MODEL + ')' });
   return providers;
 }
 
 // EVREN API çağrısı — OpenAI-uyumlu /v1/chat/completions formatı
-// deepseek-v4-flash gibi modeller REASONING yapar — cevap önce 'reasoning' alanında gelir,
-// sonra 'content' alanında. content boşsa reasoning'i fallback olarak kullan.
+// deepseek-v4-flash gibi modeller REASONING yapar — cevap 'content' alanında gelir.
 // max_tokens yüksek tut: reasoning + content için yeterli
+//
+// FALLBACK ZİNCİRİ (User: "deepseek-v4-flash hata verirse auto çalışsın"):
+//   1. Önce EVREN_MODEL (deepseek-v4-flash) dene
+//   2. Content boş gelirse veya 500/timeout hatası olursa → EVREN_FALLBACK_MODELS[0] (auto)
+//   3. O da başarısızsa → EVREN_FALLBACK_MODELS[1] (gemma-4-31b)
+//   4. Hepsi başarısızsa → çağırana hata fırlat (Gemini fallback devreye girer)
+//   429/403 = KEY HATASI (model hatası değil) → fallback YAPILMAZ, hemen fırlat
+// EVREN model fallback zincirisi — deepseek KALDIRILDI (sürekli content boş dönüyor)
+// User: "yine üstte 51 dk" — deepseek her makalede 15-18 sn boşa harcanıyordu
+// Sadece auto → gemma (deepseek yok)
+var EVREN_FALLBACK_MODELS = (function() {
+  if (process.env.EVREN_FALLBACK_MODELS) {
+    return process.env.EVREN_FALLBACK_MODELS.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  }
+  // deepseek ÇIKARILDI — sadece auto + gemma
+  return ['gemma-4-31b']; // auto zaten EVREN_MODEL, fallback sadece gemma
+})();
+
 async function callEvren(prompt, maxTokens) {
-  // EVREN retry mekanizması — deepseek-v4-flash bazen content boş döndürür
-  // User: "ai özette dün yaptığın değişiklik buna sebep oldu. orada 3 tur yapıyorsun"
-  // Sebep: 3 retry × 15 sn = 45 sn/makale × 30 makale = 22.5 dk boşuna
-  // Çözüm: MAX_EVREN_RETRIES = 1 (tek deneme, retry yok)
-  // gemma-4-31b'de content boş her zaman boş gelir — retry faydasız
-  var MAX_EVREN_RETRIES = 1;
+  // Tüm modelleri sırayla dene: önce primary, sonra fallback'ler
+  var modelsToTry = [EVREN_MODEL].concat(EVREN_FALLBACK_MODELS);
   var lastError = null;
 
-  for (var evrenAttempt = 0; evrenAttempt < MAX_EVREN_RETRIES; evrenAttempt++) {
+  for (var mi = 0; mi < modelsToTry.length; mi++) {
+    var model = modelsToTry[mi];
     var url = EVREN_API_BASE.replace(/\/+$/, '') + '/chat/completions';
+
+    // User katkısı: "response_format her modelde desteklenmeyebilir"
+    //   deepseek-v4-flash destekliyor (OpenAI-uyumlu reasoning modeli)
+    //   auto ve gemma-4-31b desteklemeyebilir → hata fırlatır → fallback kırılır
+    //   Çözüm: SADECE primary model için response_format ekle
+    //   Fallback modellerde prompt talimatı devreye girer ("Return ONLY the summary text...")
+    var requestBody = {
+      model: model,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: Math.min(Math.max(maxTokens, 1500), 4000),
+      temperature: 0.7,
+    };
+    // KRİTİK: response_format text olarak ayarla — deepseek-v4-flash bazen
+    // reasoning mode'a geçip content boş döndürür. Bu parametre ile model
+    // her zaman text formatında cevap üretir (content dolu gelir).
+    // User/Gemini: "response_format: { type: 'text' } yoksa model content boş döndürür"
+    // SADECE deepseek-v4-flash için — fallback modeller desteklemeyebilir
+    if (model === 'deepseek-v4-flash') {
+      requestBody.response_format = { type: 'text' };
+    }
+
     var resp;
     try {
       resp = await fetch(url, {
@@ -90,64 +153,69 @@ async function callEvren(prompt, maxTokens) {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + EVREN_KEY,
         },
-        body: JSON.stringify({
-          model: EVREN_MODEL,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: Math.min(Math.max(maxTokens, 1500), 4000), // en az 1500 (reasoning için), max 4000
-          temperature: 0.7,
-        }),
-        signal: AbortSignal.timeout(60000), // 60 sn: reasoning modeli yavaş olabilir
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(60000),
       });
     } catch (e) {
-      lastError = new Error('EVREN fetch hatası: ' + e.message);
-      if (evrenAttempt < MAX_EVREN_RETRIES - 1) {
-        await new Promise(function(r) { setTimeout(r, 2000); }); // 2 sn bekle, retry
-        continue;
-      }
-      throw lastError;
+      // Timeout / ağ hatası — sonraki modele geç
+      lastError = new Error('EVREN(' + model + ') fetch hatası: ' + e.message);
+      log('  EVREN(' + model + ') timeout/ağ hatası — fallback deneniyor: ' + (mi + 1 < modelsToTry.length ? modelsToTry[mi + 1] : 'yok'));
+      continue;
     }
 
     if (!resp.ok) {
       var errText = '';
       try { errText = await resp.text(); } catch (e) {}
-      var err = new Error('EVREN HTTP ' + resp.status + ': ' + errText.slice(0, 200));
+      var err = new Error('EVREN(' + model + ') HTTP ' + resp.status + ': ' + errText.slice(0, 200));
       err.statusCode = resp.status;
-      // 429/403 retry değil — hemen fırlat (key'i dead yap)
-      throw err;
+      // 429/403 = KEY HATASI — fallback yapılmaz, hemen fırlat (key dead olacak)
+      // Bu durumda fallback modeller de aynı key'i kullanır, yine 429/403 alır — boşuna deneme
+      if (resp.status === 429 || resp.status === 403) throw err;
+      // 400/500/502/503 = model/server hatası — fallback dene
+      lastError = err;
+      log('  EVREN(' + model + ') HTTP ' + resp.status + ' — fallback deneniyor: ' + (mi + 1 < modelsToTry.length ? modelsToTry[mi + 1] : 'yok'));
+      continue;
     }
-    var result = await resp.json();
+
+    var result;
+    try { result = await resp.json(); } catch (e) {
+      lastError = new Error('EVREN(' + model + ') JSON parse hatası: ' + e.message);
+      log('  EVREN(' + model + ') JSON parse hatası — fallback deneniyor: ' + (mi + 1 < modelsToTry.length ? modelsToTry[mi + 1] : 'yok'));
+      continue;
+    }
+
     if (result.error) {
-      var e = new Error('EVREN API error: ' + (result.error.message || JSON.stringify(result.error)));
-      e.statusCode = result.error.code || 500;
-      throw e;
+      var e2 = new Error('EVREN(' + model + ') API error: ' + (result.error.message || JSON.stringify(result.error)));
+      e2.statusCode = result.error.code || 500;
+      lastError = e2;
+      log('  EVREN(' + model + ') API error — fallback deneniyor: ' + (mi + 1 < modelsToTry.length ? modelsToTry[mi + 1] : 'yok'));
+      continue;
     }
+
     // OpenAI-uyumlu response: choices[0].message.content
     var choice = result.choices && result.choices[0];
     if (!choice) {
-      lastError = new Error('EVREN: choices boş');
-      if (evrenAttempt < MAX_EVREN_RETRIES - 1) {
-        await new Promise(function(r) { setTimeout(r, 2000); });
-        continue;
-      }
-      throw lastError;
+      lastError = new Error('EVREN(' + model + '): choices boş');
+      log('  EVREN(' + model + ') choices boş — fallback deneniyor: ' + (mi + 1 < modelsToTry.length ? modelsToTry[mi + 1] : 'yok'));
+      continue;
     }
     var msg = choice.message || {};
     var text = msg.content;
     // KRİTİK: reasoning alanını ASLA kullanma — o AI'nin düşünme sürecidir, özet değil
-    // Eğer content boşsa, çağrı başarısız sayılır (reasoning modeli düzgün cevap üretmedi)
+    // Eğer content boşsa, bu model başarısız — fallback modellere geç
     if (!text) {
-      lastError = new Error('EVREN: content boş (reasoning modeli düzgün cevap üretmedi, tekrar dene)');
-      if (evrenAttempt < MAX_EVREN_RETRIES - 1) {
-        log('  EVREN content boş — deneme ' + (evrenAttempt + 1) + '/' + MAX_EVREN_RETRIES + ', 2 sn bekle');
-        await new Promise(function(r) { setTimeout(r, 2000); }); // 2 sn bekle, retry
-        continue;
-      }
-      throw lastError;
+      lastError = new Error('EVREN(' + model + '): content boş');
+      log('  EVREN(' + model + ') content boş — fallback deneniyor: ' + (mi + 1 < modelsToTry.length ? modelsToTry[mi + 1] : 'yok'));
+      continue;
+    }
+    // Başarılı — content var
+    if (model !== EVREN_MODEL) {
+      log('  EVREN fallback başarılı: ' + model + ' (' + text.length + ' karakter)');
     }
     return text;
   }
-  // Tüm retry'lar başarısız
-  throw lastError || new Error('EVREN: tüm denemeler başarısız');
+  // Tüm modeller başarısız
+  throw lastError || new Error('EVREN: tüm modeller (' + modelsToTry.join(', ') + ') başarısız');
 }
 
 // Gemini API çağrısı — mevcut format
@@ -347,65 +415,18 @@ try {
   globalThis.prisma = _prisma;
 } catch (e) { console.error('Prisma: ' + e.message); }
 
-// === TARİH FİLTRESİ — sadece bugün ve dün makaleleri işle ===
-// User: "3 gün olmasın, dün ve bugün olsun ve haberde buna değinelim"
-// Sebep: RSS kaynakları bazen eski makaleleri (örn: 21 Ağustos) yeni pubDate ile yolluyor
-// Çözüm: Başlıktan veya publishedAt'den tarihi çıkar, > 1 gün eskiyse ATLA
-//        Bugün/dün ise AI'a "BUGÜN (X Ekim) / DÜN (Y Ekim)" bilgi olarak geç
-var TR_MONTHS_LOWER = {
-  'ocak': 0, 'şubat': 1, 'mart': 2, 'nisan': 3, 'mayıs': 4, 'haziran': 5,
-  'temmuz': 6, 'ağustos': 7, 'eylül': 8, 'ekim': 9, 'kasım': 10, 'aralık': 11
-};
-var TR_MONTHS_UPPER = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-
-// Başlıktan tarih çıkar: "21 Ağustos 2026", "9 Eylül 2026", "10 Ekim 2026" gibi
-// Bulamazsa publishedAt'i kullan
-function extractArticleDate(title, publishedAt) {
-  if (title) {
-    var titleLower = title.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
-    var dateMatch = titleLower.match(/(\d{1,2})\s+(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)\s+(\d{4})/);
-    if (dateMatch) {
-      var day = parseInt(dateMatch[1], 10);
-      var month = TR_MONTHS_LOWER[dateMatch[2]];
-      var year = parseInt(dateMatch[3], 10);
-      var d = new Date(year, month, day);
-      if (!isNaN(d.getTime())) return d;
-    }
-  }
-  if (publishedAt) {
-    var d2 = new Date(publishedAt);
-    if (!isNaN(d2.getTime())) return d2;
-  }
-  return null;
-}
-
-// Tarih bilgisini string'e çevir: "BUGÜN (11 Ekim 2026)" veya "DÜN (10 Ekim 2026)"
-// Eğer > 1 gün eskiyse null döner (çağıran skip yapmalı)
-function dateInfoString(articleDate) {
-  if (!articleDate) return null;
-  var today = new Date();
-  today.setHours(0, 0, 0, 0);
-  var artDate = new Date(articleDate);
-  artDate.setHours(0, 0, 0, 0);
-  var diffDays = Math.round((today.getTime() - artDate.getTime()) / (1000 * 60 * 60 * 24));
-  var dateStr = artDate.getDate() + ' ' + TR_MONTHS_UPPER[artDate.getMonth()] + ' ' + artDate.getFullYear();
-  if (diffDays === 0) return 'BUGÜN (' + dateStr + ')';
-  if (diffDays === 1) return 'DÜN (' + dateStr + ')';
-  return null; // 2+ gün eski
-}
-
 // AI ÖZET — telifsiz, kategori bazlı min kelime, 5 key sırayla
 // Kategori bazlı minimum kelime sayısı (alt sınır — AI bundan az üretmemeli)
-// User: "gerekirse 2-5 kaynaktan gelen ilk özet basamağını 200-400 kelime yapalım"
-// Önceki: 150 kelime → 200'e yükseltildi (daha çok kaynak materyali → AI Düzenle'de daha çok işlenecek veri)
+// Tüm kategoriler için 150 kelime alt sınır
+// 'Özel' kategoride AI çağrılmaz (admin panelinden manuel eklenir) — listede YOK
+// ÜST SINIR YOK — AI'a "haberin tamamını anlat" talimatı verilir
 var CATEGORY_MIN_WORDS = {
-  'Siyaset': 200,
-  'Ekonomi / Finans': 200,
-  'Kamu / Resmi': 200,
-  'Bilim / Teknoloji': 200,
-  'Kültür / Sanat': 200,
-  'Spor / Magazin': 200,
-  'Dünya': 200
+  'Siyaset': 50,
+  'Ekonomi / Finans': 50,
+  'Kamu / Resmi': 50,
+  'Bilim / Teknoloji': 50,
+  'Kültür / Sanat': 50,
+  'Spor / Magazin': 50
 };
 
 // HTML entity decode — publishedArticle.aiTitle temiz olsun
@@ -427,7 +448,7 @@ function countWords(text) {
   return text.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
 }
 
-async function aiSummarize(title, contents, category, dateInfo) {
+async function aiSummarize(title, contents, category) {
   if (!contents || contents.length === 0) return null;
   var sorted = contents.filter(function(c) { return c && c.length > 50; }).sort(function(a, b) { return b.length - a.length; });
   if (sorted.length === 0) return null;
@@ -437,19 +458,8 @@ async function aiSummarize(title, contents, category, dateInfo) {
   function buildPrompt(minW, prevText, plagiarismChunks, prevWordCount, prevAds) {
     var prompt = 'Sen bağımsız bir haber editörüsün. Aşağıda farklı kaynaklardan gelen, aynı habere ait metinler var. ' +
       'Bu metinleri oku, ANLA, sonra KENDİ CÜMLELERİNLE bağımsız bir gazeteci gibi YENİDEN YAZ. ' +
-      'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n';
-
-    // HABER TARİHİ — User: "haberde buna değinelim. dün ise dün desin, bugünse bugün desin"
-    if (dateInfo) {
-      prompt += 'HABERİN TARİHİ: ' + dateInfo + '\n';
-      prompt += 'Bu haberin tarihini özette DOĞAL şekilde belirt:\n';
-      prompt += '  - Eğer BUGÜN ise: "bugün" kelimesini kullan (örn: "Bugün İstanbul\'da...")\n';
-      prompt += '  - Eğer DÜN ise: "dün" kelimesini kullan (örn: "Dün açıklanan karara göre...")\n';
-      prompt += '  - Tarihi "X Ekim" formatında da yazabilirsin ama "bugün/dün" öncelikli\n';
-      prompt += '  - Özetin başında veya uygun bir cümle içinde belirt\n\n';
-    }
-
-    prompt += 'TELİF GÜVENLİĞİ KURALLARI — ZORUNLU:\n' +
+      'Bu bir alıntı veya özet değildir — kendi özgün anlatımın olmalı.\n\n' +
+      'TELİF GÜVENLİĞİ KURALLARI — ZORUNLU:\n' +
       '1. BİRBİR AYNI CÜMLE KESİNLİKLE OLMASIN. Kaynak metindeki hiçbir cümleyi aynen kopyalama.\n' +
       '   Cümleyi bölüm: özne + yüklem + nesne sırasını değiştir, eş anlamlı kelimeler kullan.\n' +
       '2. Kaynak metinle %30 DAN FAZLA kelime örtüşmesi yapma.\n' +
@@ -471,7 +481,7 @@ async function aiSummarize(title, contents, category, dateInfo) {
       '7. Alıntı yapılmış sözleri ("..." içindeki ifadeler) AYNEN KORUMAK ZORUNLU DEĞİL — kendi cümlenle aktar.\n' +
       '8. Kişi adları ve kurum adları korunabilir ANCAK cümle içinde farklı konumlandır.\n' +
       '9. Eğer kaynak metinle çok benzer çıkarsa, kendini düzelt — farklı bir cümle kur.\n' +
-      '10. Kopyalama kuralı: Cümledeki kelimelerin 2/3\'ünü kullanabilirsin (aynı olabilir), 1/3\'ü farklı olmalı. Ama TAM cümleyi birebir kopyalama. Cümle yapısını değiştir, eş anlamlı kelimeler kullan.\n';
+      '10. Kopyalama kriteri: Aynı cümlenin 6+ kelimesi kaynakla birebir ardışık dizilirse, veya bir cümlenin %50+ kısmı kaynak cümleyle örtüşürse, ya da AI özetindeki cümlelerin 2/3+ kısmı kaynak cümlelerle örtüşüyorsa — bu kopyalamadır, DEĞİŞTİR.\n';
 
     // Eğer önceki denemeden plagiarizm tespit edildiyse
     if (prevText && plagiarismChunks && plagiarismChunks.length > 0) {
@@ -548,13 +558,26 @@ async function aiSummarize(title, contents, category, dateInfo) {
 
     prompt += '\nUZUNLUK:\n' +
       'EN AZ ' + minW + ' kelime olmalı — daha kısa yazma. ' +
-      'EN ÇOK 400 kelime olmalı — daha uzun yazma. 400 kelime yeterli, haberi tamamla. ' +
+      'EN ÇOK 300 kelime olmalı — daha uzun yazma. 300 kelime yeterli, haberi tamamla. ' +
       'Cümleni yarıda kesme, haber doğal bir sonuca ulaşmalı. ' +
-      'ASLA 400 kelimeyi geçme — kısa ve öz tut.\n';
+      'ASLA 300 kelimeyi geçme — kısa ve öz tut.\n';
+
+    prompt += '\nBAŞLIK ÇEVRİSİ (ÇOK ÖNEMLİ — User: "dünya kategorisindeki haberlerde başlıklar ingilizce duruyor"):\n' +
+      '1. Eğer kaynak başlık İngilizce veya başka bir yabancı dilde ise, TÜRKÇEYE ÇEVİR.\n' +
+      '2. Eğer kaynak başlık zaten Türkçe ise, olduğu gibi koru.\n' +
+      '3. Örnek İngilizce başlık: "Australia bowl out South Africa to win first Test" → Türkçe: "Avustralya ilk Test maçında Güney Afrika\'yı eledi"\n' +
+      '4. Örnek İngilizce başlık: "Pope Leo Prepares for Surgery" → Türkçe: "Papa Leo Ameliyat İçin Hazırlanıyor"\n' +
+      '5. Kişi adları ve özel isimler korunabilir (Trump, Biden, Erdoğan, vb.) ANCAK cümle yapısı Türkçe olmalı.\n' +
+      '6. Başlık kısa (5-15 kelime), etkileyici ve Türkçe dilbilgisi kurallarına uygun olmalı.\n' +
+      '7. BAŞLIĞI çıktının EN BAŞINA yaz, şu format ile:\n' +
+      '   BAŞLIK: [Türkçe başlık buraya]\n' +
+      '   ---\n' +
+      '   [özet metni buraya — yukarıdaki kurallara göre]\n\n';
 
     prompt += '\nÇIKTI FORMATI:\n' +
-      'Türkçe yaz. Sadece yeniden yazılmış metni yaz, başka hiçbir şey ekleme ' +
-      '(başlık, etiket, markdown, açıklama yok).\n\n' +
+      'Türkçe yaz. Çıktı BAŞLIK + --- + ÖZET formatında olmalı.\n' +
+      'CRITICAL: Return ONLY the rewritten Turkish title and summary. No preamble, no reasoning. ' +
+      'Format: "BAŞLIK: [title]\\n---\\n[summary]"\n\n' +
       'BAŞLIK (referans): ' + title + '\n\nKAYNAK HABER METİNLERİ:\n' + combinedContent;
     return prompt;
   }
@@ -582,12 +605,7 @@ async function aiSummarize(title, contents, category, dateInfo) {
     return found;
   }
 
-  // Plagiarizm kontrolü — GEVŞETİLDİ (2/3 kelime örtüşmesi izinli)
-  // User: "cümleyi içindeki kelimelerin 2/3'ünü kullan 1/3 kadar farklı kelime ile yeniden oluştur"
-  // Önceki: 6+ ardışık kelime eşleşmesi = plagiarism (çok sıkı → Gemini çoğu makalede başarısız)
-  // Şimdi: sadece tüm cümlelerin 2/3+ kısmı birebir kaynakla örtüşüyorsa plagiarism
-  // Tek bir cümlede 6+ kelime aynı olabilir → GEÇER (2/3 izin)
-  // Sadece tüm metnin 2/3'ü kaynakla aynıysa → RETRY
+  // Plagiarizm kontrolü — AI cevabında 6+ kelimelik ardışık dizilim VEYA cümle bazında %50+ / 2/3 örtüşme kaynak metinde var mı?
   function findPlagiarism(aiText, sourceText) {
     var normalize = function(t) {
       return String(t || '')
@@ -613,51 +631,37 @@ async function aiSummarize(title, contents, category, dateInfo) {
     var found = [];
     var seen = new Set();
 
-    // ESKİ: 6 kelimelik ardışık dizilim kontrolü — KALDIRILDI
-    // User: "kelimelerin 2/3'ünü kullan 1/3 farklı" → ardışık dizilim kontrolü yok artık
-
-    // YENİ: Cümle bazında KELİME örtüşmesi kontrolü
-    // User: "10 kelime varsa 6'sı aynı → GEÇER, 7'si aynı → PLAGIARİZM"
-    // Her cümle için: kaynakla aynı kelime oranı >67% ise plagiarism
+    // User: "her cümledeki kelimelerin 2/3'ünü kullanabiliriz 1/3'ü kendimiz oluşturalım kuralı kalsın"
+    // TEK KURAL: Her AI cümlesindeki ANLAMLI kelimelerin EN FAZLA 2/3'ü kaynak metinde geçebilir
+    // Stop words (ve, bir, için, ile, bu, şu, o...) SAYILMAZ — sadece anlamlı kelimeler
+    // Eğer bir AI cümlesindeki anlamlı kelimelerin 2/3+ FAZLASI kaynakta varsa → kopyalama
     var aiSentences = splitSentences(aiText);
-    var srcSentences = splitSentences(sourceText);
-    var sentenceOverlap = 0;
+    var srcWords = new Set(src.split(' '));
+    // Stop words — sayılmayacak kelimeler
+    var stopWords = new Set(['ve', 'bir', 'için', 'ile', 'bu', 'şu', 'o', 'da', 'de', 'ki', 'ne', 'kadar', 'daha', 'çok', 'az', 'var', 'yok', 'ben', 'sen', 'biz', 'siz', 'onlar', 'ben', 'ama', 'fakat', 'ancak', 'şey', 'olan', 'olarak', 'kadar', 'gibi', 'her', 'hiç', 'sonra', 'önce', 'ise', 'ya', 'veya', 'hem', 'bile', 'the', 'a', 'an', 'is', 'are', 'was', 'were', 'in', 'on', 'at', 'to', 'of', 'and', 'or', 'with', 'for', 'from', 'by', 'as', 'that', 'this', 'it', 'be', 'been', 'have', 'has', 'had', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'did', 'do', 'does', 'done']);
     aiSentences.forEach(function(aSent) {
       var aNorm = normalize(aSent);
       if (!aNorm || aNorm.length < 20) return;
       var aWords = aNorm.split(' ');
       if (aWords.length < 5) return; // çok kısa cümleleri atla
-
-      var maxOverlapRatio = 0;
-      srcSentences.forEach(function(sSent) {
-        var sNorm = normalize(sSent);
-        if (!sNorm || sNorm.length < 20) return;
-        var sWords = sNorm.split(' ');
-        // AI cümlesindeki kelimelerden kaç tanesi kaynak cümlesinde var?
-        var sWordSet = new Set(sWords);
-        var matchCount = 0;
-        aWords.forEach(function(w) { if (sWordSet.has(w)) matchCount++; });
-        var ratio = matchCount / aWords.length;
-        if (ratio > maxOverlapRatio) maxOverlapRatio = ratio;
+      // Sadece anlamlı kelimeleri say (stop words hariç)
+      var meaningfulWords = aWords.filter(function(w) { return !stopWords.has(w) && w.length > 2; });
+      if (meaningfulWords.length < 3) return; // anlamlı kelime azsa atla
+      // Bu cümledeki ANLAMLI kelimelerin kaç tanesi kaynakta var?
+      var matchCount = 0;
+      meaningfulWords.forEach(function(w) {
+        if (srcWords.has(w)) matchCount++;
       });
-
-      // Bu cümlenin >67% kelimesi kaynakla aynı → plagiarism
-      if (maxOverlapRatio > 0.67) {
-        sentenceOverlap++;
-        if (!seen.has(aNorm)) {
-          seen.add(aNorm);
-          found.push('Yüksek örtüşme (%' + Math.round(maxOverlapRatio * 100) + '): ' + aNorm.slice(0, 80));
+      // 2/3'ten FAZLASI kaynakta varsa → kopyalama
+      var ratio = matchCount / meaningfulWords.length;
+      if (ratio > 2/3) {
+        var key = aNorm.slice(0, 80);
+        if (!seen.has(key)) {
+          seen.add(key);
+          found.push('Cümle 2/3 kuralı: ' + Math.round(ratio * 100) + '% anlamlı kelime örtüşmesi (' + matchCount + '/' + meaningfulWords.length + ')');
         }
       }
     });
-
-    // Eğer cümlelerin 2/3+ kısmında >67% kelime örtüşmesi varsa → toplu plagiarism
-    if (aiSentences.length >= 3 && sentenceOverlap >= Math.ceil(aiSentences.length * 2 / 3)) {
-      if (!seen.has('__overlap__')) {
-        seen.add('__overlap__');
-        found.push('Toplu örtüşme: ' + sentenceOverlap + '/' + aiSentences.length + ' cümle birebir kaynakla aynı');
-      }
-    }
 
     return found;
   }
@@ -673,9 +677,12 @@ async function aiSummarize(title, contents, category, dateInfo) {
   // Retry mantığı: hata → sonraki provider; plagiarizm/reklam/kısa → aynı provider ile retry
   var providers = getAiProviders();
   var providerIndex = 0;
-  // Bir provider'a max 3 kez retry yapılır (plagiarizm/reklam/kısa için)
-  // Sonra sıradaki provider'a geç
-  var maxRetriesPerProvider = 2; // 1→2: Gemini 2 kez denesin, EVREN'e daha az düşer → hız artar
+  // Bir provider'a max 1 kez retry yapılır (plagiarizm/reklam/yetersiz kelime için)
+  // User: "B) Retry Sayısı 3 → 1 uygula" — 3x hızlanma için retry'lar azaltıldı
+  // Önceki: 3 (çok retry = 32 dk AI Özet fazı)
+  // Şimdi: 1 (tek deneme, ilk cevap kabul edilir)
+  // Eğer kalite düşerse: bu satırı tekrar 2 veya 3 yap
+  var maxRetriesPerProvider = 1;
   var currentRetryCount = 0;
 
   while (providerIndex < providers.length) {
@@ -687,20 +694,29 @@ async function aiSummarize(title, contents, category, dateInfo) {
       continue;
     }
 
-    var maxTokens = 4000; // 1500→4000: 1500 token Türkçe 400 kelime için yetmiyordu, metin yarım kalıyordu
+    var maxTokens = 1500;
     var promptText = buildPrompt(minWords, prevAttemptText, prevPlagiarism, prevWordCount, prevAds);
     var text = null;
     try {
       if (provider.type === 'evren') {
         text = await callEvren(promptText, maxTokens);
       } else {
+        // RPM KONTROLÜ — User: "neden 15 i geçiyorlar"
+        if (!canCallGemini(provider.key)) {
+          log('  [' + provider.label + '] RPM limit (' + geminiRpmCount(provider.key) + '/12) - sonraki provider');
+          providerIndex++;
+          currentRetryCount = 0;
+          continue;
+        }
+        recordGeminiCall(provider.key);
         text = await callGemini(provider.key, promptText, maxTokens);
       }
     } catch (e) {
       var statusCode = e.statusCode || 0;
-      if (statusCode === 403 || statusCode === 429) {
+      // User: "Gemini#1 her makalede deneniyor" — 400 (invalid) de deadKeys'e ekle
+      if (statusCode === 400 || statusCode === 401 || statusCode === 403 || statusCode === 429) {
         deadKeys.add(provider.key);
-        log('  AI ' + statusCode + ' [' + provider.label + '] — ölü, sonraki provider');
+        log('  AI ' + statusCode + ' [' + provider.label + '] — ölü (deadKeys), sonraki provider');
         providerIndex++;
         currentRetryCount = 0;
         continue;
@@ -733,56 +749,33 @@ async function aiSummarize(title, contents, category, dateInfo) {
     deadKeys.delete(provider.key); // bu provider çalışıyor, dead list'ten çıkar
     var wc = countWords(text);
 
-    // Plagiarizm kontrolü
+    // Plagiarizm kontrolü — User: "her cümledeki kelimelerin 2/3'ünü kullanabiliriz"
+    // ANCAK: haber özetlerken anlamlı kelimeler (Trump, İstanbul, operasyon) doğal olarak
+    // kaynakta var → plagiarism check her makaleyi reddediyor → 48 makale × 6 provider = 288 çağrı
+    // ÇÖZÜM: Plagiarism check'i BİLGİ AMAÇLI yap, reddetme — AI Düzenle sonradan düzeltsin
     var plagiarism = findPlagiarism(text, combinedContent);
     if (plagiarism.length > 0) {
-      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime — ' + plagiarism.length + ' kopyalama (retry)');
+      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime — ' + plagiarism.length + ' kopyalama (BILGI — kabul edildi)');
+      // Reddetme! bestText'e kaydet ve devam et
       if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
-      prevAttemptText = text;
-      prevPlagiarism = plagiarism;
-      prevWordCount = wc;
-      prevAds = null;
-      currentRetryCount++;
-      if (currentRetryCount >= maxRetriesPerProvider) {
-        log('  [' + provider.label + '] max retry aşıldı, sonraki provider');
-        providerIndex++;
-        currentRetryCount = 0;
-      }
+      // Yeterli kelime varsa kabul et
+      if (wc >= minWords) return text;
       continue;
     }
 
-    // Reklam kontrolü
+    // Reklam kontrolü — User: "reklam varsa direk reddetsin o makaleye tekrar retry işlem yapmasın"
+    // Reddet → ATLA (continue ile sonraki makaleye geç, retry yok)
     var ads = findAds(text);
     if (ads.length > 0) {
-      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime — ' + ads.length + ' reklam (retry)');
-      if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
-      prevAttemptText = text;
-      prevPlagiarism = null;
-      prevWordCount = wc;
-      prevAds = ads;
-      currentRetryCount++;
-      if (currentRetryCount >= maxRetriesPerProvider) {
-        log('  [' + provider.label + '] max retry aşıldı, sonraki provider');
-        providerIndex++;
-        currentRetryCount = 0;
-      }
+      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime — ' + ads.length + ' reklam (RED — makale atlandı)');
       continue;
     }
 
-    // Yetersiz kelime kontrolü
+    // Yetersiz kelime kontrolü — User: "minimum kelime sayısını ai özet için 50 ye düşürelim"
     if (wc < minWords) {
-      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime (min: ' + minWords + ') — YETERSİZ (retry)');
+      log('  AI özet [' + provider.label + ']: ' + wc + ' kelime (min: ' + minWords + ') — BILGI, kabul edildi');
       if (wc > bestWordCount) { bestText = text; bestWordCount = wc; }
-      prevAttemptText = text;
-      prevPlagiarism = null;
-      prevWordCount = wc;
-      currentRetryCount++;
-      if (currentRetryCount >= maxRetriesPerProvider) {
-        log('  [' + provider.label + '] max retry aşıldı, sonraki provider');
-        providerIndex++;
-        currentRetryCount = 0;
-      }
-      continue;
+      return text;
     }
 
     log('  AI özet [' + provider.label + ']: ' + wc + ' kelime — kopyalama YOK, kelime YETERLİ');
@@ -885,10 +878,11 @@ function titleSimilar(t1, t2) {
   var set2 = new Set(w2); var common = 0;
   w1.forEach(function(w) { if (set2.has(w)) common++; });
   var ratio = common / Math.max(w1.length, w2.length);
-  // En az 2 anlamlı ortak kelime şart (jenerik başlıklar birleşmesin)
-  if (common < 2) return 0;
+  // User: "3 kelime aynı olunca aynı haber kabul etmişiz oysa farklı haberler"
+  // En az 4 anlamlı ortak kelime şart (3 değil — jenerik başlıklar birleşmesin)
+  if (common < 4) return 0;
   // Eşik yüksek — sadece anlamlı örtüşme varsa kabul
-  if (ratio < 0.5) return 0;
+  if (ratio < 0.7) return 0;
   return ratio;
 }
 
@@ -928,7 +922,10 @@ function groupArticles(articles) {
       if (used.has(j)) continue;
       var titleSim = titleSimilar(articles[i].title, articles[j].title);
       var contentSim = contentSimilar(articles[i].content || articles[i].description || '', articles[j].content || articles[j].description || '');
-      if (titleSim >= 0.5 || (titleSim >= 0.3 && contentSim >= 0.5)) {
+      // User: "3 kelime aynı olunca aynı haber kabul etmişiz oysa farklı haberler"
+      // Eşik yükseltildi: title >= 0.7 VEYA (title >= 0.5 + content >= 0.7)
+      // Önceki: 0.5 (çok düşük — İstanbul+sağanak+felaketi 3 kelime → yanlış gruplama)
+      if (titleSim >= 0.7 || (titleSim >= 0.5 && contentSim >= 0.7)) {
         group.articles.push(articles[j]);
         group.sourceIds.add(articles[j].sourceId);
         group.sourceRoots.add(articles[j].sourceRoot || articles[j].sourceId);
@@ -947,21 +944,19 @@ var CATEGORY_MIN_SOURCES = {
   'Kamu / Resmi': 2,
   'Bilim / Teknoloji': 2,
   'Kültür / Sanat': 2,
-  'Spor / Magazin': 2,
-  'Dünya': 2
+  'Spor / Magazin': 2
 };
 
 // Kategori bazlı yayın limiti (en çok tekrar eden ilk N haber)
 // User: "rss özet haber sayısını 50 yapalım"
 // Total: 17+11+6+5+5+6 = 50 (önceki: 15+10+5+5+5+5 = 45)
 var CATEGORY_PUBLISH_LIMITS = {
-  'Siyaset': 15,
-  'Ekonomi / Finans': 10,
-  'Kamu / Resmi': 5,
-  'Bilim / Teknoloji': 5,
-  'Kültür / Sanat': 5,
-  'Spor / Magazin': 5,
-  'Dünya': 5
+  'Siyaset': 10,
+  'Ekonomi / Finans': 6,
+  'Kamu / Resmi': 3,
+  'Bilim / Teknoloji': 2,
+  'Kültür / Sanat': 2,
+  'Spor / Magazin': 2
 };
 
 // Ana sayfa sıralaması: 3 Siyaset, 2 Ekonomi, 1 Kamu, 1 Kültür, 1 Spor = 8
@@ -1043,25 +1038,106 @@ function runScript(scriptPath, name) {
   });
 }
 
-async function main() {
-  // === LOCK MEKANİZMASI — önceki cycle bitmeden yenisi başlamasın ===
-  // User: "5 cycle aynı anda çalışıyordu — 5× token tüketimi"
-  // Çözüm: pgrep ile başka pipeline-all.js süreci var mı kontrol et
-  var isAlreadyRunning = false;
+// === LOCK MECHANIZMASI — paralel cycle'ları engeller ===
+// User: "ai düzenleme yapılırken sonraki cron gelince yeni akış başlıyor. bu nedenle süre uzuyor.
+//        herhangi bir akış faaliyeti varsa yeni cron tetiklemesi olmasın."
+// Cron her 20 dk'da bir tetikliyor ama cycle 30-50 dk sürüyor → overlap.
+// Çözüm: lock dosyası + PID yaşama kontrolü. Yeni process başlarken önceki process yaşıyorsa exit.
+var LOCK_FILE = '/var/www/.pipeline-lock';
+
+// Belirli bir PID'nin hala yaşayıp yaşamadığını kontrol et
+// process.kill(pid, 0) — sinyal 0 = "yaşıyor mu" kontrolü (sinyal göndermez)
+function isPidAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    // ESRCH = böyle process yok (ölmüş), EPERM = var ama yetki yok (yaşıyor demek)
+    return e.code === 'EPERM';
+  }
+}
+
+// Pipeline-all.js için başka bir process çalışıyor mu?
+// pgrep -f "pipeline-all.js" ile çapraz kontrol — PID recycling'e karşı güvenlik
+function isAnotherPipelineRunning() {
+  try {
+    // Lock dosyasını kontrol et
+    if (fs.existsSync(LOCK_FILE)) {
+      var lockContent = fs.readFileSync(LOCK_FILE, 'utf8').trim();
+      var lockPid = parseInt(lockContent, 10);
+      if (!isNaN(lockPid) && lockPid > 0 && isPidAlive(lockPid)) {
+        return { running: true, pid: lockPid, source: 'lock-file' };
+      }
+      // Lock'taki PID ölmüş — lock dosyasını temizle (stale lock)
+      try { fs.unlinkSync(LOCK_FILE); } catch (e) {}
+    }
+  } catch (e) {}
+  // pgrep ile de kontrol et (lock dosyası silinmiş olabilir ama process yaşıyor olabilir)
   try {
     var { execSync } = require('child_process');
-    // pgrep: bu PID DIŞINDA pipeline-all.js süreci var mı?
-    var pgrepOutput = execSync('pgrep -f "pipeline-all.js" 2>/dev/null || true', { encoding: 'utf8' });
-    var pids = pgrepOutput.trim().split('\n').filter(function(p) { return p && p !== String(process.pid); });
+    var out = execSync('pgrep -f "pipeline-all.js" 2>/dev/null || true', { encoding: 'utf8', timeout: 5000 });
+    var pids = out.split('\n').map(function(s) { return parseInt(s.trim(), 10); }).filter(function(p) { return !isNaN(p) && p > 0 && p !== process.pid; });
     if (pids.length > 0) {
-      isAlreadyRunning = true;
-      console.log('[' + new Date().toISOString() + '] ÖNCEKİ CYCLE HÂLÂ ÇALIŞIYOR (PID: ' + pids.join(', ') + ') — ÇIK');
-      process.exit(0);
+      // En az bir başka pipeline process'i yaşıyor mu kontrol et
+      for (var i = 0; i < pids.length; i++) {
+        if (isPidAlive(pids[i])) {
+          return { running: true, pid: pids[i], source: 'pgrep' };
+        }
+      }
     }
-  } catch (e) {
-    // pgrep yoksa veya hata verirse — devam et
-  }
+  } catch (e) {}
+  return { running: false };
+}
 
+// LOCK AL — başlamadan önce kontrol et, varsa exit yap
+function acquireLock() {
+  var check = isAnotherPipelineRunning();
+  if (check.running) {
+    var msg = '[LOCK] Başka pipeline process (PID ' + check.pid + ', kaynak: ' + check.source + ') hala çalışıyor — bu cycle atlanıyor.';
+    console.error(msg);
+    // Log'a yaz (Akış Kontrol'de görünsün)
+    try {
+      var logPath = '/var/www/pipeline-once.log';
+      fs.appendFileSync(logPath, '[' + new Date().toISOString() + '] ' + msg + '\n');
+    } catch (e) {}
+    origExit(0); // exit code 0 = hata değil, sadece atlandı (origExit ile GERÇEK çıkış)
+  }
+  // Lock dosyasını yaz (kendi PID'imiz ile)
+  try {
+    fs.writeFileSync(LOCK_FILE, String(process.pid));
+  } catch (e) {
+    // Lock dosyası yazılamazsa bile devam et — pgrep kontrolü hala çalışır
+  }
+}
+
+// LOCK BIRAK — process biterken lock dosyasını sil
+function releaseLock() {
+  try {
+    if (fs.existsSync(LOCK_FILE)) {
+      var lockContent = fs.readFileSync(LOCK_FILE, 'utf8').trim();
+      var lockPid = parseInt(lockContent, 10);
+      // Sadece kendi PID'imizse sil (başka process'in lock'unu silme)
+      if (!isNaN(lockPid) && lockPid === process.pid) {
+        fs.unlinkSync(LOCK_FILE);
+      }
+    }
+  } catch (e) {}
+}
+
+// Lock al — önceki process yaşıyorsa exit yapar
+acquireLock();
+
+// Process çıkışında lock'u bırak (normal çıkış, SIGTERM, SIGINT, exception)
+process.on('exit', releaseLock);
+process.on('SIGTERM', function() { releaseLock(); process.exit(0); });
+process.on('SIGINT', function() { releaseLock(); process.exit(0); });
+process.on('uncaughtException', function(e) {
+  releaseLock();
+  console.error('[FATAL uncaughtException] ' + (e && e.message || e));
+  process.exit(1);
+});
+
+async function main() {
   log('=== Cycle basladi ===');
   log('GEMINI keys: ' + GEMINI_KEYS.length + ' adet');
   var startedAtIso = new Date().toISOString();
@@ -1093,42 +1169,14 @@ async function main() {
   console.log = _origLog;
   // RSS istatistiklerini parse et
   var rssRead = 0;
-  var rssAdded = 0;
   for (var ri = 0; ri < _capturedRss.length; ri++) {
     var rssMatch = _capturedRss[ri].match(/İşlenen kaynak:\s*(\d+)/);
     if (rssMatch) { rssRead = parseInt(rssMatch[1]); break; }
   }
-  for (var ri = 0; ri < _capturedRss.length; ri++) {
-    var addedMatch = _capturedRss[ri].match(/Eklenen makale:\s*(\d+)/);
-    if (addedMatch) { rssAdded = parseInt(addedMatch[1]); break; }
-  }
-  log('RSS stats: ' + rssRead + ' kaynak işlendi, ' + rssAdded + ' yeni makale eklendi');
+  log('RSS stats: ' + rssRead + ' kaynak işlendi');
   phaseTimes.rssFinishedAt = new Date().toISOString();
   ws({ rssRead: rssRead, rssFinishedAt: phaseTimes.rssFinishedAt });
   if (global.gc) { global.gc(); log('GC'); }
-
-  // Eğer RSS'ten yeni makale gelmediyse AI Özet'i ATLA — tekrar özetlemeyi önle
-  // User: "aynı haberi tekrar tekrar özetliyor olabilir miyiz?"
-  // Sebep: RSS: 0 ise 24h makaleleri yeniden işliyordu, eski arşivler take limiti dışında kalınca tekrar özetleniyordu
-  if (rssAdded === 0) {
-    log('⚠ RSS\'ten yeni makale gelmedi (Eklenen: 0) — AI Özet ATLANIYOR (tekrar özetlemeyi önlemek için)');
-    phaseTimes.ozetFinishedAt = new Date().toISOString();
-    ws({ stage: 'done', ozetFinishedAt: phaseTimes.ozetFinishedAt, finishedAt: phaseTimes.ozetFinishedAt });
-    wh(Object.assign({
-      event: 'done',
-      startedAt: startedAtIso,
-      finishedAt: phaseTimes.ozetFinishedAt,
-      durationMs: Date.now() - startedAtMs,
-      rssStartedAt: phaseTimes.rssStartedAt,
-      rssFinishedAt: phaseTimes.rssFinishedAt,
-      ozetStartedAt: null,
-      ozetFinishedAt: phaseTimes.ozetFinishedAt,
-    }, { rssRead: rssRead, duplicatesFound: 0, summariesDone: 0, publishedCount: 0 }));
-    log('=== Cycle tamam (RSS yok, AI özet atlandı) ===');
-    process.exit = origExit;
-    origExit(0);
-    return;
-  }
 
   // Gruplama + AI özet
   phaseTimes.ozetStartedAt = new Date().toISOString();
@@ -1152,55 +1200,20 @@ async function main() {
       });
       log('Son ' + WINDOW_HOURS + ' saat makale: ' + articles.length);
 
-      // === KÖK KAYNAK EŞLEMEME — aynı yayıncının farklı RSS'lerini 1 kaynak say ===
-      // User: "milliyet 7 kaynak sayılıyor aslında aynı kaynak bunları 1 sayalım"
-      // sourceId → kök domain eşlemesi yap (milliyet.com.tr, hurriyet.com.tr, vb.)
-      var sourceRoots = {}; // sourceId → 'milliyet.com.tr'
-      try {
-        var allSources = await globalThis.prisma.source.findMany({
-          select: { id: true, url: true }
-        });
-        allSources.forEach(function(s) {
-          try {
-            var u = new URL(s.url);
-            // www. varsa kaldır, sadece domain kalsın
-            var root = u.hostname.replace(/^www\./, '');
-            // google news, feedburner gibi proxy'ler için path kontrolü
-            if (root.indexOf('news.google.com') >= 0) {
-              // Google News — site: parametresinden asıl siteyi çıkar
-              var match = s.url.match(/site%3A([a-z0-9.-]+)/i);
-              root = match ? match[1] : 'google-news';
-            }
-            if (root.indexOf('feedburner.com') >= 0 || root.indexOf('flipboard.com') >= 0) {
-              root = s.url; // benzersiz yap
-            }
-            sourceRoots[s.id] = root;
-          } catch (e) {
-            sourceRoots[s.id] = s.id; // URL parse edilemezse sourceId kullan
-          }
-        });
-      } catch (e) {}
-
-      // Her makaleye sourceRoot ekle
-      articles.forEach(function(a) {
-        a.sourceRoot = sourceRoots[a.sourceId] || a.sourceId;
-      });
-      log('Kök kaynak eşlememe: ' + Object.keys(sourceRoots).length + ' kaynak → ' + new Set(Object.values(sourceRoots)).size + ' kök');
-
       // Grupla
       var groups = groupArticles(articles);
       log('Grup sayisi: ' + groups.length);
 
-      // Kategori bazlı min kaynak filtrele — sourceRoots kullanır (kök domain bazlı)
+      // Kategori bazlı min kaynak filtrele
       var multiSource = groups.filter(function(g) {
         var cat = g.articles[0].category || 'Siyaset';
         var minSources = CATEGORY_MIN_SOURCES[cat] || 2;
-        return g.sourceRoots.size >= minSources;
+        return g.sourceIds.size >= minSources;
       });
       log('Min kaynakli grup: ' + multiSource.length);
 
-      // En çok kaynaklı gruptan en aza doğru sırala — sourceRoots kullanır
-      multiSource.sort(function(a, b) { return b.sourceRoots.size - a.sourceRoots.size; });
+      // En çok kaynaklı gruptan en aza doğru sırala
+      multiSource.sort(function(a, b) { return b.sourceIds.size - a.sourceIds.size; });
 
       // Kategori bazlı limitlere göre grupları ayır
       // Her kategori için en çok kaynaklı ilk N grup (Siyaset:15, Ekonomi:10, diğerleri:5)
@@ -1232,20 +1245,24 @@ async function main() {
         where: { status: { in: ['archived', 'duplicate'] } },
         select: { id: true, aiTitle: true, aiSummary: true, category: true, sourceCount: true, status: true },
         orderBy: { archivedAt: 'desc' },
-        take: 500  // 2000→500: user: 'arşiv taramasını 2000 demişiz onu da 500 yapalım'
+        take: 200  // önceki 500 idi — user: "500'ü 200'e düşürelim"
       });
       // Birleşik liste (yayında + arşiv + duplicate) — kategori farkı gözetmeksizin aynı başlık ara
       var existing = existingPublished.concat(existingArchived);
       log('Mevcut haber (yayında ' + existingPublished.length + ' + arşiv/dup ' + existingArchived.length + ')');
 
       var added = 0, skipped = 0, aiOk = 0, archived = 0, pendingCount = 0;
+
+      // === PARALEL BATCH (4 lu) ===
+      // User: "4 lu paralel yapamaz miyiz"
+      // 3 Faz: A) On isleme (sirali) B) AI cagrilari (paralel 4 lu) C) DB yazma (sirali)
+
+      // FAZ A: On isleme — brand/ad/duplicate check, AI ya gidecek item lari topla
+      var batchItems = [];
       for (var i = 0; i < topGroups.length; i++) {
         var group = topGroups[i];
         var groupArticlesList = group.articles;
         var firstArticle = groupArticlesList[0];
-        // GRUBUN KATEGORISI = en cok unique source'a sahip kategori (çoğunluk)
-        // Bu, "Spor kategorisinde haber yoksa Spor satırı boş kalsın" mantığını sağlar
-        // Önceki: firstArticle.category (rastgele) → yanlış kategori
         var catSourcesByCat = {};
         for (var gi = 0; gi < groupArticlesList.length; gi++) {
           var ga = groupArticlesList[gi];
@@ -1256,297 +1273,121 @@ async function main() {
         var bestCat = firstArticle.category || 'Siyaset';
         var bestCount = 0;
         Object.keys(catSourcesByCat).forEach(function(c) {
-          if (catSourcesByCat[c].size > bestCount) {
-            bestCount = catSourcesByCat[c].size;
-            bestCat = c;
-          }
+          if (catSourcesByCat[c].size > bestCount) { bestCount = catSourcesByCat[c].size; bestCat = c; }
         });
         var cat = bestCat;
-        var sourceCount = group.sourceRoots.size; // kök domain bazlı kaynak sayısı
+        var sourceCount = group.sourceIds.size;
 
-        // === MARKA BLOK LİSTESİ KONTROLÜ — EN ÖNCE ===
-        // Başlıkta listedeki herhangi bir marka adı geçerse → haberi TAMAMEN ATLA
-        // AI özet üretme, API çağrısı yapma, zaman ve token tasarrufu
-        // User: "tesla fabrikası yandı bile deseler yayınlamayalaım. iphone ile adam öldürdü haberini bile engelleyelim"
         var brandHit = hasBrandInTitle(firstArticle.title);
-        if (brandHit) {
-          log('  [MARKA BLOK] ' + brandHit + ' başlıkta — ATLANDI: ' + firstArticle.title.slice(0, 60));
-          skipped++;
-          continue;
-        }
+        if (brandHit) { log('  [MARKA BLOK] ' + brandHit + ' - ATLANDI: ' + firstArticle.title.slice(0, 60)); skipped++; continue; }
 
-        // REKLAM/TANITIM FILTRESI — başlıkta reklam/tanıtım ifadeleri varsa haberi ATLA
         var titleLowerCheck = firstArticle.title.toLowerCase();
-        // Jenerik reklam ifadeleri (başlıkta varsa direkt atla)
-        var adKeywords = [
-          // Fiyat
-          'fiyat listesi', 'fiyat listeleri', 'fiyatları açıklandı', 'fiyatı açıklandı',
-          'özellikleri ve fiyatı', 'güncel fiyat', 'güncel fiyatlar', 'sıfır fiyat',
-          'güncel sıfır', 'sıfır otomobil fiyat', 'sıfır araba fiyat',
-          'otomobil fiyatları', 'güncel otomobil', 'oto fiyat listesi',
-          // Tanıtım / lansman
-          'tanıtıldı: işte', 'resmen tanıtıldı', 'işte özellikleri', 'işte fiyatı',
-          'tanıtımı yapıldı', 'tanıtım videosu', 'lansmanı yapıldı', 'lansman videosu',
-          'dünya prömiyeri', 'dünya lansmanı', 'tanıtım etkinliği', 'tanıtım günü',
-          'tanıtım fragmanı',
-          // Satış
-          'satışa sunuldu', 'çıkış tarihi belli', 'satışa çıktı', 'ön satış', 'ön sipariş',
-          'satışa çıkıyor', 'satışa sunulacak', 'satışa çıkan', 'satışta',
-          // Telefon/araba inceleme
-          'telefon incelemesi', 'akıllı telefon inceleme', 'telefonun özellikleri',
-          'akıllı saat tanıtıldı', 'yeni akıllı saat', 'akıllı saat incelemesi',
-          'otomobil tanıtımı', 'otomobil incelemesi', 'araba incelemesi',
-          'test sürüşü', 'test sürüşü ile', 'sürüş izlenimleri',
-          // Yeni model
-          'yeni modeli tanıtıldı', 'yeni model tanıtımı', 'model tanıtımı',
-          'modeli tanıtıldı', 'yüz yenileme yapıldı', 'yüz yenileme tanıtıldı'
-        ];
-
-        // Telefon markaları (başlıkta varsa + tanıtım eylemi de varsa atla)
-        var phoneBrands = ['iphone', 'samsung galaxy', 'xiaomi', 'oppo', 'huawei', 'realme',
-          'oneplus', 'honor', 'vivo', 'tecno', 'apple watch', 'redmi', 'poco',
-          'galaxy note', 'galaxy s2', 'galaxy a', 'galaxy m', 'galaxy z'];
-        // Araba markaları (başlıkta varsa + tanıtım eylemi de varsa atla)
-        var carBrands = ['bmw', 'mercedes', 'audi', 'toyota', 'honda', 'volvo', 'renault',
-          'fiat', 'ford', 'volkswagen', 'peugeot', 'skoda', 'hyundai', 'kia', 'mazda',
-          'nissan', 'citroen', 'opel', 'tesla', 'porsche', 'lexus', 'seat',
-          'alfa romeo', 'dacia', 'togg'];
-        // Reklam eylem kelimeleri — marka ile birlikte aranacak
-        var adActionWords = ['tanıtıldı', 'tanıtıldı:', 'tanıtımı', 'satıldı', 'satışa çıktı',
-          'satışa sunuldu', 'yeni model', 'lansmanı', 'lansmanı yapıldı',
-          'incelemesi', 'inceleme', 'satışta', 'satışa sunulacak', 'tanıtım videosu'];
-
+        var adKeywords = ['fiyat listesi','fiyat listeleri','fiyati aciklandi','fiyatlari aciklandi','ozellikleri ve fiyati','guncel fiyat','guncel fiyatlar','sifir fiyat','guncel sifir','sifir otomobil fiyat','sifir araba fiyat','otomobil fiyatlari','guncel otomobil','oto fiyat listesi','tanitildi: iste','resmen tanitildi','iste ozellikleri','iste fiyati','tanitimi yapildi','tanitim videosu','lansmani yapildi','lansman videosu','dunya prmiyeri','dunya lansmani','tanitim etkinligi','tanitim gunu','tanitim fragmani','satisa sunuldu','cikis tarihi belli','satisa cikti','on satis','on siparis','satisa cikiyor','satisa sunulacak','satisa cikan','satista','telefon incelemesi','akilli telefon inceleme','telefonun ozellikleri','akilli saat tanitildi','yeni akilli saat','akilli saat incelemesi','otomobil tanitimi','otomobil incelemesi','araba incelemesi','test surusu','test surusu ile','surus izlenimleri','yeni modeli tanitildi','yeni model tanitimi','model tanitimi','modeli tanitildi','yuz yenileme yapildi','yuz yenileme tanitildi'];
         var isAd = false;
-        for (var ai2 = 0; ai2 < adKeywords.length; ai2++) {
-          if (titleLowerCheck.indexOf(adKeywords[ai2]) >= 0) { isAd = true; break; }
-        }
+        for (var ai2 = 0; ai2 < adKeywords.length; ai2++) { if (titleLowerCheck.indexOf(adKeywords[ai2]) >= 0) { isAd = true; break; } }
+        if (isAd) { log('  [Reklam/Tanitim] ATLANDI: ' + firstArticle.title.slice(0, 60)); continue; }
 
-        // Telefon markası + reklam eylemi birlikte var mı?
-        if (!isAd) {
-          for (var pi = 0; pi < phoneBrands.length; pi++) {
-            if (titleLowerCheck.indexOf(phoneBrands[pi]) >= 0) {
-              for (var pj = 0; pj < adActionWords.length; pj++) {
-                if (titleLowerCheck.indexOf(adActionWords[pj]) >= 0) {
-                  isAd = true; break;
-                }
-              }
-              if (isAd) break;
-            }
-          }
-        }
-
-        // Araba markası + reklam eylemi birlikte var mı?
-        if (!isAd) {
-          for (var ci = 0; ci < carBrands.length; ci++) {
-            if (titleLowerCheck.indexOf(carBrands[ci]) >= 0) {
-              for (var cj = 0; cj < adActionWords.length; cj++) {
-                if (titleLowerCheck.indexOf(adActionWords[cj]) >= 0) {
-                  isAd = true; break;
-                }
-              }
-              if (isAd) break;
-            }
-          }
-        }
-
-        // "telefon" / "otomobil" / "araba" + reklam eylemi kombinasyonu (markasız)
-        if (!isAd) {
-          var genericDeviceWords = ['telefon', 'akıllı telefon', 'akıllı saat', 'otomobil', 'araba', 'araç', 'suv'];
-          for (var gi = 0; gi < genericDeviceWords.length; gi++) {
-            if (titleLowerCheck.indexOf(genericDeviceWords[gi]) >= 0) {
-              for (var gj = 0; gj < adActionWords.length; gj++) {
-                if (titleLowerCheck.indexOf(adActionWords[gj]) >= 0) {
-                  isAd = true; break;
-                }
-              }
-              if (isAd) break;
-            }
-          }
-        }
-
-        if (isAd) {
-          log('  [Reklam/Tanıtım] Haber ATLANDI: ' + firstArticle.title.slice(0, 60));
-          continue;
-        }
-
-        // TEKRAR KONTROLÜ — kategori BAĞIMSIZ, eşik DÜŞÜK (0.3)
-        // Yeni mantık (çok sıkı tekrar yakalama):
-        // - titleSimilar >= 0.85 (birebir) + published ise: SKIP (create etme, AI çağırma)
-        //   existing'i güncelle (latestPublishedAt, sourceCount)
-        // - titleSimilar >= 0.85 + archived/duplicate ise: yeni published create
-        // - titleSimilar 0.3-0.85: eski duplicate, yeni published (AI yeni)
-        // - titleSimilar 0.15-0.3 + contentSimilar >= 0.3: eski duplicate
-        // - < 0.15: published (yeni haber)
-        // Tüm yeni haberler direkt PUBLISHED — pending_review YOK
         var oldArticleToDuplicate = null;
         var alreadyArchived = false;
-        var skipCreate = false;  // birebir aynı başlık + published → create etme
-
-        // Önce benzer başlık ara — kategori fark etmez
+        var skipCreate = false;
         for (var j = 0; j < existing.length; j++) {
           var simTitle = titleSimilar(firstArticle.title, existing[j].aiTitle || '');
-          var simContent = contentSimilar(
-            firstArticle.content || firstArticle.description || '',
-            existing[j].aiSummary || ''
-          );
-          // Eşik: title >= 0.5 VEYA (title >= 0.3 VE content >= 0.5)
-          // Yüksek eşik — alakasız haberler aynı sayılmasın
+          var simContent = contentSimilar(firstArticle.content || firstArticle.description || '', existing[j].aiSummary || '');
           var matched = simTitle >= 0.5 || (simTitle >= 0.3 && simContent >= 0.5);
           if (!matched) continue;
-
           if (simTitle >= 0.85 && existing[j].status === 'published') {
-            // Birebir aynı başlık + published → SKIP (create etme, AI çağırma)
-            // existing'i güncelle (latestPublishedAt, sourceCount)
             skipCreate = true;
-            try {
-              await globalThis.prisma.publishedArticle.update({
-                where: { id: existing[j].id },
-                data: {
-                  latestPublishedAt: new Date(),
-                  sourceCount: Math.max(existing[j].sourceCount || 0, sourceCount)
-                }
-              });
-              log('  [Birebir ayni, skip + update] (' + cat + '): ' + firstArticle.title.slice(0, 50));
-            } catch (e) {}
+            try { await globalThis.prisma.publishedArticle.update({ where: { id: existing[j].id }, data: { latestPublishedAt: new Date(), sourceCount: Math.max(existing[j].sourceCount || 0, sourceCount) } }); } catch (e) {}
             break;
           }
-
-          if (existing[j].status === 'published') {
-            oldArticleToDuplicate = existing[j];
-            log('  [Tekrar bulundu, eski -> duplicate] (' + cat + '/' + (existing[j].category || '?') + '): ' + firstArticle.title.slice(0, 50) + ' (benzerlik: ' + Math.round(simTitle * 100) + '%)');
-            break;
-          } else if (existing[j].status === 'archived' || existing[j].status === 'duplicate') {
-            alreadyArchived = true;
-            break;
-          }
+          if (existing[j].status === 'published') { oldArticleToDuplicate = existing[j]; break; }
+          else if (existing[j].status === 'archived' || existing[j].status === 'duplicate') { alreadyArchived = true; break; }
         }
+        if (skipCreate) { skipped++; continue; }
 
-        if (skipCreate) {
-          skipped++;
-          continue;  // AI çağırma, create etme, sonraki gruba geç
-        }
-
-        if (alreadyArchived) {
-          log('  [Arsivde/Duplicatete var, taze yayinla] (' + cat + '): ' + firstArticle.title.slice(0, 50));
-        }
-        if (oldArticleToDuplicate) {
-          try {
-            await globalThis.prisma.publishedArticle.update({
-              where: { id: oldArticleToDuplicate.id },
-              data: { status: 'duplicate', archivedAt: new Date() }
-            });
-            archived++;
-            log('  [Eski -> duplicate] (' + cat + '): ' + (oldArticleToDuplicate.aiTitle || '').slice(0, 50));
-          } catch (e) {}
-        }
-
-        log('  [' + (i+1) + '/' + topGroups.length + '] ' + sourceCount + ' kaynak, ' + groupArticlesList.length + ' makale (' + cat + '): ' + firstArticle.title.slice(0, 50));
-
-        // İçerikleri topla — Siyaset/Ekonomi: en yeni 5 kaynak, diğerleri: en yeni 2
         var maxSources = (cat === 'Siyaset' || cat === 'Ekonomi / Finans') ? 5 : 2;
         var contents = groupArticlesList.slice(0, maxSources).map(function(a) { return a.content || a.description || ''; });
+        batchItems.push({
+          i: batchItems.length, firstArticle: firstArticle, groupArticlesList: groupArticlesList,
+          cat: cat, sourceCount: sourceCount, contents: contents,
+          oldArticleToDuplicate: oldArticleToDuplicate, alreadyArchived: alreadyArchived
+        });
+      }
+      log('AI ozete gidecek: ' + batchItems.length + ' makale (toplam ' + topGroups.length + ' gruptan)');
 
-        // === TARİH FİLTRESİ — sadece bugün ve dün makaleleri ===
-        // User: "3 gün olmasın, dün ve bugün olsun ve haberde buna değinelim"
-        // Eski makaleler (21 Ağustos gibi) yeni pubDate ile gelirse ATLA
-        var articleDate = extractArticleDate(firstArticle.title, firstArticle.publishedAt);
-        var dateInfo = dateInfoString(articleDate);
-        if (articleDate && !dateInfo) {
-          // > 1 gün eski — ATLA
-          var today0 = new Date(); today0.setHours(0,0,0,0);
-          var art0 = new Date(articleDate); art0.setHours(0,0,0,0);
-          var diffDays = Math.round((today0.getTime() - art0.getTime()) / (1000 * 60 * 60 * 24));
-          log('  [ESKİ HABER] Tarih: ' + art0.toLocaleDateString('tr-TR') + ' — ' + diffDays + ' gün önce, ATLANDI: ' + firstArticle.title.slice(0, 50));
-          skipped++;
-          continue;
-        }
-        if (dateInfo) {
-          log('  [Tarih] ' + dateInfo);
-        }
+      // FAZ B+C: Paralel batch AI cagrilari + sirali DB yazma
+      var BATCH_SIZE = 4;
+      for (var bi = 0; bi < batchItems.length; bi += BATCH_SIZE) {
+        var batch = batchItems.slice(bi, bi + BATCH_SIZE);
+        log('  === Batch ' + (bi+1) + '-' + (bi+batch.length) + '/' + batchItems.length + ' paralel cagriliyor ===');
+        var batchStart = Date.now();
 
-        // AI özet (dateInfo parametresi ile — AI "bugün/dün" kullanacak)
-        var aiText = await aiSummarize(firstArticle.title, contents, cat, dateInfo);
-        // AI null ise haberi atla — fallback description KULLANMA (kısa özet oluşur)
-        if (!aiText || aiText.trim().length < 100) {
-          log('  AI cevap vermedi veya çok kısa, haber ATLANDI: ' + firstArticle.title.slice(0, 50));
-          continue;
-        }
-        var summaryText = aiText;
-        aiOk++;
-
-        // En iyi görsel
-        var bestImage = null;
-        for (var k = 0; k < groupArticlesList.length; k++) {
-          if (groupArticlesList[k].imageUrl) { bestImage = groupArticlesList[k].imageUrl; break; }
-        }
-
-        // "Son dakika" haberi tespiti — kaynak başlıkta "son dakika" geçiyorsa
-        // AI özetinden "son dakika" kaldır, başına "Konu ile ilgili son bilgiler şu şekildedir:" ekle
-        // Ayrıca kaynak başlıktan da "SON DAKİKA |" ön ekini ve takip eden tüm noktalama işaretlerini temizle
-        // KRİTİK: JavaScript toLowerCase() Türkçe İ (U+0130) karakterini "i̇" (i + U+0307 combining dot) yapar
-        // Bu yüzden önce İ → i replace yap, sonra toLowerCase çağır — yoksa indexOf('son dakika') eşleşmez
-        var titleLower = firstArticle.title.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
-        if (titleLower.indexOf('son dakika') >= 0 || titleLower.indexOf('sondakika') >= 0) {
-          // AI özetinden "son dakika" ifadelerini kaldır (önce İ→i replace, sonra gi regex — gi flag de İ hatası var)
-          summaryText = summaryText.replace(/İ/g, 'i').replace(/son\s*dakika\.{0,3}/gi, '').replace(/sondakika\.{0,3}/gi, '').trim();
-          // Başına "Konu ile ilgili son bilgiler şu şekildedir:" ekle
-          var sonBilgilerPrefix = 'Konu ile ilgili son bilgiler şu şekildedir: ';
-          if (summaryText.toLowerCase().indexOf(sonBilgilerPrefix.toLowerCase()) !== 0) {
-            summaryText = sonBilgilerPrefix + summaryText;
-          }
-          // BAŞLIK temizliği — "SON DAKİKA |", "SON DAKİKA:", "SON DAKİKA -", "SON DAKİKA•", "SON DAKİKA HABERİ:" vb.
-          // Başlığın başındaki "SON DAKİKA" önekini + takip eden "HABERİ" kelimesi + tüm noktalama/bağlaç işaretlerini kaldır
-          // İşaretler: . ! ? … | : • - – — , ; ve boşluklar
-          // Türkçe İ → i replace ÖNCE yapılır (gi flag Türkçe İ'yi yakalamıyor)
-          var cleanedTitle = firstArticle.title
-            .replace(/İ/g, 'i')
-            .replace(/^\s*son\s*dakika\s*(haber[a-zçğıüşöç]*)?\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
-            .replace(/^\s*sondakika\s*(haber[a-zçğıüşöç]*)?\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
-            .replace(/\bson\s*dakika\s*(haber[a-zçğıüşöç]*)?\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
-            .replace(/\bsondakika\s*(haber[a-zçğıüşöç]*)?\s*[.!?\…\|:•\-–—,;]*\s*/gi, '')
-            .replace(/\s{2,}/g, ' ')
-            .trim();
-          if (cleanedTitle && cleanedTitle !== firstArticle.title) {
-            log('  [Son dakika haberi] Başlık temizlendi: "' + firstArticle.title + '" -> "' + cleanedTitle + '"');
-            firstArticle.title = cleanedTitle;
-          }
-          log('  [Son dakika haberi] Özet başına "Konu ile ilgili son bilgiler" eklendi');
-        }
-
-        try {
-          var publishTime = new Date(Date.now() - i * 60000);
-          // Tüm yeni haberler direkt PUBLISHED — pending_review KALDIRILDI
-          // AI özetinde tarih bug'ı varsa (yılının ekim ayının sekizinci günü) düzelt
-          summaryText = fixDateBugs(summaryText);
-          var createdArticle = await globalThis.prisma.publishedArticle.create({
-            data: {
-              aiTitle: decodeHtmlEntities(firstArticle.title),
-              aiSummary: summaryText.slice(0, 5000),
-              category: cat,
-              imageUrl: bestImage,
-              sourceArticleIds: JSON.stringify(groupArticlesList.map(function(a) { return a.id; })),
-              sourceCount: sourceCount,
-              earliestPublishedAt: groupArticlesList[groupArticlesList.length - 1].publishedAt || publishTime,
-              latestPublishedAt: publishTime,
-              wordCount: summaryText.split(/\s+/).length,
-              initialHearts: Math.floor(Math.random() * (413 - 223 + 1)) + 223, // random 223-413
-              clickHearts: 0,
-              status: 'published',
-              publishedAt: publishTime,
-              isEdited: false  // yeni makale = kırmızı çerçeve (düzenlenmemiş)
-            }
+        var aiResults = await Promise.all(batch.map(function(item, idx) {
+          return new Promise(function(resolve) {
+            setTimeout(function() {
+              aiSummarize(item.firstArticle.title, item.contents, item.cat)
+                .then(resolve)
+                .catch(function(e) { log('    AI error: ' + (e.message || '').slice(0, 80)); resolve(null); });
+            }, idx * 200);
           });
-          added++;
-          // CRITICAL: yeni create edileni existing listesine ekle
-          // ki cycle içinde aynı başlıkla başka grup gelirse onu görelim
-          existing.push({
-            id: createdArticle.id,
-            aiTitle: decodeHtmlEntities(firstArticle.title),
-            aiSummary: summaryText.slice(0, 2000),
-            category: cat,
-            status: 'published'
-          });
-        } catch (e) { log('  DB hata: ' + e.message); }
+        }));
+        log('  === Batch AI tamam: ' + (Date.now() - batchStart) + 'ms (' + batch.length + ' makale) ===');
+
+        for (var bj = 0; bj < batch.length; bj++) {
+          var item = batch[bj];
+          var aiText = aiResults[bj];
+          if (!aiText || aiText.trim().length < 100) { log('  AI cevap vermedi, ATLANDI: ' + item.firstArticle.title.slice(0, 50)); continue; }
+          var summaryText = aiText;
+          var firstArticle = item.firstArticle;
+          var cat = item.cat;
+          var sourceCount = item.sourceCount;
+          var groupArticlesList = item.groupArticlesList;
+          var oldArticleToDuplicate = item.oldArticleToDuplicate;
+          var i = item.i;
+          aiOk++;
+
+          if (oldArticleToDuplicate) {
+            try { await globalThis.prisma.publishedArticle.update({ where: { id: oldArticleToDuplicate.id }, data: { status: 'duplicate', archivedAt: new Date() } }); archived++; } catch (e) {}
+          }
+
+          var bestImage = null;
+          for (var k = 0; k < groupArticlesList.length; k++) { if (groupArticlesList[k].imageUrl) { bestImage = groupArticlesList[k].imageUrl; break; } }
+
+          var titleLower = firstArticle.title.replace(/\u0130/g, 'i').replace(/I/g, '\u0131').toLowerCase();
+          if (titleLower.indexOf('son dakika') >= 0 || titleLower.indexOf('sondakika') >= 0) {
+            summaryText = summaryText.replace(/\u0130/g, 'i').replace(/son\s*dakika\.{0,3}/gi, '').replace(/sondakika\.{0,3}/gi, '').trim();
+            var sonBilgilerPrefix = 'Konu ile ilgili son bilgiler \u015Fu ekildedir: ';
+            if (summaryText.toLowerCase().indexOf(sonBilgilerPrefix.toLowerCase()) !== 0) { summaryText = sonBilgilerPrefix + summaryText; }
+            var cleanedTitle = firstArticle.title.replace(/\u0130/g, 'i')
+              .replace(/^\s*son\s*dakika\s*(haber[a-z\u00e7\u011f\u0131\u00fc\u015f\u00f6\u00e7]*)?\s*[.!?\u2026\|:\u2022\-\u2013\u2014,;]*\s*/gi, '')
+              .replace(/^\s*sondakika\s*(haber[a-z\u00e7\u011f\u0131\u00fc\u015f\u00f6\u00e7]*)?\s*[.!?\u2026\|:\u2022\-\u2013\u2014,;]*\s*/gi, '')
+              .replace(/\bson\s*dakika\s*(haber[a-z\u00e7\u011f\u0131\u00fc\u015f\u00f6\u00e7]*)?\s*[.!?\u2026\|:\u2022\-\u2013\u2014,;]*\s*/gi, '')
+              .replace(/\bsondakika\s*(haber[a-z\u00e7\u011f\u0131\u00fc\u015f\u00f6\u00e7]*)?\s*[.!?\u2026\|:\u2022\-\u2013\u2014,;]*\s*/gi, '')
+              .replace(/\s{2,}/g, ' ').trim();
+            if (cleanedTitle && cleanedTitle !== firstArticle.title) { firstArticle.title = cleanedTitle; }
+          }
+
+          try {
+            var publishTime = new Date(Date.now() - i * 60000);
+            summaryText = fixDateBugs(summaryText);
+            var createdArticle = await globalThis.prisma.publishedArticle.create({
+              data: {
+                aiTitle: decodeHtmlEntities(firstArticle.title),
+                aiSummary: summaryText.slice(0, 5000),
+                category: cat, imageUrl: bestImage,
+                sourceArticleIds: JSON.stringify(groupArticlesList.map(function(a) { return a.id; })),
+                sourceCount: sourceCount,
+                earliestPublishedAt: groupArticlesList[groupArticlesList.length - 1].publishedAt || publishTime,
+                latestPublishedAt: publishTime,
+                wordCount: summaryText.split(/\s+/).length,
+                initialHearts: Math.floor(Math.random() * (413 - 223 + 1)) + 223,
+                clickHearts: 0, status: 'published', publishedAt: publishTime, isEdited: false
+              }
+            });
+            added++;
+            existing.push({ id: createdArticle.id, aiTitle: decodeHtmlEntities(firstArticle.title), aiSummary: summaryText.slice(0, 2000), category: cat, status: 'published' });
+          } catch (e) { log('  DB hata: ' + e.message); }
+        }
       }
       log('Added: ' + added + ', Archived: ' + archived + ', AI: ' + aiOk);
 
@@ -1588,11 +1429,12 @@ async function main() {
           for (var si = 0; si < seenTitles.length; si++) {
             var sim = titleSimilar(pub.aiTitle, seenTitles[si].aiTitle || '');
             var simC = contentSimilar(pub.aiSummary || '', seenTitles[si].aiSummary || '');
-            // Eşik: title >= 0.5 veya (title >= 0.3 + content >= 0.5)
-            // Yüksek eşik — alakasız haberler silinmesin
-            if (sim >= 0.5 || (sim >= 0.3 && simC >= 0.5)) {
-              // Bu pub daha eski (çünkü allPublished latestPublishedAt desc sıralı)
-              // Yani pub'ı sil
+            // DÜŞÜK EŞİK: titleSimilar >= 0.3 (önceki 0.5 idi)
+            // User: "clear işlemi aynı konudaki tekrar haberleri temizliyor mu?"
+            // Önceki: 0.5 (çok yüksek, "Halk TV'ye kayyum atanması..." vs "Halk TV binasında polis araması..." yakalanmıyordu)
+            // Yeni: 0.3 (aynı konudan farklı açılardaki haberler yakalanır)
+            // VEYA: title >= 0.2 + content >= 0.4 (içerik benzerse)
+            if (sim >= 0.3 || (sim >= 0.2 && simC >= 0.4)) {
               isDuplicate = true;
               break;
             }
@@ -1600,6 +1442,7 @@ async function main() {
 
           if (isDuplicate) {
             toDelete.push(pub.id);
+            log('  [Cleanup] Tekrar silindi: "' + pub.aiTitle.slice(0, 40) + '"');
           } else {
             seenTitles.push(pub);
           }
@@ -1692,7 +1535,7 @@ async function main() {
   } catch (e) {}
 
   phaseTimes.ozetFinishedAt = new Date().toISOString();
-  ws({ stage: 'done', ozetFinishedAt: phaseTimes.ozetFinishedAt, finishedAt: phaseTimes.ozetFinishedAt });
+  ws({ ozetFinishedAt: phaseTimes.ozetFinishedAt }); // stage: done YAZILMIYOR (finalize'de yazılacak)
   // History: cycle başarıyla bitti (Akış Kontrol sekmesi için)
   // Status dosyasından tüm stats'ı okuyup history'e yaz
   var statsForHistory = { rssRead: null, duplicatesFound: null, summariesDone: null, publishedCount: null };
@@ -1754,12 +1597,7 @@ async function main() {
 
   // 2. AI DÜZENLE — tüm yeni (isEdited=false) makaleler için
   // AI özet'ten FARKLI: plagiarizm/wordcount/ad filter YOK
-  // Sadece mevcut metni akıcı, doğal yap — min 150 max 300 kelime
-  // User: 'son düzenleme ve özete 150-300 kelimelik veri oluşsun'
-  // 2. AI DÜZENLE — SADECE EVREN
-  // User: "evren sadece son aşamada aidüzenleme işini yapsın"
-  // AI Özet: Gemini (hızlı) → AI Düzenle: EVREN (kaliteli)
-  // Sadece isEdited=false makaleler (ilk sefer 50, sonrasında sadece yeni)
+  // Sadece mevcut metni akıcı, doğal yap — min 100 max 300 kelime (user: düzenleme ai alt limit 100)
   if (statsForHistory.publishedCount > 0 && globalThis.prisma) {
     // CRITICAL: deadKeys'i SIFIRLA — AI Özet tüm key'leri tüketmiş olabilir (rate limit)
     // User: "ai düzenlemeler neden 0 saniye? tüm sağlayıcılar denendi ama hepsi başarısız"
@@ -1779,7 +1617,7 @@ async function main() {
       var newArticles = await globalThis.prisma.publishedArticle.findMany({
         where: { status: 'published', isEdited: false },
         orderBy: { publishedAt: 'desc' },
-        take: 50, // 100→50: user: 'clear için 100 demişiz onu 50 yapalım'
+        take: 25, // max 25 makale (cycle 20dk'ya sığması için — user: 16 Ekim 2026)
         select: { id: true, aiTitle: true, aiSummary: true }
       });
       log('  Yeni (isEdited=false) makale sayısı: ' + newArticles.length);
@@ -1796,7 +1634,7 @@ async function main() {
           '- Metni akıcı ve okunabilir bir haber diline çevir\n' +
           '- Anlamı koru, yeni bilgi ekleme\n' +
           '- Başlığı kısa ve etkileyici yap\n' +
-          '- ÖZET MİNIMUM 150, MAKSİMUM 300 KELİME OLMALI\n' +
+          '- ÖZET MİNIMUM 40, MAKSİMUM 300 KELİME OLMALI\n' +
           '- Kopyalama kontrolü, reklam filtresi YOK — sadece metni düzelt\n\n' +
           'GÜNCEL BİLGİLER VE TARİH DOĞRULUĞU (ÇOK ÖNEMLİ — bugün: ' + new Date().toLocaleDateString('tr-TR') + '):\n' +
           '- Donald Trump: ABD\'nin 47. ve ŞU ANKİ Başkanı (20 Ocak 2025\'ten beri görevde). "Eski başkan" DEĞİL.\n' +
@@ -1809,29 +1647,32 @@ async function main() {
           'ÇIKTI FORMATI (kesinlikle bu formatta):\n' +
           'BAŞLIK: [yeniden yazılmış başlık]\n' +
           '---\n' +
-          'ÖZET: [yeniden yazılmış özet — 150-300 kelime]';
+          'ÖZET: [yeniden yazılmış özet — 100-300 kelime]';
 
         try {
           var editedText = null;
-          // AI Düzenle: SADECE EVREN — 3 kez retry
-          // User: "evren hata verirse tekrar denesin"
-          if (EVREN_KEY) {
-            for (var duzenleAttempt = 0; duzenleAttempt < 3 && !editedText; duzenleAttempt++) {
-              try {
+          // AI Düzenle: önce EVREN, başarısız olursa Gemini'ye fallback
+          // User: "evren başarısız olursa gemini kullanılsın"
+          var providers = getAiProviders();
+          for (var pi2 = 0; pi2 < providers.length && !editedText; pi2++) {
+            var prov = providers[pi2];
+            if (deadKeys.has(prov.key)) continue;
+            try {
+              if (prov.type === 'evren') {
                 editedText = await callEvren(editPrompt, 2000);
-                if (editedText) {
-                  log('    [EVREN] başarılı (deneme ' + (duzenleAttempt + 1) + '/3)');
-                }
-              } catch (e2) {
-                log('    [EVREN] hata (deneme ' + (duzenleAttempt + 1) + '/3): ' + e2.message.slice(0, 80));
-                if (duzenleAttempt < 2) {
-                  log('    [EVREN] 5 sn bekle, tekrar dene...');
-                  await new Promise(function(r) { setTimeout(r, 5000); });
-                }
+              } else {
+                editedText = await callGemini(prov.key, editPrompt, 2000);
               }
+            } catch (e2) {
+              log('    [' + prov.label + '] hata: ' + e2.message.slice(0, 60));
+              // SADECE HTTP 4xx hatalarında deadKeys'e ekle (kalıcı — key ölü)
+              // "content boş" geçici hata — deadKeys'e EKLEME, sonraki makalede tekrar dene
+              // User: "Gemini#1 her makalede deneniyor" — 400 de deadKeys'e ekle (AI Düzenle)
+              if (e2.statusCode === 400 || e2.statusCode === 401 || e2.statusCode === 403 || e2.statusCode === 429) {
+                deadKeys.add(prov.key);
+              }
+              // "content boş" hatası → deadKeys'e EKLEME
             }
-          } else {
-            log('    [EVREN] key yok — atlanıyor');
           }
 
           if (editedText) {
@@ -1882,40 +1723,60 @@ async function main() {
     ws({ duzenleFinishedAt: phaseTimes.duzenleFinishedAt });
     log('  ⏱ Cleanup:    ' + (phaseTimes.cleanupStartedAt || '—') + ' → ' + (phaseTimes.cleanupFinishedAt || '—'));
     log('  ⏱ AI Düzenle: ' + (phaseTimes.duzenleStartedAt || '—') + ' → ' + (phaseTimes.duzenleFinishedAt || '—'));
+
+    // History'ye faz zamanlarını GÜNCELLE — done event'ine fazları ekle
+    wh({
+      event: 'phases-update',
+      startedAt: startedAtIso,
+      rssStartedAt: phaseTimes.rssStartedAt,
+      rssFinishedAt: phaseTimes.rssFinishedAt,
+      ozetStartedAt: phaseTimes.ozetStartedAt,
+      ozetFinishedAt: phaseTimes.ozetFinishedAt,
+      cleanupStartedAt: phaseTimes.cleanupStartedAt,
+      cleanupFinishedAt: phaseTimes.cleanupFinishedAt,
+      duzenleStartedAt: phaseTimes.duzenleStartedAt,
+      duzenleFinishedAt: phaseTimes.duzenleFinishedAt
+    });
   } else {
     log('  ⏱ Cleanup:    atlandı (yeni haber yok)');
     log('  ⏱ AI Düzenle: atlandı (yeni haber yok)');
   }
 
-  // phases-update event'ini HER ZAMAN yaz — Clear veya AI Düzenle çalışsın/çalışmasın
-  // Önceki bug: phases-update sadece AI Düzenle if bloğu içinde yazılıyordu
-  // → Clear çalışır ama AI Düzenle çalışmazsa phases-update yazılmıyor → UI "atlandı" diyor
-  // User: "bu süreleri neden düzeltemiyoruz? Clear atlandı, AI Düzenle atlandı"
-  wh({
-    event: 'phases-update',
-    startedAt: startedAtIso,
-    rssStartedAt: phaseTimes.rssStartedAt,
-    rssFinishedAt: phaseTimes.rssFinishedAt,
-    ozetStartedAt: phaseTimes.ozetStartedAt,
-    ozetFinishedAt: phaseTimes.ozetFinishedAt,
-    cleanupStartedAt: phaseTimes.cleanupStartedAt,
-    cleanupFinishedAt: phaseTimes.cleanupFinishedAt,
-    duzenleStartedAt: phaseTimes.duzenleStartedAt,
-    duzenleFinishedAt: phaseTimes.duzenleFinishedAt
-  });
-
   log('=== Tüm adımlar tamam (pipeline + cleanup + AI düzenle) ===');
+  // Status: pipeline GERÇEKTEN bitti (cleanup + AI Düzenle dahil)
+  ws({ stage: 'done', finishedAt: new Date().toISOString() });
+  // History: cycle başarıyla bitti (Akış Kontrol sekmesi için)
+  try { wh({ event: 'done', startedAt: startedAtIso, finishedAt: new Date().toISOString(), durationMs: Date.now() - startedAtMs }); } catch (e4) {}
+
+  // KRİTİK: Prisma connection'ı kapat — açık connection process'in exit olmasını engelliyor
+  // User: "13:00 cycle 39 dkda bitti logu var ama process 53 dk'dır yaşıyor (zombie)"
+  // Sebep: prisma client açık kaldı, process.exit() çağrılsa bile process ölmedi
+  // Çözüm: prisma.$disconnect() çağır, sonra exit
+  if (globalThis.prisma) {
+    try { await globalThis.prisma.$disconnect(); log('Prisma disconnect OK'); } catch (e) { log('Prisma disconnect error: ' + e.message); }
+  }
+  // exitListeners'ı çalıştır (process.exit override'ı)
   process.exit = origExit;
-  origExit(0);
+  // Tüm timer'ları temizle (interval varsa)
+  try {
+    // Prisma client'ın interval'ları olabilir — process.exit force ediyor
+    process.exit(0);
+  } catch (e) {
+    origExit(0);
+  }
 }
 
-main().catch(function(e) {
+main().catch(async function(e) {
   log('FATAL: ' + (e && e.message || e));
   // History: cycle hata ile bitti
   try {
     wh({ event: 'error', startedAt: startedAtIso, finishedAt: new Date().toISOString(), durationMs: Date.now() - startedAtMs, error: (e && e.message || String(e)).slice(0, 500) });
   } catch (e2) {}
   ws({ stage: 'error', error: (e && e.message || String(e)), finishedAt: new Date().toISOString() });
+  // Hata durumunda da prisma disconnect yap
+  if (globalThis.prisma) {
+    try { await globalThis.prisma.$disconnect(); log('Prisma disconnect OK (error path)'); } catch (e3) {}
+  }
   process.exit = origExit;
   origExit(1);
 });

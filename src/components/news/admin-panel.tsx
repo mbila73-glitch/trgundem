@@ -31,7 +31,7 @@ type Message = { id: string; name: string; email: string; subject: string; messa
 type PubArticle = { id: string; aiTitle: string; aiSummary: string; imageUrl: string | null; category: string; wordCount: number; sourceCount: number; sourceArticleIds: string; publishedAt: string | null; latestPublishedAt: string; archivedAt: string | null; initialHearts: number; clickHearts: number; };
 type AdminTab = 'messages' | 'custom' | 'published' | 'live' | 'archived' | 'pending' | 'pipeline';
 
-const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Dünya'];
+const CATEGORIES = ['Güncel', 'Kamu / Resmi', 'Ekonomi / Finans', 'Spor / Magazin', 'Bilim / Teknoloji', 'Kültür / Sanat'];
 
 export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [token, setToken] = useState<string | null>(null);
@@ -64,9 +64,6 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const [resetConfirm, setResetConfirm] = useState('');
   const [resetting, setResetting] = useState(false);
   const [resetResult, setResetResult] = useState<string | null>(null);
-  const [resetArticles, setResetArticles] = useState(false);
-  const [resetArchive, setResetArchive] = useState(false);
-  const [resetMessages, setResetMessages] = useState(false);
 
   // Custom article state
   const [fetchUrl, setFetchUrl] = useState('');
@@ -1067,27 +1064,12 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const handleReset = async () => {
     setResetting(true); setResetResult(null);
     try {
-      const r = await fetch('/api/admin/reset', { 
-        method: 'POST', 
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resetArticles, resetArchive, resetMessages })
-      });
-      const json = (await r.json()) as { ok?: boolean; deleted?: { publishedArticles: number; archivedArticles: number; articles: number; readerMessages: number }; error?: string };
+      const r = await fetch('/api/admin/reset', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const json = (await r.json()) as { ok?: boolean; deleted?: { publishedArticles: number; articles: number; readerMessages: number }; error?: string };
       if (!r.ok || !json.ok) throw new Error(json.error || 'Sıfırlama başarısız');
       const d = json.deleted!;
-      const parts: string[] = [];
-      if (resetArticles) parts.push(`${d.publishedArticles || 0} makale`);
-      if (resetArchive) parts.push(`${d.archivedArticles || 0} arşiv`);
-      parts.push(`${d.articles || 0} RSS kaydı`);
-      if (resetMessages) parts.push(`${d.readerMessages || 0} mesaj`);
-      const noneSelected = !resetArticles && !resetArchive && !resetMessages;
-      if (noneSelected) {
-        setResetResult('Hiçbir şey seçilmedi — sadece RSS kayıtları silindi.');
-      } else {
-        setResetResult(`Silindi: ${parts.join(', ')}. ${resetArticles ? 'Pipeline başlatıldı.' : 'Pipeline başlatılmadı.'}`);
-      }
-      if (resetArticles) setPubArticles([]); else void loadPublished();
-      setMessages([]); setSelectedIds(new Set());
+      setResetResult(`Silindi: ${d.articles} makale, ${d.publishedArticles} özet, ${d.readerMessages} mesaj. Yenileme başlatıldı.`);
+      setMessages([]); setSelectedIds(new Set()); setPubArticles([]);
 
       // ANA SAYFAYA SENKRON SİNYALİ GÖNDER — ana sayfa localStorage'ı temizleyip API'den yeniden çeksin
       // User: "siteyi sıfırlayınca ana sayfada haber yok"
@@ -1640,7 +1622,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         <div className="space-y-1.5">
                           <Label className="text-xs">Kategori (birden fazla seçebilirsiniz)</Label>
                           <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
-                            {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Dünya'].map(cat => (
+                            {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
                               <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
                                 <Checkbox
                                   checked={customCategory.includes(cat)}
@@ -1882,7 +1864,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           <div className="space-y-1.5">
                             <Label className="text-xs">Kategori (birden fazla seçebilirsiniz)</Label>
                             <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
-                              {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Dünya'].map(cat => (
+                              {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
                                 <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
                                   <Checkbox
                                     checked={manualCategory.includes(cat)}
@@ -2033,7 +2015,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                   <div className="space-y-1">
                                     <Label className="text-xs">Kategori (ilk seçili kayıt için kullanılır)</Label>
                                     <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
-                                      {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Dünya'].map(cat => (
+                                      {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
                                         <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
                                           <Checkbox
                                             checked={editCategory.includes(cat)}
@@ -2130,13 +2112,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                           ))}
                         </div>
 
-                        {/* Altta: 30'dan sonraki haberler + kategori haberleri */}
+                        {/* Altta: 30'dan sonraki haberler — "Diğer Haberler" başlığı YOK, kategori başlıkları altında */}
                         {pubArticles.length > 30 && (
                           <>
-                            <div className="mb-3 flex items-center gap-2">
-                              <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Diğer Haberler</h3>
-                              <Badge variant="secondary" className="text-[10px]">{pubArticles.length - 30}</Badge>
-                            </div>
                             <div className="space-y-3">
                               {pubArticles.slice(30).map(a => (
                                 <Card key={a.id} className="p-4">
@@ -2158,7 +2136,7 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       <div className="space-y-1">
                                         <Label className="text-xs">Kategori (ilk seçili kayıt için kullanılır)</Label>
                                         <div className="grid grid-cols-2 gap-1.5 p-2 rounded-md border border-border bg-muted/30">
-                                          {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin', 'Dünya'].map(cat => (
+                                          {['Özel', 'Siyaset', 'Ekonomi / Finans', 'Kamu / Resmi', 'Bilim / Teknoloji', 'Kültür / Sanat', 'Spor / Magazin'].map(cat => (
                                             <label key={cat} className="flex items-center gap-1.5 text-xs cursor-pointer">
                                               <Checkbox
                                                 checked={editCategory.includes(cat)}
@@ -2182,6 +2160,11 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                       <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{a.aiSummary}</p>
                                       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
                                         <span>{a.wordCount} kelime</span>
+                                        {a.sourceCount > 0 && (
+                                          <button type="button" onClick={() => toggleSources(a.id, a.sourceArticleIds)} className="inline-flex items-center gap-0.5 text-news hover:underline">
+                                            {a.sourceCount} kaynak {expandedSources === a.id ? '▲' : '▼'}
+                                          </button>
+                                        )}
                                         {a.latestPublishedAt && (
                                           <span className="inline-flex items-center gap-1 tabular-nums">
                                             <Clock className="h-3 w-3" />
@@ -2190,24 +2173,23 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                             {new Date(a.latestPublishedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
                                           </span>
                                         )}
-                                        {a.sourceCount >= 1 && (
-                                          <button type="button" onClick={() => toggleSources(a.id, a.sourceArticleIds)} className="inline-flex items-center gap-0.5 text-news hover:underline">
-                                            {a.sourceCount} kaynak {expandedSources === a.id ? '▲' : '▼'}
-                                          </button>
-                                        )}
                                       </div>
                                       {expandedSources === a.id && (
-                                        <div className="mt-2 rounded-md border border-border bg-muted/30 p-2">
-                                          {loadingSources ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> :
-                                           sourceLinks[a.id]?.length ? (
-                                            <div className="space-y-1">
+                                        <div className="mt-2 rounded-md border border-border/50 bg-muted/20 p-2">
+                                          {sourceLinks[a.id]?.length ? (
+                                            <ul className="space-y-1">
                                               {sourceLinks[a.id].map((s, i) => (
-                                                <a key={i} href={s.link} target="_blank" rel="noopener noreferrer" className="block text-[11px] text-muted-foreground hover:text-news">
-                                                  {i + 1}. {s.title.slice(0, 60)} — <span className="font-medium">{s.source}</span>
-                                                </a>
+                                                <li key={i} className="text-[10px] flex items-start gap-1.5">
+                                                  <span className="text-muted-foreground/60 font-bold flex-shrink-0">{i + 1}.</span>
+                                                  <a href={s.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400 truncate">
+                                                    {s.source}: {s.title.slice(0, 60)}{s.title.length > 60 ? '...' : ''}
+                                                  </a>
+                                                </li>
                                               ))}
-                                            </div>
-                                          ) : <p className="text-[11px] text-muted-foreground">Kaynak bulunamadı</p>}
+                                            </ul>
+                                          ) : (
+                                            <p className="text-[10px] text-muted-foreground">Kaynaklar yükleniyor...</p>
+                                          )}
                                         </div>
                                       )}
                                     </div>
@@ -2785,17 +2767,66 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                         ) : (
                           <div className="space-y-2">
                             {pipelineHistory.runs.map((run: any, i: number) => {
-                              const ts = run.ts || run.finishedAt || '';
                               const finishedAt = run.finishedAt || '';
                               const startedAt = run.startedAt || '';
                               const isError = run.event === 'error';
-                              const durationSec = run.durationMs ? Math.round(run.durationMs / 1000) : null;
-                              const durationStr = durationSec !== null
+
+                              // TOPLAM SÜRE: tüm fazların (RSS+Özet+Clear+Düzenle) başlangıç ve bitiş zamanlarından hesapla
+                              // User: "süreye clear ve düzenlemeyi dahil etmiyor şu anda"
+                              // Önceki: durationMs kullanılıyordu (sadece AI Özet fazını kapsıyordu)
+                              // Şimdi: en erken başlangıç → en geç bitiş = tüm cycle süresi
+                              const allPhaseStarts = [run.rssStartedAt, run.ozetStartedAt, run.cleanupStartedAt, run.duzenleStartedAt].filter(Boolean);
+                              const allPhaseEnds = [run.rssFinishedAt, run.ozetFinishedAt, run.cleanupFinishedAt, run.duzenleFinishedAt].filter(Boolean);
+                              // Akışın başlama zamanı: en erken faz başlangıcı (genelde RSS başlangıcı)
+                              const flowStartIso = allPhaseStarts.length > 0
+                                ? allPhaseStarts.reduce((earliest: string, cur: string) => new Date(cur) < new Date(earliest) ? cur : earliest)
+                                : (startedAt || '');
+                              // Akışın bitiş zamanı: en geç faz bitişi (genelde AI Düzenle bitişi)
+                              const flowEndIso = allPhaseEnds.length > 0
+                                ? allPhaseEnds.reduce((latest: string, cur: string) => new Date(cur) > new Date(latest) ? cur : latest)
+                                : (finishedAt || '');
+                              // Toplam süre: bitiş - başlangıç (sn cinsinden)
+                              let durationSec: number | null = null;
+                              if (flowStartIso && flowEndIso) {
+                                try {
+                                  durationSec = Math.round((new Date(flowEndIso).getTime() - new Date(flowStartIso).getTime()) / 1000);
+                                } catch { durationSec = null; }
+                              }
+                              // Legacy fallback: phases yoksa durationMs kullan
+                              if (durationSec === null && run.durationMs) {
+                                durationSec = Math.round(run.durationMs / 1000);
+                              }
+                              const durationStr = durationSec !== null && durationSec >= 0
                                 ? (durationSec >= 60 ? `${Math.floor(durationSec / 60)} dk ${durationSec % 60} sn` : `${durationSec} sn`)
                                 : '—';
-                              const tzTime = finishedAt
-                                ? new Date(finishedAt).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                                : '—';
+
+                              // Başlama ve bitiş zamanlarını formatla (Türkiye saat dilimi)
+                              const fmtFullDate = (iso: string | null | undefined) => {
+                                if (!iso) return null;
+                                try {
+                                  return new Date(iso).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                } catch { return null; }
+                              };
+                              const flowStartStr = fmtFullDate(flowStartIso);
+                              const flowEndStr = fmtFullDate(flowEndIso);
+                              // Eğer başlama ve bitiş aynı günse tarihi bir kez yaz, farklı günse ikisini de yaz
+                              let timeRangeStr = '—';
+                              if (flowStartStr && flowEndStr) {
+                                // Aynı gün mü kontrol et (13.10.2026 aynı mı?)
+                                const startDatePart = flowStartStr.split(' ')[0]; // 13.10.2026
+                                const endDatePart = flowEndStr.split(' ')[0];
+                                const startTimePart = flowStartStr.split(' ')[1]; // 08:40:01
+                                const endTimePart = flowEndStr.split(' ')[1];
+                                if (startDatePart === endDatePart) {
+                                  timeRangeStr = `${startDatePart} ${startTimePart} → ${endTimePart}`;
+                                } else {
+                                  timeRangeStr = `${flowStartStr} → ${flowEndStr}`;
+                                }
+                              } else if (flowEndStr) {
+                                timeRangeStr = flowEndStr;
+                              } else if (flowStartStr) {
+                                timeRangeStr = `${flowStartStr} → ...`;
+                              }
                               return (
                                 <Card key={i} className={`p-3 ${isError ? 'border-red-300 bg-red-50 dark:bg-red-950/10' : 'border-emerald-300 bg-emerald-50 dark:bg-emerald-950/10'}`}>
                                   <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -2804,9 +2835,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
                                         {isError ? <AlertCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" /> : <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />}
                                       </div>
                                       <div>
-                                        <p className="text-sm font-semibold text-foreground">{tzTime}</p>
+                                        <p className="text-sm font-semibold text-foreground tabular-nums">{timeRangeStr}</p>
                                         <p className="text-[10px] text-muted-foreground">
-                                          {isError ? 'HATA ile bitti' : 'Başarıyla tamamlandı'} · Süre: {durationStr}
+                                          {isError ? 'HATA ile bitti' : 'Başarıyla tamamlandı'} · Toplam Süre: {durationStr}
                                         </p>
                                       </div>
                                     </div>
@@ -3101,25 +3132,9 @@ export function AdminPanel({ open, onClose }: { open: boolean; onClose: () => vo
             <div className="space-y-6 p-2">
               <div className="text-center">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"><AlertTriangle className="h-8 w-8 text-destructive" /></div>
-                <h2 className="text-xl font-bold text-destructive">SİTE SİFIRLAMA</h2>
-                <p className="mt-2 text-sm text-muted-foreground">Aşağıdakilerden silinecek olanları seçin. Seçilmeyenler korunur. Bu işlem geri alınamaz.</p>
-              </div>
-              {/* Sıfırlama seçenekleri — 3 kutu, default BOŞ */}
-              {/* User: "bu 3 seçme kutusu default olarak boş gelsin ben seçersem silinsinler" */}
-              <div className="space-y-2 rounded-lg border border-border p-3 bg-muted/30">
-                <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer hover:bg-muted/50 rounded px-2 py-1.5 transition">
-                  <Checkbox checked={resetArticles} onCheckedChange={(v) => setResetArticles(!!v)} />
-                  <span>Makaleleri sıfırla <span className="text-muted-foreground font-normal">(ana sayfa + veri sayfası yayındaki + draft haberler)</span></span>
-                </label>
-                <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer hover:bg-muted/50 rounded px-2 py-1.5 transition">
-                  <Checkbox checked={resetArchive} onCheckedChange={(v) => setResetArchive(!!v)} />
-                  <span>Arşivi sıfırla <span className="text-muted-foreground font-normal">(arşivlenmiş + duplicate haberler)</span></span>
-                </label>
-                <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer hover:bg-muted/50 rounded px-2 py-1.5 transition">
-                  <Checkbox checked={resetMessages} onCheckedChange={(v) => setResetMessages(!!v)} />
-                  <span>Mesajları sıfırla <span className="text-muted-foreground font-normal">(okuyucu temsilcisine gelen mesajlar)</span></span>
-                </label>
-                <p className="text-[11px] text-muted-foreground px-2 pt-1">RSS kayıtları her zaman silinir. Pipeline sadece makaleler seçiliyse başlatılır.</p>
+                <h2 className="text-xl font-bold text-destructive">TÜM SİTE İÇERİĞİ SİLİNECEKTİR</h2>
+                <p className="mt-2 text-sm text-muted-foreground">Tüm makaleler, özetler ve okuyucu mesajları silinecek. Bu işlem geri alınamaz. Sıfırlama sonrası yenileme otomatik başlayacaktır.</p>
+                <p className="mt-3 text-base font-semibold">Emin misiniz?</p>
               </div>
               <div className="space-y-2"><p className="text-center text-sm font-medium">Onaylamak için <span className="text-destructive font-bold">evet</span> yazın:</p><Input value={resetConfirm} onChange={(e) => setResetConfirm(e.target.value)} placeholder="evet" className="text-center text-lg font-semibold" autoFocus /></div>
               <div className="flex gap-3"><Button variant="outline" className="flex-1" onClick={() => { setResetOpen(false); setResetConfirm(''); }} disabled={resetting}>İptal</Button><Button variant="destructive" className="flex-1 gap-2" onClick={handleReset} disabled={!resetConfirmed || resetting}>{resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}Onayla</Button></div>

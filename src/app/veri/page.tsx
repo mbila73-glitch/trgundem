@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Mail, ChevronDown, ChevronUp, Clock, Edit3, Lock, Loader2, Send } from 'lucide-react';
 import Link from 'next/link';
 import { NewsScreen } from '@/components/news/news-screen';
-import { InfoBands } from '@/components/news/info-bands';
 import { AdminPanel } from '@/components/news/admin-panel';
 import { ReaderContactForm } from '@/components/news/reader-contact-form';
 import { ThemeToggle } from '@/components/news/theme-toggle';
@@ -178,13 +177,15 @@ export default function Home() {
       title="Ana sayfaya dön"
       className="flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
     >
-      <img src="/TRG_Logo.png" alt="TRGUNDEM" className="h-full w-full object-contain" />
+      <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
     </button>
   );
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-40 border-b border-red-800 bg-red-600 backdrop-blur">
+      {/* Veri sayfası header — SARİ zemin ile ana sayfadan ayırt edilir */}
+      {/* User: "veri sayfasının başlığını sarı yap, hangi sayfada olduğumu daha net anlayayım" */}
+      <header className="sticky top-0 z-40 border-b border-amber-700 bg-amber-400 backdrop-blur">
         <div className="mx-auto max-w-6xl px-2 sm:px-4 md:px-6">
           {/* Mobil: tek satır, başlık tam ortada, + / tema sağda */}
           {/* Masaüstü: 3 bölüm — sol saat, orta logo+başlık, sağ düğmeler */}
@@ -219,7 +220,7 @@ export default function Home() {
                 title="Ana sayfaya dön"
                 className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer mr-[1cm]"
               >
-                <img src="/TRG_Logo.png" alt="TRGUNDEM" className="h-full w-full object-contain" />
+                <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>
 
               {/* Başlık */}
@@ -228,10 +229,10 @@ export default function Home() {
                 onClick={handleHomeClick}
                 aria-label="Ana sayfaya dön"
                 title="Ana sayfaya dön"
-                className="flex flex-col items-center justify-center leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded text-center"
+                className="flex flex-col leading-none gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-950 rounded text-center"
               >
                 <span
-                  className="font-bold tracking-tight uppercase text-white whitespace-nowrap"
+                  className="font-bold tracking-tight uppercase text-amber-950 whitespace-nowrap"
                   style={{
                     fontSize: 'clamp(13px, 4vw, 24px)',
                     lineHeight: '1.1',
@@ -246,7 +247,7 @@ export default function Home() {
                   TÜRKİYE'DE GÜNDEM
                 </span>
                 <span
-                  className="font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase text-center text-white"
+                  className="font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase text-center text-amber-950"
                   style={{
                     fontSize: 'clamp(9px, 2.5vw, 13px)',
                     lineHeight: '1.1',
@@ -271,7 +272,7 @@ export default function Home() {
                 title="Ana sayfaya dön"
                 className="hidden md:flex h-14 w-44 flex-shrink-0 items-center justify-center overflow-hidden rounded-md shadow-md transition hover:shadow-lg hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer ml-[1cm]"
               >
-                <img src="/TRG_Logo.png" alt="TRGUNDEM" className="h-full w-full object-contain" />
+                <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="h-full w-full object-contain" />
               </button>
             </div>
 
@@ -332,20 +333,16 @@ export default function Home() {
                 <Send className="h-4 w-4" />
                 <span>Veri Aktar</span>
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-white hover:bg-white/10 hover:text-white">
+              <Button variant="ghost" size="icon" onClick={() => setAdminOpen(true)} aria-label="Abone Girişi" className="h-8 w-8 sm:h-9 sm:w-9 text-amber-950 hover:bg-amber-900/10 hover:text-amber-950">
                 <span className="text-lg sm:text-xl">+</span>
               </Button>
-              <div className="text-white">
+              <div className="text-amber-950">
                 <ThemeToggle />
               </div>
             </div>
           </div>
         </div>
       </header>
-
-      <div className="sticky top-16 z-30 bg-background">
-        <InfoBands />
-      </div>
 
       <main className="flex-1 bg-background">
         <NewsScreen />

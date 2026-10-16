@@ -69,3 +69,25 @@ tests/
 download/
 Caddyfile
 .zscripts/dev.pid
+
+# Gizli dosyalar — commit edilmez (16 Ekim 2026)
+.env
+.env.*
+.evren-key
+.gemini-key*
+db/*.db
+db/*.db-journal
+pipeline-*.log
+pipeline-status.json
+harem-altin-fetch.log
+altin-takip.log
+*.bak-*
+archive-export.log
+.pipeline-lock
+.pipeline.lockfile
+except
+PY
+server.log
+.harem-altin-cache.json
+altin-config.json
+archives/

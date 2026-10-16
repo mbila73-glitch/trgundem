@@ -1,10 +1,21 @@
 {
   "stage": "done",
-  "startedAt": "2026-09-29T21:37:35.319Z",
-  "finishedAt": "2026-09-29T21:51:11.141Z",
-  "rssRead": 23,
-  "duplicatesFound": 3,
-  "summariesDone": 15,
-  "publishedCount": 43,
-  "error": null
+  "startedAt": "2026-10-16T14:40:02.354Z",
+  "finishedAt": "2026-10-16T15:07:33.404Z",
+  "message": "Pipeline Admin Tarafından Başlatıldı",
+  "rssStartedAt": "2026-10-16T14:40:02.355Z",
+  "rssRead": 228,
+  "rssFinishedAt": "2026-10-16T14:40:33.798Z",
+  "ozetStartedAt": "2026-10-16T14:40:33.808Z",
+  "duplicatesFound": 56,
+  "summariesDone": 46,
+  "publishedCount": 46,
+  "archivedCount": 6,
+  "ozetFinishedAt": "2026-10-16T15:07:33.404Z",
+  "cleanupStartedAt": "2026-10-16T15:07:33.407Z",
+  "cleanupFinishedAt": "2026-10-16T15:07:39.427Z",
+  "duzenleStartedAt": "2026-10-16T15:08:39.436Z",
+  "aiEditDone": 35,
+  "aiEditTotal": 35,
+  "duzenleFinishedAt": "2026-10-16T15:14:00.540Z"
 }

@@ -40,8 +40,19 @@ export async function GET(req: NextRequest) {
     statusFilter = ['published', 'draft'];
   }
 
+  // User: "paneldeki tekrar haber sekmesinde sadece son 24 saatin tekrar haberleri olsun"
+  // duplicate status için 24 saat filtresi uygula
+  let dateFilter: { archivedAt?: { gte: Date } } = {};
+  if (statusParam === 'duplicate') {
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 saat önce
+    dateFilter = { archivedAt: { gte: cutoff } };
+  }
+
   const articles = await db.publishedArticle.findMany({
-    where: { status: { in: statusFilter } },
+    where: {
+      status: { in: statusFilter },
+      ...dateFilter,
+    },
     orderBy: { latestPublishedAt: 'desc' },
   });
   return NextResponse.json({ articles });

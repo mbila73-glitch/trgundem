@@ -18,6 +18,16 @@ const SCRIPT = path.join(ROOT, 'scripts', 'pipeline-all.js');
 export async function POST() {
   const startedAt = new Date().toISOString();
   try {
+    // User: "manuel akışı başlata bastığımızda devam eden pipeline varsa onu öldürüyormuydu"
+    // HAYIR — öldürmüyordu. Şimdi öldür:
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('pkill -f "node --expose-gc scripts/pipeline-all.js" 2>/dev/null || true', { timeout: 5000 });
+      await new Promise(r => setTimeout(r, 1000)); // 1 sn bekle — process ölsün
+    } catch {}
+    // Lock dosyasını temizle
+    try { await import('node:fs/promises').then(fs => fs.unlink('/var/www/.pipeline.lockfile').catch(() => {})); } catch {}
+
     await writeFile(STATUS_FILE, JSON.stringify({ stage: 'triggered', startedAt, finishedAt: null, message: 'Pipeline Admin Tarafından Başlatıldı' }, null, 2), 'utf8').catch(() => {});
     await appendFile(LOG_FILE, `\n[${startedAt}] === Pipeline Tetiklendi ===\n`, 'utf8').catch(() => {});
 

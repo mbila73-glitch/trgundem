@@ -190,13 +190,16 @@ export function slugify(s: string | null | undefined, maxLen: number = 50): stri
 //   - /uploads/... → koru (kendi görselimiz)
 //   - null/empty → null bırak
 
-// Tek makale sanitize — sourceArticleIds ve source alanlarını kaldır, imageUrl'yi proxy'ye çevir
-export function sanitizeArticle<T extends Record<string, any>>(a: T | null): Omit<T, 'sourceArticleIds' | 'source'> | null {
+// Tek makale sanitize — SADECE imageUrl'yi proxy'ye çevir
+// ÖNCE: sourceArticleIds ve source alanları siliniyordu — bu yüzden
+//        haber detayda "Kaynak bilgisi bulunamadı" çıkıyordu.
+// User: "yönetici panelinde kaynak var ama haberin altında kaynak bulunamadı yazıyor hala"
+// ÇÖZÜM: sourceArticleIds ve source alanlarını KORU — haber detaydaki
+//        kaynak listesi sourceArticleIds'i parse edip her article'ı fetch ediyor.
+export function sanitizeArticle<T extends Record<string, any>>(a: T | null): T | null {
   if (!a) return null;
-  // Gereksiz alanları çıkar (delete yerine spread)
-  const { sourceArticleIds, source, ...publicFields } = a;
-  // imageUrl proxy — dış kaynak URL'leri gizle
-  const result = publicFields as any;
+  // Tüm alanları koru — sadece imageUrl proxy'ye çevir
+  const result = { ...a } as any;
   if (result.imageUrl && typeof result.imageUrl === 'string' && result.imageUrl.startsWith('http')) {
     result.imageUrl = `/api/img?url=${encodeURIComponent(result.imageUrl)}`;
   }
@@ -204,7 +207,7 @@ export function sanitizeArticle<T extends Record<string, any>>(a: T | null): Omi
 }
 
 // Array sanitize — birden fazla makale
-export function sanitizeArticles<T extends Record<string, any>>(articles: (T | null)[]): Array<Omit<T, 'sourceArticleIds' | 'source'> | null> {
+export function sanitizeArticles<T extends Record<string, any>>(articles: (T | null)[]): Array<T | null> {
   return articles.map(a => sanitizeArticle(a));
 }
 

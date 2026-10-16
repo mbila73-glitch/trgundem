@@ -7,7 +7,7 @@ import fs from 'fs';
 // Gram Altın: Harem Altın satış fiyatı (cache dosyasından, scripts/fetch-harem-altin-cache.js yazar)
 //             cache stale/missing ise hesaplanan değer: (Ons × USD) / 31.1035
 
-let cache: { data: Array<{ name: string; value: string; change: string; up: boolean }>; ts: number } | null = null;
+let cache: { data: Array<{ name: string; value: string; change: string; up: boolean; source: 'H' | 'M' }>; ts: number } | null = null;
 const CACHE_MS = 10 * 1000; // 10 saniye — kullanıcı talebi
 
 // Harem Altın cache dosyası — scripts/fetch-harem-altin-cache.js her 5 dakikada bir yazar
@@ -186,9 +186,9 @@ export async function GET() {
     fetchOnsAltin(),
   ]);
 
-  const result: Array<{ name: string; value: string; change: string; up: boolean }> = [];
+const result: Array<{ name: string; value: string; change: string; up: boolean; source: 'H' | 'M' }> = [];
 
-  // BIST 100 (Borsa İstanbul / IMKB)
+  // BIST 100 (Borsa İstanbul / IMKB) — Yahoo Finance
   if (bistData.current !== null) {
     const ch = calcChange(bistData.current, bistData.prev);
     result.push({
@@ -196,15 +196,16 @@ export async function GET() {
       value: bistData.current.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       change: ch ? ch.change : '—',
       up: ch ? ch.up : true,
+      source: 'M',
     });
   }
 
   // TCMB Döviz kurları
   for (const cur of tcmbRates) {
     if (cur.code === 'JPY') {
-      result.push({ name: '100 JPY/TL', value: cur.rate.toFixed(2), change: '—', up: true });
+      result.push({ name: '100 JPY/TL', value: cur.rate.toFixed(2), change: '—', up: true, source: 'M' });
     } else {
-      result.push({ name: `${cur.code}/TL`, value: cur.rate.toFixed(2), change: '—', up: true });
+      result.push({ name: `${cur.code}/TL`, value: cur.rate.toFixed(2), change: '—', up: true, source: 'M' });
     }
   }
 
@@ -216,33 +217,39 @@ export async function GET() {
       value: `$${onsData.current.toFixed(2)}`,
       change: ch ? ch.change : '—',
       up: ch ? ch.up : true,
+      source: 'M',
     });
 
     // Gram Altın: önce Harem Altın satış fiyatını dene (cache dosyasından)
-    // scripts/fetch-harem-altin-cache.js her 5 dakikada bir günceller
-    // cache stale/missing ise hesaplanan değere düş: (Ons × USD) / 31.1035
+    // User: "Harem altından veri verince (H), merkez bankasından verince (M) yaz"
+    // User: "gram altını da GR ALTIN olarak kısalt"
     const harem = readHaremCache();
     const usdRate = tcmbRates.find(c => c.code === 'USD');
     if (harem && harem.satis) {
-      // Harem Altın satış fiyatı direkt göster (kaynak Harem Altın)
-      const satisNum = parseTrPrice(harem.satis);
-      const formatted = satisNum !== null
-        ? `${satisNum.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₺`
+      // Harem Altın satış fiyatı — source: 'H'
+      // User: "harem altın 4 basamak fazla gösteriyor. 65.899.900 ₺ değil 6.589,99 ₺ olmalı"
+      // Sebep: parseTrPrice "6665.3100" (4 hane ondalık) yanlış parse ediyordu → 66653100
+      // Çözüm: Harem satis her zaman Amerikan formatında (XXXX.XX), direkt parseFloat kullan
+      const satisNum = parseFloat(harem.satis);
+      const formatted = !isNaN(satisNum)
+        ? `${satisNum.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`
         : `${harem.satis} ₺`;
       result.push({
-        name: 'GRAM ALTIN',
+        name: 'GR ALTIN',
         value: formatted,
-        change: ch ? ch.change : '—', // Ons değişimini referans al (Harem'in prev verisi yok)
+        change: ch ? ch.change : '—',
         up: ch ? ch.up : true,
+        source: 'H', // Harem Altın
       });
     } else if (usdRate) {
-      // Fallback: Hesaplanan gram altın (eski yöntem)
+      // Fallback: Hesaplanan gram altın (Ons × USD) / 31.1035 — source: 'M'
       const gramAltin = (onsData.current * usdRate.rate) / 31.1035;
       result.push({
-        name: 'GRAM ALTIN',
+        name: 'GR ALTIN',
         value: `${gramAltin.toFixed(0)} ₺`,
         change: ch ? ch.change : '—',
         up: ch ? ch.up : true,
+        source: 'M', // Hesaplanan (TCMB USD + Yahoo Ons)
       });
     }
   }

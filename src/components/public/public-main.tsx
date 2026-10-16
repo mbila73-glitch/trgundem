@@ -37,27 +37,22 @@ function getMainSlider(articles: PublishedArticle[]): PublishedArticle[] {
   return articles.slice(0, 20);
 }
 
-// Üst 4 kutu: Dünya[0] (yoksa Siyaset[0]), Siyaset[1], Ekonomi[0], Ekonomi[1]
-// User: "dünya kategorisinin ilk haberi 4'lü grubun en solundaki kutuya gelsin.
-//        bu kategoride haber yoksa siyasetin ilk haberi olsun o kutuda."
+// Üst 4 kutu: Dünya[0] (yoksa Siyaset[0]), Siyaset[0], Siyaset[1], Ekonomi[0]
+// User: "dünya kategorisi üst 4 lü grupta en soldaki kutu olacak"
 function getTopBoxes(articles: PublishedArticle[]): (PublishedArticle | null)[] {
-  const dunya = filterByCategory(articles, 'Dünya');
   const siyaset = filterByCategory(articles, 'Siyaset');
   const ekonomi = filterByCategory(articles, 'Ekonomi / Finans');
+  const dunya = filterByCategory(articles, 'Dünya');
 
   const boxes: (PublishedArticle | null)[] = [];
   const usedIds = new Set<string>();
 
-  // Box 0 (en sol): Dünya[0] varsa onu, yoksa Siyaset[0]
-  // Box 1: Siyaset[0] (dedup atlar ise Siyaset[1] fallback'ten gelir)
-  // Box 2: Ekonomi[0]
-  // Box 3: Ekonomi[1]
-  const candidates = [
-    dunya[0] ?? siyaset[0],  // Box 0: Dünya[0] or Siyaset[0]
-    siyaset[0] ?? siyaset[1], // Box 1: Siyaset[0] (dedup skip → fallback)
-    ekonomi[0],               // Box 2
-    ekonomi[1],               // Box 3
-  ];
+  // 1. kutu: Dünya[0] — Dünya'da haber yoksa Siyaset[0]
+  // 2. kutu: Siyaset[0] (usedIds ile tekrar düşmez)
+  // 3. kutu: Siyaset[1]
+  // 4. kutu: Ekonomi[0]
+  const firstDunya = dunya[0] || siyaset[0];
+  const candidates = [firstDunya, siyaset[0], siyaset[1], ekonomi[0]];
   for (const c of candidates) {
     if (c && !usedIds.has(c.id)) {
       boxes.push(c);
@@ -65,7 +60,7 @@ function getTopBoxes(articles: PublishedArticle[]): (PublishedArticle | null)[] 
     }
   }
 
-  // 4'ten azsa, articles'dan tamamla (ana sayfa sırasıyla)
+  // 4'ten azsa, articles'dan tamamla
   let i = 0;
   while (boxes.length < 4 && i < articles.length) {
     const a = articles[i];
@@ -76,7 +71,6 @@ function getTopBoxes(articles: PublishedArticle[]): (PublishedArticle | null)[] 
     i++;
   }
 
-  // 4'ten fazlaysa kes (normalde olmaz ama garanti)
   return boxes.slice(0, 4);
 }
 
@@ -285,6 +279,35 @@ function NewsCardMedium({ article, onOpen }: { article: PublishedArticle; onOpen
 function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen: (id: string) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [autoPaused, setAutoPaused] = useState(false);
+
+  // User: "ana sayfadaki 20 lik haber penceresi 3 saniyede 1 sonraki habere geçsin
+  //        20. haberden sonra 1. habere loop olarak geçsin"
+  // User: "kayan 20 li pencerenin 20 den 1 e geçişini son dakika bandı gibi loop yap geri sarmasın"
+  //   — scrollTo(0, smooth) geri sarma gibi görünüyordu
+  //   Çözüm: 20→1 geçişinde instant (behavior:auto) — görünmez jump
+  // User: "kayan 20 li pencerenin diğer habere geçme süresini yarım saniye daha uzat"
+  //   — 3000ms → 3500ms
+  useEffect(() => {
+    if (articles.length === 0) return;
+    const interval = setInterval(() => {
+      if (autoPaused) return;
+      const el = scrollRef.current;
+      if (!el) return;
+      const width = el.clientWidth;
+      if (width === 0) return;
+      const currentIdx = Math.round(el.scrollLeft / width);
+      if (currentIdx >= articles.length - 1) {
+        // 20 → 1: INSTANT jump (smooth değil — geri sarma gibi görünmez)
+        el.scrollTo({ left: 0, behavior: 'auto' });
+        setCurrentIndex(0);
+      } else {
+        el.scrollTo({ left: (currentIdx + 1) * width, behavior: 'smooth' });
+        setCurrentIndex(currentIdx + 1);
+      }
+    }, 3500); // 3.5 saniye (önceki 3 sn + 0.5 sn)
+    return () => clearInterval(interval);
+  }, [articles.length, autoPaused]);
 
   const scrollToTop = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -352,11 +375,15 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
   }, [articles.length]);
 
   return (
-    <div className="relative h-full flex flex-col">
+    <div
+      className="relative h-full flex flex-col"
+      onMouseEnter={() => setAutoPaused(true)}
+      onMouseLeave={() => setAutoPaused(false)}
+    >
       {/* Sol ok */}
       <button
         type="button"
-        onClick={() => scroll('left')}
+        onClick={() => { setAutoPaused(true); scroll('left'); }}
         className="absolute left-0 top-[45%] -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition shadow-lg"
         aria-label="Önceki"
       >
@@ -366,7 +393,7 @@ function MainSlider({ articles, onOpen }: { articles: PublishedArticle[]; onOpen
       {/* Sağ ok */}
       <button
         type="button"
-        onClick={() => scroll('right')}
+        onClick={() => { setAutoPaused(true); scroll('right'); }}
         className="absolute right-0 top-[45%] -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition shadow-lg"
         aria-label="Sonraki"
       >
@@ -500,10 +527,13 @@ export function PublicMain() {
   // Haber detayı (?haber=ID)
   const [openArticleId, setOpenArticleId] = useState<string | null>(null);
 
-  // Haberleri yükle — ana sayfa SADECE :19, :39, :59 dakikalarında API'den haber çeker
-  // Mount'ta API'den ÇEKME — sadece localStorage önbellekten yükle (son senkron verisi)
-  // Bu sayede /veri'ye yeni gelen haberler anında ana sayfada görünmez
-  // User: "veri sayfasına haber gelir gelmez ana sayfa bu haberi çekiyor. bu bağı koparmamız lazım."
+  // Haberleri yükle — ana sayfa belirli dakikalarda API'den haber çeker
+  // User: "ana sayfa haberleri çekmiyor sanki" — mount'ta background API eklendi
+  //
+  // Sync zamanları: :20/:50 — cycle cron :00/:30'da başlıyor (gündüz 30 dk), ~18 dk sürüyor
+  //   Yani cycle ortalama :18/:48'de bitiyor. Sync :20/:50 = cycle bitişinden ~2 dk sonra
+  //   Bu, cycle yeni haberleri koyduktan HEMEN SONRA ana sayfa güncellenir
+  //   Önceki: :19/:39/:59 (eski 20dk cron içindi)
   const syncArticles = useCallback(async () => {
     try {
       const r = await fetch('/api/published-articles?layout=all&status=published', { cache: 'no-store' });
@@ -528,18 +558,21 @@ export function PublicMain() {
   const msUntilNextSync = useCallback((): number => {
     const now = new Date();
     const m = now.getMinutes();
-    const targets = [19, 39, 59];
+    const targets = [20, 50];
     let nextMin = targets.find(t => t > m);
     if (nextMin === undefined) {
-      nextMin = 19;
-      return ((60 - m) + 19) * 60_000 - now.getSeconds() * 1000 - now.getMilliseconds();
+      nextMin = 20;
+      return ((60 - m) + 20) * 60_000 - now.getSeconds() * 1000 - now.getMilliseconds();
     }
     return (nextMin - m) * 60_000 - now.getSeconds() * 1000 - now.getMilliseconds();
   }, []);
 
-  // Mount'ta: SADECE localStorage'dan yükle (API çağrısı YOK)
-  // Ama kaçırılan sync varsa catch-up yap
-  // Sonra :19/:39/:59'da API'den çek
+  // Mount'ta: localStorage'dan yükle + BACKGROUND API çek
+  // User: "ana sayfa haberleri çekmiyor sanki" — mount'ta background API eklendi
+  // Mantık:
+  //   1. localStorage'dan anlık yükle (eski haberler hemen görünsün)
+  //   2. Background'da API'den güncel haberleri çek (sayfa açıkken güncellenir)
+  //   3. Sonra :20/:50'de scheduled sync
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
     let mounted = true;
@@ -551,22 +584,32 @@ export function PublicMain() {
         const arts = JSON.parse(cached) as PublishedArticle[];
         setArticles(arts);
         setLoading(false);
-        console.log('[ana sayfa] Önbellekten yüklendi:', arts.length, 'haber');
+        console.log('[ana sayfa] Onbellekten yuklendi:', arts.length, 'haber');
       } else {
-        console.log('[ana sayfa] Önbellek yok — :19/:39/:59\'a kadar bekleniyor');
+        console.log('[ana sayfa] Onbellek yok - APIden hemen cekiliyor');
         setLoading(false);
       }
     } catch {
       setLoading(false);
     }
 
+    // BACKGROUND API — mount'ta DAİMA güncel haberleri çek
+    // User: "ana sayfa haberleri çekmiyor" — bu yüzden mount'ta API çağrısı yapıyoruz
+    // 500 ms gecikme ile — önce localStorage gösterilsin, sonra API güncelle
+    setTimeout(() => {
+      if (mounted) {
+        console.log('[ana sayfa] Background API cekiliyor...');
+        syncArticles();
+      }
+    }, 500);
+
     // KAÇIRILAN SYNC CATCH-UP
-    // Eğer sayfa açıldığında bir sync hedefi (:19/:39/:59) geçmişse
+    // Eğer sayfa açıldığında bir sync hedefi (:20/:50) geçmişse
     // ve son sync'tan bu yana yeni bir hedef geçmişse → hemen sync yap
     const checkMissedSync = () => {
       const now = new Date();
       const m = now.getMinutes();
-      const targets = [19, 39, 59];
+      const targets = [20, 50];
       const lastSyncStr = localStorage.getItem('trgundem_main_synced_at');
       const lastSync = lastSyncStr ? new Date(lastSyncStr) : null;
 
@@ -588,7 +631,7 @@ export function PublicMain() {
     const missedSync = checkMissedSync();
 
     if (!missedSync) {
-      // Zamanlanmış senkron — :19, :39, :59'da API'den HABERLERI yenile
+      // Zamanlanmış senkron — :20, :50'de API'den HABERLERI yenile
       const scheduleNextSync = () => {
         if (!mounted) return;
         const ms = msUntilNextSync();
@@ -795,6 +838,41 @@ export function PublicMain() {
   if (openArticleId) {
     const article = articles.find(a => a.id === openArticleId);
     if (article) {
+      // User: "kayan 20 lik grup haberin hangisini açarsam açayım sağ ve sol düğmeler de gelsin ve
+      //        açık haberin sağındaki solundaki düğmelere basınca 20 lik gruptaki haberler açık olarak
+      //        ileri geri loop olarak gelsin."
+      // localStorage'dan 20'lik haber listesini ve mevcut index'i oku
+      let navList: Array<{id: string, title: string}> = [];
+      let navIndex = -1;
+      try {
+        const stored = localStorage.getItem('trgundem_son_dakika_list');
+        if (stored) navList = JSON.parse(stored) as Array<{id: string, title: string}>;
+        navIndex = navList.findIndex(n => n.id === openArticleId);
+      } catch {}
+
+      // Eğer localStorage listesi yoksa, mevcut articles listesini kullan
+      if (navList.length === 0) {
+        navList = articles.map(a => ({ id: a.id, title: a.aiTitle }));
+        navIndex = navList.findIndex(n => n.id === openArticleId);
+      }
+
+      const prevIndex = navIndex > 0 ? navIndex - 1 : (navList.length > 0 ? navList.length - 1 : -1);
+      const nextIndex = navIndex >= 0 && navIndex < navList.length - 1 ? navIndex + 1 : (navList.length > 0 ? 0 : -1);
+      const prevArticle = prevIndex >= 0 ? navList[prevIndex] : null;
+      const nextArticle = nextIndex >= 0 ? navList[nextIndex] : null;
+
+      const goToArticle = (id: string, idx: number) => {
+        try {
+          localStorage.setItem('trgundem_last_clicked_article', id);
+          localStorage.setItem('trgundem_last_clicked_index', String(idx));
+        } catch {}
+        setOpenArticleId(id);
+        const url = new URL(window.location.href);
+        url.searchParams.set('haber', id);
+        window.history.pushState({}, '', url.toString());
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
       return (
         <main className="flex-1 bg-background">
           {/* Arama çubuğu sticky */}
@@ -804,6 +882,19 @@ export function PublicMain() {
                 <Home className="h-3 w-3" />
                 <span className="hidden sm:inline">Ana Sayfa</span>
               </Button>
+              {/* İLERİ/GERİ navigasyon butonları — 20'lik gruptaki haberler arası loop */}
+              {prevArticle && (
+                <Button type="button" size="sm" onClick={() => goToArticle(prevArticle.id, prevIndex)} className="gap-1 bg-red-600 hover:bg-red-700 text-white text-[10px] h-8 px-3 flex-shrink-0" title={prevArticle.title}>
+                  <ChevronLeft className="h-3 w-3" />
+                  <span className="hidden sm:inline">Önceki</span>
+                </Button>
+              )}
+              {nextArticle && (
+                <Button type="button" size="sm" onClick={() => goToArticle(nextArticle.id, nextIndex)} className="gap-1 bg-red-600 hover:bg-red-700 text-white text-[10px] h-8 px-3 flex-shrink-0" title={nextArticle.title}>
+                  <span className="hidden sm:inline">Sonraki</span>
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              )}
               <form onSubmit={onSearchSubmit} className="flex-1 flex items-center gap-1 rounded border border-blue-200 bg-blue-50 dark:bg-blue-950/20 px-1 py-0.5">
                 <Search className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <Input
@@ -822,15 +913,6 @@ export function PublicMain() {
           </div>
 
           <div className="mx-auto max-w-3xl py-4 px-4 sm:px-6">
-            <div className="mb-4 flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={closeArticle} className="gap-1.5 text-sm">
-                <ArrowLeft className="h-4 w-4" /> Geri
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => { setOpenArticleId(null); window.history.pushState({}, '', '/'); }} className="gap-1.5 text-sm">
-                <Home className="h-4 w-4" /> Ana Sayfa
-              </Button>
-            </div>
-
             {article.imageUrl ? (
               <div className="mb-6 flex justify-center">
                 <div className="relative aspect-[16/9] w-full max-w-2xl overflow-hidden rounded-xl bg-muted">
@@ -857,14 +939,49 @@ export function PublicMain() {
               <p className="text-base leading-relaxed text-foreground/90 whitespace-pre-wrap">{article.aiSummary}</p>
             </div>
 
-            <div className="mt-6 flex items-center gap-2 border-t border-border/50 pt-4">
+            {/* İLERİ/GERİ navigasyon — haber detayının altında */}
+            {(prevArticle || nextArticle) && (
+              <div className="mt-6 grid grid-cols-2 gap-3 border-t border-border/50 pt-4">
+                {prevArticle ? (
+                  <button
+                    type="button"
+                    onClick={() => goToArticle(prevArticle.id, prevIndex)}
+                    className="flex items-center gap-2 rounded-lg border border-border p-3 text-left hover:bg-muted/40 transition"
+                  >
+                    <ChevronLeft className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Önceki Haber</p>
+                      <p className="text-xs font-medium truncate">{prevArticle.title}</p>
+                    </div>
+                  </button>
+                ) : <div />}
+                {nextArticle ? (
+                  <button
+                    type="button"
+                    onClick={() => goToArticle(nextArticle.id, nextIndex)}
+                    className="flex items-center gap-2 rounded-lg border border-border p-3 text-right hover:bg-muted/40 transition"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Sonraki Haber</p>
+                      <p className="text-xs font-medium truncate">{nextArticle.title}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                  </button>
+                ) : <div />}
+              </div>
+            )}
+
+            {/* User: "geri ve ana sayfa düğmelerini kalbin yanına al" — Heart + Geri + Ana Sayfa tek satırda */}
+            <div className="mt-6 flex items-center justify-between border-t border-border/50 pt-4">
               <HeartCounter articleId={article.id} />
-              <Button variant="ghost" size="sm" onClick={closeArticle} className="gap-1.5 text-sm">
-                <ArrowLeft className="h-4 w-4" /> Geri
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => { closeArticle(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5 text-sm">
-                <Home className="h-4 w-4" /> Ana Sayfa
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={closeArticle} className="gap-1.5 text-sm">
+                  <ArrowLeft className="h-4 w-4" /> Geri
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => { setOpenArticleId(null); window.history.pushState({}, '', '/'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5 text-sm">
+                  <Home className="h-4 w-4" /> Ana Sayfa
+                </Button>
+              </div>
             </div>
           </div>
         </main>

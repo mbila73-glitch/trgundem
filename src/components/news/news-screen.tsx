@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon, ArrowDown, Sparkles, Image as ImageIcon, Wand2, Globe } from 'lucide-react';
+import { Newspaper, FileText, FolderTree, Star, Loader2, AlertCircle, ChevronDown, ArrowLeft, Home, Heart, Clock, Search, X, Save, RotateCcw, Archive, Trash2, Edit3, Upload, Crop as CropIcon, ArrowDown, Sparkles, Image as ImageIcon, Wand2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,10 +24,10 @@ const SUB_TABS: Array<{
   { id: 'guncel', label: 'Siyaset', icon: FileText },
   { id: 'kamu', label: 'Kamu / Resmi', icon: FolderTree },
   { id: 'ekonomi', label: 'Ekonomi / Finans', icon: FolderTree },
+  { id: 'dunya', label: 'Dünya', icon: FolderTree }, // User: "dünya kategorisi veri sayfasına gelmeliydi, gelmemiş"
   { id: 'bilim', label: 'Bilim / Teknoloji', icon: FolderTree },
   { id: 'kultur', label: 'Kültür / Sanat', icon: FolderTree },
   { id: 'spor', label: 'Spor / Magazin', icon: FolderTree },
-  { id: 'dunya', label: 'Dünya', icon: Globe },
   { id: 'ozel', label: 'Özel Haber', icon: Star },
 ];
 
@@ -35,21 +35,20 @@ const CATEGORY_MAP: Record<string, string> = {
   guncel: 'Siyaset',
   kamu: 'Kamu / Resmi',
   ekonomi: 'Ekonomi / Finans',
+  dunya: 'Dünya', // User: "dünya kategorisi veri sayfasına gelmeliydi, gelmemiş"
   bilim: 'Bilim / Teknoloji',
   spor: 'Spor / Magazin',
   kultur: 'Kültür / Sanat',
-  dunya: 'Dünya',
   ozel: 'Özel',
 };
 
 const CATEGORY_LIMITS: Record<string, number> = {
-  'Siyaset': 20,
+  'Siyaset': 15,
   'Kamu / Resmi': 8,
   'Ekonomi / Finans': 10,
   'Spor / Magazin': 8,
   'Bilim / Teknoloji': 5,
-  'Kültür / Sanat': 5,
-  'Dünya': 8,
+  'Kültür / Sanat': 8,
   'Özel': 30,
 };
 
@@ -72,7 +71,7 @@ function HorizontalLikeBar({ articleId }: { articleId: string }) {
   const { hearts, userLiked, toggleHeart } = useHeart(articleId);
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/50">
       <button type="button" onClick={toggleHeart} className={`inline-flex items-center gap-1.5 text-xs font-medium transition ${userLiked ? 'text-rose-600' : 'text-muted-foreground hover:text-rose-600'}`}>
         <Heart className={`h-4 w-4 ${userLiked ? 'fill-rose-600' : ''}`} />
         <span className="tabular-nums">{hearts}</span>
@@ -91,7 +90,9 @@ function ArticleDetailInline({
 }) {
   const [article, setArticle] = useState<PublishedArticle | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sourceLinks, setSourceLinks] = useState<{ title: string; link: string; source: string }[]>([]);
+  // User: "veri sayfasında haberlerin altında kaynaklar vardı yok olmuş"
+  // Kaynak listesi — article.sourceArticleIds parse edip her ID için /api/articles/[id] çağır
+  const [sourceLinks, setSourceLinks] = useState<Array<{ title: string; link: string; source: string }>>([]);
   const [sourcesLoading, setSourcesLoading] = useState(false);
 
   useEffect(() => {
@@ -106,7 +107,7 @@ function ArticleDetailInline({
       .then((a) => {
         if (cancelled) return;
         setArticle(a);
-        // Kaynakları yükle
+        // Kaynakları yükle — sourceArticleIds JSON string'ini parse et
         if (a && a.sourceArticleIds) {
           setSourcesLoading(true);
           try {
@@ -214,7 +215,7 @@ function ArticleDetailInline({
       ) : (
         <div className="mb-6 flex justify-center">
           <div className="relative flex aspect-[16/9.9] w-full max-w-md items-center justify-center overflow-hidden rounded-xl bg-muted">
-            <img src="/TRG_Logo.png" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-60" />
+            <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-60" />
           </div>
         </div>
       )}
@@ -234,11 +235,8 @@ function ArticleDetailInline({
         </p>
       </div>
 
-      {/* Kalp + Geri + Ana Sayfa — haber sonunda, tek satırda */}
-      <div className="mt-6 flex items-center gap-2 border-t border-border/50 pt-4">
-        <HorizontalLikeBar articleId={article.id} />
-
       {/* Kaynaklar — haberin altında */}
+      {/* User: "veri sayfasında haberlerin altında kaynaklar vardı yok olmuş" */}
       <div className="mt-4 rounded-lg border border-border/50 bg-muted/20 p-3">
         <p className="text-xs font-semibold text-foreground/80 mb-2">Bu haber {article.sourceCount} kaynaktan derlenmiştir:</p>
         {sourcesLoading ? (
@@ -259,7 +257,12 @@ function ArticleDetailInline({
         )}
       </div>
 
-      <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 text-sm">
+      {/* Like / Dislike bar — haberin altında */}
+      <HorizontalLikeBar articleId={article.id} />
+
+      {/* Geri + Ana Sayfa — haber sonunda */}
+      <div className="mt-6 flex items-center gap-2 border-t border-border/50 pt-4">
+        <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 text-sm">
           <ArrowLeft className="h-4 w-4" />
           Geri
         </Button>
@@ -720,7 +723,7 @@ export function NewsScreen() {
           </div>
         ) : (
           <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted sm:aspect-auto sm:w-1/2 sm:min-h-[200px] flex items-center justify-center">
-            <img src="/TRG_Logo.png" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
+            <img src="/logo_TRG.jpg" alt="TRGUNDEM" className="max-h-[90%] max-w-[90%] object-contain opacity-50" />
           </div>
         )}
         <div className="flex flex-1 flex-col gap-2 p-6">
@@ -883,14 +886,16 @@ export function NewsScreen() {
   };
 
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
-      {/* Category tabs + Arama çubuğu — sticky (kaybolmasın) */}
+    <section className="pb-6">
+      {/* Category tabs + Arama çubuğu — header'a yapışık (arada boşluk YOK) */}
+      {/* User: "sekmelerle arama çubuğunun olduğu bandı komple yukarıya header kısmına yapıştır. arada boşluk olmasın." */}
       <nav
         role="tablist"
         aria-label="Haber kategorileri"
-        className="sticky z-20 mb-4 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 p-1.5 shadow-sm"
-        style={{ top: '160px' }}
+        className="sticky z-20 rounded-none border-y border-red-200 bg-red-50 dark:bg-red-950/20 shadow-sm"
+        style={{ top: '64px' }}
       >
+        <div className="mx-auto max-w-6xl px-2 sm:px-4 py-1.5">
         {/* MOBİL: Tek buton + dropdown */}
         <div className="sm:hidden relative">
           <button
@@ -938,8 +943,10 @@ export function NewsScreen() {
           )}
         </div>
 
-        {/* MASAÜSTÜ: Tüm sekmeler yan yana */}
-        <div className="hidden sm:flex flex-wrap items-center gap-1.5">
+        {/* MASAÜSTÜ: Tüm sekmeler TEK SATIRDA (overflow-x-auto ile sığmayan scroll olsun) */}
+        {/* User: "kategori sekmesindeki özel haber 2. satıra düşmüş — tek satıra sığdır" */}
+        {/* flex-wrap → flex-nowrap overflow-x-auto: 2. satıra düşmeyi engeller */}
+        <div className="hidden sm:flex flex-nowrap items-center gap-1 overflow-x-auto scrollbar-thin">
           {SUB_TABS.map((tab) => {
             const isActive = tab.id === active;
             const Icon = tab.icon;
@@ -953,7 +960,7 @@ export function NewsScreen() {
                   setActive(tab.id);
                   if (openArticleId) closeArticle();
                 }}
-                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition flex-shrink-0 ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
@@ -1009,7 +1016,11 @@ export function NewsScreen() {
           )}
         </form>
         </div>
+        </div>
       </nav>
+
+      {/* Haber içerik konteyneri — max-w-6xl ile sınırla */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-4">
 
       {/* Article detail (inline, not dialog) OR search results OR news grid */}
       {openArticleId ? (
@@ -1136,6 +1147,7 @@ export function NewsScreen() {
         onSave={handleEditorSave}
         token={adminToken}
       />
+      </div>
     </section>
   );
 }

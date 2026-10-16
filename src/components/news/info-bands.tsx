@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown, Cloud, Sun, CloudRain, CloudSnow } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { ArrowUp, ArrowDown, Cloud, Sun, CloudRain, CloudSnow } from 'lucide-react';
 
 // Hava durumu — Open-Meteo (open-meteo.com)
 // İlk hardcoded değerler — API gelince değişir
@@ -29,7 +29,7 @@ function WeatherIcon({ type, className }: { type: string; className?: string }) 
   return <Cloud className={className} />;
 }
 
-type FinansItem = { name: string; value: string; change: string; up: boolean };
+type FinansItem = { name: string; value: string; change: string; up: boolean; source?: 'H' | 'M' };
 type SonDakikaItem = { id: string; title: string };
 
 // Stable inline style objects so React doesn't re-create them on each render.
@@ -44,9 +44,15 @@ const marqueeStyle = (duration: string): React.CSSProperties => ({
 });
 
 // Finans'ta sabit tutulacak item'lar (BIST, USD, EUR, Gram Altın sırasıyla)
-const FINANS_FIXED_NAMES = ['BIST 100', 'USD/TL', 'EUR/TL', 'GRAM ALTIN'];
-const finansItemRender = (item: FinansItem, keyPrefix: string, i: number) => {
-  const sourceMap: Record<string, string> = {
+// User: "gram altını da GR ALTIN olarak kısalt"
+const FINANS_FIXED_NAMES = ['BIST 100', 'USD/TL', 'EUR/TL', 'GR ALTIN'];
+
+// User: "site hata verdi: Application error: a client-side exception"
+// HATA SEBEBİ: sourceMap finansItemRender fonksiyonu İÇİNDE tanımlıydı,
+//              ama scroll finans bölümleri (inline JSX) dışarıdan erişiyordu → ReferenceError → crash
+// ÇÖZÜM: getFinansTooltip fonksiyonunu modül seviyesine taşı — her yerden erişilebilir
+function getFinansTooltip(item: FinansItem): string {
+  const staticMap: Record<string, string> = {
     'BIST 100': 'Kaynak: Borsa İstanbul (borsaistanbul.com)',
     'USD/TL': 'Kaynak: Türkiye Cumhuriyet Merkez Bankası (tcmb.gov.tr)',
     'EUR/TL': 'Kaynak: Türkiye Cumhuriyet Merkez Bankası (tcmb.gov.tr)',
@@ -54,18 +60,28 @@ const finansItemRender = (item: FinansItem, keyPrefix: string, i: number) => {
     'CHF/TL': 'Kaynak: Türkiye Cumhuriyet Merkez Bankası (tcmb.gov.tr)',
     '100 JPY/TL': 'Kaynak: Türkiye Cumhuriyet Merkez Bankası (tcmb.gov.tr)',
     'ONS ALTIN': 'Kaynak: Yahoo Finance (finance.yahoo.com)',
-    'GRAM ALTIN': 'Kaynak: Harem Altın (haremaltin.com) — kulçe satış fiyatı, her 5 dakikada bir güncellenir',
   };
+  if (item.name === 'GR ALTIN') {
+    return item.source === 'H'
+      ? 'Kaynak: Harem Altın (haremaltin.com) — külçe satış fiyatı, her 5 dakikada bir güncellenir. (H) = Harem Altın, (M) = Merkez Bankası'
+      : 'Kaynak: Hesaplanan (Ons Altın × USD/TL) — Harem Altın verisi yok. (H) = Harem Altın, (M) = Merkez Bankası';
+  }
+  return staticMap[item.name] || '';
+}
+
+const finansItemRender = (item: FinansItem, keyPrefix: string, i: number) => {
+  // User: "gr altın üzerine gelince kaynak açıklaması çıkmasın. m ve h harflerine dokunma. h harfini mavi yap."
+  const showSourceLabel = item.name === 'GR ALTIN' && item.source;
   return (
-    <span key={`${keyPrefix}-${i}`} className="inline-flex flex-shrink-0 items-center gap-2 text-sm" title={sourceMap[item.name] || ''}>
+    <span key={`${keyPrefix}-${i}`} className="inline-flex flex-shrink-0 items-center gap-2 text-sm">
       <span className="font-medium text-slate-300">{item.name}</span>
       <span className="font-bold text-white">{item.value}</span>
-      {item.change !== '—' && (
-        <span className={`inline-flex items-center gap-0.5 ${item.up ? 'text-emerald-400' : 'text-rose-400'}`}>
-          {item.up ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-          {item.change}
-        </span>
+      {showSourceLabel && (
+        <span className={`text-[10px] font-bold ${item.source === 'H' ? 'text-blue-400' : 'text-amber-300'}`}>({item.source})</span>
       )}
+      <span className={item.up ? 'text-emerald-400' : 'text-rose-400'}>
+        {item.up ? <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.5} /> : <ArrowDown className="h-3.5 w-3.5" strokeWidth={2.5} />}
+      </span>
     </span>
   );
 };
@@ -77,35 +93,119 @@ export function InfoBands({ cacheMode = false }: { cacheMode?: boolean }) {
   const [havaFixed, setHavaFixed] = useState<HavaItem[]>(HAVA_FIXED_INIT);
   const [havaScroll, setHavaScroll] = useState<HavaItem[]>(HAVA_SCROLL_INIT);
 
-  // Son dakika haberleri — cacheMode=true ise localStorage'dan oku (ana sayfa senkron verisi)
-  // cacheMode=false ise API'den çek (/veri sayfası — her zaman güncel)
-  useEffect(() => {
-    if (cacheMode) {
-      // Ana sayfa — localStorage'dan oku (PublicMain :19/:39/:59'da yazıyor)
-      const loadFromCache = () => {
-        try {
-          const cached = localStorage.getItem('trgundem_main_articles');
-          if (cached) {
-            const arts = JSON.parse(cached) as Array<{ id: string; aiTitle: string }>;
-            setSonDakika((arts ?? []).slice(0, 10).map(a => ({ id: a.id, title: a.aiTitle })));
-          }
-        } catch {}
-      };
-      loadFromCache();
-      // 10 saniyede bir kontrol et — PublicMain senkron yapınca güncellensin
-      const interval = setInterval(loadFromCache, 10000);
-      return () => clearInterval(interval);
+  // User: "kayan 20 li pencerede 7. habere basıp geri geldiğimizde 7. haber olsun"
+  // localStorage'dan son tıklanan haber index'ini oku — geri dönünce o habere scroll et
+  const [lastClickedIndex, setLastClickedIndex] = useState<number>(-1);
+
+  // Auto-scroll için pause flag — scrollSondakika'dan ÖNCE tanımlanmalı (hoisting)
+  const scrollPausedRef = useRef(false);
+
+  // User: "3 saniye aralıklarla sonraki habere geçip loop yapsın"
+  // direction: 1 = ileri (sağ), -1 = geri (sol)
+  const scrollSondakika = (direction: number) => {
+    const container = document.getElementById('sondakika-scroll');
+    if (!container) return;
+    const itemWidth = 250;
+    const halfWidth = container.scrollWidth / 2;
+
+    // Auto-scroll'u 2 sn durdur
+    scrollPausedRef.current = true;
+    setTimeout(() => { scrollPausedRef.current = false; }, 2000);
+
+    // Tüm scroll'lar INSTANT (behavior: auto) — smooth yok
+    if (direction > 0) {
+      // SAĞ (ileri)
+      if (container.scrollLeft + itemWidth >= halfWidth) {
+        // 20 → 1: halfWidth'i geç → başa sıfırla + kalan
+        container.scrollTo({ left: (container.scrollLeft + itemWidth) - halfWidth, behavior: 'auto' });
+      } else {
+        container.scrollTo({ left: container.scrollLeft + itemWidth, behavior: 'auto' });
+      }
     } else {
-      // /veri sayfası — API'den çek (her zaman güncel)
+      // SOL (geri)
+      if (container.scrollLeft - itemWidth < 0) {
+        // 1 → 20: 0'ın altına → halfWidth'e sıfırla - kalan
+        container.scrollTo({ left: halfWidth - (itemWidth - container.scrollLeft), behavior: 'auto' });
+      } else {
+        container.scrollTo({ left: container.scrollLeft - itemWidth, behavior: 'auto' });
+      }
+    }
+  };
+
+  // Mount'ta localStorage'dan index oku
+  useEffect(() => {
+    try {
+      const idx = parseInt(localStorage.getItem('trgundem_last_clicked_index') || '-1', 10);
+      if (!isNaN(idx) && idx >= 0) {
+        setLastClickedIndex(idx);
+      }
+    } catch {}
+  }, []);
+
+  // İNCE KIRMIZI KAYAN BANT — sürekli kayar (CSS animation), 3 sn yok
+  // Hava/finans bandı gibi marquee ile sürekli akar, 20→1 loop
+  useEffect(() => {
+    if (sonDakika.length === 0) return;
+    const container = document.getElementById('sondakika-scroll');
+    if (!container) return;
+
+    let paused = false;
+    const onHover = () => { paused = true; };
+    const onLeave = () => { paused = false; };
+    container.addEventListener('mouseenter', onHover);
+    container.addEventListener('mouseleave', onLeave);
+
+    // İlk yüklemede: tıklanan index'e scroll
+    setTimeout(() => {
+      if (lastClickedIndex >= 0) {
+        const buttons = container.querySelectorAll('button[data-index]');
+        if (buttons[lastClickedIndex]) {
+          (buttons[lastClickedIndex] as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+    }, 200);
+
+    // Sürekli kayma — requestAnimationFrame ile scrollLeft += 1.8
+    // User: "kayan haber bandını yüzde 20 hızlandır" — 1.5 → 1.8
+    let raf: number;
+    const tick = () => {
+      if (!paused && !scrollPausedRef.current) {
+        container.scrollLeft += 1.8;
+        const halfWidth = container.scrollWidth / 2;
+        if (container.scrollLeft >= halfWidth) {
+          container.scrollLeft -= halfWidth;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    setTimeout(() => { raf = requestAnimationFrame(tick); }, 2000);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      container.removeEventListener('mouseenter', onHover);
+      container.removeEventListener('mouseleave', onLeave);
+    };
+  }, [sonDakika, lastClickedIndex]);
+
+  // Son dakika haberleri — HER ZAMAN API'den çek (cacheMode fark etmez)
+  // User: "kayan bantta 4 haber var ve loop yapmıyor"
+  // Sebep: cacheMode=true localStorage'dan okuyordu, orada eski/az veri vardı
+  // Çözüm: Her zaman API'den çek — 20 haber garanti
+  useEffect(() => {
+    const loadArticles = () => {
       fetch('/api/published-articles?layout=all&status=published')
         .then(async (r) => {
           if (!r.ok) return;
           const json = (await r.json()) as { articles: Array<{ id: string; aiTitle: string }> };
-          setSonDakika((json.articles ?? []).map(a => ({ id: a.id, title: a.aiTitle })).slice(0, 10));
+          setSonDakika((json.articles ?? []).map(a => ({ id: a.id, title: a.aiTitle })).slice(0, 20));
         })
         .catch(() => {});
-    }
-  }, [cacheMode]);
+    };
+    loadArticles();
+    // 60 saniyede bir güncelle
+    const interval = setInterval(loadArticles, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Hava durumu — 10 dakikada bir polling
   useEffect(() => {
@@ -158,12 +258,17 @@ export function InfoBands({ cacheMode = false }: { cacheMode?: boolean }) {
     };
   }, []);
 
-  const openArticle = (id: string) => {
+  const openArticle = (id: string, index: number) => {
+    // User: "ana sayfadaki 20 lik kayan penceredeki bir habere basıp okuyup geri dönünce
+    //        ilk habere dönüyor pencere. bu olmasın, hangi habere basıp okuduysam geri döndüğümde
+    //        o haber aşık olsun."
+    // Tıklanan haberin ID + index'ini localStorage'a kaydet — geri dönünce buraya scroll edebilmek için
+    try {
+      localStorage.setItem('trgundem_last_clicked_article', id);
+      localStorage.setItem('trgundem_last_clicked_index', String(index));
+      localStorage.setItem('trgundem_son_dakika_list', JSON.stringify(sonDakika.map(s => ({ id: s.id, title: s.title }))));
+    } catch {}
     const url = new URL(window.location.href);
-    // KRİTİK: Ana sayfa (/) PublicMain kullanır → ?haber= parametresi
-    // /veri sayfası NewsScreen kullanır → ?article= parametresi
-    // Önceden hep ?article= set ediyordu, bu yüzden ana sayfada tıklayınca
-    // PublicMain'in popstate handler'ı ?haber='i okuyamadığı için haber açılmıyordu.
     const param = window.location.pathname === '/veri' ? 'article' : 'haber';
     url.searchParams.set(param, id);
     window.history.pushState({}, '', url.toString());
@@ -266,12 +371,12 @@ export function InfoBands({ cacheMode = false }: { cacheMode?: boolean }) {
                     <span key={`fscroll-d-${i}`} className="inline-flex flex-shrink-0 items-center gap-2 text-sm">
                       <span className="font-medium text-slate-300">{item.name}</span>
                       <span className="font-bold text-white">{item.value}</span>
-                      {item.change !== '—' && (
-                        <span className={`inline-flex items-center gap-0.5 ${item.up ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {item.up ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                          {item.change}
-                        </span>
+                      {item.name === 'GR ALTIN' && item.source && (
+                        <span className={`text-[10px] font-bold ${item.source === 'H' ? 'text-blue-400' : 'text-amber-300'}`}>({item.source})</span>
                       )}
+                      <span className={item.up ? 'text-emerald-400' : 'text-rose-400'}>
+                        {item.up ? <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.5} /> : <ArrowDown className="h-3.5 w-3.5" strokeWidth={2.5} />}
+                      </span>
                       <span className="mx-2 text-slate-700">|</span>
                     </span>
                   ))}
@@ -282,12 +387,12 @@ export function InfoBands({ cacheMode = false }: { cacheMode?: boolean }) {
                     <span key={`fscroll-m-${i}`} className="inline-flex flex-shrink-0 items-center gap-2 text-sm">
                       <span className="font-medium text-slate-300">{item.name}</span>
                       <span className="font-bold text-white">{item.value}</span>
-                      {item.change !== '—' && (
-                        <span className={`inline-flex items-center gap-0.5 ${item.up ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {item.up ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                          {item.change}
-                        </span>
+                      {item.name === 'GR ALTIN' && item.source && (
+                        <span className={`text-[10px] font-bold ${item.source === 'H' ? 'text-blue-400' : 'text-amber-300'}`}>({item.source})</span>
                       )}
+                      <span className={item.up ? 'text-emerald-400' : 'text-rose-400'}>
+                        {item.up ? <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.5} /> : <ArrowDown className="h-3.5 w-3.5" strokeWidth={2.5} />}
+                      </span>
                       <span className="mx-2 text-slate-700">|</span>
                     </span>
                   ))}
@@ -297,25 +402,30 @@ export function InfoBands({ cacheMode = false }: { cacheMode?: boolean }) {
           </div>
         )}
 
-        {/* 3. SON DAKİKA — etiket yok, haberler direkt */}
+        {/* 3. SON DAKİKA — hava/finans bandı gibi CSS animation ile sürekli kayar */}
+        {/* User: "diğer bantlar gibi loop yapmıyor geri sarıyor" — JS scrollLeft yerine CSS marquee */}
         {sonDakika.length > 0 && (
           <div className="group flex items-center gap-2 overflow-hidden bg-red-600 px-3 sm:px-4" style={{ minHeight: '32px' }}>
             <div className="relative flex-1 overflow-hidden">
               <div
                 className="flex w-max flex-shrink-0 gap-10 whitespace-nowrap text-white text-sm sm:text-base tracking-wide group-hover:[animation-play-state:paused]"
-                style={marqueeStyle('36s')}
+                style={marqueeStyle('66s')}
               >
-                {sonDakika.concat(sonDakika).map((item, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => openArticle(item.id)}
-                    className="inline-block flex-shrink-0 font-semibold cursor-pointer hover:underline text-white"
-                  >
-                    {item.title}
-                    <span className="mx-3 opacity-70">•</span>
-                  </button>
-                ))}
+                {/* 2x render — translateX(-50%) ile sonsuz loop */}
+                {sonDakika.concat(sonDakika).map((item, i) => {
+                  const realIndex = i % sonDakika.length;
+                  return (
+                    <button
+                      key={`sd-${i}`}
+                      type="button"
+                      onClick={() => openArticle(item.id, realIndex)}
+                      className="inline-block flex-shrink-0 font-semibold cursor-pointer hover:underline text-white"
+                    >
+                      {item.title}
+                      <span className="mx-3 opacity-70">•</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

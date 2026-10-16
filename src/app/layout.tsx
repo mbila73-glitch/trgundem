@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TÜRKİYEDEN HABER TRGUNDEM.NET",
+  title: "Türkiye'de Gündem TRGUNDEM.NET",
   description:
     "Türkiye'nin gündeminden haberler. RSS kaynaklarından derlenen, yapay zeka ile özetlenen güncel haber sitesi.",
   keywords: [
@@ -31,11 +31,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "TRGUNDEM.NET" }],
   icons: {
-    icon: "/TRG_Logo_yuvarlak.png",
-    apple: "/TRG_Logo_yuvarlak.png",
+    icon: "/logo_TRG.jpg",
+    apple: "/logo_TRG.jpg",
   },
   openGraph: {
-    title: "TÜRKİYEDEN HABER TRGUNDEM.NET",
+    title: "Türkiye'de Gündem TRGUNDEM.NET",
     description:
       "Türkiye'nin gündeminden yapay zeka ile özetlenen güncel haber sitesi.",
     siteName: "TRGUNDEM.NET",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TÜRKİYEDEN HABER TRGUNDEM.NET",
+    title: "Türkiye'de Gündem TRGUNDEM.NET",
     description: "Türkiye'nin gündeminden AI özetlenen haber sitesi",
   },
   alternates: {
